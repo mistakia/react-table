@@ -1,0 +1,57 @@
+{
+  "name": "react-table",
+  "version": "0.0.1",
+  "description": "react table component using tanstack/react-table and material-ui",
+  "main": "lib/index.js",
+  "author": "trashman",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint . --ext js,mjs",
+    "prettier": "prettier --write .",
+    "build": "cross-env NODE_ENV=production webpack --config ./webpack/webpack.prod.babel.mjs"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/base": "^5.0.0-alpha.123",
+    "@mui/icons-material": "^5.11.11",
+    "@mui/material": "^5.11.15",
+    "immutable": "^4.3.0",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-immutable-proptypes": "*"
+  },
+  "dependencies": {
+    "@tanstack/react-table": "^8.8.5",
+    "@tanstack/react-virtual": "beta"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.21.4",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/preset-env": "^7.21.4",
+    "@babel/preset-react": "^7.18.6",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/base": "^5.0.0-alpha.123",
+    "@mui/icons-material": "^5.11.11",
+    "@mui/material": "^5.11.15",
+    "babel-loader": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.7.3",
+    "immutable": "^4.3.0",
+    "install-peers": "^1.0.4",
+    "install-peers-cli": "^2.2.0",
+    "nib": "^1.2.0",
+    "prettier": "^2.8.7",
+    "prop-types": "^15.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-immutable-proptypes": "*",
+    "style-loader": "^3.3.2",
+    "stylus": "^0.59.0",
+    "stylus-loader": "^7.1.0",
+    "webpack": "^5.77.0",
+    "webpack-cli": "^5.0.1"
+  }
+}

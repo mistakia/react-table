@@ -1,0 +1,150 @@
+.MuiPopperUnstyled-root:not(.MuiTooltip-popper)
+    z-index 1000
+    border-radius 4px
+    background white
+    position relative
+    box-shadow rgba(15, 15, 15, 0.05) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 3px 6px, rgba(15, 15, 15, 0.2) 0px 9px 24px
+    display flex
+    flex-direction column
+    min-width 260px
+    max-width calc(100vw - 24px)
+    max-height 70vh
+    
+.table
+  padding-left 96px
+
+  .panel
+    display flex
+    align-items center
+    justify-content space-between
+    position sticky
+    left 96px
+    width fit-content
+    padding-top 12px
+    padding-bottom 8px
+
+  .state
+    .state-item
+      border-radius 14px
+      margin-right 6px
+      display inline-flex
+      .state-item-content
+        user-select none
+        transition background 20ms ease-in 0s
+        cursor pointer
+        font-size 14px
+        display inline-flex
+        align-items center
+        justify-content center
+        white-space nowrap
+        border-radius 32px
+        height 24px
+        line-height 24px
+        padding 0px 8px
+        border 1px solid rgba(35, 131, 226, 0.35)
+        color rgb(35, 131, 226)
+        background rgba(35, 131, 226, 0.03)
+        svg
+          position relative
+          height 0.8em
+          width 0.8em
+
+  .controls
+    display flex
+    justify-content flex-end
+    padding 2px 8px
+    padding-right 96px
+
+  &.noselect
+    -webkit-touch-callout none
+    -webkit-user-select none
+    -khtml-user-select none
+    -moz-user-select none
+    -ms-user-select none
+    user-select none
+
+  .row
+    display flex
+    height 100%
+    width fit-content
+
+    .cell
+      white-space nowrap
+      margin 0 
+      border-right 1px solid $borderColor
+      position relative
+
+    .cell-content
+      height 100%
+      overflow hidden
+      text-overflow ellipsis
+      white-space nowrap
+      padding 0 8px
+
+  .header
+    height 33px
+    width fit-content
+    position sticky
+    top -1px
+    z-index 1
+
+    .cell
+      line-height 120%
+      font-size 14px
+      background-color $backgroundColor
+      border-bottom 1px solid $borderColor
+      border-top 1px solid $borderColor
+
+      &:hover
+        background-color darken($backgroundColor, 10%)
+        cursor pointer
+
+  .footer
+    height 33px
+    width fit-content
+    position sticky
+    bottom 0
+    z-index 1
+    .cell
+      border-top 1px solid $borderColor
+      background-color $backgroundColor
+
+  .resizer
+    display inline-block
+    background transparent
+    width 8px
+    height 100%
+    position absolute
+    right 0
+    top 0
+    transform translateX(50%)
+    z-index 1
+    cursor col-resize
+    touch-action none
+
+    &:hover
+      background-color #8ecae6
+
+  .header-icon
+    margin-right 4px
+
+  .header-sort-icon
+    margin-left 4px
+
+  .header-icon
+  .header-sort-icon
+    svg
+      position relative
+      height 0.9em
+      width 0.9em
+      top 0.125rem
+
+  .cell.column-index
+    width 30px
+    font-size 9px
+    border-top none
+    border-bottom none
+    background transparent
+    .cell-content
+      display flex
+      align-items center

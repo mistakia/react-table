@@ -1,0 +1,47 @@
+.add-column-action .cell-content
+  display flex
+  justify-content: center
+  align-items: center
+
+.table .header .cell.add-column-action
+  border-right none
+  border-bottom none
+
+.header-menu-item
+  display flex
+  user-select none
+  transition background 20ms ease-in 0s
+  cursor pointer
+  width calc(100% - 8px)
+  margin-left 4px
+  margin-right 4px
+  border-radius 3px
+  font-size 14px
+
+  &:hover
+    background-color rgba(55, 53, 47, 0.08)
+
+  .header-menu-item-button
+    display flex
+    align-items center
+    line-height 120%
+    width 100%
+    user-select none
+    min-height 28px
+    font-size 14px
+    &.selected
+      font-weight 500
+      background rgba(55, 53, 47, 0.08)
+      border-radius 3px
+
+  .header-menu-item-icon
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 10px;
+    margin-right: 4px;
+
+  svg
+    position relative
+    width 14px
+    height 14px

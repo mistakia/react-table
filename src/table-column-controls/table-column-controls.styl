@@ -1,0 +1,75 @@
+.table-column-controls
+  overflow hidden
+  overflow-y scroll
+  position fixed
+  top 50%
+  left 50%
+  transform translate(-50%, -50%)
+  width 66%
+  max-width 400px
+  height 90%
+  background white
+  border-radius 4px
+
+  .filter-input
+    padding 12px
+    position sticky
+    top 0
+    background white
+    z-index 1
+
+  .section-header
+    position sticky
+    top 64px
+    background white
+    z-index 1
+    padding-left 14px
+    padding-right 14px
+    margin-top 6px
+    margin-bottom 8px
+    color rgba(55, 53, 47, 0.65)
+    display flex
+    font-weight 500
+    line-height 120%
+    user-select none
+    height 19px
+    justify-content space-between
+    background darken(white, 4%)
+
+    .action
+      transition background 20ms ease-in 0s
+      display inline-flex
+      align-items center
+      font-size 12px
+      padding 2px 6px
+      color rgb(35, 131, 226)
+      margin-left auto
+
+  .column-item
+    display flex
+    align-items center
+    user-select none
+    width calc(100% - 8px)
+    margin-left 4px
+    margin-right 4px
+    border-radius 3px
+    font-size 14px
+    min-height 28px
+    
+    .column-action
+      margin-right 14px
+
+    .column-name
+      flex 1
+
+    .column-data-type
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 10px;
+      margin-right: 4px;
+
+    svg
+      position relative
+      width 14px
+      height 14px
