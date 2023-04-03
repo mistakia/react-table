@@ -6,9 +6,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 
-import { constants } from '../utils'
-
-const { TABLE_DATA_TYPES } = constants
+import { TABLE_DATA_TYPES } from '../constants.mjs'
 
 export default function DataTypeIcon({ data_type }) {
   switch (data_type) {

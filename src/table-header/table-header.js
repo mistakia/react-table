@@ -10,12 +10,11 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 
-import { get_string_from_object, constants } from '../utils'
+import { get_string_from_object } from '../utils'
+import { TABLE_DATA_TYPES } from '../constants.mjs'
 import DataTypeIcon from '../data-type-icon'
 
 import './table-header.styl'
-
-const { TABLE_DATA_TYPES } = constants
 
 export function AddColumnAction({ set_column_controls_popper_open }) {
   return (
