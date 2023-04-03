@@ -18,6 +18,7 @@ import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import { get_string_from_object } from '../utils'
 
+import '../styles/mui-unstyled-popper.styl'
 import './table.styl'
 
 const column_helper = createColumnHelper()
