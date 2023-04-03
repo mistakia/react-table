@@ -69,7 +69,6 @@ export default function TableHeader({
         <div
           {...{
             className: 'cell',
-            key: header.id,
             colSpan: header.colSpan,
             ref: anchor_el,
             onClick: () => set_popper_open(!popper_open),
@@ -78,9 +77,11 @@ export default function TableHeader({
             }
           }}>
           <div
-            className='cell-content'
-            style={{
-              background: is_sorted ? '#f5f5f5' : 'transparent'
+            {...{
+              className: 'cell-content',
+              style: {
+                background: is_sorted ? '#f5f5f5' : 'transparent'
+              }
             }}>
             <div
               style={{

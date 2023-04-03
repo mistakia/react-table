@@ -18,7 +18,6 @@ export default function TableFooter({ column, header }) {
     <div
       {...{
         className: 'cell',
-        key: header.id,
         colSpan: header.colSpan,
         style: {
           width: header.getSize()

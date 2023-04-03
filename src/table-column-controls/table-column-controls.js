@@ -38,7 +38,7 @@ export default function TableColumnControls({
 
     shown_columns_index[column.accessorKey] = true
     shown_column_items.push(
-      <div className='column-item'>
+      <div key={column.accessorKey} className='column-item'>
         <div className='column-data-type'>
           <DataTypeIcon data_type={column.data_type} />
         </div>
@@ -63,7 +63,7 @@ export default function TableColumnControls({
     }
 
     hidden_column_items.push(
-      <div className='column-item'>
+      <div key={column.column_name} className='column-item'>
         <div className='column-data-type'>
           <DataTypeIcon data_type={column.data_type} />
         </div>

@@ -193,13 +193,14 @@ export default function Table({
         </div>
       </div>
       <div className='header'>
-        {table.getHeaderGroups().map((headerGroup) => (
-          <div key={headerGroup.id} className='row'>
-            {headerGroup.headers.map((header) =>
+        {table.getHeaderGroups().map((headerGroup, index) => (
+          <div key={index} className='row'>
+            {headerGroup.headers.map((header, index) =>
               header.isPlaceholder
                 ? null
                 : flexRender(header.column.columnDef.header, {
                     ...header.getContext(),
+                    key: index,
                     set_column_controls_popper_open
                   })
             )}
@@ -219,15 +220,15 @@ export default function Table({
         )
       })}
       <div className='footer'>
-        {table.getFooterGroups().map((footerGroup) => (
-          <div key={footerGroup.id} className='row'>
-            {footerGroup.headers.map((footer) =>
+        {table.getFooterGroups().map((footerGroup, index) => (
+          <div key={index} className='row'>
+            {footerGroup.headers.map((footer, index) =>
               footer.isPlaceholder
                 ? null
-                : flexRender(
-                    footer.column.columnDef.footer,
-                    footer.getContext()
-                  )
+                : flexRender(footer.column.columnDef.footer, {
+                    key: index,
+                    ...footer.getContext()
+                  })
             )}
           </div>
         ))}
