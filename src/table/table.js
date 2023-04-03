@@ -212,11 +212,12 @@ export default function Table({
         const row = rows[virtual_row.index]
         return (
           <div key={row.id} className='row'>
-            {row
-              .getVisibleCells()
-              .map((cell) =>
-                flexRender(cell.column.columnDef.cell, cell.getContext())
-              )}
+            {row.getVisibleCells().map((cell, index) =>
+              flexRender(cell.column.columnDef.cell, {
+                key: index,
+                ...cell.getContext()
+              })
+            )}
           </div>
         )
       })}

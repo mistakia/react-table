@@ -3,7 +3,8 @@ export const TABLE_DATA_TYPES = {
   TEXT: 2,
   JSON: 3,
   BOOLEAN: 4,
-  DATE: 5
+  DATE: 5,
+  BINARY_UUID: 6
 }
 
 export const get_data_type = (column_data_type) => {
@@ -33,6 +34,9 @@ export const get_data_type = (column_data_type) => {
     case 'timestamp without time zone':
     case 'timestamp with time zone':
       return TABLE_DATA_TYPES.DATE
+
+    case 'binary':
+      return TABLE_DATA_TYPES.BINARY_UUID
 
     default:
       return null
