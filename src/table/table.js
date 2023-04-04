@@ -16,6 +16,7 @@ import TableCell from '../table-cell'
 import TableHeader from '../table-header'
 import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
+import TableViewController from '../table-view-controller'
 import { get_string_from_object } from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
@@ -36,7 +37,10 @@ export default function Table({
   data,
   on_table_change,
   table_state,
-  all_columns
+  all_columns,
+  selected_view,
+  views,
+  select_view
 }) {
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
@@ -156,7 +160,7 @@ export default function Table({
   const sorting = table_state.get('sorting', [])
   if (sorting.length) {
     for (const sort of sorting) {
-      // get lable from column
+      // get label from column
       state_items.push(
         <div key={sort.id} className='state-item'>
           <div className='state-item-content'>
@@ -179,7 +183,7 @@ export default function Table({
       <div className='panel'>
         <div className='state'>{state_items}</div>
         <div className='controls'>
-          {/* <FilterPopper /> */}
+          <TableViewController {...{ select_view, selected_view, views }} />
           <TableColumnControls
             {...{
               table_state,
@@ -243,5 +247,8 @@ Table.propTypes = {
   data: PropTypes.array,
   on_table_change: PropTypes.func,
   table_state: ImmutablePropTypes.map,
-  all_columns: ImmutablePropTypes.list
+  all_columns: ImmutablePropTypes.list,
+  selected_view: ImmutablePropTypes.map,
+  select_view: PropTypes.func,
+  views: ImmutablePropTypes.list
 }
