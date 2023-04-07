@@ -183,7 +183,7 @@ export default function Table({
       <div className='panel'>
         <div className='state'>{state_items}</div>
         <div className='controls'>
-          <TableViewController {...{ select_view, selected_view, views }} />
+          {Boolean(views.size) && <TableViewController {...{ select_view, selected_view, views }} />}
           <TableColumnControls
             {...{
               table_state,
