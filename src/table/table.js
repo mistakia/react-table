@@ -17,7 +17,7 @@ import TableHeader from '../table-header'
 import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
-import { get_string_from_object } from '../utils'
+import { get_string_from_object, get_scroll_parent } from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
 import './table.styl'
@@ -40,7 +40,11 @@ export default function Table({
   all_columns,
   selected_view,
   views,
-  select_view
+  select_view,
+  fetch_more = () => {},
+  is_fetching = false,
+  total_rows_fetched,
+  total_row_count
 }) {
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
@@ -132,6 +136,35 @@ export default function Table({
     columnResizeMode: 'onChange'
   })
 
+  const fetch_more_on_bottom_reached = React.useCallback(
+    function (container_ref) {
+      if (container_ref) {
+        const scroll_height = container_ref.scrollHeight
+        const scroll_top = container_ref.scrollTop
+        const client_height = container_ref.clientHeight
+
+        const scroll_distance = 300
+        if (
+          scroll_height - scroll_top - client_height < scroll_distance &&
+          !is_fetching &&
+          total_rows_fetched < total_row_count
+        ) {
+          const view_id = selected_view.get('id')
+          fetch_more({ view_id })
+        }
+      }
+    },
+    [fetch_more, is_fetching, total_rows_fetched, total_row_count]
+  )
+
+  React.useEffect(() => {
+    const scroll_parent = get_scroll_parent(table_container_ref.current)
+    const onscroll = () => fetch_more_on_bottom_reached(scroll_parent)
+    scroll_parent.addEventListener('scroll', onscroll)
+    return () => 
+      scroll_parent.removeEventListener('scroll', onscroll)
+  }, [fetch_more, is_fetching, total_rows_fetched, total_row_count])
+
   const { rows } = table.getRowModel()
 
   const row_virtualizer = useVirtualizer({
@@ -183,7 +216,9 @@ export default function Table({
       <div className='panel'>
         <div className='state'>{state_items}</div>
         <div className='controls'>
-          {Boolean(views.size) && <TableViewController {...{ select_view, selected_view, views }} />}
+          {Boolean(views.size) && (
+            <TableViewController {...{ select_view, selected_view, views }} />
+          )}
           <TableColumnControls
             {...{
               table_state,
@@ -250,5 +285,9 @@ Table.propTypes = {
   all_columns: ImmutablePropTypes.list,
   selected_view: ImmutablePropTypes.map,
   select_view: PropTypes.func,
-  views: ImmutablePropTypes.list
+  views: ImmutablePropTypes.list,
+  fetch_more: PropTypes.func,
+  is_fetching: PropTypes.bool,
+  total_row_count: PropTypes.number,
+  total_rows_fetched: PropTypes.number
 }
