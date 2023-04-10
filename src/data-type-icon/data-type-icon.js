@@ -5,6 +5,7 @@ import NumbersIcon from '@mui/icons-material/Numbers'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import DataObjectIcon from '@mui/icons-material/DataObject'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import FingerprintIcon from '@mui/icons-material/Fingerprint'
 
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 
@@ -20,6 +21,8 @@ export default function DataTypeIcon({ data_type }) {
       return <DataObjectIcon />
     case TABLE_DATA_TYPES.DATE:
       return <CalendarMonthIcon />
+    case TABLE_DATA_TYPES.BINARY_UUID:
+      return <FingerprintIcon />
     default:
       return null
   }

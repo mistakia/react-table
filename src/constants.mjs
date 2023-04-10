@@ -10,6 +10,7 @@ export const TABLE_DATA_TYPES = {
 export const get_data_type = (column_data_type) => {
   switch (column_data_type) {
     case 'integer':
+    case 'int':
     case 'bigint':
     case 'numeric':
     case 'real':
@@ -22,6 +23,7 @@ export const get_data_type = (column_data_type) => {
 
     case 'character varying':
     case 'text':
+    case 'varchar':
       return TABLE_DATA_TYPES.TEXT
 
     case 'json':
@@ -31,6 +33,8 @@ export const get_data_type = (column_data_type) => {
       return TABLE_DATA_TYPES.BOOLEAN
 
     case 'date':
+    case 'timestamp':
+    case 'datetime':
     case 'timestamp without time zone':
     case 'timestamp with time zone':
       return TABLE_DATA_TYPES.DATE
@@ -39,6 +43,7 @@ export const get_data_type = (column_data_type) => {
       return TABLE_DATA_TYPES.BINARY_UUID
 
     default:
+      console.log('Unknown data type: ' + column_data_type)
       return null
   }
 }
