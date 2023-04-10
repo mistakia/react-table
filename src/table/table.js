@@ -143,7 +143,7 @@ export default function Table({
         const scroll_top = container_ref.scrollTop
         const client_height = container_ref.clientHeight
 
-        const scroll_distance = 300
+        const scroll_distance = 600
         if (
           scroll_height - scroll_top - client_height < scroll_distance &&
           !is_fetching &&
