@@ -161,8 +161,7 @@ export default function Table({
     const scroll_parent = get_scroll_parent(table_container_ref.current)
     const onscroll = () => fetch_more_on_bottom_reached(scroll_parent)
     scroll_parent.addEventListener('scroll', onscroll)
-    return () => 
-      scroll_parent.removeEventListener('scroll', onscroll)
+    return () => scroll_parent.removeEventListener('scroll', onscroll)
   }, [fetch_more, is_fetching, total_rows_fetched, total_row_count])
 
   const { rows } = table.getRowModel()
