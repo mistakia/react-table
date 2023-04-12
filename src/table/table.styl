@@ -9,6 +9,24 @@
     min-width 260px
     max-width calc(100vw - 24px)
     max-height 70vh
+
+.loading
+  display flex
+  align-items center
+  justify-content center
+  margin-top 4px
+  height 4px
+  width 100%
+  position sticky
+  left 0
+  top 0
+  background white
+  z-index 1
+
+  .MuiLinearProgress-root
+    height 4px
+    width 100%
+    max-width 600px
     
 .table
   padding-left 96px
@@ -85,7 +103,7 @@
     height 33px
     width fit-content
     position sticky
-    top -1px
+    top 3px
     z-index 1
 
     .cell

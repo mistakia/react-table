@@ -11,6 +11,7 @@ import PropTypes from 'prop-types'
 // import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import LinearProgress from '@mui/material/LinearProgress'
 
 import TableCell from '../table-cell'
 import TableHeader from '../table-header'
@@ -212,6 +213,7 @@ export default function Table({
         table: true,
         noselect: is_table_resizing()
       })}>
+      <div className='loading'>{is_fetching && <LinearProgress />}</div>
       <div className='panel'>
         <div className='state'>{state_items}</div>
         <div className='controls'>
