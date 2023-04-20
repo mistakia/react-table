@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import ImmutablePropTypes from 'react-immutable-proptypes'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
@@ -29,7 +28,7 @@ export default function TableColumnControls({
   const shown_column_items = []
   const hidden_column_items = []
 
-  for (const column of table_state.get('columns', [])) {
+  for (const column of table_state.columns || []) {
     if (
       filter_text_input &&
       !fuzzy_match(filter_text_input, column.accessorKey)
@@ -136,7 +135,7 @@ export default function TableColumnControls({
 }
 
 TableColumnControls.propTypes = {
-  table_state: ImmutablePropTypes.map,
+  table_state: PropTypes.object.isRequired,
   all_columns: PropTypes.array,
   set_column_visible: PropTypes.func,
   set_column_hidden: PropTypes.func,

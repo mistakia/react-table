@@ -1,5 +1,4 @@
 import React from 'react'
-import ImmutablePropTypes from 'react-immutable-proptypes'
 import PropTypes from 'prop-types'
 import Modal from '@mui/material/Modal'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -54,30 +53,30 @@ function FilterItem({
   }, [])
 
   const handle_remove_click = () => {
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     delete where_param[index]
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
     set_misc_menu_open(false)
   }
 
   const handle_duplicate_click = () => {
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     where_param.push(where_item)
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
     set_misc_menu_open(false)
   }
 
   const handle_operator_change = (event) => {
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     where_param[index].operator = event.target.value
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
   }
@@ -89,20 +88,20 @@ function FilterItem({
       return
     }
 
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     where_param[index].column_name = value.column_name
     where_param[index].table_name = value.table_name
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
   }
 
   const handle_value_change_debounced = debounce((event) => {
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     where_param[index].value = event.target.value
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
   }, 3000)
@@ -225,7 +224,7 @@ FilterItem.propTypes = {
   all_columns: PropTypes.array.isRequired,
   where_item: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
-  table_state: ImmutablePropTypes.map.isRequired,
+  table_state: PropTypes.object.isRequired,
   on_table_change: PropTypes.func.isRequired
 }
 
@@ -237,7 +236,7 @@ export default function TableFilterModal({
   all_columns
 }) {
   const items = []
-  const where_param = table_state.get('where', [])
+  const where_param = table_state.where || []
   where_param.forEach((where_item, index) => {
     items.push(
       <FilterItem
@@ -254,7 +253,7 @@ export default function TableFilterModal({
       value: ''
     })
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
   }
@@ -281,7 +280,7 @@ export default function TableFilterModal({
 TableFilterModal.propTypes = {
   filter_modal_open: PropTypes.bool.isRequired,
   set_filter_modal_open: PropTypes.func.isRequired,
-  table_state: ImmutablePropTypes.map.isRequired,
+  table_state: PropTypes.object.isRequired,
   on_table_change: PropTypes.func.isRequired,
   all_columns: PropTypes.array.isRequired
 }

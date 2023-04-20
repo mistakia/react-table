@@ -3625,13 +3625,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"immutable@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "immutable@npm:4.3.0"
-  checksum: bbd7ea99e2752e053323543d6ff1cc71a4b4614fa6121f321ca766db2bd2092f3f1e0a90784c5431350b7344a4f792fa002eac227062d59b9377b6c09063b58b
-  languageName: node
-  linkType: hard
-
 "import-fresh@npm:^3.0.0, import-fresh@npm:^3.2.1":
   version: 3.3.0
   resolution: "import-fresh@npm:3.3.0"
@@ -3714,15 +3707,6 @@ __metadata:
   version: 3.1.1
   resolution: "interpret@npm:3.1.1"
   checksum: 35cebcf48c7351130437596d9ab8c8fe131ce4038da4561e6d665f25640e0034702a031cf7e3a5cea60ac7ac548bf17465e0571ede126f3d3a6933152171ac82
-  languageName: node
-  linkType: hard
-
-"invariant@npm:^2.2.2":
-  version: 2.2.4
-  resolution: "invariant@npm:2.2.4"
-  dependencies:
-    loose-envify: ^1.0.0
-  checksum: cc3182d793aad82a8d1f0af697b462939cb46066ec48bbf1707c150ad5fad6406137e91a262022c269702e01621f35ef60269f6c0d7fd178487959809acdfb14
   languageName: node
   linkType: hard
 
@@ -4098,7 +4082,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"loose-envify@npm:^1.0.0, loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
+"loose-envify@npm:^1.1.0, loose-envify@npm:^1.4.0":
   version: 1.4.0
   resolution: "loose-envify@npm:1.4.0"
   dependencies:
@@ -4616,17 +4600,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-immutable-proptypes@npm:*":
-  version: 2.2.0
-  resolution: "react-immutable-proptypes@npm:2.2.0"
-  dependencies:
-    invariant: ^2.2.2
-  peerDependencies:
-    immutable: ">=3.6.2"
-  checksum: 7e2a6cae621d213140102923fa305d6621444a37572cbf684a5ff5743746ba4dbacb30d60e6d8278702f3cbbc48805e716f69e2bf8c9953fd570f86254c1a2b1
-  languageName: node
-  linkType: hard
-
 "react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -4667,7 +4640,6 @@ __metadata:
     eslint-plugin-node: ^11.1.0
     eslint-plugin-promise: ^6.1.1
     eslint-plugin-react: ^7.32.2
-    immutable: ^4.3.0
     install-peers: ^1.0.4
     install-peers-cli: ^2.2.0
     nib: ^1.2.0
@@ -4675,7 +4647,6 @@ __metadata:
     prop-types: ^15.8.1
     react: ^18.2.0
     react-dom: ^18.2.0
-    react-immutable-proptypes: "*"
     style-loader: ^3.3.2
     stylus: ^0.59.0
     stylus-loader: ^7.1.0
@@ -4687,11 +4658,9 @@ __metadata:
     "@mui/base": ^5.0.0-alpha.123
     "@mui/icons-material": ^5.11.11
     "@mui/material": ^5.11.15
-    immutable: ^4.3.0
     prop-types: ^15.8.1
     react: ^18.2.0
     react-dom: ^18.2.0
-    react-immutable-proptypes: "*"
   languageName: unknown
   linkType: soft
 

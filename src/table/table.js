@@ -1,5 +1,4 @@
 import React from 'react'
-import ImmutablePropTypes from 'react-immutable-proptypes'
 import {
   useReactTable,
   flexRender,
@@ -64,7 +63,7 @@ export default function Table({
 
     let is_new = true
 
-    for (const sort of table_state.get('sorting', [])) {
+    for (const sort of table_state.sorting || []) {
       if (sort.id === new_sort_item.id) {
         is_new = false
         const is_same = sort.desc === new_sort_item.desc
@@ -82,7 +81,7 @@ export default function Table({
     }
 
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       sorting: Array.from(sorting.values())
     })
   }
@@ -103,25 +102,25 @@ export default function Table({
   const set_column_hidden = (accessorKey) => {
     const columns = []
 
-    for (const column of table_state.get('columns', [])) {
+    for (const column of table_state.columns || []) {
       if (column.accessorKey === accessorKey) {
         continue
       }
       columns.push(column)
     }
 
-    on_table_change({ ...table_state.toJS(), columns })
+    on_table_change({ ...table_state, columns })
   }
 
   const set_column_visible = (column) => {
     on_table_change({
-      ...table_state.toJS(),
-      columns: [...table_state.get('columns', []), column]
+      ...table_state,
+      columns: [...(table_state.columns || []), column]
     })
   }
 
   const set_all_columns_hidden = () => {
-    on_table_change({ ...table_state.toJS(), columns: [] })
+    on_table_change({ ...table_state, columns: [] })
   }
 
   const table = useReactTable({
@@ -129,14 +128,14 @@ export default function Table({
       column_helper.display({
         id: 'column_index'
       }),
-      ...table_state.get('columns', []),
+      ...(table_state.columns || []),
       column_helper.display({
         id: 'add_column_action'
       })
     ],
     data,
     defaultColumn,
-    state: table_state.toJS(),
+    state: table_state,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: set_sorting,
     onColumnVisibilityChange: set_column_visibility,
@@ -196,7 +195,7 @@ export default function Table({
 
   const state_items = []
 
-  const sorting = table_state.get('sorting', [])
+  const sorting = table_state.sorting || []
   if (sorting.length) {
     for (const sort of sorting) {
       // get label from column
@@ -212,7 +211,7 @@ export default function Table({
     }
   }
 
-  const where_params = table_state.get('where', [])
+  const where_params = table_state.where || []
   if (where_params.length) {
     where_params.forEach((where, index) => {
       const { column_name, operator, value } = where
@@ -227,7 +226,7 @@ export default function Table({
                 const new_where_params = [...where_params]
                 new_where_params.splice(index, 1)
                 on_table_change({
-                  ...table_state.toJS(),
+                  ...table_state,
                   where: new_where_params
                 })
               }}>
@@ -336,11 +335,11 @@ export default function Table({
 Table.propTypes = {
   data: PropTypes.array,
   on_table_change: PropTypes.func,
-  table_state: ImmutablePropTypes.map,
+  table_state: PropTypes.object,
   all_columns: PropTypes.array,
-  selected_view: ImmutablePropTypes.map,
+  selected_view: PropTypes.object,
   select_view: PropTypes.func,
-  views: ImmutablePropTypes.list,
+  views: PropTypes.array,
   fetch_more: PropTypes.func,
   is_fetching: PropTypes.bool,
   total_row_count: PropTypes.number,

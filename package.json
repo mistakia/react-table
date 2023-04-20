@@ -16,11 +16,9 @@
     "@mui/base": "^5.0.0-alpha.123",
     "@mui/icons-material": "^5.11.11",
     "@mui/material": "^5.11.15",
-    "immutable": "^4.3.0",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-immutable-proptypes": "*"
+    "react-dom": "^18.2.0"
   },
   "dependencies": {
     "@tanstack/react-table": "^8.8.5",
@@ -47,7 +45,6 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
-    "immutable": "^4.3.0",
     "install-peers": "^1.0.4",
     "install-peers-cli": "^2.2.0",
     "nib": "^1.2.0",
@@ -55,7 +52,6 @@
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-immutable-proptypes": "*",
     "style-loader": "^3.3.2",
     "stylus": "^0.59.0",
     "stylus-loader": "^7.1.0",

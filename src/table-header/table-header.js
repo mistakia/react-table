@@ -1,5 +1,4 @@
 import React from 'react'
-import ImmutablePropTypes from 'react-immutable-proptypes'
 import PropTypes from 'prop-types'
 import AddIcon from '@mui/icons-material/Add'
 import PopperUnstyled from '@mui/base/PopperUnstyled'
@@ -66,7 +65,7 @@ export default function TableHeader({
   const handle_sort_ascending = () => column.toggleSorting(false, true)
   const handle_sort_descending = () => column.toggleSorting(true, true)
   const handle_open_filter = () => {
-    const where_param = table_state.get('where', [])
+    const where_param = table_state.where || []
     where_param.push({
       column_name: column.columnDef.column_name,
       table_name: column.columnDef.table_name,
@@ -74,7 +73,7 @@ export default function TableHeader({
       value: ''
     })
     on_table_change({
-      ...table_state.toJS(),
+      ...table_state,
       where: where_param
     })
     set_filter_modal_open(true)
@@ -217,6 +216,6 @@ TableHeader.propTypes = {
   table: PropTypes.object,
   set_column_controls_popper_open: PropTypes.func.isRequired,
   set_filter_modal_open: PropTypes.func.isRequired,
-  table_state: ImmutablePropTypes.map.isRequired,
+  table_state: PropTypes.object.isRequired,
   on_table_change: PropTypes.func.isRequired
 }

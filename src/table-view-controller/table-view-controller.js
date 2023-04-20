@@ -1,6 +1,5 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import ImmutablePropTypes from 'react-immutable-proptypes'
 import ClickAwayListener from '@mui/base/ClickAwayListener'
 import PopperUnstyled from '@mui/base/PopperUnstyled'
 import TextField from '@mui/material/TextField'
@@ -18,14 +17,14 @@ export default function TableViewController({
   const anchor_el = React.useRef()
   const [input_value, set_input_value] = React.useState()
   const [selected_value, set_selected_value] = React.useState(
-    selected_view.get('view_name')
+    selected_view.view_name
   )
   // const [manager_open, set_manager_open] = React.useState(false)
   const [popper_open, set_popper_open] = React.useState(false)
 
   React.useEffect(() => {
-    set_selected_value(selected_view.get('view_name'))
-  }, [selected_view.get('view_name')])
+    set_selected_value(selected_view.view_name)
+  }, [selected_view.view_name])
 
   const handleInputChange = (event) => {
     const { value } = event.target
@@ -33,7 +32,7 @@ export default function TableViewController({
   }
   const handleInputBlur = (event) => {
     set_input_value(undefined)
-    set_selected_value(selected_view.get('view_name'))
+    set_selected_value(selected_view.view_name)
   }
   const handleInputFocus = (event) => {
     set_selected_value('')
@@ -53,7 +52,7 @@ export default function TableViewController({
   // }
 
   const filtered_views = input_value
-    ? views.filter((view) => fuzzy_match(input_value, view.get('view_name')))
+    ? views.filter((view) => fuzzy_match(input_value, view.view_name))
     : views
 
   const filtered_items = filtered_views.toList().map((view, index) => (
@@ -108,6 +107,6 @@ export default function TableViewController({
 
 TableViewController.propTypes = {
   select_view: PropTypes.func.isRequired,
-  selected_view: ImmutablePropTypes.map,
-  views: ImmutablePropTypes.list
+  selected_view: PropTypes.object.isRequired,
+  views: PropTypes.array
 }

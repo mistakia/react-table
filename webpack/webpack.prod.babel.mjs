@@ -24,9 +24,7 @@ export default base({
       '@emotion/styled': '@emotion/styled',
       react: 'react',
       'react-dom': 'react-dom',
-      immutable: 'immutable',
-      'prop-types': 'prop-types',
-      'react-immutable-proptypes': 'react-immutable-proptypes'
+      'prop-types': 'prop-types'
     }
   ],
 
