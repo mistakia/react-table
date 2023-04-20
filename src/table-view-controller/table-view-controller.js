@@ -41,7 +41,7 @@ export default function TableViewController({
   }
   const handleSelect = (view) => (event) => {
     set_popper_open(false)
-    select_view(view.get('view_id'))
+    select_view(view.view_id)
     set_input_value(undefined)
   }
   const handleClickAway = () => set_popper_open(false)
@@ -55,11 +55,11 @@ export default function TableViewController({
     ? views.filter((view) => fuzzy_match(input_value, view.view_name))
     : views
 
-  const filtered_items = filtered_views.toList().map((view, index) => (
+  const filtered_items = filtered_views.map((view, index) => (
     <li className='cursor' key={index} onClick={handleSelect(view)}>
-      {view.get('view_name')}
+      {view.view_name}
       <br />
-      <span>{view.get('view_description')}</span>
+      <span>{view.view_description}</span>
     </li>
   ))
 

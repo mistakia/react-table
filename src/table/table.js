@@ -155,7 +155,7 @@ export default function Table({
           !is_fetching &&
           total_rows_fetched < total_row_count
         ) {
-          const view_id = selected_view.get('id')
+          const { view_id } = selected_view
           fetch_more({ view_id })
         }
       }
@@ -248,9 +248,8 @@ export default function Table({
         })}>
         <div className='loading'>{is_fetching && <LinearProgress />}</div>
         <div className='panel'>
-          <div className='state'>{state_items}</div>
           <div className='controls'>
-            {Boolean(views.size) && (
+            {Boolean(views.length) && (
               <TableViewController {...{ select_view, selected_view, views }} />
             )}
             <Button
@@ -272,6 +271,7 @@ export default function Table({
               }}
             />
           </div>
+          <div className='state'>{state_items}</div>
         </div>
         <div className='header'>
           {table.getHeaderGroups().map((headerGroup, index) => (
