@@ -7,6 +7,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import Modal from '@mui/material/Modal'
 import IconButton from '@mui/material/IconButton'
+import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 
 import DataTypeIcon from '../data-type-icon'
 import { fuzzy_match } from '../utils'
@@ -52,7 +53,7 @@ export default function TableColumnControls({
     )
   }
 
-  for (const column of all_columns.values()) {
+  for (const column of all_columns) {
     if (shown_columns_index[column.column_name]) continue
 
     if (
@@ -90,6 +91,7 @@ export default function TableColumnControls({
         onClick={() =>
           set_column_controls_popper_open(!column_controls_popper_open)
         }>
+        <ViewColumnIcon />
         Columns
       </Button>
       <Modal
@@ -135,7 +137,7 @@ export default function TableColumnControls({
 
 TableColumnControls.propTypes = {
   table_state: ImmutablePropTypes.map,
-  all_columns: ImmutablePropTypes.list,
+  all_columns: PropTypes.array,
   set_column_visible: PropTypes.func,
   set_column_hidden: PropTypes.func,
   set_all_columns_hidden: PropTypes.func,

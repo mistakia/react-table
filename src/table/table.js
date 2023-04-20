@@ -12,12 +12,17 @@ import PropTypes from 'prop-types'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import LinearProgress from '@mui/material/LinearProgress'
+import Button from '@mui/material/Button'
+import FilterListIcon from '@mui/icons-material/FilterList'
+import IconButton from '@mui/material/IconButton'
+import CloseIcon from '@mui/icons-material/Close'
 
 import TableCell from '../table-cell'
 import TableHeader from '../table-header'
 import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
+import TableFilterModal from '../table-filter-modal'
 import { get_string_from_object, get_scroll_parent } from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
@@ -47,6 +52,7 @@ export default function Table({
   total_rows_fetched,
   total_row_count
 }) {
+  const [filter_modal_open, set_filter_modal_open] = React.useState(false)
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
     React.useState(false)
@@ -206,76 +212,124 @@ export default function Table({
     }
   }
 
+  const where_params = table_state.get('where', [])
+  if (where_params.length) {
+    where_params.forEach((where, index) => {
+      const { column_name, operator, value } = where
+
+      state_items.push(
+        <div key={index} className='state-item'>
+          <div className='state-item-content'>
+            <span>{`${column_name} ${operator} ${value}`}</span>
+            <IconButton
+              size='small'
+              onClick={() => {
+                const new_where_params = [...where_params]
+                new_where_params.splice(index, 1)
+                on_table_change({
+                  ...table_state.toJS(),
+                  where: new_where_params
+                })
+              }}>
+              <CloseIcon />
+            </IconButton>
+          </div>
+        </div>
+      )
+    })
+  }
+
   return (
-    <div
-      ref={table_container_ref}
-      className={get_string_from_object({
-        table: true,
-        noselect: is_table_resizing()
-      })}>
-      <div className='loading'>{is_fetching && <LinearProgress />}</div>
-      <div className='panel'>
-        <div className='state'>{state_items}</div>
-        <div className='controls'>
-          {Boolean(views.size) && (
-            <TableViewController {...{ select_view, selected_view, views }} />
-          )}
-          <TableColumnControls
-            {...{
-              table_state,
-              all_columns,
-              set_column_hidden,
-              set_column_visible,
-              set_all_columns_hidden,
-              column_controls_popper_open,
-              set_column_controls_popper_open
-            }}
-          />
+    <>
+      <div
+        ref={table_container_ref}
+        className={get_string_from_object({
+          table: true,
+          noselect: is_table_resizing()
+        })}>
+        <div className='loading'>{is_fetching && <LinearProgress />}</div>
+        <div className='panel'>
+          <div className='state'>{state_items}</div>
+          <div className='controls'>
+            {Boolean(views.size) && (
+              <TableViewController {...{ select_view, selected_view, views }} />
+            )}
+            <Button
+              variant='text'
+              size='small'
+              onClick={() => set_filter_modal_open(true)}>
+              <FilterListIcon />
+              Filter
+            </Button>
+            <TableColumnControls
+              {...{
+                table_state,
+                all_columns,
+                set_column_hidden,
+                set_column_visible,
+                set_all_columns_hidden,
+                column_controls_popper_open,
+                set_column_controls_popper_open
+              }}
+            />
+          </div>
+        </div>
+        <div className='header'>
+          {table.getHeaderGroups().map((headerGroup, index) => (
+            <div key={index} className='row'>
+              {headerGroup.headers.map((header, index) =>
+                header.isPlaceholder
+                  ? null
+                  : flexRender(header.column.columnDef.header, {
+                      ...header.getContext(),
+                      key: index,
+                      table_state,
+                      on_table_change,
+                      set_column_controls_popper_open,
+                      set_filter_modal_open
+                    })
+              )}
+            </div>
+          ))}
+        </div>
+        {virtual_rows.map((virtual_row) => {
+          const row = rows[virtual_row.index]
+          return (
+            <div key={row.id} className='row'>
+              {row.getVisibleCells().map((cell, index) =>
+                flexRender(cell.column.columnDef.cell, {
+                  key: index,
+                  ...cell.getContext()
+                })
+              )}
+            </div>
+          )
+        })}
+        <div className='footer'>
+          {table.getFooterGroups().map((footerGroup, index) => (
+            <div key={index} className='row'>
+              {footerGroup.headers.map((footer, index) =>
+                footer.isPlaceholder
+                  ? null
+                  : flexRender(footer.column.columnDef.footer, {
+                      key: index,
+                      ...footer.getContext()
+                    })
+              )}
+            </div>
+          ))}
         </div>
       </div>
-      <div className='header'>
-        {table.getHeaderGroups().map((headerGroup, index) => (
-          <div key={index} className='row'>
-            {headerGroup.headers.map((header, index) =>
-              header.isPlaceholder
-                ? null
-                : flexRender(header.column.columnDef.header, {
-                    ...header.getContext(),
-                    key: index,
-                    set_column_controls_popper_open
-                  })
-            )}
-          </div>
-        ))}
-      </div>
-      {virtual_rows.map((virtual_row) => {
-        const row = rows[virtual_row.index]
-        return (
-          <div key={row.id} className='row'>
-            {row.getVisibleCells().map((cell, index) =>
-              flexRender(cell.column.columnDef.cell, {
-                key: index,
-                ...cell.getContext()
-              })
-            )}
-          </div>
-        )
-      })}
-      <div className='footer'>
-        {table.getFooterGroups().map((footerGroup, index) => (
-          <div key={index} className='row'>
-            {footerGroup.headers.map((footer, index) =>
-              footer.isPlaceholder
-                ? null
-                : flexRender(footer.column.columnDef.footer, {
-                    key: index,
-                    ...footer.getContext()
-                  })
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+      <TableFilterModal
+        {...{
+          filter_modal_open,
+          set_filter_modal_open,
+          table_state,
+          on_table_change,
+          all_columns
+        }}
+      />
+    </>
   )
 }
 
@@ -283,7 +337,7 @@ Table.propTypes = {
   data: PropTypes.array,
   on_table_change: PropTypes.func,
   table_state: ImmutablePropTypes.map,
-  all_columns: ImmutablePropTypes.list,
+  all_columns: PropTypes.array,
   selected_view: ImmutablePropTypes.map,
   select_view: PropTypes.func,
   views: ImmutablePropTypes.list,

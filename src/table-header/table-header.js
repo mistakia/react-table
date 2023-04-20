@@ -1,4 +1,5 @@
 import React from 'react'
+import ImmutablePropTypes from 'react-immutable-proptypes'
 import PropTypes from 'prop-types'
 import AddIcon from '@mui/icons-material/Add'
 import PopperUnstyled from '@mui/base/PopperUnstyled'
@@ -38,7 +39,10 @@ export default function TableHeader({
   header,
   column,
   table,
-  set_column_controls_popper_open
+  table_state,
+  on_table_change,
+  set_column_controls_popper_open,
+  set_filter_modal_open
 }) {
   if (header.column.columnDef.id === 'add_column_action') {
     return <AddColumnAction {...{ set_column_controls_popper_open }} />
@@ -61,6 +65,20 @@ export default function TableHeader({
 
   const handle_sort_ascending = () => column.toggleSorting(false, true)
   const handle_sort_descending = () => column.toggleSorting(true, true)
+  const handle_open_filter = () => {
+    const where_param = table_state.get('where', [])
+    where_param.push({
+      column_name: column.columnDef.column_name,
+      table_name: column.columnDef.table_name,
+      operator: '=',
+      value: ''
+    })
+    on_table_change({
+      ...table_state.toJS(),
+      where: where_param
+    })
+    set_filter_modal_open(true)
+  }
 
   return (
     <>
@@ -178,7 +196,9 @@ export default function TableHeader({
             </>
           )}
           <div className='header-menu-item'>
-            <div className='header-menu-item-button'>
+            <div
+              className='header-menu-item-button'
+              onClick={handle_open_filter}>
               <div className='header-menu-item-icon'>
                 <FilterListIcon />
               </div>
@@ -195,5 +215,8 @@ TableHeader.propTypes = {
   header: PropTypes.object,
   column: PropTypes.object,
   table: PropTypes.object,
-  set_column_controls_popper_open: PropTypes.func.isRequired
+  set_column_controls_popper_open: PropTypes.func.isRequired,
+  set_filter_modal_open: PropTypes.func.isRequired,
+  table_state: ImmutablePropTypes.map.isRequired,
+  on_table_change: PropTypes.func.isRequired
 }
