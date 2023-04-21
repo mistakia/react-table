@@ -57,11 +57,12 @@ export default function Table({
   const [column_controls_popper_open, set_column_controls_popper_open] =
     React.useState(false)
 
-  const on_table_state_change = (new_table_state) =>
+  const on_table_state_change = React.useCallback((new_table_state) => {
     on_view_change({
       ...selected_view,
       table_state: new_table_state
     })
+  }, [selected_view])
 
   const set_sorting = (updater_fn) => {
     const new_sorting = updater_fn()
@@ -246,7 +247,7 @@ export default function Table({
   }
 
   return (
-    <>
+    <div>
       <div
         ref={table_container_ref}
         className={get_string_from_object({
@@ -343,7 +344,7 @@ export default function Table({
           all_columns
         }}
       />
-    </>
+    </div>
   )
 }
 

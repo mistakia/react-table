@@ -18,8 +18,8 @@ export default function TableViewModal({
   )
 
   React.useEffect(() => {
-    set_view_name(view.view_name)
-    set_view_description(view.view_description)
+    set_view_name(view.view_name || '')
+    set_view_description(view.view_description || '')
   }, [view])
 
   const handle_view_name_change = (event) => {
