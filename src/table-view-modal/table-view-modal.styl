@@ -1,0 +1,53 @@
+.table-view-modal.MuiModal-root
+  z-index 4
+
+.table-view-modal-content
+  overflow hidden
+  overflow-y scroll
+  position fixed
+  top 50%
+  left 50%
+  transform translate(-50%, -50%)
+  width 66%
+  max-width 600px
+  height 90%
+  max-height 200px
+  background white
+  border-radius 4px
+  padding 8px
+
+.table-view-item-content-name
+  font-size 14px
+  font-weight 500
+
+.table-view-item-content-description
+  flex 1
+  display flex
+  padding-top 10px
+
+  .MuiTextField-root 
+    width 100%
+
+.table-view-modal-actions
+  display flex
+  justify-content flex-end
+  padding 8px
+
+.table-view-add-button
+  flex 1
+  display flex
+  align-items center
+  justify-content center
+  margin 10px 12px
+  padding 10px
+  cursor pointer
+  border-radius 4px
+  font-size 12px
+  background #fafafa
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
+
+  &:hover
+    background #e5e5e5

@@ -16,28 +16,16 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 
+import { debounce } from '../utils'
+
 import './table-filter-modal.styl'
-
-function debounce(callback, delay) {
-  let timer
-
-  return function () {
-    const context = this
-    const args = arguments
-
-    clearTimeout(timer)
-    timer = setTimeout(() => {
-      callback.apply(context, args)
-    }, delay)
-  }
-}
 
 function FilterItem({
   where_item,
   all_columns,
   index,
   table_state,
-  on_table_change
+  on_table_state_change
 }) {
   const anchor_el = React.useRef()
   const [filter_column, set_filter_column] = React.useState(
@@ -55,7 +43,7 @@ function FilterItem({
   const handle_remove_click = () => {
     const where_param = table_state.where || []
     delete where_param[index]
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -65,7 +53,7 @@ function FilterItem({
   const handle_duplicate_click = () => {
     const where_param = table_state.where || []
     where_param.push(where_item)
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -75,7 +63,7 @@ function FilterItem({
   const handle_operator_change = (event) => {
     const where_param = table_state.where || []
     where_param[index].operator = event.target.value
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -91,7 +79,7 @@ function FilterItem({
     const where_param = table_state.where || []
     where_param[index].column_name = value.column_name
     where_param[index].table_name = value.table_name
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -100,7 +88,7 @@ function FilterItem({
   const handle_value_change_debounced = debounce((event) => {
     const where_param = table_state.where || []
     where_param[index].value = event.target.value
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -225,14 +213,14 @@ FilterItem.propTypes = {
   where_item: PropTypes.object.isRequired,
   index: PropTypes.number.isRequired,
   table_state: PropTypes.object.isRequired,
-  on_table_change: PropTypes.func.isRequired
+  on_table_state_change: PropTypes.func.isRequired
 }
 
 export default function TableFilterModal({
   filter_modal_open,
   set_filter_modal_open,
   table_state,
-  on_table_change,
+  on_table_state_change,
   all_columns
 }) {
   const items = []
@@ -241,7 +229,13 @@ export default function TableFilterModal({
     items.push(
       <FilterItem
         key={index}
-        {...{ all_columns, where_item, index, table_state, on_table_change }}
+        {...{
+          all_columns,
+          where_item,
+          index,
+          table_state,
+          on_table_state_change
+        }}
       />
     )
   })
@@ -252,7 +246,7 @@ export default function TableFilterModal({
       operator: '=',
       value: ''
     })
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -281,6 +275,6 @@ TableFilterModal.propTypes = {
   filter_modal_open: PropTypes.bool.isRequired,
   set_filter_modal_open: PropTypes.func.isRequired,
   table_state: PropTypes.object.isRequired,
-  on_table_change: PropTypes.func.isRequired,
+  on_table_state_change: PropTypes.func.isRequired,
   all_columns: PropTypes.array.isRequired
 }

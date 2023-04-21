@@ -39,7 +39,7 @@ export default function TableHeader({
   column,
   table,
   table_state,
-  on_table_change,
+  on_table_state_change,
   set_column_controls_popper_open,
   set_filter_modal_open
 }) {
@@ -72,7 +72,7 @@ export default function TableHeader({
       operator: '=',
       value: ''
     })
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       where: where_param
     })
@@ -217,5 +217,5 @@ TableHeader.propTypes = {
   set_column_controls_popper_open: PropTypes.func.isRequired,
   set_filter_modal_open: PropTypes.func.isRequired,
   table_state: PropTypes.object.isRequired,
-  on_table_change: PropTypes.func.isRequired
+  on_table_state_change: PropTypes.func.isRequired
 }

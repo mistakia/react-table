@@ -39,22 +39,29 @@ const defaultColumn = {
 }
 
 export default function Table({
-  data,
-  on_table_change,
-  table_state,
-  all_columns,
-  selected_view,
-  views,
-  select_view,
+  data = [],
+  on_view_change = () => {},
+  table_state = {},
+  all_columns = [],
+  selected_view = {},
+  views = [],
+  select_view = () => {},
   fetch_more = () => {},
   is_fetching = false,
   total_rows_fetched,
-  total_row_count
+  total_row_count,
+  delete_view = () => {}
 }) {
   const [filter_modal_open, set_filter_modal_open] = React.useState(false)
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
     React.useState(false)
+
+  const on_table_state_change = (new_table_state) =>
+    on_view_change({
+      ...selected_view,
+      table_state: new_table_state
+    })
 
   const set_sorting = (updater_fn) => {
     const new_sorting = updater_fn()
@@ -80,7 +87,7 @@ export default function Table({
       sorting.set(new_sort_item.id, new_sort_item)
     }
 
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       sorting: Array.from(sorting.values())
     })
@@ -109,18 +116,18 @@ export default function Table({
       columns.push(column)
     }
 
-    on_table_change({ ...table_state, columns })
+    on_table_state_change({ ...table_state, columns })
   }
 
   const set_column_visible = (column) => {
-    on_table_change({
+    on_table_state_change({
       ...table_state,
       columns: [...(table_state.columns || []), column]
     })
   }
 
   const set_all_columns_hidden = () => {
-    on_table_change({ ...table_state, columns: [] })
+    on_table_state_change({ ...table_state, columns: [] })
   }
 
   const table = useReactTable({
@@ -225,7 +232,7 @@ export default function Table({
               onClick={() => {
                 const new_where_params = [...where_params]
                 new_where_params.splice(index, 1)
-                on_table_change({
+                on_table_state_change({
                   ...table_state,
                   where: new_where_params
                 })
@@ -250,7 +257,15 @@ export default function Table({
         <div className='panel'>
           <div className='controls'>
             {Boolean(views.length) && (
-              <TableViewController {...{ select_view, selected_view, views }} />
+              <TableViewController
+                {...{
+                  select_view,
+                  selected_view,
+                  views,
+                  on_view_change,
+                  delete_view
+                }}
+              />
             )}
             <Button
               variant='text'
@@ -283,7 +298,7 @@ export default function Table({
                       ...header.getContext(),
                       key: index,
                       table_state,
-                      on_table_change,
+                      on_table_state_change,
                       set_column_controls_popper_open,
                       set_filter_modal_open
                     })
@@ -324,7 +339,7 @@ export default function Table({
           filter_modal_open,
           set_filter_modal_open,
           table_state,
-          on_table_change,
+          on_table_state_change,
           all_columns
         }}
       />
@@ -334,7 +349,7 @@ export default function Table({
 
 Table.propTypes = {
   data: PropTypes.array,
-  on_table_change: PropTypes.func,
+  on_view_change: PropTypes.func,
   table_state: PropTypes.object,
   all_columns: PropTypes.array,
   selected_view: PropTypes.object,
@@ -343,5 +358,6 @@ Table.propTypes = {
   fetch_more: PropTypes.func,
   is_fetching: PropTypes.bool,
   total_row_count: PropTypes.number,
-  total_rows_fetched: PropTypes.number
+  total_rows_fetched: PropTypes.number,
+  delete_view: PropTypes.func
 }
