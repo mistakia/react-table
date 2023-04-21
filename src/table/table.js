@@ -181,9 +181,8 @@ export default function Table({
   const { rows } = table.getRowModel()
 
   const row_virtualizer = useVirtualizer({
-    getScrollElement: () => table_container_ref.current,
+    getScrollElement: () => get_scroll_parent(table_container_ref.current),
     estimateSize: () => 32,
-    parentRef: table_container_ref,
     count: rows.length,
     overscan: 10
   })
