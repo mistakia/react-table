@@ -119,16 +119,15 @@ export default function TableViewController({
   delete_view
 }) {
   const anchor_el = React.useRef()
-  const [input_value, set_input_value] = React.useState()
-  const [selected_view_name, set_selected_view_name] = React.useState(
-    selected_view.view_name
+  const [input_value, set_input_value] = React.useState(
+    selected_view.view_name || ''
   )
   const [selected_edit_view, set_selected_edit_view] = React.useState({})
   const [edit_view_modal_open, set_edit_view_modal_open] = React.useState(false)
   const [views_popper_open, set_views_popper_open] = React.useState(false)
 
   React.useEffect(() => {
-    set_selected_view_name(selected_view.view_name)
+    set_input_value(selected_view.view_name || '')
   }, [selected_view.view_name])
 
   const handleInputChange = (event) => {
@@ -136,18 +135,17 @@ export default function TableViewController({
     set_input_value(value)
   }
   const handleInputBlur = () => {
-    set_input_value(undefined)
-    set_selected_view_name(selected_view.view_name)
+    set_input_value('')
   }
   const handleInputFocus = (event) => {
-    set_selected_view_name('')
+    set_input_value('')
     event.target.select()
     set_views_popper_open(true)
   }
   const handle_select_view = (view) => () => {
     set_views_popper_open(false)
     select_view(view.view_id)
-    set_input_value(undefined)
+    set_input_value(view.view_name)
   }
   const handleClickAway = () => set_views_popper_open(false)
 
@@ -191,11 +189,7 @@ export default function TableViewController({
             size='small'
             label='View'
             placeholder='Filter views'
-            value={
-              typeof input_value === 'undefined'
-                ? selected_view_name
-                : input_value
-            }
+            value={input_value}
             onChange={handleInputChange}
             className='table-view-input'
             autoComplete='off'
