@@ -22,7 +22,11 @@ import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
 import TableFilterModal from '../table-filter-modal'
-import { get_string_from_object, get_scroll_parent } from '../utils'
+import {
+  get_string_from_object,
+  get_scroll_parent,
+  throttle_leading_edge
+} from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
 import './table.styl'
@@ -52,17 +56,21 @@ export default function Table({
   total_row_count,
   delete_view = () => {}
 }) {
+  const [slice_size, set_slice_size] = React.useState(100)
   const [filter_modal_open, set_filter_modal_open] = React.useState(false)
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
     React.useState(false)
 
-  const on_table_state_change = React.useCallback((new_table_state) => {
-    on_view_change({
-      ...selected_view,
-      table_state: new_table_state
-    })
-  }, [selected_view])
+  const on_table_state_change = React.useCallback(
+    (new_table_state) => {
+      on_view_change({
+        ...selected_view,
+        table_state: new_table_state
+      })
+    },
+    [selected_view]
+  )
 
   const set_sorting = (updater_fn) => {
     const new_sorting = updater_fn()
@@ -150,40 +158,73 @@ export default function Table({
     columnResizeMode: 'onChange'
   })
 
-  const fetch_more_on_bottom_reached = React.useCallback(
-    function (container_ref) {
-      if (container_ref) {
-        const scroll_height = container_ref.scrollHeight
-        const scroll_top = container_ref.scrollTop
-        const client_height = container_ref.clientHeight
+  const throttled_set_slice_size = React.useCallback(
+    throttle_leading_edge(() => {
+      set_slice_size(slice_size + 100)
+    }, 2000),
+    [slice_size]
+  )
 
-        const scroll_distance = 600
-        if (
-          scroll_height - scroll_top - client_height < scroll_distance &&
-          !is_fetching &&
-          total_rows_fetched < total_row_count
-        ) {
+  const fetch_more_on_bottom_reached = React.useCallback((container_ref) => {
+    if (container_ref) {
+      const container_is_body = container_ref === document.body
+      const scroll_height = container_ref.scrollHeight
+      const scroll_top = container_is_body
+        ? document.documentElement.scrollTop
+        : container_ref.scrollTop
+      const client_height = container_is_body
+        ? window.innerHeight
+        : container_ref.clientHeight
+
+      const scroll_distance = 2000
+      if (scroll_height - scroll_top - client_height < scroll_distance) {
+        if (slice_size < rows.length) {
+          throttled_set_slice_size()
+          return
+        }
+
+        if (!is_fetching && total_rows_fetched < total_row_count) {
           const { view_id } = selected_view
           fetch_more({ view_id })
         }
       }
-    },
-    [fetch_more, is_fetching, total_rows_fetched, total_row_count]
-  )
+    }
+  }, [fetch_more, is_fetching, total_rows_fetched, total_row_count, slice_size])
 
   React.useEffect(() => {
     const scroll_parent = get_scroll_parent(table_container_ref.current)
+    const container_is_body = document.body === scroll_parent
     const onscroll = () => fetch_more_on_bottom_reached(scroll_parent)
-    scroll_parent.addEventListener('scroll', onscroll)
-    return () => scroll_parent.removeEventListener('scroll', onscroll)
-  }, [fetch_more, is_fetching, total_rows_fetched, total_row_count])
+
+    if (container_is_body) {
+      window.removeEventListener('scroll', onscroll)
+      window.addEventListener('scroll', onscroll)
+    } else {
+      scroll_parent.removeEventListener('scroll', onscroll)
+      scroll_parent.addEventListener('scroll', onscroll)
+    }
+
+    return () => {
+      if (container_is_body) {
+        window.removeEventListener('scroll', onscroll)
+      } else {
+        scroll_parent.removeEventListener('scroll', onscroll)
+      }
+    }
+  }, [fetch_more, is_fetching, total_rows_fetched, total_row_count, slice_size])
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      set_slice_size(slice_size + 100)
+    }, 2000)
+  }, [])
 
   const { rows } = table.getRowModel()
 
   const row_virtualizer = useVirtualizer({
     getScrollElement: () => get_scroll_parent(table_container_ref.current),
     estimateSize: () => 32,
-    count: rows.length,
+    count: Math.min(data.length, slice_size),
     overscan: 10
   })
   const virtual_rows = row_virtualizer.getVirtualItems()
