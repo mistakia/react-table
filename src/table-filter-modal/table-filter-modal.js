@@ -42,7 +42,7 @@ function FilterItem({
 
   const handle_remove_click = () => {
     const where_param = table_state.where || []
-    delete where_param[index]
+    where_param.splice(index, 1)
     on_table_state_change({
       ...table_state,
       where: where_param
