@@ -151,6 +151,8 @@ export default function TableViewController({
 
   const handle_add_click = () => {
     on_view_change({
+      ...selected_view,
+      view_id: null,
       view_name: 'New view',
       view_description: 'New view description',
       table_state: {

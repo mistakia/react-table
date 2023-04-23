@@ -14,8 +14,13 @@ export default function TableCell({ getValue, column, row }) {
     )
   }
 
-  const value = getValue()
+  let value = getValue()
   const is_sorted = column.getIsSorted()
+
+  if ((value !== undefined && value !== null) && typeof value === 'object') {
+    value = 'invalid value'
+  }
+
   return (
     <div
       {...{
