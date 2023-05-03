@@ -41,7 +41,7 @@ function RankItem({
   }
 
   const handle_weight_change = (event) => {
-    const value = event.target.value
+    const value = Number(event.target.value)
     set_rank_weight(value)
 
     const rank_param = table_state.rank_aggregation || []
@@ -94,6 +94,7 @@ function RankItem({
         <TextField
           size='small'
           label='Weight'
+          type='number'
           variant='outlined'
           value={rank_weight}
           onChange={handle_weight_change}
