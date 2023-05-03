@@ -331,6 +331,7 @@ export default function Table({
             <TableColumnControls
               {...{
                 table_state,
+                on_table_state_change,
                 all_columns,
                 set_column_hidden,
                 set_column_visible,
