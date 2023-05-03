@@ -2703,6 +2703,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"copy-text-to-clipboard@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "copy-text-to-clipboard@npm:3.1.0"
+  checksum: d06b1d5ae5a5f60bc27714c5bcb9837ed187a338741130e6b6a156399aa1a15aff5913c8abacbfcbe2132c87b5e8262a705e614a34aa39a151d047bd39b1f307
+  languageName: node
+  linkType: hard
+
 "core-js-compat@npm:^3.25.1":
   version: 3.29.1
   resolution: "core-js-compat@npm:3.29.1"
@@ -4696,6 +4703,7 @@ __metadata:
     "@tanstack/react-table": ^8.8.5
     "@tanstack/react-virtual": beta
     babel-loader: ^9.1.2
+    copy-text-to-clipboard: ^3.1.0
     cross-env: ^7.0.3
     css-loader: ^6.7.3
     eslint: ^8.37.0

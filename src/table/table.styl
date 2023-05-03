@@ -88,11 +88,21 @@
     height 100%
     width fit-content
 
+    &:hover
+      background-color #f0f0f0
+
     .cell
       white-space nowrap
       margin 0 
       border-right 1px solid $borderColor
       position relative
+      cursor pointer
+
+      &.sorted
+        background-color rgba(245, 245, 245, 0.6)
+
+      &:hover
+        background-color #b9d4ff
 
     .cell-content
       height 100%

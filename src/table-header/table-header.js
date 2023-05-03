@@ -84,7 +84,10 @@ export default function TableHeader({
       <ClickAwayListener onClickAway={() => set_popper_open(false)}>
         <div
           {...{
-            className: 'cell',
+            className: get_string_from_object({
+              cell: true,
+              sorted: is_sorted
+            }),
             colSpan: header.colSpan,
             ref: anchor_el,
             onClick: () => set_popper_open(!popper_open),
@@ -92,13 +95,7 @@ export default function TableHeader({
               width: header.getSize()
             }
           }}>
-          <div
-            {...{
-              className: 'cell-content',
-              style: {
-                background: is_sorted ? '#f5f5f5' : 'transparent'
-              }
-            }}>
+          <div className='cell-content'>
             <div
               style={{
                 display: 'flex ',

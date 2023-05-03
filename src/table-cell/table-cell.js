@@ -1,5 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import copy from 'copy-text-to-clipboard'
+
+import { get_string_from_object } from '../utils'
 
 export default function TableCell({ getValue, column, row }) {
   if (column.columnDef.id === 'add_column_action') {
@@ -21,20 +24,30 @@ export default function TableCell({ getValue, column, row }) {
     value = 'invalid value'
   }
 
+  const handle_click = () => {
+    if (value !== undefined && value !== null) {
+      copy(`${value}`)
+      console.log('copied to clipboard:', value)
+    }
+  }
+
   return (
     <div
       {...{
-        className: 'cell',
+        className: get_string_from_object({
+          cell: true,
+          sorted: is_sorted
+        }),
         style: {
           width: column.getSize()
-        }
+        },
+        onClick: handle_click
       }}>
       <div
         className='cell-content'
         style={{
           padding: '5px 8px 6px',
-          minHeight: '32px',
-          backgroundColor: is_sorted ? '#f5f5f5' : 'transparent'
+          minHeight: '32px'
         }}>
         {value}
       </div>
