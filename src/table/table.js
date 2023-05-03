@@ -22,6 +22,7 @@ import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
 import TableFilterModal from '../table-filter-modal'
+import TableRankAggregationModal from '../table-rank-aggregation-modal'
 import {
   get_string_from_object,
   get_scroll_parent,
@@ -139,16 +140,18 @@ export default function Table({
     on_table_state_change({ ...table_state, columns: [] })
   }
 
+  const table_columns = [
+    column_helper.display({
+      id: 'column_index'
+    }),
+    ...(table_state.columns || []),
+    column_helper.display({
+      id: 'add_column_action'
+    })
+  ]
+
   const table = useReactTable({
-    columns: [
-      column_helper.display({
-        id: 'column_index'
-      }),
-      ...(table_state.columns || []),
-      column_helper.display({
-        id: 'add_column_action'
-      })
-    ],
+    columns: table_columns,
     data,
     defaultColumn,
     state: table_state,
@@ -165,31 +168,34 @@ export default function Table({
     [slice_size]
   )
 
-  const fetch_more_on_bottom_reached = React.useCallback((container_ref) => {
-    if (container_ref) {
-      const container_is_body = container_ref === document.body
-      const scroll_height = container_ref.scrollHeight
-      const scroll_top = container_is_body
-        ? document.documentElement.scrollTop
-        : container_ref.scrollTop
-      const client_height = container_is_body
-        ? window.innerHeight
-        : container_ref.clientHeight
+  const fetch_more_on_bottom_reached = React.useCallback(
+    (container_ref) => {
+      if (container_ref) {
+        const container_is_body = container_ref === document.body
+        const scroll_height = container_ref.scrollHeight
+        const scroll_top = container_is_body
+          ? document.documentElement.scrollTop
+          : container_ref.scrollTop
+        const client_height = container_is_body
+          ? window.innerHeight
+          : container_ref.clientHeight
 
-      const scroll_distance = 2000
-      if (scroll_height - scroll_top - client_height < scroll_distance) {
-        if (slice_size < rows.length) {
-          throttled_set_slice_size()
-          return
-        }
+        const scroll_distance = 2000
+        if (scroll_height - scroll_top - client_height < scroll_distance) {
+          if (slice_size < rows.length) {
+            throttled_set_slice_size()
+            return
+          }
 
-        if (!is_fetching && total_rows_fetched < total_row_count) {
-          const { view_id } = selected_view
-          fetch_more({ view_id })
+          if (!is_fetching && total_rows_fetched < total_row_count) {
+            const { view_id } = selected_view
+            fetch_more({ view_id })
+          }
         }
       }
-    }
-  }, [fetch_more, is_fetching, total_rows_fetched, total_row_count, slice_size])
+    },
+    [fetch_more, is_fetching, total_rows_fetched, total_row_count, slice_size]
+  )
 
   React.useEffect(() => {
     const scroll_parent = get_scroll_parent(table_container_ref.current)
@@ -315,6 +321,13 @@ export default function Table({
               <FilterListIcon />
               Filter
             </Button>
+            <TableRankAggregationModal
+              {...{
+                table_state,
+                on_table_state_change,
+                all_columns
+              }}
+            />
             <TableColumnControls
               {...{
                 table_state,
