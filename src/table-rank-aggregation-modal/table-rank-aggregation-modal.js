@@ -80,6 +80,7 @@ function RankItem({
           size='small'
           options={all_columns}
           value={rank_column}
+          componentsProps={{ popper: { style: { width: 'fit-content' } } }}
           onChange={handle_column_change}
           getOptionLabel={(option) => option.column_name}
           isOptionEqualToValue={(option, value) =>
