@@ -43,11 +43,27 @@ const defaultColumn = {
   sortType: 'alphanumericFalsyLast'
 }
 
+function use_trace_update(props) {
+  const prev = React.useRef(props)
+  React.useEffect(() => {
+    const changedProps = Object.entries(props).reduce((ps, [k, v]) => {
+      if (prev.current[k] !== v) {
+        ps[k] = [prev.current[k], v]
+      }
+      return ps
+    }, {})
+    if (Object.keys(changedProps).length > 0) {
+      console.log('Changed props:', changedProps)
+    }
+    prev.current = props
+  })
+}
+
 export default function Table({
   data = [],
   on_view_change = () => {},
   table_state = {},
-  all_columns = [],
+  all_columns = {},
   selected_view = {},
   views = [],
   select_view = () => {},
@@ -55,9 +71,27 @@ export default function Table({
   is_fetching = false,
   total_rows_fetched,
   total_row_count,
-  delete_view = () => {}
+  delete_view = () => {},
+  disable_rank_aggregation = false,
+  style = {},
+  prefix_column_ids = []
 }) {
-  const [slice_size, set_slice_size] = React.useState(100)
+  use_trace_update({
+    data,
+    on_view_change,
+    table_state,
+    all_columns,
+    selected_view,
+    views,
+    select_view,
+    fetch_more,
+    is_fetching,
+    total_rows_fetched,
+    total_row_count,
+    delete_view
+  })
+
+  const [slice_size, set_slice_size] = React.useState(20)
   const [filter_modal_open, set_filter_modal_open] = React.useState(false)
   const table_container_ref = React.useRef()
   const [column_controls_popper_open, set_column_controls_popper_open] =
@@ -107,23 +141,24 @@ export default function Table({
     const new_column_item = updater_fn()
 
     // get first key of new_column_item
-    const column_name = Object.keys(new_column_item)[0]
-    const is_visible = new_column_item[column_name]
+    const column_id = Object.keys(new_column_item)[0]
+    const is_visible = new_column_item[column_id]
     if (is_visible) {
-      set_column_visible(all_columns.find((c) => c.accessorKey === column_name))
+      // TODO - check if working correctly
+      set_column_visible(column_id)
     } else {
-      set_column_hidden(column_name)
+      set_column_hidden(column_id)
     }
   }
 
   const set_column_hidden = (accessorKey) => {
     const columns = []
 
-    for (const column of table_state.columns || []) {
-      if (column.accessorKey === accessorKey) {
+    for (const column_id of table_state.columns || []) {
+      if (column_id === accessorKey) {
         continue
       }
-      columns.push(column)
+      columns.push(column_id)
     }
 
     on_table_state_change({ ...table_state, columns })
@@ -140,11 +175,51 @@ export default function Table({
     on_table_state_change({ ...table_state, columns: [] })
   }
 
+  const table_state_columns = []
+  for (const column_id of table_state.columns) {
+    table_state_columns.push(all_columns[column_id])
+  }
+
+  const grouped_columns = []
+  for (let i = 0; i < table_state_columns.length; i++) {
+    const column = table_state_columns[i]
+
+    if (!column.category) {
+      grouped_columns.push(column)
+      continue
+    }
+
+    const previous_column = grouped_columns[grouped_columns.length - 1]
+    const previous_group = previous_column ? previous_column.category : null
+
+    if (column.category === previous_group) {
+      previous_column.columns.push(column)
+      continue
+    }
+
+    grouped_columns.push({
+      header: column.category,
+      category: column.category,
+      columns: [column]
+    })
+  }
+
+  const mapped_prefix_columns = []
+  for (const prefix_column_id of prefix_column_ids) {
+    const column = all_columns[prefix_column_id]
+    if (!column) {
+      continue
+    }
+
+    mapped_prefix_columns.push(column)
+  }
+
   const table_columns = [
     column_helper.display({
       id: 'column_index'
     }),
-    ...(table_state.columns || []),
+    ...mapped_prefix_columns,
+    ...grouped_columns,
     column_helper.display({
       id: 'add_column_action'
     })
@@ -161,9 +236,11 @@ export default function Table({
     columnResizeMode: 'onChange'
   })
 
+  const { rows } = table.getRowModel()
+
   const throttled_set_slice_size = React.useCallback(
     throttle_leading_edge(() => {
-      set_slice_size(slice_size + 100)
+      set_slice_size(slice_size + 30)
     }, 2000),
     [slice_size]
   )
@@ -221,14 +298,12 @@ export default function Table({
 
   React.useEffect(() => {
     setTimeout(() => {
-      set_slice_size(slice_size + 100)
+      set_slice_size(slice_size + 30)
     }, 2000)
   }, [])
 
-  const { rows } = table.getRowModel()
-
   const row_virtualizer = useVirtualizer({
-    getScrollElement: () => get_scroll_parent(table_container_ref.current),
+    getScrollElement: () => table_container_ref.current, // get_scroll_parent(table_container_ref.current),
     estimateSize: () => 32,
     count: Math.min(data.length, slice_size),
     overscan: 10
@@ -268,12 +343,12 @@ export default function Table({
   const where_params = table_state.where || []
   if (where_params.length) {
     where_params.forEach((where, index) => {
-      const { column_name, operator, value } = where
+      const { column_id, operator, value } = where
 
       state_items.push(
         <div key={index} className='state-item'>
           <div className='state-item-content'>
-            <span>{`${column_name} ${operator} ${value}`}</span>
+            <span>{`${column_id} ${operator} ${value}`}</span>
             <IconButton
               size='small'
               onClick={() => {
@@ -293,7 +368,7 @@ export default function Table({
   }
 
   return (
-    <div>
+    <div style={style}>
       <div
         ref={table_container_ref}
         className={get_string_from_object({
@@ -315,24 +390,27 @@ export default function Table({
               />
             )}
             <Button
-              variant='text'
+              variant='outlined'
               size='small'
               onClick={() => set_filter_modal_open(true)}>
               <FilterListIcon />
               Filter
             </Button>
-            <TableRankAggregationModal
-              {...{
-                table_state,
-                on_table_state_change,
-                all_columns
-              }}
-            />
+            {!disable_rank_aggregation && (
+              <TableRankAggregationModal
+                {...{
+                  table_state,
+                  on_table_state_change,
+                  all_columns: Object.values(all_columns) // TODO
+                }}
+              />
+            )}
             <TableColumnControls
               {...{
                 table_state,
+                table_state_columns,
                 on_table_state_change,
-                all_columns,
+                all_columns: Object.values(all_columns), // TODO
                 set_column_hidden,
                 set_column_visible,
                 set_all_columns_hidden,
@@ -346,34 +424,37 @@ export default function Table({
         <div className='header'>
           {table.getHeaderGroups().map((headerGroup, index) => (
             <div key={index} className='row'>
-              {headerGroup.headers.map((header, index) =>
-                header.isPlaceholder
-                  ? null
-                  : flexRender(header.column.columnDef.header, {
-                      ...header.getContext(),
-                      key: index,
-                      table_state,
-                      on_table_state_change,
-                      set_column_controls_popper_open,
-                      set_filter_modal_open
-                    })
-              )}
+              {headerGroup.headers.map((header, index) => (
+                <TableHeader
+                  key={index}
+                  {...{
+                    ...header.getContext(),
+                    key: index,
+                    table_state,
+                    on_table_state_change,
+                    set_column_controls_popper_open,
+                    set_filter_modal_open
+                  }}
+                />
+              ))}
             </div>
           ))}
         </div>
-        {virtual_rows.map((virtual_row) => {
-          const row = rows[virtual_row.index]
-          return (
-            <div key={row.id} className='row'>
-              {row.getVisibleCells().map((cell, index) =>
-                flexRender(cell.column.columnDef.cell, {
-                  key: index,
-                  ...cell.getContext()
-                })
-              )}
-            </div>
-          )
-        })}
+        <div className='body'>
+          {virtual_rows.map((virtual_row) => {
+            const row = rows[virtual_row.index]
+            return (
+              <div key={row.id} className={`row ${row.original.className}`}>
+                {row.getVisibleCells().map((cell, index) =>
+                  flexRender(cell.column.columnDef.cell, {
+                    key: index,
+                    ...cell.getContext()
+                  })
+                )}
+              </div>
+            )
+          })}
+        </div>
         <div className='footer'>
           {table.getFooterGroups().map((footerGroup, index) => (
             <div key={index} className='row'>
@@ -395,7 +476,7 @@ export default function Table({
           set_filter_modal_open,
           table_state,
           on_table_state_change,
-          all_columns
+          all_columns: Object.values(all_columns) // TODO
         }}
       />
     </div>
@@ -406,7 +487,7 @@ Table.propTypes = {
   data: PropTypes.array,
   on_view_change: PropTypes.func,
   table_state: PropTypes.object,
-  all_columns: PropTypes.array,
+  all_columns: PropTypes.object,
   selected_view: PropTypes.object,
   select_view: PropTypes.func,
   views: PropTypes.array,
@@ -414,5 +495,8 @@ Table.propTypes = {
   is_fetching: PropTypes.bool,
   total_row_count: PropTypes.number,
   total_rows_fetched: PropTypes.number,
-  delete_view: PropTypes.func
+  delete_view: PropTypes.func,
+  disable_rank_aggregation: PropTypes.bool,
+  style: PropTypes.object,
+  prefix_column_ids: PropTypes.array
 }

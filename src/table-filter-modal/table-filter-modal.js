@@ -29,7 +29,7 @@ function FilterItem({
 }) {
   const anchor_el = React.useRef()
   const [filter_column, set_filter_column] = React.useState(
-    all_columns.find((column) => column.column_name === where_item.column_name)
+    all_columns.find((column) => column.column_id === where_item.column_id)
   )
   const [filter_value, set_filter_value] = React.useState(where_item.value)
   const [misc_menu_open, set_misc_menu_open] = React.useState(false)
@@ -77,8 +77,7 @@ function FilterItem({
     }
 
     const where_param = table_state.where || []
-    where_param[index].column_name = value.column_name
-    where_param[index].table_name = value.table_name
+    where_param[index].column_id = value.column_id
     on_table_state_change({
       ...table_state,
       where: where_param
@@ -119,9 +118,9 @@ function FilterItem({
             options={all_columns}
             value={filter_column}
             onChange={handle_column_change}
-            getOptionLabel={(option) => option.column_name}
+            getOptionLabel={(option) => option.column_id}
             isOptionEqualToValue={(option, value) =>
-              option.column_name === value.column_name
+              option.column_id === value.column_id
             }
             renderInput={(params) => (
               <TextField {...params} label='Column' variant='outlined' />
@@ -242,7 +241,7 @@ export default function TableFilterModal({
 
   const handle_add_click = () => {
     where_param.push({
-      column: all_columns[0].column_name,
+      column_id: all_columns[0].column_id,
       operator: '=',
       value: ''
     })
@@ -263,7 +262,9 @@ export default function TableFilterModal({
         <div className='table-filter-add-content'>
           <div className='table-filter-add-button' onClick={handle_add_click}>
             <AddIcon />
-            <div className='table-filter-add-content-text'>Add filter</div>
+            <div className='table-filter-add-content-text'>
+              create column filter
+            </div>
           </div>
         </div>
       </div>

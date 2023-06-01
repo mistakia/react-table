@@ -20,7 +20,7 @@ function RankItem({
   on_table_state_change
 }) {
   const [rank_column, set_rank_column] = React.useState(
-    all_columns.find((column) => column.column_name === rank_item.column_name)
+    all_columns.find((column) => column.column_id === rank_item.column_id)
   )
   const [rank_weight, set_rank_weight] = React.useState(rank_item.weight)
 
@@ -32,8 +32,7 @@ function RankItem({
     }
 
     const rank_param = table_state.rank_aggregation || []
-    rank_param[index].column_name = value.column_name
-    rank_param[index].table_name = value.table_name
+    rank_param[index].column_id = value.column_id
     on_table_state_change({
       ...table_state,
       rank_aggregation: rank_param
@@ -82,9 +81,9 @@ function RankItem({
           value={rank_column}
           componentsProps={{ popper: { style: { width: 'fit-content' } } }}
           onChange={handle_column_change}
-          getOptionLabel={(option) => option.column_name}
+          getOptionLabel={(option) => option.column_id}
           isOptionEqualToValue={(option, value) =>
-            option.column_name === value.column_name
+            option.column_id === value.column_id
           }
           renderInput={(params) => (
             <TextField {...params} label='Column' variant='outlined' />
@@ -144,8 +143,7 @@ export default function TableRankAggregationModal({
 
   const handle_add_click = () => {
     rank_param.push({
-      column_name: all_columns[0].column_name,
-      table_name: all_columns[0].table_name,
+      column_id: all_columns[0].column_id,
       weight: 1
     })
 
