@@ -2,50 +2,173 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 import Modal from '@mui/material/Modal'
-import IconButton from '@mui/material/IconButton'
-import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { DndContext, PointerSensor, useSensors, useSensor } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
-import DragHandleIcon from '@mui/icons-material/DragHandle'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
+import TreeView from '@mui/lab/TreeView'
+import TreeItem from '@mui/lab/TreeItem'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
 import DataTypeIcon from '../data-type-icon'
-import { fuzzy_match } from '../utils'
+import {
+  fuzzy_match,
+  group_columns_into_tree_view,
+  get_string_from_object
+} from '../utils'
 
 import './table-column-controls.styl'
 
-function SortableItem({ column, set_column_hidden, filter_text_input }) {
-  const { attributes, listeners, setNodeRef, transform, transition } =
-    useSortable({
-      id: column.accessorKey
-    })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition
-  }
-
-  const drag_disabled = !filter_text_input
-
-  return (
-    <div ref={setNodeRef} style={style} {...attributes}>
-      <div className='column-item'>
+const TableColumnItem = React.forwardRef(
+  ({ column, set_column_visible, set_column_hidden, is_visible }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={get_string_from_object({
+          'column-item': true,
+          shown: is_visible
+        })}>
         <div className='column-data-type'>
           <DataTypeIcon data_type={column.data_type} />
         </div>
-        <div className='column-name'>{column.header_label}</div>
-        <IconButton
+        <div className='column-name'>
+          {column.column_title || column.column_id}
+        </div>
+        <Button
+          size='small'
           className='column-action'
-          onClick={() => set_column_hidden(column.accessorKey)}>
-          <VisibilityOffIcon />
-        </IconButton>
-        {drag_disabled && (
+          onClick={() =>
+            is_visible
+              ? set_column_hidden(column.column_id)
+              : set_column_visible(column.column_id)
+          }>
+          {is_visible ? 'Hide' : 'Show'}
+        </Button>
+      </div>
+    )
+  }
+)
+
+TableColumnItem.propTypes = {
+  column: PropTypes.object.isRequired,
+  set_column_visible: PropTypes.func.isRequired,
+  set_column_hidden: PropTypes.func.isRequired,
+  is_visible: PropTypes.bool
+}
+TableColumnItem.displayName = 'TableColumnItem'
+
+const get_column_group_column_count = (columns) => {
+  let count = 0
+  columns.forEach((column) => {
+    if (column.columns) {
+      count += get_column_group_column_count(column.columns)
+    } else {
+      count += 1
+    }
+  })
+  return count
+}
+
+function TreeColumnItem({
+  item,
+  item_path = '/',
+  set_column_visible,
+  set_column_hidden,
+  shown_column_index = {}
+}) {
+  const sub_item_path = `${item_path}/${item.header || item.column_title}`
+
+  if (!item.columns) {
+    return (
+      <TreeItem
+        nodeId={sub_item_path}
+        ContentComponent={TableColumnItem}
+        ContentProps={{
+          column: item,
+          set_column_visible,
+          set_column_hidden,
+          is_visible: shown_column_index[item.column_id]
+        }}
+      />
+    )
+  }
+
+  const sub_items = []
+  if (item.columns && item.columns.length > 0) {
+    item.columns.forEach((sub_item, index) => {
+      sub_items.push(
+        <TreeColumnItem
+          key={index}
+          item={sub_item}
+          item_path={sub_item_path}
+          {...{ set_column_visible, set_column_hidden, shown_column_index }}
+        />
+      )
+    })
+  }
+
+  const label = (item.header || item.column_title).toLowerCase()
+  const label_with_count = `${label} (${get_column_group_column_count(
+    item.columns
+  )})`
+
+  return (
+    <TreeItem nodeId={sub_item_path} label={label_with_count}>
+      {sub_items}
+    </TreeItem>
+  )
+}
+
+TreeColumnItem.propTypes = {
+  item: PropTypes.object.isRequired,
+  item_path: PropTypes.string,
+  set_column_visible: PropTypes.func.isRequired,
+  set_column_hidden: PropTypes.func.isRequired,
+  shown_column_index: PropTypes.object
+}
+
+function SortableItem({ column, set_column_hidden, filter_text_input }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: column.column_id
+  })
+
+  const is_drag_enabled = !filter_text_input
+
+  const style = {
+    position: 'relative',
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 100 : null
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      <div className='column-item reorder'>
+        <div className='column-data-type'>
+          <DataTypeIcon data_type={column.data_type} />
+        </div>
+        <div className='column-name'>
+          {column.column_title || column.column_id}
+        </div>
+        <Button
+          size='small'
+          className='column-action'
+          onClick={() => set_column_hidden(column.column_id)}>
+          Hide
+        </Button>
+        {is_drag_enabled && (
           <div className='column-drag-handle' {...listeners}>
-            <DragHandleIcon />
+            <DragIndicatorIcon />
           </div>
         )}
       </div>
@@ -61,102 +184,73 @@ SortableItem.propTypes = {
 
 export default function TableColumnControls({
   table_state,
+  table_state_columns = [],
   all_columns = [],
   set_column_visible,
   set_column_hidden,
   set_all_columns_hidden,
   column_controls_popper_open,
   set_column_controls_popper_open,
-  on_table_state_change
+  on_table_state_change,
+  prefix_columns = []
 }) {
   const sensors = useSensors(useSensor(PointerSensor))
   const [filter_text_input, set_filter_text_input] = React.useState('')
-  const [hidden_column_items, set_hidden_column_items] = React.useState(
-    all_columns.filter(
-      (column) =>
-        !(table_state.columns || []).find(
-          (c) => c.accessorKey === column.column_name
-        )
-    )
-  )
   const [shown_column_items, set_shown_column_items] = React.useState(
-    (table_state.columns || []).map((column) => ({
+    (table_state_columns || []).map((column) => ({
       ...column,
-      id: column.accessorKey
+      id: column.column_id
     }))
   )
 
-  React.useEffect(() => {
-    set_hidden_column_items(
-      all_columns.filter(
-        (column) =>
-          !(table_state.columns || []).find(
-            (c) => c.accessorKey === column.column_name
-          )
-      )
+  const shown_column_index = React.useMemo(() => {
+    const index = {}
+
+    for (const column of table_state_columns) {
+      index[column.column_id] = true
+    }
+
+    return index
+  }, [table_state_columns])
+
+  const tree_view_columns = React.useMemo(() => {
+    if (!filter_text_input) {
+      return group_columns_into_tree_view(all_columns)
+    }
+
+    const filtered_columns = all_columns.filter((column) =>
+      fuzzy_match(filter_text_input, column.column_title || column.column_id)
     )
+    return group_columns_into_tree_view(filtered_columns)
+  }, [all_columns, filter_text_input])
+
+  React.useEffect(() => {
     set_shown_column_items(
-      (table_state.columns || []).map((column) => ({
+      (table_state_columns || []).map((column) => ({
         ...column,
-        id: column.accessorKey
+        id: column.column_id
       }))
     )
-  }, [all_columns, table_state.columns])
+  }, [all_columns, table_state_columns])
 
   const handle_filter_change = (event) => {
-    set_filter_text_input(event.target.value)
+    const { value } = event.target
+    set_filter_text_input(value)
 
-    const shown_columns_index = {}
     const shown_items = []
-    const hidden_items = []
 
-    for (const column of table_state.columns || []) {
-      if (
-        filter_text_input &&
-        !fuzzy_match(filter_text_input, column.accessorKey)
-      ) {
+    for (const column of table_state_columns || []) {
+      if (value && !fuzzy_match(value, column.column_id)) {
         continue
       }
 
-      shown_columns_index[column.accessorKey] = true
       shown_items.push({
         ...column,
-        id: column.accessorKey
+        id: column.column_id
       })
     }
 
-    for (const column of all_columns) {
-      if (shown_columns_index[column.column_name]) continue
-
-      if (
-        filter_text_input &&
-        !fuzzy_match(filter_text_input, column.accessorKey)
-      ) {
-        continue
-      }
-
-      hidden_items.push(column)
-    }
-
     set_shown_column_items(shown_items)
-    set_hidden_column_items(hidden_items)
-  }
-
-  const hidden_column_elements = []
-  for (const column of hidden_column_items) {
-    hidden_column_elements.push(
-      <div key={column.column_name} className='column-item'>
-        <div className='column-data-type'>
-          <DataTypeIcon data_type={column.data_type} />
-        </div>
-        <div className='column-name'>{column.column_name}</div>
-        <IconButton
-          className='column-action'
-          onClick={() => set_column_visible(column)}>
-          <VisibilityIcon />
-        </IconButton>
-      </div>
-    )
   }
 
   const handle_on_close = () => {
@@ -189,12 +283,11 @@ export default function TableColumnControls({
   return (
     <>
       <Button
-        variant='text'
+        variant='outlined'
         size='small'
         onClick={() =>
           set_column_controls_popper_open(!column_controls_popper_open)
         }>
-        <ViewColumnIcon />
         Columns
       </Button>
       <Modal
@@ -215,6 +308,16 @@ export default function TableColumnControls({
               autoFocus
             />
           </div>
+          {prefix_columns.map((column) => (
+            <div key={column.column_id} className='column-item prefix'>
+              <div className='column-data-type'>
+                <DataTypeIcon data_type={column.data_type} />
+              </div>
+              <div className='column-name'>
+                {column.column_title || column.column_id}
+              </div>
+            </div>
+          ))}
           <div className='section-header'>
             <div style={{ display: 'flex', alignSelf: 'center' }}>
               Shown in table
@@ -232,7 +335,7 @@ export default function TableColumnControls({
             <SortableContext items={shown_column_items}>
               {shown_column_items.map((column) => (
                 <SortableItem
-                  key={column.accessorKey}
+                  key={column.column_id}
                   {...{
                     column,
                     set_column_hidden,
@@ -243,11 +346,23 @@ export default function TableColumnControls({
             </SortableContext>
           </DndContext>
           <div className='section-header'>
-            <div style={{ display: 'flex', alignSelf: 'center' }}>
-              Hidden in table
-            </div>
+            <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
           </div>
-          {hidden_column_elements}
+          <TreeView
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpandIcon={<ChevronRightIcon />}>
+            {tree_view_columns.map((item, index) => (
+              <TreeColumnItem
+                key={index}
+                {...{
+                  item,
+                  set_column_visible,
+                  shown_column_index,
+                  set_column_hidden
+                }}
+              />
+            ))}
+          </TreeView>
         </div>
       </Modal>
     </>
@@ -262,5 +377,7 @@ TableColumnControls.propTypes = {
   set_all_columns_hidden: PropTypes.func,
   column_controls_popper_open: PropTypes.bool,
   set_column_controls_popper_open: PropTypes.func,
-  on_table_state_change: PropTypes.func
+  on_table_state_change: PropTypes.func,
+  table_state_columns: PropTypes.array,
+  prefix_columns: PropTypes.array
 }
