@@ -6,7 +6,6 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import Modal from '@mui/material/Modal'
 import IconButton from '@mui/material/IconButton'
-import ViewColumnIcon from '@mui/icons-material/ViewColumn'
 import { SortableContext, useSortable, arrayMove } from '@dnd-kit/sortable'
 import { DndContext, PointerSensor, useSensors, useSensor } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
@@ -61,6 +60,7 @@ SortableItem.propTypes = {
 
 export default function TableColumnControls({
   table_state,
+  table_state_columns = [],
   all_columns = [],
   set_column_visible,
   set_column_hidden,
@@ -75,12 +75,12 @@ export default function TableColumnControls({
     all_columns.filter(
       (column) =>
         !(table_state.columns || []).find(
-          (c) => c.accessorKey === column.column_name
+          (column_id) => column_id === column.column_id
         )
     )
   )
   const [shown_column_items, set_shown_column_items] = React.useState(
-    (table_state.columns || []).map((column) => ({
+    (table_state_columns || []).map((column) => ({
       ...column,
       id: column.accessorKey
     }))
@@ -91,17 +91,17 @@ export default function TableColumnControls({
       all_columns.filter(
         (column) =>
           !(table_state.columns || []).find(
-            (c) => c.accessorKey === column.column_name
+            (column_id) => column_id === column.column_id
           )
       )
     )
     set_shown_column_items(
-      (table_state.columns || []).map((column) => ({
+      (table_state_columns || []).map((column) => ({
         ...column,
         id: column.accessorKey
       }))
     )
-  }, [all_columns, table_state.columns])
+  }, [all_columns, table_state_columns])
 
   const handle_filter_change = (event) => {
     set_filter_text_input(event.target.value)
@@ -110,7 +110,7 @@ export default function TableColumnControls({
     const shown_items = []
     const hidden_items = []
 
-    for (const column of table_state.columns || []) {
+    for (const column of table_state_columns || []) {
       if (
         filter_text_input &&
         !fuzzy_match(filter_text_input, column.accessorKey)
@@ -126,7 +126,7 @@ export default function TableColumnControls({
     }
 
     for (const column of all_columns) {
-      if (shown_columns_index[column.column_name]) continue
+      if (shown_columns_index[column.column_id]) continue
 
       if (
         filter_text_input &&
@@ -145,14 +145,14 @@ export default function TableColumnControls({
   const hidden_column_elements = []
   for (const column of hidden_column_items) {
     hidden_column_elements.push(
-      <div key={column.column_name} className='column-item'>
+      <div key={column.column_id} className='column-item'>
         <div className='column-data-type'>
           <DataTypeIcon data_type={column.data_type} />
         </div>
-        <div className='column-name'>{column.column_name}</div>
+        <div className='column-name'>{column.column_id}</div>
         <IconButton
           className='column-action'
-          onClick={() => set_column_visible(column)}>
+          onClick={() => set_column_visible(column.column_id)}>
           <VisibilityIcon />
         </IconButton>
       </div>
@@ -189,12 +189,11 @@ export default function TableColumnControls({
   return (
     <>
       <Button
-        variant='text'
+        variant='outlined'
         size='small'
         onClick={() =>
           set_column_controls_popper_open(!column_controls_popper_open)
         }>
-        <ViewColumnIcon />
         Columns
       </Button>
       <Modal
@@ -232,7 +231,7 @@ export default function TableColumnControls({
             <SortableContext items={shown_column_items}>
               {shown_column_items.map((column) => (
                 <SortableItem
-                  key={column.accessorKey}
+                  key={column.column_id}
                   {...{
                     column,
                     set_column_hidden,
@@ -262,5 +261,6 @@ TableColumnControls.propTypes = {
   set_all_columns_hidden: PropTypes.func,
   column_controls_popper_open: PropTypes.bool,
   set_column_controls_popper_open: PropTypes.func,
-  on_table_state_change: PropTypes.func
+  on_table_state_change: PropTypes.func,
+  table_state_columns: PropTypes.array
 }

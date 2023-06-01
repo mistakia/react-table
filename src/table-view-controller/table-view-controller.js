@@ -17,6 +17,19 @@ import { fuzzy_match } from '../utils'
 
 import './table-view-controller.styl'
 
+function generate_view_id() {
+  let timestamp = Date.now()
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+    /[xy]/g,
+    function (c) {
+      const r = (timestamp + Math.random() * 16) % 16 | 0
+      timestamp = Math.floor(timestamp / 16)
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+    }
+  )
+  return uuid
+}
+
 function ViewItem({
   view,
   handle_select_view,
@@ -137,6 +150,7 @@ export default function TableViewController({
   const handleInputBlur = () => {
     set_input_value('')
   }
+
   const handleInputFocus = (event) => {
     set_input_value('')
     event.target.select()
@@ -147,12 +161,15 @@ export default function TableViewController({
     select_view(view.view_id)
     set_input_value(view.view_name)
   }
-  const handleClickAway = () => set_views_popper_open(false)
+  const handleClickAway = () => {
+    set_input_value(selected_view.view_name)
+    set_views_popper_open(false)
+  }
 
   const handle_add_click = () => {
     on_view_change({
       ...selected_view,
-      view_id: null,
+      view_id: generate_view_id(),
       view_name: 'New view',
       view_description: 'New view description',
       table_state: {

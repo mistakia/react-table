@@ -17,9 +17,27 @@ export default function TableCell({ getValue, column, row }) {
     )
   }
 
-  let value = getValue()
   const is_sorted = column.getIsSorted()
 
+  if (column.columnDef.component) {
+    const Component = column.columnDef.component
+    return (
+      <div
+        {...{
+          className: get_string_from_object({
+            cell: true,
+            sorted: is_sorted
+          }),
+          style: {
+            width: column.getSize()
+          }
+        }}>
+        <Component {...{ row, column }} />
+      </div>
+    )
+  }
+
+  let value = getValue()
   if (value !== undefined && value !== null && typeof value === 'object') {
     value = 'invalid value'
   }
@@ -31,12 +49,18 @@ export default function TableCell({ getValue, column, row }) {
     }
   }
 
+  const is_grouped = Boolean(column.parent?.columns.length)
+  const is_group_end =
+    is_grouped &&
+    column.parent.columns[column.parent.columns.length - 1].id === column.id
+
   return (
     <div
       {...{
         className: get_string_from_object({
           cell: true,
-          sorted: is_sorted
+          sorted: is_sorted,
+          group_end: is_group_end
         }),
         style: {
           width: column.getSize()
