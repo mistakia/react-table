@@ -77,7 +77,8 @@ export default function Table({
   total_row_count,
   delete_view = () => {},
   disable_rank_aggregation = false,
-  style = {}
+  style = {},
+  percentiles = {}
 }) {
   use_trace_update({
     data,
@@ -481,6 +482,7 @@ export default function Table({
                   {row.getVisibleCells().map((cell, index) =>
                     flexRender(cell.column.columnDef.cell, {
                       key: index,
+                      percentiles,
                       ...cell.getContext()
                     })
                   )}
@@ -533,5 +535,6 @@ Table.propTypes = {
   total_rows_fetched: PropTypes.number,
   delete_view: PropTypes.func,
   disable_rank_aggregation: PropTypes.bool,
-  style: PropTypes.object
+  style: PropTypes.object,
+  percentiles: PropTypes.object
 }

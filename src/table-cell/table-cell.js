@@ -4,7 +4,13 @@ import copy from 'copy-text-to-clipboard'
 
 import { get_string_from_object } from '../utils'
 
-export default function TableCell({ getValue, column, row, table }) {
+export default function TableCell({
+  getValue,
+  column,
+  row,
+  table,
+  percentiles
+}) {
   if (column.columnDef.id === 'add_column_action') {
     return null
   }
@@ -76,6 +82,21 @@ export default function TableCell({ getValue, column, row, table }) {
     is_grouped &&
     column.parent.columns[column.parent.columns.length - 1].id === column.id
 
+  const percentile = percentiles[column.id]
+  let color
+
+  if (percentile && !Number.isNaN(value)) {
+    if (value < percentile.p25) {
+      const maxPercent =
+        (percentile.p25 - value) / (percentile.p25 - percentile.min) / 1.5 || 0
+      color = `rgba(253, 162, 145, ${maxPercent}`
+    } else {
+      const maxPercent =
+        (value - percentile.p75) / (percentile.max - percentile.p75) / 1.5 || 0
+      color = `rgba(46, 163, 221, ${maxPercent}`
+    }
+  }
+
   return (
     <div
       {...{
@@ -87,7 +108,8 @@ export default function TableCell({ getValue, column, row, table }) {
         }),
         style: {
           width: column.getSize(),
-          left: sticky_left
+          left: sticky_left,
+          backgroundColor: color
         },
         onClick: handle_click
       }}>
@@ -107,5 +129,6 @@ TableCell.propTypes = {
   getValue: PropTypes.func,
   column: PropTypes.object,
   row: PropTypes.object,
-  table: PropTypes.object
+  table: PropTypes.object,
+  percentiles: PropTypes.object
 }
