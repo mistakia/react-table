@@ -41,6 +41,7 @@
     "@mui/icons-material": "^5.11.16",
     "@mui/lab": "^5.0.0-alpha.133",
     "@mui/material": "^5.13.4",
+    "@mui/x-tree-view": "^7.3.1",
     "babel-loader": "^9.1.2",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.3",
