@@ -50,6 +50,7 @@ function TreeColumnItem({
   if (!item.columns) {
     return (
       <TreeItem2
+        itemId={item.column_id}
         nodeId={sub_item_path}
         ContentComponent={FilterItem}
         ContentProps={{
@@ -82,7 +83,10 @@ function TreeColumnItem({
   )})`
 
   return (
-    <TreeItem2 nodeId={sub_item_path} label={label_with_count}>
+    <TreeItem2
+      itemId={item.column_id}
+      nodeId={sub_item_path}
+      label={label_with_count}>
       {sub_items}
     </TreeItem2>
   )
