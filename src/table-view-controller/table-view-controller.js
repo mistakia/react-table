@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import ClickAwayListener from '@mui/base/ClickAwayListener'
+import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import { Popper } from '@mui/base/Popper'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
