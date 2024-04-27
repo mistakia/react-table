@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import AddIcon from '@mui/icons-material/Add'
-import Popper from '@mui/base/Popper'
+import { Popper } from '@mui/base/Popper'
 import ClickAwayListener from '@mui/base/ClickAwayListener'
 import FilterListIcon from '@mui/icons-material/FilterList'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'

@@ -8,12 +8,12 @@ import IconButton from '@mui/material/IconButton'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
-import Popper from '@mui/base/Popper'
+import { Popper } from '@mui/base/Popper'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 // import ListIcon from '@mui/icons-material/List'
 import DeleteIcon from '@mui/icons-material/Delete'
-import TreeView from '@mui/lab/TreeView'
-import TreeItem from '@mui/lab/TreeItem'
+import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView'
+import { TreeItem2 } from '@mui/x-tree-view/TreeItem2'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
@@ -49,7 +49,7 @@ function TreeColumnItem({
 
   if (!item.columns) {
     return (
-      <TreeItem
+      <TreeItem2
         nodeId={sub_item_path}
         ContentComponent={FilterItem}
         ContentProps={{
@@ -82,9 +82,9 @@ function TreeColumnItem({
   )})`
 
   return (
-    <TreeItem nodeId={sub_item_path} label={label_with_count}>
+    <TreeItem2 nodeId={sub_item_path} label={label_with_count}>
       {sub_items}
-    </TreeItem>
+    </TreeItem2>
   )
 }
 
@@ -346,7 +346,7 @@ export default function TableFilterModal({
             autoFocus
           />
         </div>
-        <TreeView
+        <SimpleTreeView
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}>
           {tree_view_columns.map((item, index) => (
@@ -360,7 +360,7 @@ export default function TableFilterModal({
               }}
             />
           ))}
-        </TreeView>
+        </SimpleTreeView>
       </div>
     </Modal>
   )

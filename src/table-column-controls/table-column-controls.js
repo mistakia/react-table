@@ -8,8 +8,8 @@ import { DndContext, PointerSensor, useSensors, useSensor } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
-import TreeView from '@mui/lab/TreeView'
-import TreeItem from '@mui/lab/TreeItem'
+import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView'
+import { TreeItem2 } from '@mui/x-tree-view/TreeItem2'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
@@ -83,7 +83,7 @@ function TreeColumnItem({
 
   if (!item.columns) {
     return (
-      <TreeItem
+      <TreeItem2
         nodeId={sub_item_path}
         ContentComponent={TableColumnItem}
         ContentProps={{
@@ -116,9 +116,9 @@ function TreeColumnItem({
   )})`
 
   return (
-    <TreeItem nodeId={sub_item_path} label={label_with_count}>
+    <TreeItem2 nodeId={sub_item_path} label={label_with_count}>
       {sub_items}
-    </TreeItem>
+    </TreeItem2>
   )
 }
 
@@ -348,7 +348,7 @@ export default function TableColumnControls({
           <div className='section-header'>
             <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
           </div>
-          <TreeView
+          <SimpleTreeView
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}>
             {tree_view_columns.map((item, index) => (
@@ -362,7 +362,7 @@ export default function TableColumnControls({
                 }}
               />
             ))}
-          </TreeView>
+          </SimpleTreeView>
         </div>
       </Modal>
     </>

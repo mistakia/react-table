@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import ClickAwayListener from '@mui/base/ClickAwayListener'
-import Popper from '@mui/base/Popper'
+import { Popper } from '@mui/base/Popper'
 import Checkbox from '@mui/material/Checkbox'
 
 import './table-filter.styl'
