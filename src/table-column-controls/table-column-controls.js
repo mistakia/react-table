@@ -86,12 +86,16 @@ function TreeColumnItem({
       <TreeItem2
         itemId={item.column_id}
         nodeId={sub_item_path}
-        ContentComponent={TableColumnItem}
-        ContentProps={{
-          column: item,
-          set_column_visible,
-          set_column_hidden,
-          is_visible: shown_column_index[item.column_id]
+        slots={{
+          content: TableColumnItem
+        }}
+        slotProps={{
+          content: {
+            column: item,
+            set_column_visible,
+            set_column_hidden,
+            is_visible: shown_column_index[item.column_id]
+          }
         }}
       />
     )
