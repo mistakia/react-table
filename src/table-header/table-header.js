@@ -87,7 +87,8 @@ export default function TableHeader({
   const anchor_el = React.useRef()
   const [popper_open, set_popper_open] = React.useState(false)
 
-  const column_sort = table_state.sort?.find(
+  const table_sort = table_state.sort || table_state.sorting
+  const column_sort = table_sort?.find(
     (i) => i.id === column.columnDef.column_id
   )
   const column_sort_direction = column_sort?.desc ? 'desc' : 'asc'

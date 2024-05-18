@@ -22,35 +22,38 @@ import {
 
 import './table-column-controls.styl'
 
-const TableColumnItem = React.forwardRef(
-  ({ column, set_column_visible, set_column_hidden, is_visible }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={get_string_from_object({
-          'column-item': true,
-          shown: is_visible
-        })}>
-        <div className='column-data-type'>
-          <DataTypeIcon data_type={column.data_type} />
-        </div>
-        <div className='column-name'>
-          {column.column_title || column.column_id}
-        </div>
-        <Button
-          size='small'
-          className='column-action'
-          onClick={() =>
-            is_visible
-              ? set_column_hidden(column.column_id)
-              : set_column_visible(column.column_id)
-          }>
-          {is_visible ? 'Hide' : 'Show'}
-        </Button>
+const TableColumnItem = ({
+  column,
+  set_column_visible,
+  set_column_hidden,
+  is_visible
+}) => {
+  return (
+    <div
+      ref={ref}
+      className={get_string_from_object({
+        'column-item': true,
+        shown: is_visible
+      })}>
+      <div className='column-data-type'>
+        <DataTypeIcon data_type={column.data_type} />
       </div>
-    )
-  }
-)
+      <div className='column-name'>
+        {column.column_title || column.column_id}
+      </div>
+      <Button
+        size='small'
+        className='column-action'
+        onClick={() =>
+          is_visible
+            ? set_column_hidden(column.column_id)
+            : set_column_visible(column.column_id)
+        }>
+        {is_visible ? 'Hide' : 'Show'}
+      </Button>
+    </div>
+  )
+}
 
 TableColumnItem.propTypes = {
   column: PropTypes.object.isRequired,
@@ -79,13 +82,15 @@ function TreeColumnItem({
   set_column_hidden,
   shown_column_index = {}
 }) {
-  const sub_item_path = `${item_path}/${item.header || item.column_title}`
+  const sub_item_path = `${item_path}/${
+    item.header || item.column_title || item.column_id
+  }`
 
   if (!item.columns) {
     return (
       <TreeItem2
         itemId={item.column_id}
-        nodeId={sub_item_path}
+        id={sub_item_path}
         slots={{
           content: TableColumnItem
         }}
@@ -123,7 +128,7 @@ function TreeColumnItem({
   return (
     <TreeItem2
       itemId={item.column_id}
-      nodeId={sub_item_path}
+      id={sub_item_path}
       label={label_with_count}>
       {sub_items}
     </TreeItem2>
@@ -357,8 +362,10 @@ export default function TableColumnControls({
             <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
           </div>
           <SimpleTreeView
-            defaultCollapseIcon={<ExpandMoreIcon />}
-            defaultExpandIcon={<ChevronRightIcon />}>
+            slots={{
+              collapsedIcon: ExpandMoreIcon,
+              expandedIcon: ChevronRightIcon
+            }}>
             {tree_view_columns.map((item, index) => (
               <TreeColumnItem
                 key={index}

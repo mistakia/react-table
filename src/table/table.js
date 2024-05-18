@@ -129,7 +129,8 @@ export default function Table({
 
     let is_new = true
 
-    for (const sort of table_state.sort || []) {
+    const table_sort = table_state.sort || table_state.sorting || []
+    for (const sort of table_sort) {
       if (sort.id === column_id) {
         is_new = false
         const is_same = sort.desc === new_sort_item.desc
@@ -328,9 +329,9 @@ export default function Table({
 
   const state_items = []
 
-  const sorting = table_state.sort || []
-  if (sorting.length) {
-    for (const sort of sorting) {
+  const table_sort = table_state.sort || table_state.sorting || []
+  if (table_sort.length) {
+    for (const sort of table_sort) {
       // get label from column
       state_items.push(
         <div key={sort.id} className='state-item'>
