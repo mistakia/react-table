@@ -15,12 +15,16 @@ import { TABLE_DATA_TYPES } from '../constants.mjs'
 function RankItem({
   table_state,
   rank_item,
-  all_columns,
+  all_columns = [],
   index,
   on_table_state_change
 }) {
   const [rank_column, set_rank_column] = React.useState(
-    all_columns.find((column) => column.column_id === rank_item.column_id)
+    all_columns.find(
+      (column) =>
+        column.column_id ===
+        (rank_item.column_id || rank_item.id || rank_item.column_name)
+    )
   )
   const [rank_weight, set_rank_weight] = React.useState(rank_item.weight)
 
@@ -120,7 +124,7 @@ RankItem.propTypes = {
 export default function TableRankAggregationModal({
   table_state,
   on_table_state_change,
-  all_columns
+  all_columns = []
 }) {
   const [modal_open, set_modal_open] = React.useState(false)
 

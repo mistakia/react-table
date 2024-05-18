@@ -192,9 +192,14 @@ export default function Table({
   }
 
   const table_state_columns = []
-  for (const column of table_state.columns) {
-    const column_id = typeof column === 'string' ? column : column.column_id
-    table_state_columns.push(all_columns[column_id])
+  for (const column of table_state.columns || []) {
+    const column_id =
+      typeof column === 'string'
+        ? column
+        : column.column_id || column.id || column.column_name
+    if (column_id && all_columns[column_id]) {
+      table_state_columns.push(all_columns[column_id])
+    }
   }
 
   const grouped_columns = group_columns_by_groups(table_state_columns)
@@ -341,12 +346,12 @@ export default function Table({
   const where_params = table_state.where || []
   if (where_params.length) {
     where_params.forEach((where, index) => {
-      const { column_id, operator, value } = where
+      const { column_id, column_name, operator, value } = where
 
       state_items.push(
         <div key={index} className='state-item'>
           <div className='state-item-content'>
-            <span>{`${column_id} ${operator} ${value}`}</span>
+            <span>{`${column_id || column_name} ${operator} ${value}`}</span>
             <IconButton
               size='small'
               onClick={() => {
