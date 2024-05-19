@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Modal from '@mui/material/Modal'
 import TextField from '@mui/material/TextField'
@@ -115,183 +115,185 @@ TreeColumnItem.propTypes = {
   set_expanded_items: PropTypes.func.isRequired
 }
 
-const FilterItem = forwardRef(
-  ({ column_item, table_state, on_table_state_change, is_visible }, ref) => {
-    const anchor_el = useRef()
-    const where_item = useMemo(() => {
-      const where_param = table_state.where || []
-      return (
-        where_param.find((item) => item.column_id === column_item.column_id) ||
-        {}
-      )
-    }, [table_state, column_item])
-    const [filter_value, set_filter_value] = useState(where_item?.value || '')
-    const [misc_menu_open, set_misc_menu_open] = useState(false)
-
-    useEffect(() => {
-      return () => {
-        set_misc_menu_open(false)
-      }
-    }, [])
-
-    const handle_create_filter = ({ operator = '=', value = '' }) => {
-      const where_param = table_state.where || []
-      where_param.push({
-        column_id: column_item.column_id,
-        operator,
-        value
-      })
-      on_table_state_change({
-        ...table_state,
-        where: where_param
-      })
-      set_misc_menu_open(false)
-    }
-
-    const handle_remove_click = () => {
-      const where_param = table_state.where || []
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
-      where_param.splice(index, 1)
-      on_table_state_change({
-        ...table_state,
-        where: where_param
-      })
-      set_misc_menu_open(false)
-    }
-
-    const handle_operator_change = (event) => {
-      const where_param = table_state.where || []
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
-
-      if (index === -1) {
-        return handle_create_filter({
-          operator: event.target.value
-        })
-      }
-
-      where_param[index].operator = event.target.value
-      on_table_state_change({
-        ...table_state,
-        where: where_param
-      })
-    }
-
-    const handle_value_change_debounced = debounce((event) => {
-      const where_param = table_state.where || []
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
-
-      if (index === -1) {
-        return handle_create_filter({
-          value: event.target.value
-        })
-      }
-
-      where_param[index].value = event.target.value
-      on_table_state_change({
-        ...table_state,
-        where: where_param
-      })
-    }, 3000)
-
-    const handle_value_change = (event) => {
-      set_filter_value(event.target.value)
-      handle_value_change_debounced(event)
-    }
-
-    const show_value = () => {
-      if (
-        where_item.operator === 'IS NULL' ||
-        where_item.operator === 'IS NOT NULL'
-      ) {
-        return false
-      }
-
-      return true
-    }
-
+const FilterItem = ({
+  column_item,
+  table_state,
+  on_table_state_change,
+  is_visible
+}) => {
+  const anchor_el = useRef()
+  const where_item = useMemo(() => {
+    const where_param = table_state.where || []
     return (
-      <div
-        className={get_string_from_object({
-          'filter-item': true,
-          visible: is_visible
-        })}>
-        <div className='filter-item-left'>
-          <div className='filter-item-left-column'>
-            {column_item.column_title || column_item.column_id}
-          </div>
-          <div className='filter-item-left-operator'>
-            <FormControl>
-              <InputLabel id='operator-label'>Operator</InputLabel>
-              <Select
-                size='small'
-                value={where_item.operator}
-                onChange={handle_operator_change}
-                label='Operator'
-                labelId='operator-label'
-                variant='outlined'
-                defaultValue='='>
-                <MenuItem value='='>Equal to</MenuItem>
-                <MenuItem value='!='>Not equal to</MenuItem>
-                <MenuItem value='>'>Greater than</MenuItem>
-                <MenuItem value='>='>Greater than or equal</MenuItem>
-                <MenuItem value='<'>Less than</MenuItem>
-                <MenuItem value='<='>Less than or equal</MenuItem>
-                <MenuItem value='LIKE'>Like</MenuItem>
-                <MenuItem value='NOT LIKE'>Not like</MenuItem>
-                <MenuItem value='IN'>In</MenuItem>
-                <MenuItem value='NOT IN'>Not in</MenuItem>
-                <MenuItem value='IS NULL'>Is empty</MenuItem>
-                <MenuItem value='IS NOT NULL'>Is not empty</MenuItem>
-              </Select>
-            </FormControl>
-          </div>
-          <div className='filter-item-left-value'>
-            <TextField
-              size='small'
-              label='Value'
-              variant='outlined'
-              disabled={!show_value()}
-              value={filter_value}
-              onChange={handle_value_change}
-            />
-          </div>
+      where_param.find((item) => item.column_id === column_item.column_id) || {}
+    )
+  }, [table_state, column_item])
+  const [filter_value, set_filter_value] = useState(where_item?.value || '')
+  const [misc_menu_open, set_misc_menu_open] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      set_misc_menu_open(false)
+    }
+  }, [])
+
+  const handle_create_filter = ({ operator = '=', value = '' }) => {
+    const where_param = table_state.where || []
+    where_param.push({
+      column_id: column_item.column_id,
+      operator,
+      value
+    })
+    on_table_state_change({
+      ...table_state,
+      where: where_param
+    })
+    set_misc_menu_open(false)
+  }
+
+  const handle_remove_click = () => {
+    const where_param = table_state.where || []
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
+    where_param.splice(index, 1)
+    on_table_state_change({
+      ...table_state,
+      where: where_param
+    })
+    set_misc_menu_open(false)
+  }
+
+  const handle_operator_change = (event) => {
+    const where_param = table_state.where || []
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
+
+    if (index === -1) {
+      return handle_create_filter({
+        operator: event.target.value
+      })
+    }
+
+    where_param[index].operator = event.target.value
+    on_table_state_change({
+      ...table_state,
+      where: where_param
+    })
+  }
+
+  const handle_value_change_debounced = debounce((event) => {
+    const where_param = table_state.where || []
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
+
+    if (index === -1) {
+      return handle_create_filter({
+        value: event.target.value
+      })
+    }
+
+    where_param[index].value = event.target.value
+    on_table_state_change({
+      ...table_state,
+      where: where_param
+    })
+  }, 3000)
+
+  const handle_value_change = (event) => {
+    set_filter_value(event.target.value)
+    handle_value_change_debounced(event)
+  }
+
+  const show_value = () => {
+    if (
+      where_item.operator === 'IS NULL' ||
+      where_item.operator === 'IS NOT NULL'
+    ) {
+      return false
+    }
+
+    return true
+  }
+
+  return (
+    <div
+      className={get_string_from_object({
+        'filter-item': true,
+        visible: is_visible
+      })}>
+      <div className='filter-item-left'>
+        <div className='filter-item-left-column'>
+          {column_item.column_title || column_item.column_id}
         </div>
-        <div className='filter-item-right'>
-          <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
-            <div>
-              <IconButton
-                className='filter-item-right-action'
-                ref={anchor_el}
-                onClick={() => set_misc_menu_open(!misc_menu_open)}>
-                <MoreHorizIcon />
-              </IconButton>
-              <Popper
-                className='misc-menu'
-                open={misc_menu_open}
-                anchorEl={anchor_el.current}
-                placement='bottom-start'>
-                <div>
-                  <div className='misc-menu-item' onClick={handle_remove_click}>
-                    <div className='misc-menu-item-icon'>
-                      <DeleteIcon size='small' />
-                    </div>
-                    <div className='misc-menu-item-text'>Remove</div>
-                  </div>
-                </div>
-              </Popper>
-            </div>
-          </ClickAwayListener>
+        <div className='filter-item-left-operator'>
+          <FormControl>
+            <InputLabel id='operator-label'>Operator</InputLabel>
+            <Select
+              size='small'
+              value={where_item.operator}
+              onChange={handle_operator_change}
+              label='Operator'
+              labelId='operator-label'
+              variant='outlined'
+              defaultValue='='>
+              <MenuItem value='='>Equal to</MenuItem>
+              <MenuItem value='!='>Not equal to</MenuItem>
+              <MenuItem value='>'>Greater than</MenuItem>
+              <MenuItem value='>='>Greater than or equal</MenuItem>
+              <MenuItem value='<'>Less than</MenuItem>
+              <MenuItem value='<='>Less than or equal</MenuItem>
+              <MenuItem value='LIKE'>Like</MenuItem>
+              <MenuItem value='NOT LIKE'>Not like</MenuItem>
+              <MenuItem value='IN'>In</MenuItem>
+              <MenuItem value='NOT IN'>Not in</MenuItem>
+              <MenuItem value='IS NULL'>Is empty</MenuItem>
+              <MenuItem value='IS NOT NULL'>Is not empty</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <div className='filter-item-left-value'>
+          <TextField
+            size='small'
+            label='Value'
+            variant='outlined'
+            disabled={!show_value()}
+            value={filter_value}
+            onChange={handle_value_change}
+          />
         </div>
       </div>
-    )
-  }
-)
+      <div className='filter-item-right'>
+        <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
+          <div>
+            <IconButton
+              className='filter-item-right-action'
+              ref={anchor_el}
+              onClick={() => set_misc_menu_open(!misc_menu_open)}>
+              <MoreHorizIcon />
+            </IconButton>
+            <Popper
+              className='misc-menu'
+              open={misc_menu_open}
+              anchorEl={anchor_el.current}
+              placement='bottom-start'>
+              <div>
+                <div className='misc-menu-item' onClick={handle_remove_click}>
+                  <div className='misc-menu-item-icon'>
+                    <DeleteIcon size='small' />
+                  </div>
+                  <div className='misc-menu-item-text'>Remove</div>
+                </div>
+              </div>
+            </Popper>
+          </div>
+        </ClickAwayListener>
+      </div>
+    </div>
+  )
+}
 
 FilterItem.propTypes = {
   column_item: PropTypes.object.isRequired,
@@ -365,7 +367,7 @@ export default function TableFilterModal({
             autoFocus
           />
         </div>
-        <div ref={parent_ref} style={{ height: `400px`, overflow: 'auto' }}>
+        <div ref={parent_ref} style={{ height: '400px', overflow: 'auto' }}>
           <div
             style={{
               height: `${row_virtualizer.getTotalSize()}px`,

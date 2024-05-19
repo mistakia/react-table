@@ -7,7 +7,6 @@ import {
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import PropTypes from 'prop-types'
-// import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -95,7 +94,13 @@ export default function Table({
     delete_view
   })
 
-  const [slice_size, set_slice_size] = React.useState(20)
+  const INITIAL_LOAD_NUMBER = 20
+  const OVERSCAN_COUNT = 10
+  const ROWS_ADDED_ON_SCROLL = 50
+  const SCROLL_DISTANCE_THRESHOLD = 2000
+  const SLICE_SIZE_INCREMENT_DELAY = 2000
+
+  const [slice_size, set_slice_size] = React.useState(INITIAL_LOAD_NUMBER)
   const [filters_expanded, set_filters_expanded] = React.useState(false)
   const [filter_modal_open, set_filter_modal_open] = React.useState(false)
   const table_container_ref = React.useRef()
@@ -245,8 +250,8 @@ export default function Table({
 
   const throttled_set_slice_size = React.useCallback(
     throttle_leading_edge(() => {
-      set_slice_size(slice_size + 30)
-    }, 2000),
+      set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
+    }, SLICE_SIZE_INCREMENT_DELAY),
     [slice_size]
   )
 
@@ -262,8 +267,10 @@ export default function Table({
           ? window.innerHeight
           : container_ref.clientHeight
 
-        const scroll_distance = 2000
-        if (scroll_height - scroll_top - client_height < scroll_distance) {
+        if (
+          scroll_height - scroll_top - client_height <
+          SCROLL_DISTANCE_THRESHOLD
+        ) {
           if (slice_size < rows.length) {
             throttled_set_slice_size()
             return
@@ -303,15 +310,15 @@ export default function Table({
 
   React.useEffect(() => {
     setTimeout(() => {
-      set_slice_size(slice_size + 30)
-    }, 2000)
+      set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
+    }, SLICE_SIZE_INCREMENT_DELAY)
   }, [])
 
   const row_virtualizer = useVirtualizer({
     getScrollElement: () => table_container_ref.current, // get_scroll_parent(table_container_ref.current),
     estimateSize: () => 32,
     count: Math.min(data.length, slice_size),
-    overscan: 10
+    overscan: OVERSCAN_COUNT
   })
   const virtual_rows = row_virtualizer.getVirtualItems()
 
@@ -479,7 +486,7 @@ export default function Table({
             <LinearProgress />
           </div>
         )}
-        {!is_fetching && (
+        {rows.length > 0 && (
           <div className='body'>
             {virtual_rows.map((virtual_row) => {
               const row = rows[virtual_row.index]
@@ -497,7 +504,7 @@ export default function Table({
             })}
           </div>
         )}
-        {!is_fetching && (
+        {rows.length > 0 && (
           <div className='footer'>
             {table.getFooterGroups().map((footerGroup, index) => (
               <div key={index} className='row'>
