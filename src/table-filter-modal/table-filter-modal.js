@@ -1,4 +1,4 @@
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useState, useMemo, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Modal from '@mui/material/Modal'
 import TextField from '@mui/material/TextField'
@@ -10,12 +10,10 @@ import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import { Popper } from '@mui/base/Popper'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
-// import ListIcon from '@mui/icons-material/List'
 import DeleteIcon from '@mui/icons-material/Delete'
-import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView'
-import { TreeItem2 } from '@mui/x-tree-view/TreeItem2'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { useVirtualizer } from '@tanstack/react-virtual'
 
 import {
   debounce,
@@ -43,39 +41,49 @@ function TreeColumnItem({
   item_path = '/',
   shown_column_index = {},
   table_state,
-  on_table_state_change
+  on_table_state_change,
+  expanded_items,
+  set_expanded_items
 }) {
   const sub_item_path = `${item_path}/${item.header || item.column_title}`
 
+  const is_expanded = expanded_items.includes(item.column_id)
+  const toggle_expand = () => {
+    set_expanded_items((prev) =>
+      is_expanded
+        ? prev.filter((id) => id !== item.column_id)
+        : [...prev, item.column_id]
+    )
+  }
+
   if (!item.columns) {
     return (
-      <TreeItem2
-        itemId={item.column_id}
-        id={sub_item_path}
-        slots={{
-          content: FilterItem
-        }}
-        slotProps={{
-          content: {
-            column_item: item,
-            is_visible: Boolean(shown_column_index[item.column_id]),
-            table_state,
-            on_table_state_change
-          }
-        }}
-      />
+      <div id={sub_item_path}>
+        <FilterItem
+          column_item={item}
+          is_visible={Boolean(shown_column_index[item.column_id])}
+          table_state={table_state}
+          on_table_state_change={on_table_state_change}
+        />
+      </div>
     )
   }
 
   const sub_items = []
-  if (item.columns && item.columns.length > 0) {
+  if (item.columns && item.columns.length > 0 && is_expanded) {
     item.columns.forEach((sub_item, index) => {
       sub_items.push(
         <TreeColumnItem
           key={index}
           item={sub_item}
           item_path={sub_item_path}
-          {...{ shown_column_index, table_state, on_table_state_change }}
+          {...{
+            shown_column_index,
+            table_state,
+            on_table_state_change,
+            expanded_items,
+            set_expanded_items
+          }}
         />
       )
     })
@@ -87,12 +95,13 @@ function TreeColumnItem({
   )})`
 
   return (
-    <TreeItem2
-      itemId={item.column_id}
-      id={sub_item_path}
-      label={label_with_count}>
+    <div id={sub_item_path}>
+      <div onClick={toggle_expand}>
+        {is_expanded ? <ExpandMoreIcon /> : <ChevronRightIcon />}
+        {label_with_count}
+      </div>
       {sub_items}
-    </TreeItem2>
+    </div>
   )
 }
 
@@ -101,25 +110,25 @@ TreeColumnItem.propTypes = {
   item_path: PropTypes.string,
   shown_column_index: PropTypes.object,
   table_state: PropTypes.object.isRequired,
-  on_table_state_change: PropTypes.func.isRequired
+  on_table_state_change: PropTypes.func.isRequired,
+  expanded_items: PropTypes.array.isRequired,
+  set_expanded_items: PropTypes.func.isRequired
 }
 
 const FilterItem = forwardRef(
   ({ column_item, table_state, on_table_state_change, is_visible }, ref) => {
-    const anchor_el = React.useRef()
-    const where_item = React.useMemo(() => {
+    const anchor_el = useRef()
+    const where_item = useMemo(() => {
       const where_param = table_state.where || []
       return (
         where_param.find((item) => item.column_id === column_item.column_id) ||
         {}
       )
     }, [table_state, column_item])
-    const [filter_value, set_filter_value] = React.useState(
-      where_item?.value || ''
-    )
-    const [misc_menu_open, set_misc_menu_open] = React.useState(false)
+    const [filter_value, set_filter_value] = useState(where_item?.value || '')
+    const [misc_menu_open, set_misc_menu_open] = useState(false)
 
-    React.useEffect(() => {
+    useEffect(() => {
       return () => {
         set_misc_menu_open(false)
       }
@@ -274,12 +283,6 @@ const FilterItem = forwardRef(
                     </div>
                     <div className='misc-menu-item-text'>Remove</div>
                   </div>
-                  {/* <div className='misc-menu-item'>
-                  <div className='misc-menu-item-icon'>
-                    <ListIcon size='small' />
-                  </div>
-                  <div className='misc-menu-item-text'>Turn into group</div>
-                </div> */}
                 </div>
               </Popper>
             </div>
@@ -304,9 +307,10 @@ export default function TableFilterModal({
   on_table_state_change,
   all_columns
 }) {
-  const [filter_text_input, set_filter_text_input] = React.useState('')
+  const [filter_text_input, set_filter_text_input] = useState('')
+  const [expanded_items, set_expanded_items] = useState([])
 
-  const shown_column_index = React.useMemo(() => {
+  const shown_column_index = useMemo(() => {
     const index = {}
 
     for (const item of table_state.where || []) {
@@ -316,7 +320,7 @@ export default function TableFilterModal({
     return index
   }, [table_state])
 
-  const tree_view_columns = React.useMemo(() => {
+  const tree_view_columns = useMemo(() => {
     if (!filter_text_input) {
       return group_columns_into_tree_view(all_columns)
     }
@@ -331,6 +335,15 @@ export default function TableFilterModal({
     const { value } = event.target
     set_filter_text_input(value)
   }
+
+  const parent_ref = useRef()
+
+  const row_virtualizer = useVirtualizer({
+    count: tree_view_columns.length,
+    getScrollElement: () => parent_ref.current,
+    estimateSize: () => 35,
+    overscan: 5
+  })
 
   return (
     <Modal
@@ -352,23 +365,42 @@ export default function TableFilterModal({
             autoFocus
           />
         </div>
-        <SimpleTreeView
-          slots={{
-            collapsedIcon: ExpandMoreIcon,
-            expandedIcon: ChevronRightIcon
-          }}>
-          {tree_view_columns.map((item, index) => (
-            <TreeColumnItem
-              key={index}
-              {...{
-                item,
-                shown_column_index,
-                table_state,
-                on_table_state_change
-              }}
-            />
-          ))}
-        </SimpleTreeView>
+        <div ref={parent_ref} style={{ height: `400px`, overflow: 'auto' }}>
+          <div
+            style={{
+              height: `${row_virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative'
+            }}>
+            {row_virtualizer.getVirtualItems().map((virtual_row) => {
+              const item = tree_view_columns[virtual_row.index]
+              return (
+                <div
+                  key={virtual_row.key}
+                  data-index={virtual_row.index}
+                  ref={row_virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtual_row.start}px)`
+                  }}>
+                  <TreeColumnItem
+                    {...{
+                      item,
+                      shown_column_index,
+                      table_state,
+                      on_table_state_change,
+                      expanded_items,
+                      set_expanded_items
+                    }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </Modal>
   )
