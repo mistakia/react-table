@@ -30,7 +30,6 @@ const TableColumnItem = ({
 }) => {
   return (
     <div
-      ref={ref}
       className={get_string_from_object({
         'column-item': true,
         shown: is_visible
@@ -61,7 +60,6 @@ TableColumnItem.propTypes = {
   set_column_hidden: PropTypes.func.isRequired,
   is_visible: PropTypes.bool
 }
-TableColumnItem.displayName = 'TableColumnItem'
 
 const get_column_group_column_count = (columns) => {
   let count = 0
