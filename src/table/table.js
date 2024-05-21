@@ -57,6 +57,8 @@ export default function Table({
   select_view = () => {},
   fetch_more = () => {},
   is_fetching = false,
+  is_fetching_more = false,
+  is_loading = false,
   total_rows_fetched,
   total_row_count,
   delete_view = () => {},
@@ -64,6 +66,7 @@ export default function Table({
   style = {},
   percentiles = {}
 }) {
+  is_fetching_more = is_fetching
   use_trace_update('Table', {
     data,
     on_view_change,
@@ -73,7 +76,7 @@ export default function Table({
     views,
     select_view,
     fetch_more,
-    is_fetching,
+    is_fetching_more,
     total_rows_fetched,
     total_row_count,
     delete_view
@@ -290,7 +293,7 @@ export default function Table({
             return
           }
 
-          if (!is_fetching && total_rows_fetched < total_row_count) {
+          if (!is_fetching_more && total_rows_fetched < total_row_count) {
             const { view_id } = selected_view
             fetch_more({ view_id })
           }
@@ -299,7 +302,7 @@ export default function Table({
     },
     [
       fetch_more,
-      is_fetching,
+      is_fetching_more,
       total_rows_fetched,
       total_row_count,
       slice_size,
@@ -514,12 +517,12 @@ export default function Table({
             </div>
           ))}
         </div>
-        {is_fetching && (
+        {(is_fetching_more || is_loading) && (
           <div className='loading'>
             <LinearProgress />
           </div>
         )}
-        {rows.length > 0 && (
+        {!is_loading && rows.length > 0 && (
           <div className='body'>
             {virtual_rows.map((virtual_row) => {
               const row = rows[virtual_row.index]
@@ -537,7 +540,7 @@ export default function Table({
             })}
           </div>
         )}
-        {rows.length > 0 && (
+        {!is_loading && rows.length > 0 && (
           <div className='footer'>
             {table.getFooterGroups().map((footerGroup, index) => (
               <div key={index} className='row'>
@@ -577,6 +580,8 @@ Table.propTypes = {
   views: PropTypes.array,
   fetch_more: PropTypes.func,
   is_fetching: PropTypes.bool,
+  is_fetching_more: PropTypes.bool,
+  is_loading: PropTypes.bool,
   total_row_count: PropTypes.number,
   total_rows_fetched: PropTypes.number,
   delete_view: PropTypes.func,
