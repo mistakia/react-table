@@ -29,7 +29,8 @@ import {
   get_string_from_object,
   get_scroll_parent,
   throttle_leading_edge,
-  group_columns_by_groups
+  group_columns_by_groups,
+  use_trace_update
 } from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
@@ -44,22 +45,6 @@ const defaultColumn = {
   header: TableHeader,
   footer: TableFooter,
   sortType: 'alphanumericFalsyLast'
-}
-
-function use_trace_update(props) {
-  const prev = useRef(props)
-  useEffect(() => {
-    const changedProps = Object.entries(props).reduce((ps, [k, v]) => {
-      if (prev.current[k] !== v) {
-        ps[k] = [prev.current[k], v]
-      }
-      return ps
-    }, {})
-    if (Object.keys(changedProps).length > 0) {
-      console.log('Changed props:', changedProps)
-    }
-    prev.current = props
-  })
 }
 
 export default function Table({
@@ -79,7 +64,7 @@ export default function Table({
   style = {},
   percentiles = {}
 }) {
-  use_trace_update({
+  use_trace_update('Table', {
     data,
     on_view_change,
     table_state,
