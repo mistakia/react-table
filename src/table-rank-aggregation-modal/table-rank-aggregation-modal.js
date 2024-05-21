@@ -15,12 +15,16 @@ import { TABLE_DATA_TYPES } from '../constants.mjs'
 function RankItem({
   table_state,
   rank_item,
-  all_columns,
+  all_columns = [],
   index,
   on_table_state_change
 }) {
   const [rank_column, set_rank_column] = React.useState(
-    all_columns.find((column) => column.column_name === rank_item.column_name)
+    all_columns.find(
+      (column) =>
+        column.column_id ===
+        (rank_item.column_id || rank_item.id || rank_item.column_name)
+    )
   )
   const [rank_weight, set_rank_weight] = React.useState(rank_item.weight)
 
@@ -32,8 +36,7 @@ function RankItem({
     }
 
     const rank_param = table_state.rank_aggregation || []
-    rank_param[index].column_name = value.column_name
-    rank_param[index].table_name = value.table_name
+    rank_param[index].column_id = value.column_id
     on_table_state_change({
       ...table_state,
       rank_aggregation: rank_param
@@ -59,7 +62,7 @@ function RankItem({
     const columns = table_state.columns || []
     if (!rank_param.length) {
       const rank_column_index = columns.findIndex(
-        (column) => column.accessorKey === 'rank_aggregation'
+        (column) => column.column_id === 'rank_aggregation'
       )
       if (rank_column_index !== -1) {
         columns.splice(rank_column_index, 1)
@@ -82,9 +85,9 @@ function RankItem({
           value={rank_column}
           componentsProps={{ popper: { style: { width: 'fit-content' } } }}
           onChange={handle_column_change}
-          getOptionLabel={(option) => option.column_name}
+          getOptionLabel={(option) => option.column_id}
           isOptionEqualToValue={(option, value) =>
-            option.column_name === value.column_name
+            option.column_id === value.column_id
           }
           renderInput={(params) => (
             <TextField {...params} label='Column' variant='outlined' />
@@ -121,7 +124,7 @@ RankItem.propTypes = {
 export default function TableRankAggregationModal({
   table_state,
   on_table_state_change,
-  all_columns
+  all_columns = []
 }) {
   const [modal_open, set_modal_open] = React.useState(false)
 
@@ -144,15 +147,14 @@ export default function TableRankAggregationModal({
 
   const handle_add_click = () => {
     rank_param.push({
-      column_name: all_columns[0].column_name,
-      table_name: all_columns[0].table_name,
+      column_id: all_columns[0].column_id,
       weight: 1
     })
 
     const columns = table_state.columns || []
-    if (!columns.find((column) => column.accessorKey === 'rank_aggregation')) {
+    if (!columns.find((column) => column.column_id === 'rank_aggregation')) {
       columns.unshift({
-        id: 'rank_aggregation',
+        column_id: 'rank_aggregation',
         accessorKey: 'rank_aggregation',
         data_type: TABLE_DATA_TYPES.NUMBER,
         header_label: 'Rank'

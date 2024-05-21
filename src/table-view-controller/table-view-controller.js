@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import ClickAwayListener from '@mui/base/ClickAwayListener'
-import PopperUnstyled from '@mui/base/PopperUnstyled'
+import { ClickAwayListener } from '@mui/base/ClickAwayListener'
+import { Popper } from '@mui/base/Popper'
 import TextField from '@mui/material/TextField'
 import InputAdornment from '@mui/material/InputAdornment'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -16,6 +16,19 @@ import TableViewModal from '../table-view-modal'
 import { fuzzy_match } from '../utils'
 
 import './table-view-controller.styl'
+
+function generate_view_id() {
+  let timestamp = Date.now()
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
+    /[xy]/g,
+    function (c) {
+      const r = (timestamp + Math.random() * 16) % 16 | 0
+      timestamp = Math.floor(timestamp / 16)
+      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+    }
+  )
+  return uuid
+}
 
 function ViewItem({
   view,
@@ -41,11 +54,16 @@ function ViewItem({
   }
 
   const handle_duplicate_click = () => {
-    on_view_change({
-      view_name: `${view.view_name} (copy)`,
-      view_description: view.view_description,
-      table_state: view.table_state
-    })
+    on_view_change(
+      {
+        view_name: `${view.view_name} (copy)`,
+        view_description: view.view_description,
+        table_state: view.table_state
+      },
+      {
+        view_state_changed: true
+      }
+    )
     set_misc_menu_open(false)
   }
 
@@ -66,7 +84,7 @@ function ViewItem({
               onClick={() => set_misc_menu_open(!misc_menu_open)}>
               <MoreHorizIcon />
             </IconButton>
-            <PopperUnstyled
+            <Popper
               className='misc-menu'
               open={misc_menu_open}
               anchorEl={anchor_el.current}
@@ -93,7 +111,7 @@ function ViewItem({
                   <div className='misc-menu-item-text'>Duplicate</div>
                 </div>
               </div>
-            </PopperUnstyled>
+            </Popper>
           </div>
         </ClickAwayListener>
       </div>
@@ -137,6 +155,7 @@ export default function TableViewController({
   const handleInputBlur = () => {
     set_input_value('')
   }
+
   const handleInputFocus = (event) => {
     set_input_value('')
     event.target.select()
@@ -147,20 +166,28 @@ export default function TableViewController({
     select_view(view.view_id)
     set_input_value(view.view_name)
   }
-  const handleClickAway = () => set_views_popper_open(false)
+  const handleClickAway = () => {
+    set_input_value(selected_view.view_name)
+    set_views_popper_open(false)
+  }
 
   const handle_add_click = () => {
-    on_view_change({
-      ...selected_view,
-      view_id: null,
-      view_name: 'New view',
-      view_description: 'New view description',
-      table_state: {
-        columns: [],
-        sorting: [],
-        where: []
+    on_view_change(
+      {
+        ...selected_view,
+        view_id: generate_view_id(),
+        view_name: 'New view',
+        view_description: 'New view description',
+        table_state: {
+          columns: [],
+          sort: [],
+          where: []
+        }
+      },
+      {
+        view_state_changed: true
       }
-    })
+    )
   }
 
   const filtered_views = input_value
@@ -206,7 +233,7 @@ export default function TableViewController({
               )
             }}
           />
-          <PopperUnstyled
+          <Popper
             className='table-view-popper'
             placement='bottom-start'
             open={views_popper_open}
@@ -218,7 +245,7 @@ export default function TableViewController({
                 Add view
               </div>
             </div>
-          </PopperUnstyled>
+          </Popper>
         </div>
       </ClickAwayListener>
       <TableViewModal

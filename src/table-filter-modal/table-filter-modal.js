@@ -1,7 +1,6 @@
-import React from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Modal from '@mui/material/Modal'
-import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
@@ -9,40 +8,142 @@ import IconButton from '@mui/material/IconButton'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
-import PopperUnstyled from '@mui/base/PopperUnstyled'
+import { Popper } from '@mui/base/Popper'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
-// import ListIcon from '@mui/icons-material/List'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import { useVirtualizer } from '@tanstack/react-virtual'
 
-import { debounce } from '../utils'
+import {
+  debounce,
+  group_columns_into_tree_view,
+  fuzzy_match,
+  get_string_from_object
+} from '../utils'
 
 import './table-filter-modal.styl'
 
-function FilterItem({
-  where_item,
-  all_columns,
-  index,
-  table_state,
-  on_table_state_change
-}) {
-  const anchor_el = React.useRef()
-  const [filter_column, set_filter_column] = React.useState(
-    all_columns.find((column) => column.column_name === where_item.column_name)
-  )
-  const [filter_value, set_filter_value] = React.useState(where_item.value)
-  const [misc_menu_open, set_misc_menu_open] = React.useState(false)
+const get_column_group_column_count = (columns) => {
+  let count = 0
+  columns.forEach((column) => {
+    if (column.columns) {
+      count += get_column_group_column_count(column.columns)
+    } else {
+      count += 1
+    }
+  })
+  return count
+}
 
-  React.useEffect(() => {
+function TreeColumnItem({
+  item,
+  item_path = '/',
+  shown_column_index = {},
+  table_state,
+  on_table_state_change,
+  expanded_items,
+  set_expanded_items
+}) {
+  const sub_item_path = `${item_path}/${item.header || item.column_title}`
+
+  const is_expanded = expanded_items.includes(item.column_id)
+  const toggle_expand = () => {
+    set_expanded_items((prev) =>
+      is_expanded
+        ? prev.filter((id) => id !== item.column_id)
+        : [...prev, item.column_id]
+    )
+  }
+
+  if (!item.columns) {
+    return (
+      <div id={sub_item_path}>
+        <FilterItem
+          column_item={item}
+          is_visible={Boolean(shown_column_index[item.column_id])}
+          table_state={table_state}
+          on_table_state_change={on_table_state_change}
+        />
+      </div>
+    )
+  }
+
+  const sub_items = []
+  if (item.columns && item.columns.length > 0 && is_expanded) {
+    item.columns.forEach((sub_item, index) => {
+      sub_items.push(
+        <TreeColumnItem
+          key={index}
+          item={sub_item}
+          item_path={sub_item_path}
+          {...{
+            shown_column_index,
+            table_state,
+            on_table_state_change,
+            expanded_items,
+            set_expanded_items
+          }}
+        />
+      )
+    })
+  }
+
+  const label = (item.header || item.column_title).toLowerCase()
+  const label_with_count = `${label} (${get_column_group_column_count(
+    item.columns
+  )})`
+
+  return (
+    <div id={sub_item_path}>
+      <div onClick={toggle_expand}>
+        {is_expanded ? <ExpandMoreIcon /> : <ChevronRightIcon />}
+        {label_with_count}
+      </div>
+      {sub_items}
+    </div>
+  )
+}
+
+TreeColumnItem.propTypes = {
+  item: PropTypes.object.isRequired,
+  item_path: PropTypes.string,
+  shown_column_index: PropTypes.object,
+  table_state: PropTypes.object.isRequired,
+  on_table_state_change: PropTypes.func.isRequired,
+  expanded_items: PropTypes.array.isRequired,
+  set_expanded_items: PropTypes.func.isRequired
+}
+
+const FilterItem = ({
+  column_item,
+  table_state,
+  on_table_state_change,
+  is_visible
+}) => {
+  const anchor_el = useRef()
+  const where_item = useMemo(() => {
+    const where_param = table_state.where || []
+    return (
+      where_param.find((item) => item.column_id === column_item.column_id) || {}
+    )
+  }, [table_state, column_item])
+  const [filter_value, set_filter_value] = useState(where_item?.value || '')
+  const [misc_menu_open, set_misc_menu_open] = useState(false)
+
+  useEffect(() => {
     return () => {
       set_misc_menu_open(false)
     }
   }, [])
 
-  const handle_remove_click = () => {
+  const handle_create_filter = ({ operator = '=', value = '' }) => {
     const where_param = table_state.where || []
-    where_param.splice(index, 1)
+    where_param.push({
+      column_id: column_item.column_id,
+      operator,
+      value
+    })
     on_table_state_change({
       ...table_state,
       where: where_param
@@ -50,9 +151,12 @@ function FilterItem({
     set_misc_menu_open(false)
   }
 
-  const handle_duplicate_click = () => {
+  const handle_remove_click = () => {
     const where_param = table_state.where || []
-    where_param.push(where_item)
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
+    where_param.splice(index, 1)
     on_table_state_change({
       ...table_state,
       where: where_param
@@ -62,23 +166,17 @@ function FilterItem({
 
   const handle_operator_change = (event) => {
     const where_param = table_state.where || []
-    where_param[index].operator = event.target.value
-    on_table_state_change({
-      ...table_state,
-      where: where_param
-    })
-  }
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
 
-  const handle_column_change = (event, value) => {
-    set_filter_column(value)
-
-    if (!value) {
-      return
+    if (index === -1) {
+      return handle_create_filter({
+        operator: event.target.value
+      })
     }
 
-    const where_param = table_state.where || []
-    where_param[index].column_name = value.column_name
-    where_param[index].table_name = value.table_name
+    where_param[index].operator = event.target.value
     on_table_state_change({
       ...table_state,
       where: where_param
@@ -87,6 +185,16 @@ function FilterItem({
 
   const handle_value_change_debounced = debounce((event) => {
     const where_param = table_state.where || []
+    const index = where_param.findIndex(
+      (item) => item.column_id === where_item.column_id
+    )
+
+    if (index === -1) {
+      return handle_create_filter({
+        value: event.target.value
+      })
+    }
+
     where_param[index].value = event.target.value
     on_table_state_change({
       ...table_state,
@@ -111,22 +219,14 @@ function FilterItem({
   }
 
   return (
-    <div className='filter-item'>
+    <div
+      className={get_string_from_object({
+        'filter-item': true,
+        visible: is_visible
+      })}>
       <div className='filter-item-left'>
         <div className='filter-item-left-column'>
-          <Autocomplete
-            size='small'
-            options={all_columns}
-            value={filter_column}
-            onChange={handle_column_change}
-            getOptionLabel={(option) => option.column_name}
-            isOptionEqualToValue={(option, value) =>
-              option.column_name === value.column_name
-            }
-            renderInput={(params) => (
-              <TextField {...params} label='Column' variant='outlined' />
-            )}
-          />
+          {column_item.column_title || column_item.column_id}
         </div>
         <div className='filter-item-left-operator'>
           <FormControl>
@@ -137,7 +237,8 @@ function FilterItem({
               onChange={handle_operator_change}
               label='Operator'
               labelId='operator-label'
-              variant='outlined'>
+              variant='outlined'
+              defaultValue='='>
               <MenuItem value='='>Equal to</MenuItem>
               <MenuItem value='!='>Not equal to</MenuItem>
               <MenuItem value='>'>Greater than</MenuItem>
@@ -173,7 +274,7 @@ function FilterItem({
               onClick={() => set_misc_menu_open(!misc_menu_open)}>
               <MoreHorizIcon />
             </IconButton>
-            <PopperUnstyled
+            <Popper
               className='misc-menu'
               open={misc_menu_open}
               anchorEl={anchor_el.current}
@@ -185,22 +286,8 @@ function FilterItem({
                   </div>
                   <div className='misc-menu-item-text'>Remove</div>
                 </div>
-                <div
-                  className='misc-menu-item'
-                  onClick={handle_duplicate_click}>
-                  <div className='misc-menu-item-icon'>
-                    <ContentCopyIcon size='small' />
-                  </div>
-                  <div className='misc-menu-item-text'>Duplicate</div>
-                </div>
-                {/* <div className='misc-menu-item'>
-                  <div className='misc-menu-item-icon'>
-                    <ListIcon size='small' />
-                  </div>
-                  <div className='misc-menu-item-text'>Turn into group</div>
-                </div> */}
               </div>
-            </PopperUnstyled>
+            </Popper>
           </div>
         </ClickAwayListener>
       </div>
@@ -209,11 +296,10 @@ function FilterItem({
 }
 
 FilterItem.propTypes = {
-  all_columns: PropTypes.array.isRequired,
-  where_item: PropTypes.object.isRequired,
-  index: PropTypes.number.isRequired,
+  column_item: PropTypes.object.isRequired,
   table_state: PropTypes.object.isRequired,
-  on_table_state_change: PropTypes.func.isRequired
+  on_table_state_change: PropTypes.func.isRequired,
+  is_visible: PropTypes.bool.isRequired
 }
 
 export default function TableFilterModal({
@@ -223,34 +309,43 @@ export default function TableFilterModal({
   on_table_state_change,
   all_columns
 }) {
-  const items = []
-  const where_param = table_state.where || []
-  where_param.forEach((where_item, index) => {
-    items.push(
-      <FilterItem
-        key={index}
-        {...{
-          all_columns,
-          where_item,
-          index,
-          table_state,
-          on_table_state_change
-        }}
-      />
-    )
-  })
+  const [filter_text_input, set_filter_text_input] = useState('')
+  const [expanded_items, set_expanded_items] = useState([])
 
-  const handle_add_click = () => {
-    where_param.push({
-      column: all_columns[0].column_name,
-      operator: '=',
-      value: ''
-    })
-    on_table_state_change({
-      ...table_state,
-      where: where_param
-    })
+  const shown_column_index = useMemo(() => {
+    const index = {}
+
+    for (const item of table_state.where || []) {
+      index[item.column_id] = true
+    }
+
+    return index
+  }, [table_state])
+
+  const tree_view_columns = useMemo(() => {
+    if (!filter_text_input) {
+      return group_columns_into_tree_view(all_columns)
+    }
+
+    const filtered_columns = all_columns.filter((column) =>
+      fuzzy_match(filter_text_input, column.column_title || column.column_id)
+    )
+    return group_columns_into_tree_view(filtered_columns)
+  }, [all_columns, filter_text_input])
+
+  const handle_filter_change = (event) => {
+    const { value } = event.target
+    set_filter_text_input(value)
   }
+
+  const parent_ref = useRef()
+
+  const row_virtualizer = useVirtualizer({
+    count: tree_view_columns.length,
+    getScrollElement: () => parent_ref.current,
+    estimateSize: () => 35,
+    overscan: 5
+  })
 
   return (
     <Modal
@@ -259,11 +354,53 @@ export default function TableFilterModal({
       onClose={() => set_filter_modal_open(false)}
       className='table-filter-modal'>
       <div className='table-filter-modal-content'>
-        {items}
-        <div className='table-filter-add-content'>
-          <div className='table-filter-add-button' onClick={handle_add_click}>
-            <AddIcon />
-            <div className='table-filter-add-content-text'>Add filter</div>
+        <div className='filter-input'>
+          <TextField
+            id='outlined-basic'
+            label='Search filters'
+            placeholder='Search for a filter'
+            variant='outlined'
+            size='small'
+            value={filter_text_input}
+            onChange={handle_filter_change}
+            fullWidth
+            autoFocus
+          />
+        </div>
+        <div ref={parent_ref} style={{ height: '400px', overflow: 'auto' }}>
+          <div
+            style={{
+              height: `${row_virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative'
+            }}>
+            {row_virtualizer.getVirtualItems().map((virtual_row) => {
+              const item = tree_view_columns[virtual_row.index]
+              return (
+                <div
+                  key={virtual_row.key}
+                  data-index={virtual_row.index}
+                  ref={row_virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtual_row.start}px)`
+                  }}>
+                  <TreeColumnItem
+                    {...{
+                      item,
+                      shown_column_index,
+                      table_state,
+                      on_table_state_change,
+                      expanded_items,
+                      set_expanded_items
+                    }}
+                  />
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

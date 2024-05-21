@@ -1,0 +1,94 @@
+.filter
+  position relative
+  border-radius 3px
+  padding 4px 8px
+  margin 8px 4px !important
+  display flex
+  flex-direction column
+  background #f0f0f0
+  cursor pointer
+  user-select none
+  min-height 35px
+  flex 0 0 auto
+  max-width 126px
+  &:not(.switch)
+    background white
+  &:hover
+    background white
+    .filter-label
+      color $accentColor
+
+  &.switch
+    align-items center
+
+.filter-label
+  font-size 0.6875rem
+  font-weight 700
+  color lighten($textColor, 40%)
+  text-transform uppercase
+  letter-spacing 0.02em
+
+.filter-dropdown
+  min-width 150px
+  z-index 10001
+  display flex
+  flex-direction column
+
+.filter-dropdown-body
+  display flex
+  flex-direction column
+  max-height 250px
+  overflow hidden
+  overflow-y scroll
+  border-radius 0 0 3px 3px
+
+.filter-dropdown-item
+  flex 1
+  padding 8px 16px
+  display flex
+
+  &.selected
+    background rgba(25, 118, 210, 0.08)
+
+  &:hover
+    background #fafafa
+
+  .MuiCheckbox-root
+    padding 0 9px 0 0
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
+
+.filter-selection
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+.filter-dropdown-head
+  display flex
+  border-bottom 1px solid $borderColor
+  justify-content space-between
+  padding 8px
+
+.filter-dropdown-action
+  background #f0f0f0
+  padding 0.25rem 0.5rem
+  border-radius 3px
+  display flex
+  justify-content center
+  align-items center
+  &:hover
+    background darken(#f0f0f0, 30%)
+
+@media (max-width 800px)
+  .filter-dropdown
+    position fixed
+    left 50%
+    top 50%
+    transform translate(-50%, -50%)
+    width 66%
+
+  .filter-dropdown-action
+    min-height 32px
+    min-width 48px

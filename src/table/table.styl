@@ -1,4 +1,4 @@
-.MuiPopperUnstyled-root:not(.MuiTooltip-popper)
+.base-Popper-root:not(.MuiTooltip-popper)
     z-index 1000
     border-radius 4px
     background white
@@ -20,7 +20,6 @@
   position sticky
   left 0
   top 0
-  background white
   z-index 1
 
   .MuiLinearProgress-root
@@ -74,6 +73,13 @@
     justify-content flex-end
     padding 2px 8px
     padding-right 96px
+    align-items center
+    min-width fit-content
+
+    button
+    .table-view-menu
+      margin-right 8px
+      min-width fit-content
 
   &.noselect
     -webkit-touch-callout none
@@ -88,9 +94,6 @@
     height 100%
     width fit-content
 
-    &:hover
-      background-color #f0f0f0
-
     .cell
       white-space nowrap
       margin 0 
@@ -98,11 +101,17 @@
       position relative
       cursor pointer
 
+      &.group_end
+        border-right 1px solid $borderColor
+
       &.sorted
         background-color rgba(245, 245, 245, 0.6)
 
-      &:hover
-        background-color #b9d4ff
+      &.sticky
+        position sticky
+        left 0
+        z-index 1
+        background-color inherit
 
     .cell-content
       height 100%
@@ -111,23 +120,40 @@
       white-space nowrap
       padding 0 8px
 
+  .body
+    .cell
+      &:hover
+        background-color #b9d4ff
+
+    .row
+      &:hover
+        background-color white
+
   .header
-    height 33px
     width fit-content
     position sticky
-    top 3px
-    z-index 1
+    top -1px
+    z-index 2
+    font-size 11px
+    font-weight 800
+    letter-spacing 1px
+    text-transform uppercase
+
+    .row
+      height 24px
 
     .cell
       line-height 120%
-      font-size 14px
       background-color $backgroundColor
-      border-bottom 1px solid $borderColor
-      border-top 1px solid $borderColor
 
-      &:hover
-        background-color darken($backgroundColor, 10%)
-        cursor pointer
+    .cell:not(.column-index)
+      border-right 1px solid $borderColor
+
+      &.border_bottom
+        border-bottom 1px solid $borderColor
+
+    .row:nth-child(1) .cell:not(.column-index)
+      border-top 1px solid $borderColor
 
   .footer
     height 33px
@@ -178,3 +204,19 @@
     .cell-content
       display flex
       align-items center
+
+  .filters
+    display flex
+    padding 0 10px
+    flex-direction column
+
+    .filter-items
+      display flex
+      flex-wrap wrap
+
+  .filters-expand-button
+    height 24px
+    margin-bottom 4px
+
+  .filter_items
+    display flex
