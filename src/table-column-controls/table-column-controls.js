@@ -22,38 +22,36 @@ import {
 
 import './table-column-controls.styl'
 
-const TableColumnItem = ({
-  column,
-  set_column_visible,
-  set_column_hidden,
-  is_visible
-}) => {
-  return (
-    <div
-      className={get_string_from_object({
-        'column-item': true,
-        shown: is_visible
-      })}>
-      <div className='column-data-type'>
-        <DataTypeIcon data_type={column.data_type} />
+const TableColumnItem = React.forwardRef(
+  ({ column, set_column_visible, set_column_hidden, is_visible }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={get_string_from_object({
+          'column-item': true,
+          shown: is_visible
+        })}>
+        <div className='column-data-type'>
+          <DataTypeIcon data_type={column.data_type} />
+        </div>
+        <div className='column-name'>
+          {column.column_title || column.column_id}
+        </div>
+        <Button
+          size='small'
+          className='column-action'
+          onClick={() =>
+            is_visible
+              ? set_column_hidden(column.column_id)
+              : set_column_visible(column.column_id)
+          }>
+          {is_visible ? 'Hide' : 'Show'}
+        </Button>
       </div>
-      <div className='column-name'>
-        {column.column_title || column.column_id}
-      </div>
-      <Button
-        size='small'
-        className='column-action'
-        onClick={() =>
-          is_visible
-            ? set_column_hidden(column.column_id)
-            : set_column_visible(column.column_id)
-        }>
-        {is_visible ? 'Hide' : 'Show'}
-      </Button>
-    </div>
-  )
-}
-
+    )
+  }
+)
+TableColumnItem.displayName = 'TableColumnItem'
 TableColumnItem.propTypes = {
   column: PropTypes.object.isRequired,
   set_column_visible: PropTypes.func.isRequired,
@@ -87,8 +85,7 @@ function TreeColumnItem({
   if (!item.columns) {
     return (
       <TreeItem2
-        itemId={item.column_id}
-        id={sub_item_path}
+        itemId={sub_item_path}
         slots={{
           content: TableColumnItem
         }}
@@ -124,10 +121,7 @@ function TreeColumnItem({
   )})`
 
   return (
-    <TreeItem2
-      itemId={item.column_id}
-      id={sub_item_path}
-      label={label_with_count}>
+    <TreeItem2 itemId={sub_item_path} label={label_with_count}>
       {sub_items}
     </TreeItem2>
   )
