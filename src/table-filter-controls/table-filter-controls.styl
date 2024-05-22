@@ -1,0 +1,163 @@
+.table-filter-modal.MuiModal-root
+  z-index 4
+
+.filter-controls-container
+  left 153px
+  width 90px
+
+  .filter-item
+    display flex
+    padding 4px
+
+    &.visible
+      background-color #bbd9fb
+
+  .filter-item-right 
+    display flex
+    align-items center
+    justify-content center
+
+  .filter-item-left
+    flex 1
+    display flex
+
+    .MuiInputBase-root
+    .MuiFormControl-root
+      width 100%
+
+  .filter-item-left-column
+    flex 2
+    padding-left 10px
+    word-break break-word
+    white-space normal
+    display flex
+    align-items center
+
+  .filter-item-left-operator
+    flex 1
+    padding-left 10px
+
+  .filter-item-left-value
+    flex 2
+    padding-left 10px
+
+.rank-aggregation-controls-visible .filter-controls-container
+  left 233px
+
+.misc-menu.base-Popper-root
+  min-width 60px
+  padding 4px
+
+.misc-menu-item
+  display flex
+  align-items center
+  padding 0 10px
+  cursor pointer
+  min-height 28px
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
+
+  &:hover
+    background #f5f5f5
+
+  .misc-menu-item-icon
+    margin-right 10px
+
+  .misc-menu-item-text
+    font-size 14px
+
+.table-filter-add-content
+  display flex
+
+.table-filter-add-button
+  flex 1
+  display flex
+  align-items center
+  justify-content center
+  margin 10px 12px
+  padding 10px
+  cursor pointer
+  border-radius 4px
+  font-size 12px
+  background #fafafa
+
+  .MuiSvgIcon-root
+    width 18px
+    height 18px
+    margin-right 8px
+
+  &:hover
+    background #e5e5e5
+
+.column-category
+  padding-top 4px
+  padding-bottom 4px
+  padding-right 16px
+  border-radius 6px
+  .MuiTypography-root
+    font-size 0.875rem
+    line-height 1.5
+    color #1C2025
+    font-weight 600
+
+.column-category-depth-0
+  padding-left 2px
+
+.column-category-depth-1
+  padding-left 36px
+  &:before
+    content: "";
+    display: block;
+    position: absolute;
+    z-index: 1;
+    left: 9.5px;
+    height: 100%;
+    width: 1px;
+    opacity: 1;
+    background: #E5EAF2
+
+  &.ledger__chart--selected:before
+    background hsl(210, 100%, 60%)
+
+.column-category-depth-2
+  padding-left 72px
+  &:before
+    content: ""
+    display block
+    position: absolute
+    z-index 1
+    left 44px
+    height 100%
+    width 1px
+    opacity 1
+    background #E5EAF2
+
+.column-category-depth-3
+  padding-left 90px
+
+.table-selected-filters-container
+  border 1px solid rgba(0, 0, 0, 0.23)
+  overflow hidden
+  overflow-y scroll
+
+.filter-item-right-action
+  display flex
+  align-items center
+  justify-content center
+  padding 4px 10px
+  cursor pointer
+  border-radius 4px
+  font-size 12px
+  background #fafafa
+  &:hover
+    background #e5e5e5
+
+.filter-control-item
+  .filter-item-right-action
+    display none
+
+  &:hover
+    .filter-item-right-action
+      display block

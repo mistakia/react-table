@@ -1,6 +1,6 @@
 import { Modal } from '@mui/material'
 import PropTypes from 'prop-types'
-import React from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 
@@ -12,38 +12,41 @@ export default function TableViewModal({
   view,
   on_view_change
 }) {
-  const [view_name, set_view_name] = React.useState(view.view_name || '')
-  const [view_description, set_view_description] = React.useState(
+  const [view_name, set_view_name] = useState(view.view_name || '')
+  const [view_description, set_view_description] = useState(
     view.view_description || ''
   )
 
-  React.useEffect(() => {
+  useEffect(() => {
     set_view_name(view.view_name || '')
     set_view_description(view.view_description || '')
   }, [view])
 
-  const handle_view_name_change = (event) => {
+  const handle_view_name_change = useCallback((event) => {
     set_view_name(event.target.value)
-  }
+  }, [])
 
-  const handle_view_description_change = (event) => {
+  const handle_view_description_change = useCallback((event) => {
     set_view_description(event.target.value)
-  }
+  }, [])
 
-  const handle_save_click = () => {
+  const handle_save_click = useCallback(() => {
     on_view_change({
       ...view,
       view_name,
       view_description
     })
     set_edit_view_modal_open(false)
-  }
+  }, [
+    view,
+    view_name,
+    view_description,
+    on_view_change,
+    set_edit_view_modal_open
+  ])
 
-  return (
-    <Modal
-      open={edit_view_modal_open}
-      onClose={() => set_edit_view_modal_open(false)}
-      className='table-view-modal'>
+  const modal_content = useMemo(
+    () => (
       <div className='table-view-modal-content'>
         <div className='table-view-item-content-name'>
           <TextField
@@ -71,6 +74,23 @@ export default function TableViewModal({
           <Button onClick={handle_save_click}>Save</Button>
         </div>
       </div>
+    ),
+    [
+      view_name,
+      view_description,
+      handle_view_name_change,
+      handle_view_description_change,
+      handle_save_click,
+      set_edit_view_modal_open
+    ]
+  )
+
+  return (
+    <Modal
+      open={edit_view_modal_open}
+      onClose={() => set_edit_view_modal_open(false)}
+      className='table-view-modal'>
+      {modal_content}
     </Modal>
   )
 }

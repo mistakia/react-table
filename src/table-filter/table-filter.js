@@ -4,6 +4,7 @@ import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import { Popper } from '@mui/base/Popper'
 import Checkbox from '@mui/material/Checkbox'
 
+import { get_string_from_object } from '../utils'
 import './table-filter.styl'
 
 export default function TableFilter({
@@ -114,13 +115,13 @@ export default function TableFilter({
   }
 
   const items = column_values.map((column_value, index) => {
-    const classNames = ['filter-dropdown-item']
+    const class_object = { 'filter-dropdown-item': true }
     const is_selected = all || filter_where_param?.value?.includes(column_value)
-    if (is_selected) classNames.push('selected')
+    if (is_selected) class_object.selected = true
     return (
       <div
         key={index}
-        className={classNames.join(' ')}
+        className={get_string_from_object(class_object)}
         onClick={(e) => handleSelect(e, index)}>
         <Checkbox checked={is_selected} size='small' />
         <div className='dropdown__item-label'>{column_value}</div>

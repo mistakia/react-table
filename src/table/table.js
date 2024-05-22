@@ -11,8 +11,6 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import LinearProgress from '@mui/material/LinearProgress'
-import Button from '@mui/material/Button'
-import FilterListIcon from '@mui/icons-material/FilterList'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -21,10 +19,10 @@ import TableHeader from '../table-header'
 import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
-import TableFilterModal from '../table-filter-modal'
+import TableFilterControls from '../table-filter-controls'
 import TableFilter from '../table-filter'
 import TableSearch from '../table-search'
-import TableRankAggregationModal from '../table-rank-aggregation-modal'
+import TableRankAggregationControls from '../table-rank-aggregation-controls'
 import {
   get_string_from_object,
   get_scroll_parent,
@@ -34,6 +32,8 @@ import {
 } from '../utils'
 
 import '../styles/mui-unstyled-popper.styl'
+import '../styles/table-expanding-control-container.styl'
+import '../styles/table-control-column-item.styl'
 import './table.styl'
 
 const column_helper = createColumnHelper()
@@ -67,6 +67,7 @@ export default function Table({
   percentiles = {}
 }) {
   is_fetching_more = is_fetching
+  console.log('Table')
   use_trace_update('Table', {
     data,
     on_view_change,
@@ -76,10 +77,15 @@ export default function Table({
     views,
     select_view,
     fetch_more,
+    is_fetching,
     is_fetching_more,
+    is_loading,
     total_rows_fetched,
     total_row_count,
-    delete_view
+    delete_view,
+    disable_rank_aggregation,
+    style,
+    percentiles
   })
 
   const INITIAL_LOAD_NUMBER = 20
@@ -89,11 +95,11 @@ export default function Table({
   const SLICE_SIZE_INCREMENT_DELAY = 2000
 
   const [slice_size, set_slice_size] = useState(INITIAL_LOAD_NUMBER)
-  const [filters_expanded, set_filters_expanded] = useState(false)
-  const [filter_modal_open, set_filter_modal_open] = useState(false)
-  const table_container_ref = useRef()
-  const [column_controls_popper_open, set_column_controls_popper_open] =
+  const [is_quick_filters_expanded, set_is_quick_filters_expanded] =
     useState(false)
+  const [filter_controls_open, set_filter_controls_open] = useState(false)
+  const table_container_ref = useRef()
+  const [column_controls_open, set_column_controls_open] = useState(false)
 
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
@@ -101,11 +107,17 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    (new_table_state) => {
+    ({ sort, prefix_columns, columns, where, rank_aggregation }) => {
       on_view_change(
         {
           ...selected_view,
-          table_state: new_table_state
+          table_state: {
+            sort,
+            prefix_columns,
+            columns,
+            where,
+            rank_aggregation
+          }
         },
         {
           view_state_changed: true
@@ -115,40 +127,38 @@ export default function Table({
     [selected_view, on_view_change]
   )
 
-  const set_sorting = useCallback(
-    (updater_fn) => {
-      const new_sorting = updater_fn()
+  const set_table_sort = useCallback(
+    ({ column_id, desc, multi }) => {
       const column_definition = memoized_all_columns.find(
-        (column) => column.column_name === new_sorting[0].id
+        (column) => column.column_id === column_id
       )
-      const column_id = column_definition.column_id
-      const new_sort_item = { id: column_id, desc: new_sorting[0].desc }
-
-      const sorting = new Map()
-
-      let is_new = true
-
-      const table_sort = table_state.sort || table_state.sorting || []
-      for (const sort of table_sort) {
-        if (sort.id === column_id) {
-          is_new = false
-          const is_same = sort.desc === new_sort_item.desc
-          if (is_same) {
-            continue
-          }
-          sorting.set(column_id, new_sort_item)
-        } else {
-          sorting.set(sort.id, sort)
-        }
+      if (!column_definition) {
+        console.error(`Column with id ${column_id} not found`)
+        return
       }
 
-      if (is_new) {
-        sorting.set(new_sort_item.id, new_sort_item)
+      const table_sort = table_state.sort || []
+      const table_sort_map = new Map(
+        table_sort.map((item) => [item.column_id, item])
+      )
+
+      if (table_sort_map.has(column_id)) {
+        const existing_sort = table_sort_map.get(column_id)
+        if (existing_sort.desc === desc) {
+          table_sort_map.delete(column_id)
+        } else {
+          table_sort_map.set(column_id, { column_id, desc })
+        }
+      } else {
+        if (!multi) {
+          table_sort_map.clear()
+        }
+        table_sort_map.set(column_id, { column_id, desc })
       }
 
       on_table_state_change({
         ...table_state,
-        sort: Array.from(sorting.values())
+        sort: Array.from(table_sort_map.values())
       })
     },
     [memoized_all_columns, table_state, on_table_state_change]
@@ -258,7 +268,6 @@ export default function Table({
     defaultColumn,
     state: table_state,
     getCoreRowModel: getCoreRowModel(),
-    onSortingChange: set_sorting,
     onColumnVisibilityChange: set_column_visibility,
     columnResizeMode: 'onChange'
   })
@@ -339,7 +348,7 @@ export default function Table({
       set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
     }, SLICE_SIZE_INCREMENT_DELAY)
     return () => clearTimeout(timeout)
-  }, [slice_size])
+  }, [])
 
   const row_virtualizer = useVirtualizer({
     getScrollElement: () => table_container_ref.current, // get_scroll_parent(table_container_ref.current),
@@ -362,13 +371,13 @@ export default function Table({
 
   const state_items = useMemo(() => {
     const items = []
-    const table_sort = table_state.sort || table_state.sorting || []
+    const table_sort = table_state.sort || []
     if (table_sort.length) {
       for (const sort of table_sort) {
         // get label from column
         items.push(
-          <div key={sort.id} className='state-item'>
-            <div className='state-item-content'>
+          <div key={sort.id} className='table-state-item'>
+            <div className='table-state-item-content'>
               {sort.desc ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
               <span>{sort.id}</span>
             </div>
@@ -383,8 +392,8 @@ export default function Table({
         const { column_id, column_name, operator, value } = where
 
         items.push(
-          <div key={index} className='state-item'>
-            <div className='state-item-content'>
+          <div key={index} className='table-state-item'>
+            <div className='table-state-item-content'>
               <span>{`${column_id || column_name} ${operator} ${value}`}</span>
               <IconButton
                 size='small'
@@ -436,8 +445,8 @@ export default function Table({
           table: true,
           noselect: is_table_resizing()
         })}>
-        <div className='panel'>
-          <div className='controls'>
+        <div className='table-top-container'>
+          <div className='table-top-container-body'>
             {Boolean(views.length) && (
               <TableViewController
                 {...{
@@ -454,50 +463,67 @@ export default function Table({
                 {...{ selected_view, table_state, on_table_state_change }}
               />
             )}
-            <Button
-              variant='outlined'
-              size='small'
-              onClick={() => set_filter_modal_open(true)}>
-              <FilterListIcon />
-              Filter
-            </Button>
-            {!disable_rank_aggregation && (
-              <TableRankAggregationModal
+            <div
+              className={get_string_from_object({
+                'table-controls-container': true,
+                'rank-aggregation-controls-visible': !disable_rank_aggregation
+              })}>
+              <TableFilterControls
                 {...{
+                  filter_controls_open,
+                  set_filter_controls_open,
                   table_state,
                   on_table_state_change,
                   all_columns: memoized_all_columns // TODO
                 }}
               />
-            )}
-            <TableColumnControls
-              {...{
-                table_state,
-                table_state_columns,
-                on_table_state_change,
-                all_columns: memoized_all_columns, // TODO
-                set_column_hidden,
-                set_column_visible,
-                set_all_columns_hidden,
-                column_controls_popper_open,
-                set_column_controls_popper_open,
-                prefix_columns
-              }}
-            />
+              {!disable_rank_aggregation && (
+                <TableRankAggregationControls
+                  {...{
+                    table_state,
+                    on_table_state_change,
+                    all_columns: memoized_all_columns // TODO
+                  }}
+                />
+              )}
+              <TableColumnControls
+                {...{
+                  table_state,
+                  table_state_columns,
+                  on_table_state_change,
+                  all_columns: memoized_all_columns, // TODO
+                  set_column_hidden,
+                  set_column_visible,
+                  set_all_columns_hidden,
+                  column_controls_open,
+                  set_column_controls_open,
+                  prefix_columns
+                }}
+              />
+            </div>
           </div>
-          <div className='state'>{state_items}</div>
+          {/* <div className='table-state-container'>{state_items}</div> */}
         </div>
-        <div className='filters'>
-          <Button
-            endIcon={<KeyboardArrowDownIcon />}
-            onClick={() => set_filters_expanded(!filters_expanded)}
-            className='filters-expand-button'>
-            {filters_expanded ? 'Hide' : 'Filters'}
-          </Button>
-          {filters_expanded && (
-            <div className='filter-items'>{view_quick_filters}</div>
+        {selected_view.view_filters &&
+          selected_view.view_filters.length > 0 && (
+            <div
+              className={get_string_from_object({
+                'table-quick-filters': true,
+                '-open': is_quick_filters_expanded
+              })}>
+              <div
+                onClick={() =>
+                  set_is_quick_filters_expanded(!is_quick_filters_expanded)
+                }
+                className='filters-expand-button'>
+                {is_quick_filters_expanded ? 'Hide' : 'Quick Filters'}
+                <KeyboardArrowDownIcon />
+              </div>
+              {is_quick_filters_expanded && (
+                <div className='filter-items'>{view_quick_filters}</div>
+              )}
+            </div>
           )}
-        </div>
         <div className='header'>
           {table.getHeaderGroups().map((headerGroup, index) => (
             <div key={index} className='row'>
@@ -509,19 +535,20 @@ export default function Table({
                     key: index,
                     table_state,
                     on_table_state_change,
-                    set_column_controls_popper_open,
-                    set_filter_modal_open
+                    set_column_controls_open,
+                    set_filter_controls_open,
+                    set_table_sort
                   }}
                 />
               ))}
             </div>
           ))}
+          {(is_fetching_more || is_loading) && (
+            <div className='table-loading-container'>
+              <LinearProgress />
+            </div>
+          )}
         </div>
-        {(is_fetching_more || is_loading) && (
-          <div className='loading'>
-            <LinearProgress />
-          </div>
-        )}
         {!is_loading && rows.length > 0 && (
           <div className='body'>
             {virtual_rows.map((virtual_row) => {
@@ -557,15 +584,6 @@ export default function Table({
           </div>
         )}
       </div>
-      <TableFilterModal
-        {...{
-          filter_modal_open,
-          set_filter_modal_open,
-          table_state,
-          on_table_state_change,
-          all_columns: memoized_all_columns // TODO
-        }}
-      />
     </div>
   )
 }

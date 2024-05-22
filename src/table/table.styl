@@ -10,44 +10,42 @@
     max-width calc(100vw - 24px)
     max-height 70vh
 
-.loading
+.table-loading-container
   display flex
   align-items center
   justify-content center
-  margin-top 4px
   height 4px
-  width 100%
   position sticky
-  left 0
   top 0
-  z-index 1
+  z-index 4
 
   .MuiLinearProgress-root
     height 4px
     width 100%
-    max-width 600px
+    margin-left 29px
     
 .table
   padding-left 96px
 
-  .panel
+  .table-top-container
     display flex
     align-items center
     justify-content space-between
     position sticky
-    left 116px
+    left 23px
     width fit-content
     padding-top 12px
     padding-bottom 8px
+    z-index 3
 
-  .state
+  .table-state-container
     display flex
     align-items center
-    .state-item
+    .table-state-item
       border-radius 14px
       margin-right 6px
       display inline-flex
-      .state-item-content
+      .table-state-item-content
         user-select none
         transition background 20ms ease-in 0s
         cursor pointer
@@ -68,9 +66,9 @@
           height 0.8em
           width 0.8em
 
-  .controls
+  .table-top-container-body
     display flex
-    justify-content flex-end
+    justify-content flex-start
     padding 2px 8px
     padding-right 96px
     align-items center
@@ -105,7 +103,7 @@
         border-right 1px solid $borderColor
 
       &.sorted
-        background-color rgba(245, 245, 245, 0.6)
+        background-color rgba(255, 255, 204, 0.6)
 
       &.sticky
         position sticky
@@ -205,10 +203,18 @@
       display flex
       align-items center
 
-  .filters
+  .table-quick-filters
+    margin 0 30px 6px
     display flex
-    padding 0 10px
+    padding 0 8px
     flex-direction column
+    border-radius 4px
+    border 1px solid transparent
+    width fit-content
+
+    &:hover
+    &.-open
+      border 1px solid rgba(0, 0, 0, 0.23)
 
     .filter-items
       display flex
@@ -217,6 +223,16 @@
   .filters-expand-button
     height 24px
     margin-bottom 4px
+    display flex
+    align-items center
+    justify-content center
+    width fit-content
+    cursor pointer
 
   .filter_items
     display flex
+
+.table-controls-container
+  position relative
+  height 40px
+  width 40px
