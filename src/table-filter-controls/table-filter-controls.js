@@ -9,244 +9,20 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import TextField from '@mui/material/TextField'
-import MenuItem from '@mui/material/MenuItem'
-import Select from '@mui/material/Select'
-import IconButton from '@mui/material/IconButton'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
-import InputLabel from '@mui/material/InputLabel'
-import FormControl from '@mui/material/FormControl'
-import { Popper } from '@mui/base/Popper'
-import DeleteIcon from '@mui/icons-material/Delete'
 import { useVirtualizer } from '@tanstack/react-virtual'
 
 import DataTypeIcon from '../data-type-icon'
 import {
-  debounce,
   group_columns_into_tree_view,
   fuzzy_match,
   get_string_from_object,
   use_trace_update,
   use_count_children
 } from '../utils'
+import { OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
+import FilterItem from '../table-filter-controls-filter-item'
 
 import './table-filter-controls.styl'
-
-const FILTER_ITEM_DEBOUNCE_DELAY = 3000
-const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
-const OPERATOR_MENU_DEFAULT_VALUE = '='
-const OPERATOR_MENU_OPTIONS = [
-  { value: '=', label: 'Equal to' },
-  { value: '!=', label: 'Not equal to' },
-  { value: '>', label: 'Greater than' },
-  { value: '>=', label: 'Greater than or equal' },
-  { value: '<', label: 'Less than' },
-  { value: '<=', label: 'Less than or equal' },
-  { value: 'LIKE', label: 'Like' },
-  { value: 'NOT LIKE', label: 'Not like' },
-  { value: 'IN', label: 'In' },
-  { value: 'NOT IN', label: 'Not in' },
-  { value: 'IS NULL', label: 'Is empty' },
-  { value: 'IS NOT NULL', label: 'Is not empty' }
-]
-
-const FilterItem = React.memo(
-  ({ column_item, table_state, on_table_state_change, is_visible }) => {
-    const anchor_el = useRef()
-    const where_item = useMemo(() => {
-      const where_param = table_state.where || []
-      return (
-        where_param.find((item) => item.column_id === column_item.column_id) ||
-        {}
-      )
-    }, [table_state, column_item])
-    const [filter_value, set_filter_value] = useState(where_item?.value || '')
-    const [misc_menu_open, set_misc_menu_open] = useState(false)
-
-    useEffect(() => {
-      return () => {
-        set_misc_menu_open(false)
-      }
-    }, [])
-
-    const handle_create_filter = useCallback(
-      ({ operator = OPERATOR_MENU_DEFAULT_VALUE, value = '' }) => {
-        const where_param = table_state.where || []
-        where_param.push({
-          column_id: column_item.column_id,
-          operator,
-          value
-        })
-        on_table_state_change({
-          ...table_state,
-          where: where_param
-        })
-        set_misc_menu_open(false)
-      },
-      [column_item.column_id, on_table_state_change, table_state]
-    )
-
-    const handle_remove_click = useCallback(() => {
-      const where_param = table_state.where || []
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
-      where_param.splice(index, 1)
-      on_table_state_change({
-        ...table_state,
-        where: where_param
-      })
-      set_misc_menu_open(false)
-    }, [on_table_state_change, table_state, where_item.column_id])
-
-    const handle_operator_change = useCallback(
-      (event) => {
-        const where_param = table_state.where || []
-        const index = where_param.findIndex(
-          (item) => item.column_id === where_item.column_id
-        )
-
-        if (index === -1) {
-          return handle_create_filter({
-            operator: event.target.value
-          })
-        }
-
-        where_param[index].operator = event.target.value
-        on_table_state_change({
-          ...table_state,
-          where: where_param
-        })
-      },
-      [
-        handle_create_filter,
-        on_table_state_change,
-        table_state,
-        where_item.column_id
-      ]
-    )
-
-    const handle_value_change_debounced = useMemo(
-      () =>
-        debounce((event) => {
-          const where_param = table_state.where || []
-          const index = where_param.findIndex(
-            (item) => item.column_id === where_item.column_id
-          )
-
-          if (index === -1) {
-            return handle_create_filter({
-              value: event.target.value
-            })
-          }
-
-          where_param[index].value = event.target.value
-          on_table_state_change({
-            ...table_state,
-            where: where_param
-          })
-        }, FILTER_ITEM_DEBOUNCE_DELAY),
-      [
-        handle_create_filter,
-        on_table_state_change,
-        table_state,
-        where_item.column_id
-      ]
-    )
-
-    const handle_value_change = useCallback(
-      (event) => {
-        set_filter_value(event.target.value)
-        handle_value_change_debounced(event)
-      },
-      [handle_value_change_debounced]
-    )
-
-    const show_value = useMemo(() => {
-      return !(
-        where_item.operator === 'IS NULL' ||
-        where_item.operator === 'IS NOT NULL'
-      )
-    }, [where_item.operator])
-
-    return (
-      <div
-        className={get_string_from_object({
-          'filter-item': true,
-          visible: is_visible
-        })}>
-        <div className='filter-item-left'>
-          <div className='filter-item-left-column'>
-            {column_item.column_title || column_item.column_id}
-          </div>
-          <div className='filter-item-left-operator'>
-            <FormControl>
-              <InputLabel id='operator-label'>Operator</InputLabel>
-              <Select
-                size='small'
-                value={where_item.operator}
-                onChange={handle_operator_change}
-                label='Operator'
-                labelId='operator-label'
-                variant='outlined'
-                defaultValue={OPERATOR_MENU_DEFAULT_VALUE}>
-                {OPERATOR_MENU_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </div>
-          <div className='filter-item-left-value'>
-            <TextField
-              size='small'
-              label='Value'
-              variant='outlined'
-              disabled={!show_value}
-              value={filter_value}
-              onChange={handle_value_change}
-            />
-          </div>
-        </div>
-        <div className='filter-item-right'>
-          <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
-            <div>
-              <IconButton
-                className='filter-item-right-action'
-                ref={anchor_el}
-                onClick={() => set_misc_menu_open(!misc_menu_open)}>
-                <MoreHorizIcon />
-              </IconButton>
-              <Popper
-                className='misc-menu'
-                open={misc_menu_open}
-                anchorEl={anchor_el.current}
-                placement={MISC_MENU_DEFAULT_PLACEMENT}>
-                <div>
-                  <div className='misc-menu-item' onClick={handle_remove_click}>
-                    <div className='misc-menu-item-icon'>
-                      <DeleteIcon size='small' />
-                    </div>
-                    <div className='misc-menu-item-text'>Remove</div>
-                  </div>
-                </div>
-              </Popper>
-            </div>
-          </ClickAwayListener>
-        </div>
-      </div>
-    )
-  }
-)
-
-FilterItem.displayName = 'FilterItem'
-
-FilterItem.propTypes = {
-  column_item: PropTypes.object.isRequired,
-  table_state: PropTypes.object.isRequired,
-  on_table_state_change: PropTypes.func.isRequired,
-  is_visible: PropTypes.bool.isRequired
-}
 
 const FilterControlItem = React.memo(
   ({
@@ -262,13 +38,16 @@ const FilterControlItem = React.memo(
         (item) => item.column_id === column_item.column_id
       )
       if (index === -1) {
+        const operator = column_item.operators
+          ? column_item.operators[0]
+          : OPERATOR_MENU_DEFAULT_VALUE
         on_table_state_change({
           ...table_state,
           where: [
             ...where_param,
             {
               column_id: column_item.column_id,
-              operator: OPERATOR_MENU_DEFAULT_VALUE,
+              operator,
               value: ''
             }
           ]
@@ -617,17 +396,14 @@ export default function TableFilterControls({
                   {(local_table_state.where || []).map((where_item) => (
                     <FilterItem
                       key={where_item.column_id}
-                      column_item={{
-                        column_id: where_item.column_id,
-                        column_title: all_columns.find(
-                          (column) => column.column_id === where_item.column_id
-                        )?.column_title
-                      }}
+                      column_definition={all_columns.find(
+                        (column) => column.column_id === where_item.column_id
+                      )}
                       is_visible={true}
                       table_state={local_table_state}
-                      on_table_state_change={(new_table_state) => {
+                      on_table_state_change={(new_table_state) =>
                         set_local_table_state(new_table_state)
-                      }}
+                      }
                     />
                   ))}
                 </List>
