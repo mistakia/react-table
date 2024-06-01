@@ -1,5 +1,9 @@
 // https://github.com/bevacqua/fuzzysearch
-export const fuzzy_match = (needle, haystack) => {
+export const fuzzy_match = (needle, haystack = '') => {
+  if (!needle || !haystack) {
+    return false
+  }
+
   needle = needle.toLowerCase()
   haystack = haystack.toLowerCase()
   const hlen = haystack.length

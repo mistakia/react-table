@@ -2,6 +2,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 export default function TableFooter({ column, header }) {
+  const is_group_header = header.column.columns.length
+
+  if (is_group_header) {
+    return null
+  }
+
   if (column.columnDef.id === 'add_column_action') {
     return null
   }

@@ -1,37 +1,14 @@
-.MuiTreeItem-label
-  text-transform capitalize
-
-.MuiTreeItem-root
-  text-select none
-
 .table-column-controls
-  overflow hidden
-  overflow-y scroll
-  position fixed
-  top 50%
-  left 50%
-  transform translate(-50%, -50%)
-  min-width fit-content
-  height 90%
-  background white
-  border-radius 4px
-
-  .filter-input
-    padding 12px
-    position sticky
-    top 0
-    background white
-    z-index 1
+  left 50px
+  width 100px
 
   .section-header
     position sticky
-    top 64px
+    top 0px
     background white
     z-index 1
     padding-left 14px
     padding-right 14px
-    margin-top 6px
-    margin-bottom 8px
     color rgb(55, 53, 47)
     display flex
     font-weight 500
@@ -50,67 +27,35 @@
       color rgb(35, 131, 226)
       margin-left auto
 
-  .column-item
-    display flex
-    align-items center
-    user-select none
-    border-radius 3px
-    font-size 14px
-    min-height 28px
-    cursor pointer
-    margin-bottom 1px
-    padding-right 18px
+  .column-drag-handle
+    cursor ns-resize
 
-    &.prefix
-      background darken(white, 4%)
+.selected-columns-container
+  padding 8px
 
-    &.shown
-      background rgba(21, 255, 0, 0.334)
-    
-    .column-action
-      margin-right 14px
+.column-controls-body
+  overflow-y scroll
+  height 100%
 
-    .column-name
-      flex 1
-      font-family "Roboto","Helvetica","Arial",sans-serif
-      font-weight 400
-      font-size 1rem
-      line-height 1.5
-      letter-spacing 0.00938em
+.rank-aggregation-controls-visible .table-column-controls
+  left 130px
 
-    .column-category
-      font-family IBM Plex Mono,monospace
+.table-column-controls-load-all-columns
+  margin 8px
+  padding 8px 16px
+  border-radius 4px
+  background rgba(0, 0, 0, 0.05)
+  cursor pointer
+  border 1px solid transparent
+  display flex
+  align-items center
+  justify-content center
+  &:hover
+    border 1px solid rgba(0, 0, 0, 0.23)
 
-    .column-data-type
-      display flex
-      align-items center
-      justify-content center
-      margin-left 10px
-      margin-right 4px
-
-      svg
-        width 16px
-        height 16px
-
-    + .column-item
-      margin-top 4px
-
-@media (min-width 600px)
-  .table-column-controls
-    width 40%
-
-@media (pointer: fine)
-  .MuiTreeItem-root[aria-selected="true"]
-    background darken(white, 4%)
-  .table-column-controls
-    .column-item
-      .column-action
-        opacity 0
-        transition opacity 20ms ease-in 0s
-
-      &:hover
-        background rgb(233, 233, 233)
-
-        .column-action
-          opacity 1
-          transition opacity 20ms ease-in 0s
+.column-category-container
+  padding 8px
+  margin-bottom 8px
+  display flex
+  flex-direction column
+  overflow-y auto

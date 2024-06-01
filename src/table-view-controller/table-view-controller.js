@@ -137,6 +137,7 @@ export default function TableViewController({
   delete_view
 }) {
   const anchor_el = React.useRef()
+  const input_ref = React.useRef()
   const [input_value, set_input_value] = React.useState(
     selected_view.view_name || ''
   )
@@ -148,15 +149,15 @@ export default function TableViewController({
     set_input_value(selected_view.view_name || '')
   }, [selected_view.view_name])
 
-  const handleInputChange = (event) => {
+  const handle_input_change = (event) => {
     const { value } = event.target
     set_input_value(value)
   }
-  const handleInputBlur = () => {
+  const handle_input_blur = () => {
     set_input_value('')
   }
 
-  const handleInputFocus = (event) => {
+  const handle_input_focus = (event) => {
     set_input_value('')
     event.target.select()
     set_views_popper_open(true)
@@ -166,7 +167,7 @@ export default function TableViewController({
     select_view(view.view_id)
     set_input_value(view.view_name)
   }
-  const handleClickAway = () => {
+  const handle_click_away = () => {
     set_input_value(selected_view.view_name)
     set_views_popper_open(false)
   }
@@ -188,6 +189,12 @@ export default function TableViewController({
         view_state_changed: true
       }
     )
+    set_views_popper_open(false)
+  }
+
+  const handle_adornment_click = () => {
+    input_ref.current.focus()
+    set_views_popper_open(true)
   }
 
   const filtered_views = input_value
@@ -212,23 +219,24 @@ export default function TableViewController({
 
   return (
     <>
-      <ClickAwayListener onClickAway={handleClickAway}>
+      <ClickAwayListener onClickAway={handle_click_away}>
         <div className='table-view-menu'>
           <TextField
             size='small'
             label='View'
             placeholder='Filter views'
             value={input_value}
-            onChange={handleInputChange}
+            onChange={handle_input_change}
             className='table-view-input'
             autoComplete='off'
             ref={anchor_el}
+            inputRef={input_ref}
             InputProps={{
-              onFocus: handleInputFocus,
-              onBlur: handleInputBlur,
+              onFocus: handle_input_focus,
+              onBlur: handle_input_blur,
               endAdornment: (
                 <InputAdornment position='end'>
-                  <ArrowDropDownIcon />
+                  <ArrowDropDownIcon onClick={handle_adornment_click} />
                 </InputAdornment>
               )
             }}

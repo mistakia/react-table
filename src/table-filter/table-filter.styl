@@ -81,6 +81,34 @@
   &:hover
     background darken(#f0f0f0, 30%)
 
+.filter-controls-state-buttons
+  position absolute
+  top 8px
+  right 8px
+  display flex
+  justify-content space-between
+
+  div
+    padding 0.25rem 0.5rem
+    border-radius 3px
+    display flex
+    justify-content center
+    align-items center
+    font-weight 600
+    cursor pointer
+    &:hover
+      box-shadow #D0D0D0 4px 4px 0px 0px
+
+.filter-controls-discard
+  background #f0f0f0
+  border 1px solid $borderColor
+  margin-right 8px
+
+.filter-controls-apply
+  background lighten(#388E3C, 20%)
+  border 1px solid #388E3C
+  color white
+
 @media (max-width 800px)
   .filter-dropdown
     position fixed
