@@ -37,7 +37,8 @@ function ViewItem({
   set_edit_view_modal_open,
   set_views_popper_open,
   delete_view,
-  on_view_change
+  on_view_change,
+  disable_create_view
 }) {
   const anchor_el = React.useRef()
   const [misc_menu_open, set_misc_menu_open] = React.useState(false)
@@ -75,46 +76,48 @@ function ViewItem({
           {view.view_description}
         </div>
       </div>
-      <div className='table-view-item-right'>
-        <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
-          <div>
-            <IconButton
-              className='table-view-item-right-action'
-              ref={anchor_el}
-              onClick={() => set_misc_menu_open(!misc_menu_open)}>
-              <MoreHorizIcon />
-            </IconButton>
-            <Popper
-              className='misc-menu'
-              open={misc_menu_open}
-              anchorEl={anchor_el.current}
-              placement='bottom-start'>
-              <div>
-                <div className='misc-menu-item' onClick={handle_edit_click}>
-                  <div className='misc-menu-item-icon'>
-                    <EditIcon size='small' />
+      {!disable_create_view && (
+        <div className='table-view-item-right'>
+          <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
+            <div>
+              <IconButton
+                className='table-view-item-right-action'
+                ref={anchor_el}
+                onClick={() => set_misc_menu_open(!misc_menu_open)}>
+                <MoreHorizIcon />
+              </IconButton>
+              <Popper
+                className='misc-menu'
+                open={misc_menu_open}
+                anchorEl={anchor_el.current}
+                placement='bottom-start'>
+                <div>
+                  <div className='misc-menu-item' onClick={handle_edit_click}>
+                    <div className='misc-menu-item-icon'>
+                      <EditIcon size='small' />
+                    </div>
+                    <div className='misc-menu-item-text'>Edit</div>
                   </div>
-                  <div className='misc-menu-item-text'>Edit</div>
-                </div>
-                <div className='misc-menu-item' onClick={handle_remove_click}>
-                  <div className='misc-menu-item-icon'>
-                    <DeleteIcon size='small' />
+                  <div className='misc-menu-item' onClick={handle_remove_click}>
+                    <div className='misc-menu-item-icon'>
+                      <DeleteIcon size='small' />
+                    </div>
+                    <div className='misc-menu-item-text'>Remove</div>
                   </div>
-                  <div className='misc-menu-item-text'>Remove</div>
-                </div>
-                <div
-                  className='misc-menu-item'
-                  onClick={handle_duplicate_click}>
-                  <div className='misc-menu-item-icon'>
-                    <ContentCopyIcon size='small' />
+                  <div
+                    className='misc-menu-item'
+                    onClick={handle_duplicate_click}>
+                    <div className='misc-menu-item-icon'>
+                      <ContentCopyIcon size='small' />
+                    </div>
+                    <div className='misc-menu-item-text'>Duplicate</div>
                   </div>
-                  <div className='misc-menu-item-text'>Duplicate</div>
                 </div>
-              </div>
-            </Popper>
-          </div>
-        </ClickAwayListener>
-      </div>
+              </Popper>
+            </div>
+          </ClickAwayListener>
+        </div>
+      )}
     </div>
   )
 }
@@ -126,7 +129,8 @@ ViewItem.propTypes = {
   set_edit_view_modal_open: PropTypes.func.isRequired,
   set_views_popper_open: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
-  on_view_change: PropTypes.func.isRequired
+  on_view_change: PropTypes.func.isRequired,
+  disable_create_view: PropTypes.bool
 }
 
 export default function TableViewController({
@@ -134,7 +138,8 @@ export default function TableViewController({
   selected_view,
   views,
   on_view_change,
-  delete_view
+  delete_view,
+  disable_create_view = false
 }) {
   const anchor_el = React.useRef()
   const input_ref = React.useRef()
@@ -212,7 +217,8 @@ export default function TableViewController({
         delete_view,
         view,
         index,
-        on_view_change
+        on_view_change,
+        disable_create_view
       }}
     />
   ))
@@ -247,12 +253,16 @@ export default function TableViewController({
             open={views_popper_open}
             anchorEl={anchor_el.current}>
             <div className='table-view-list'>{filtered_items}</div>
-            <div className='table-view-popper-footer'>
-              <div className='table-view-add-button' onClick={handle_add_click}>
-                <AddIcon />
-                Add view
+            {!disable_create_view && (
+              <div className='table-view-popper-footer'>
+                <div
+                  className='table-view-add-button'
+                  onClick={handle_add_click}>
+                  <AddIcon />
+                  Add view
+                </div>
               </div>
-            </div>
+            )}
           </Popper>
         </div>
       </ClickAwayListener>
@@ -273,5 +283,6 @@ TableViewController.propTypes = {
   selected_view: PropTypes.object.isRequired,
   views: PropTypes.array,
   on_view_change: PropTypes.func.isRequired,
-  delete_view: PropTypes.func.isRequired
+  delete_view: PropTypes.func.isRequired,
+  disable_create_view: PropTypes.bool
 }

@@ -59,6 +59,7 @@ export default function Table({
   is_fetching = false,
   is_fetching_more = false,
   is_loading = false,
+  disable_create_view = false,
   total_rows_fetched,
   total_row_count,
   delete_view = () => {},
@@ -454,7 +455,8 @@ export default function Table({
                   selected_view,
                   views,
                   on_view_change,
-                  delete_view
+                  delete_view,
+                  disable_create_view
                 }}
               />
             )}
@@ -605,5 +607,6 @@ Table.propTypes = {
   delete_view: PropTypes.func,
   disable_rank_aggregation: PropTypes.bool,
   style: PropTypes.object,
-  percentiles: PropTypes.object
+  percentiles: PropTypes.object,
+  disable_create_view: PropTypes.bool
 }
