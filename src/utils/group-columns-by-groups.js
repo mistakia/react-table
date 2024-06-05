@@ -13,6 +13,13 @@ export default function (table_columns = []) {
     let current_group = root_group
     let current_group_id = null
     for (const column_group of column.column_groups || []) {
+      if (
+        !column_group.column_group_id ||
+        column_group.column_group_id === ''
+      ) {
+        throw new Error('column_group_id is required')
+      }
+
       current_group_id = `${current_group_id || ''}_${
         column_group.column_group_id
       }`

@@ -20,6 +20,10 @@ export default function group_columns_into_tree_view(table_columns = []) {
     }
 
     for (const column_group of column.column_groups || []) {
+      if (!column_group.column_group_id) {
+        throw new Error('column_group_id is required')
+      }
+
       if (!column_groups_index[column_group.column_group_id]) {
         column_groups_index[column_group.column_group_id] = {
           column_group,

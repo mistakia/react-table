@@ -215,11 +215,11 @@ export default function FilterItem({
 
       if (index === -1) {
         return handle_create_filter({
-          value: event.target.value
+          value
         })
       }
 
-      where_param[index].value = event.target.value
+      where_param[index].value = value
 
       on_table_state_change({
         ...table_state,
