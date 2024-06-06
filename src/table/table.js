@@ -50,7 +50,9 @@ const defaultColumn = {
 export default function Table({
   data = [],
   on_view_change = () => {},
+  on_save_view = () => {},
   table_state = {},
+  saved_table_state = null,
   all_columns = {},
   selected_view = {},
   views = [],
@@ -101,6 +103,7 @@ export default function Table({
   const [filter_controls_open, set_filter_controls_open] = useState(false)
   const table_container_ref = useRef()
   const [column_controls_open, set_column_controls_open] = useState(false)
+  const is_view_editable = Boolean(selected_view.editable)
 
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
@@ -109,9 +112,12 @@ export default function Table({
 
   const on_table_state_change = useCallback(
     ({ sort, prefix_columns, columns, where, rank_aggregation }) => {
+      const { view_id, view_name, view_description } = selected_view
       on_view_change(
         {
-          ...selected_view,
+          view_id,
+          view_name,
+          view_description,
           table_state: {
             sort,
             prefix_columns,
@@ -127,6 +133,48 @@ export default function Table({
     },
     [selected_view, on_view_change]
   )
+
+  const is_table_state_changed = useMemo(() => {
+    return (
+      saved_table_state &&
+      JSON.stringify(table_state) !== JSON.stringify(saved_table_state)
+    )
+  }, [table_state, saved_table_state])
+
+  const save_table_state_change = useCallback(() => {
+    if (is_table_state_changed) {
+      const { view_id, view_name, view_description } = selected_view
+      on_save_view({
+        view_id,
+        view_name,
+        view_description,
+        table_state
+      })
+    }
+  }, [table_state, selected_view, on_save_view, is_table_state_changed])
+
+  const discard_table_state_changes = useCallback(() => {
+    const { view_id, view_name, view_description } = selected_view
+    const { sort, prefix_columns, columns, where, rank_aggregation } =
+      saved_table_state
+    on_view_change(
+      {
+        view_id,
+        view_name,
+        view_description,
+        table_state: {
+          sort,
+          prefix_columns,
+          columns,
+          where,
+          rank_aggregation
+        }
+      },
+      {
+        view_state_changed: true
+      }
+    )
+  }, [table_state, selected_view, on_view_change])
 
   const set_table_sort = useCallback(
     ({ column_id, desc, multi }) => {
@@ -502,6 +550,20 @@ export default function Table({
                   prefix_columns
                 }}
               />
+              {is_table_state_changed && is_view_editable && (
+                <div className='table-state-change-controls'>
+                  <div
+                    className='table-state-change-control-button discard'
+                    onClick={discard_table_state_changes}>
+                    Reset
+                  </div>
+                  <div
+                    className='table-state-change-control-button save'
+                    onClick={save_table_state_change}>
+                    Save
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           {/* <div className='table-state-container'>{state_items}</div> */}
@@ -608,5 +670,7 @@ Table.propTypes = {
   disable_rank_aggregation: PropTypes.bool,
   style: PropTypes.object,
   percentiles: PropTypes.object,
-  disable_create_view: PropTypes.bool
+  disable_create_view: PropTypes.bool,
+  on_save_view: PropTypes.func,
+  saved_table_state: PropTypes.object
 }
