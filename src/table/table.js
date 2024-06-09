@@ -550,18 +550,20 @@ export default function Table({
                   prefix_columns
                 }}
               />
-              {is_table_state_changed && is_view_editable && (
+              {is_table_state_changed && (
                 <div className='table-state-change-controls'>
                   <div
                     className='table-state-change-control-button discard'
                     onClick={discard_table_state_changes}>
                     Reset
                   </div>
-                  <div
-                    className='table-state-change-control-button save'
-                    onClick={save_table_state_change}>
-                    Save
-                  </div>
+                  {is_view_editable && (
+                    <div
+                      className='table-state-change-control-button save'
+                      onClick={save_table_state_change}>
+                      Save
+                    </div>
+                  )}
                 </div>
               )}
             </div>
