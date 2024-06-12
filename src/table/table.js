@@ -7,12 +7,12 @@ import {
 } from '@tanstack/react-table'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import PropTypes from 'prop-types'
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+// import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
+// import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import LinearProgress from '@mui/material/LinearProgress'
-import IconButton from '@mui/material/IconButton'
-import CloseIcon from '@mui/icons-material/Close'
+// import IconButton from '@mui/material/IconButton'
+// import CloseIcon from '@mui/icons-material/Close'
 
 import TableCell from '../table-cell'
 import TableHeader from '../table-header'
@@ -22,6 +22,7 @@ import TableViewController from '../table-view-controller'
 import TableFilterControls from '../table-filter-controls'
 import TableFilter from '../table-filter'
 import TableSearch from '../table-search'
+import TableMenu from '../table-menu'
 import TableRankAggregationControls from '../table-rank-aggregation-controls'
 import {
   get_string_from_object,
@@ -400,7 +401,7 @@ export default function Table({
   }, [])
 
   const row_virtualizer = useVirtualizer({
-    getScrollElement: () => table_container_ref.current, // get_scroll_parent(table_container_ref.current),
+    getScrollElement: () => table_container_ref.current,
     estimateSize: () => 32,
     count: Math.min(data.length, slice_size),
     overscan: OVERSCAN_COUNT
@@ -418,51 +419,51 @@ export default function Table({
     return false
   }, [table])
 
-  const state_items = useMemo(() => {
-    const items = []
-    const table_sort = table_state.sort || []
-    if (table_sort.length) {
-      for (const sort of table_sort) {
-        // get label from column
-        items.push(
-          <div key={sort.id} className='table-state-item'>
-            <div className='table-state-item-content'>
-              {sort.desc ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
-              <span>{sort.id}</span>
-            </div>
-          </div>
-        )
-      }
-    }
+  // const state_items = useMemo(() => {
+  //   const items = []
+  //   const table_sort = table_state.sort || []
+  //   if (table_sort.length) {
+  //     for (const sort of table_sort) {
+  //       // get label from column
+  //       items.push(
+  //         <div key={sort.id} className='table-state-item'>
+  //           <div className='table-state-item-content'>
+  //             {sort.desc ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
+  //             <span>{sort.id}</span>
+  //           </div>
+  //         </div>
+  //       )
+  //     }
+  //   }
 
-    const where_params = table_state.where || []
-    if (where_params.length) {
-      where_params.forEach((where, index) => {
-        const { column_id, column_name, operator, value } = where
+  //   const where_params = table_state.where || []
+  //   if (where_params.length) {
+  //     where_params.forEach((where, index) => {
+  //       const { column_id, column_name, operator, value } = where
 
-        items.push(
-          <div key={index} className='table-state-item'>
-            <div className='table-state-item-content'>
-              <span>{`${column_id || column_name} ${operator} ${value}`}</span>
-              <IconButton
-                size='small'
-                onClick={() => {
-                  const new_where_params = [...where_params]
-                  new_where_params.splice(index, 1)
-                  on_table_state_change({
-                    ...table_state,
-                    where: new_where_params
-                  })
-                }}>
-                <CloseIcon />
-              </IconButton>
-            </div>
-          </div>
-        )
-      })
-    }
-    return items
-  }, [table_state, on_table_state_change])
+  //       items.push(
+  //         <div key={index} className='table-state-item'>
+  //           <div className='table-state-item-content'>
+  //             <span>{`${column_id || column_name} ${operator} ${value}`}</span>
+  //             <IconButton
+  //               size='small'
+  //               onClick={() => {
+  //                 const new_where_params = [...where_params]
+  //                 new_where_params.splice(index, 1)
+  //                 on_table_state_change({
+  //                   ...table_state,
+  //                   where: new_where_params
+  //                 })
+  //               }}>
+  //               <CloseIcon />
+  //             </IconButton>
+  //           </div>
+  //         </div>
+  //       )
+  //     })
+  //   }
+  //   return items
+  // }, [table_state, on_table_state_change])
 
   const view_quick_filters = useMemo(() => {
     const filters = []
@@ -494,6 +495,7 @@ export default function Table({
           table: true,
           noselect: is_table_resizing()
         })}>
+        <TableMenu {...{ data, table_state, all_columns }} />
         <div className='table-top-container'>
           <div className='table-top-container-body'>
             {Boolean(views.length) && (
