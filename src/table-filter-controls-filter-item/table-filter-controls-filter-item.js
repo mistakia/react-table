@@ -260,8 +260,13 @@ export default function FilterItem({
     )
   }, [where_item.operator])
 
-  const FilterItemLeft = () => (
-    <div className='filter-item-left'>
+  return (
+    <div
+      className={get_string_from_object({
+        'filter-item': true,
+        visible: is_visible
+      })}>
+      <div className='filter-item-left'>
       <div className='filter-item-left-column'>{column_title || column_id}</div>
       <FilterItemOperator
         {...{
@@ -281,15 +286,6 @@ export default function FilterItem({
         }}
       />
     </div>
-  )
-
-  return (
-    <div
-      className={get_string_from_object({
-        'filter-item': true,
-        visible: is_visible
-      })}>
-      <FilterItemLeft />
       <div className='filter-item-right'>
         <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
           <div>
