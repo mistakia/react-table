@@ -20,7 +20,7 @@ import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
 import TableViewController from '../table-view-controller'
 import TableFilterControls from '../table-filter-controls'
-import TableFilter from '../table-filter'
+import TableQuickFilter from '../table-quick-filter'
 import TableSearch from '../table-search'
 import TableMenu from '../table-menu'
 import TableRankAggregationControls from '../table-rank-aggregation-controls'
@@ -473,7 +473,7 @@ export default function Table({
       const column = all_columns[column_id]
 
       filters.push(
-        <TableFilter
+        <TableQuickFilter
           key={column_id}
           {...{ column, table_state, on_table_state_change }}
         />
@@ -544,8 +544,6 @@ export default function Table({
                   table_state_columns,
                   on_table_state_change,
                   all_columns: memoized_all_columns, // TODO
-                  set_column_hidden,
-                  set_column_visible,
                   set_all_columns_hidden,
                   column_controls_open,
                   set_column_controls_open,

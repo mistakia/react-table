@@ -1,22 +1,16 @@
-import React, { useState, useRef } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { ClickAwayListener } from '@mui/base/ClickAwayListener'
-import { Popper } from '@mui/base/Popper'
 import Checkbox from '@mui/material/Checkbox'
 
 import { get_string_from_object } from '../utils'
-import './table-filter.styl'
+import FilterBase from '../filter-base'
 
-export default function TableFilter({
+export default function TableQuickFilter({
   column,
   table_state,
   on_table_state_change
 }) {
-  const selected_label = null // TODO
-  const body = null // TODO
   const column_values = column.column_values || []
-  const [popper_open, set_popper_open] = useState(false)
-  const button_ref = useRef()
 
   const where_param = table_state.where || []
   const where_param_index = where_param.findIndex((where_item) => {
@@ -29,7 +23,7 @@ export default function TableFilter({
       ? filter_where_param.value.length
       : column_values.length
   const all = count === column_values.length
-  const default_selected_label = all
+  const selected_label = all
     ? 'ALL'
     : filter_where_param.value.join(', ')
 
@@ -115,7 +109,7 @@ export default function TableFilter({
   }
 
   const items = column_values.map((column_value, index) => {
-    const class_object = { 'filter-dropdown-item': true }
+    const class_object = { 'table-filter-item-dropdown-item': true }
     const is_selected = all || filter_where_param?.value?.includes(column_value)
     if (is_selected) class_object.selected = true
     return (
@@ -124,63 +118,41 @@ export default function TableFilter({
         className={get_string_from_object(class_object)}
         onClick={(e) => handleSelect(e, index)}>
         <Checkbox checked={is_selected} size='small' />
-        <div className='dropdown__item-label'>{column_value}</div>
+        {column_value}
       </div>
     )
   })
 
-  const default_body = (
+  const body = (
     <>
       {!column.single_select && (
-        <div className='filter-dropdown-head'>
-          <div className='filter-dropdown-action' onClick={handleAllClick}>
+        <div className='table-filter-item-dropdown-head'>
+          <div
+            className='table-filter-item-dropdown-action'
+            onClick={handleAllClick}>
             All
           </div>
-          <div className='filter-dropdown-action' onClick={handleClearClick}>
+          <div
+            className='table-filter-item-dropdown-action'
+            onClick={handleClearClick}>
             Clear
           </div>
         </div>
       )}
-      <div className='filter-dropdown-body'>{items}</div>
+      <div className='table-filter-item-dropdown-body'>{items}</div>
     </>
   )
 
-  const popper_modifiers = [
-    {
-      name: 'offset',
-      options: {
-        offset: [0, 8]
-      }
-    }
-  ]
-
   return (
-    <>
-      <ClickAwayListener onClickAway={() => set_popper_open(false)}>
-        <div>
-          <div
-            className='filter'
-            onClick={() => set_popper_open(!popper_open)}
-            ref={button_ref}>
-            <div className='filter-label'>{column.column_title}</div>
-            <div className='filter-selection'>
-              {selected_label || default_selected_label}
-            </div>
-          </div>
-          <Popper
-            open={popper_open}
-            anchorEl={button_ref.current}
-            placement='bottom-start'
-            modifiers={popper_modifiers}>
-            <div className='filter-dropdown'>{body || default_body}</div>
-          </Popper>
-        </div>
-      </ClickAwayListener>
-    </>
+    <FilterBase
+      label={column.column_title}
+      selected_label={selected_label}
+      body={body}
+    />
   )
 }
 
-TableFilter.propTypes = {
+TableQuickFilter.propTypes = {
   column: PropTypes.object.isRequired,
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired
