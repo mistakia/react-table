@@ -267,25 +267,27 @@ export default function FilterItem({
         visible: is_visible
       })}>
       <div className='filter-item-left'>
-      <div className='filter-item-left-column'>{column_title || column_id}</div>
-      <FilterItemOperator
-        {...{
-          where_item,
-          handle_operator_change,
-          data_type
-        }}
-      />
-      <FilterItemValue
-        {...{
-          where_item,
-          filter_value,
-          handle_value_change,
-          column_values,
-          show_value,
-          data_type
-        }}
-      />
-    </div>
+        <div className='filter-item-left-column'>
+          {column_title || column_id}
+        </div>
+        <FilterItemOperator
+          {...{
+            where_item,
+            handle_operator_change,
+            data_type
+          }}
+        />
+        <FilterItemValue
+          {...{
+            where_item,
+            filter_value,
+            handle_value_change,
+            column_values,
+            show_value,
+            data_type
+          }}
+        />
+      </div>
       <div className='filter-item-right'>
         <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
           <div>

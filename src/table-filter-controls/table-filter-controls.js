@@ -10,6 +10,8 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import TextField from '@mui/material/TextField'
 import { useVirtualizer } from '@tanstack/react-virtual'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
 
 import DataTypeIcon from '../data-type-icon'
 import {
@@ -76,7 +78,7 @@ const FilterControlItem = React.memo(
           {column_item.column_title || column_item.column_id}
         </div>
         <div onClick={handle_add_filter} className='column-action'>
-          {is_visible ? 'Remove Filter' : 'Add Filter'}
+          {is_visible ? <CloseIcon /> : <AddIcon />}
         </div>
       </div>
     )
@@ -360,13 +362,11 @@ export default function TableFilterControls({
           </div>
         </Badge>
         {filter_controls_open && table_state_comparison && (
-          <div className='filter-controls-state-buttons'>
-            <div
-              className='filter-controls-discard'
-              onClick={handle_discard_click}>
+          <div className='table-control-container-state-buttons'>
+            <div className='controls-discard' onClick={handle_discard_click}>
               Discard
             </div>
-            <div className='filter-controls-apply' onClick={handle_apply_click}>
+            <div className='controls-apply' onClick={handle_apply_click}>
               Apply
             </div>
           </div>

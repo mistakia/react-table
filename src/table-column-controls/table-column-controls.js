@@ -15,8 +15,14 @@ import Badge from '@mui/material/Badge'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import DehazeIcon from '@mui/icons-material/Dehaze'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
 
+import ColumnParamSelectFilter from '../column-param-select-filter'
 import DataTypeIcon from '../data-type-icon'
+import { TABLE_DATA_TYPES } from '../constants.mjs'
 import {
   fuzzy_match,
   group_columns_into_tree_view,
@@ -59,7 +65,7 @@ const TableColumnItem = React.memo(
                 ? set_column_hidden(column.column_id)
                 : set_column_visible(column.column_id)
             }>
-            {is_visible ? 'Hide' : 'Show'}
+            {is_visible ? <CloseIcon /> : <AddIcon />}
           </Button>
         </div>
       )
@@ -75,8 +81,91 @@ TableColumnItem.propTypes = {
   depth: PropTypes.number
 }
 
+const ColumnControlsColumnParamSelectFilter = React.memo(
+  ({ column_param, column, set_local_table_state, column_index }) => {
+    const handle_change = (values) => {
+      const new_column = {
+        column_id: column.column_id,
+        params: {
+          ...column.selected_params,
+          [column_param.param_name]: values
+        }
+      }
+      set_local_table_state((prev_state) => ({
+        ...prev_state,
+        columns: [
+          ...prev_state.columns.slice(0, column_index),
+          new_column,
+          ...prev_state.columns.slice(column_index + 1)
+        ]
+      }))
+    }
+
+    const state = {
+      label: column_param.param_name,
+      on_change: handle_change,
+      filter_values: [],
+      is_column_param_defined: Boolean(
+        column.selected_params[column_param.param_name]
+      )
+    }
+
+    const selected_param_values =
+      column.selected_params[column_param.param_name] || []
+    for (const param_value of column_param.param_values.values) {
+      state.filter_values.push({
+        label: param_value,
+        value: param_value,
+        selected: selected_param_values.includes(param_value)
+      })
+    }
+
+    return <ColumnParamSelectFilter {...state} />
+  }
+)
+
+ColumnControlsColumnParamSelectFilter.displayName =
+  'ColumnControlsColumnParamSelectFilter'
+ColumnControlsColumnParamSelectFilter.propTypes = {
+  column_param: PropTypes.object.isRequired,
+  column: PropTypes.object.isRequired,
+  set_local_table_state: PropTypes.func.isRequired,
+  column_index: PropTypes.number.isRequired
+}
+
+const ColumnParamItem = React.memo(
+  ({ column_param, column, set_local_table_state, column_index }) => {
+    const { data_type } = column_param.param_values
+
+    switch (data_type) {
+      case TABLE_DATA_TYPES.SELECT:
+        return (
+          <ColumnControlsColumnParamSelectFilter
+            {...{ column_param, column, set_local_table_state, column_index }}
+          />
+        )
+      default:
+        return null
+    }
+  }
+)
+
+ColumnParamItem.displayName = 'ColumnParamItem'
+ColumnParamItem.propTypes = {
+  column_param: PropTypes.object.isRequired,
+  column: PropTypes.object.isRequired,
+  set_local_table_state: PropTypes.func.isRequired,
+  column_index: PropTypes.number.isRequired
+}
+
 const SortableItem = React.memo(
-  ({ column, set_column_hidden, filter_text_input }) => {
+  ({
+    column,
+    set_column_hidden,
+    filter_text_input,
+    set_local_table_state,
+    column_index
+  }) => {
     const {
       attributes,
       listeners,
@@ -89,7 +178,8 @@ const SortableItem = React.memo(
     })
 
     const is_drag_enabled = !filter_text_input
-
+    const has_params = Boolean(column.column_params)
+    const [show_params, set_show_params] = useState(false)
     const style = {
       position: 'relative',
       transform: CSS.Transform.toString(transform),
@@ -99,22 +189,48 @@ const SortableItem = React.memo(
 
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
-        <div className='column-item reorder'>
+        <div
+          className={get_string_from_object({
+            'column-item': true,
+            reorder: true,
+            'column-expanded': show_params
+          })}>
           <div className='column-data-type'>
             <DataTypeIcon data_type={column.data_type} />
           </div>
           <div className='column-name'>
             {column.column_title || column.column_id}
           </div>
+          {has_params && (
+            <Button
+              size='small'
+              className='column-action'
+              onClick={() => set_show_params(!show_params)}>
+              {show_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+            </Button>
+          )}
           <Button
             size='small'
             className='column-action'
             onClick={() => set_column_hidden(column.column_id)}>
-            Hide
+            <CloseIcon />
           </Button>
           {is_drag_enabled && (
             <div className='column-drag-handle' {...listeners}>
               <DragIndicatorIcon />
+            </div>
+          )}
+          {show_params && (
+            <div className='column-params-container'>
+              {Object.entries(column.column_params).map(
+                ([param_name, param_values]) => (
+                  <ColumnParamItem
+                    key={param_name}
+                    column_param={{ param_name, param_values }}
+                    {...{ column, set_local_table_state, column_index }}
+                  />
+                )
+              )}
             </div>
           )}
         </div>
@@ -124,20 +240,17 @@ const SortableItem = React.memo(
 )
 
 SortableItem.displayName = 'SortableItem'
-
 SortableItem.propTypes = {
   column: PropTypes.object.isRequired,
   set_column_hidden: PropTypes.func.isRequired,
-  filter_text_input: PropTypes.string.isRequired
+  filter_text_input: PropTypes.string.isRequired,
+  set_local_table_state: PropTypes.func.isRequired,
+  column_index: PropTypes.number.isRequired
 }
 
 export default function TableColumnControls({
   table_state,
-  table_state_columns = [],
   all_columns = [],
-  set_column_visible,
-  set_column_hidden,
-  set_all_columns_hidden,
   on_table_state_change,
   prefix_columns = [],
   column_controls_open,
@@ -146,28 +259,21 @@ export default function TableColumnControls({
   console.log('TableColumnControls')
   use_trace_update('TableColumnControls', {
     table_state,
-    table_state_columns,
     all_columns,
-    set_column_visible,
-    set_column_hidden,
-    set_all_columns_hidden,
     on_table_state_change,
     prefix_columns,
     column_controls_open,
     set_column_controls_open
   })
+  const [local_table_state, set_local_table_state] = useState(table_state)
+
   const parent_ref = useRef()
   const load_remaining_columns = () => set_loaded_all(true)
   const sensors = useSensors(useSensor(PointerSensor))
   const [cached_open_categories, set_cached_open_categories] = useState({})
   const [filter_text_input, set_filter_text_input] = useState('')
   const previous_filter_text = useRef('')
-  const [shown_column_items, set_shown_column_items] = useState(
-    (table_state_columns || []).map((column) => ({
-      ...column,
-      id: column.column_id
-    }))
-  )
+
   const [open_categories, set_open_categories] = useState({})
   const [closing, set_closing] = useState(false)
   const [visible_tree_view_columns, set_visible_tree_view_columns] = useState(
@@ -177,13 +283,62 @@ export default function TableColumnControls({
   const filter_input_ref = useRef(null)
   const count_children = use_count_children()
 
+  const local_table_state_columns = useMemo(() => {
+    const columns = []
+    for (const column of local_table_state.columns || []) {
+      const is_column_id = typeof column === 'string'
+      const column_id = is_column_id
+        ? column
+        : column.column_id || column.id || column.column_name
+      if (column_id) {
+        // TODO use key/value store
+        const column_data = all_columns.find((c) => c.column_id === column_id)
+        if (column_data) {
+          columns.push({
+            ...column_data,
+            selected_params: is_column_id ? {} : column.params || {}
+          })
+        }
+      }
+    }
+    return columns
+  }, [local_table_state.columns, all_columns])
+
+  const [shown_column_items, set_shown_column_items] = useState(
+    (local_table_state_columns || []).map((column) => ({
+      ...column,
+      id: column.column_id
+    }))
+  )
+
+  const set_column_visible = useCallback((column_id) => {
+    set_local_table_state((prev) => ({
+      ...prev,
+      columns: [...(prev.columns || []), column_id]
+    }))
+  }, [])
+
+  const set_column_hidden = useCallback((column_id) => {
+    set_local_table_state((prev) => ({
+      ...prev,
+      columns: prev.columns.filter((column) => column !== column_id)
+    }))
+  }, [])
+
+  const set_all_columns_hidden = useCallback(() => {
+    set_local_table_state((prev) => ({
+      ...prev,
+      columns: []
+    }))
+  }, [])
+
   const shown_column_index = useMemo(() => {
     const index = {}
-    for (const column of table_state_columns) {
+    for (const column of local_table_state_columns) {
       index[column.column_id] = true
     }
     return index
-  }, [table_state_columns])
+  }, [local_table_state_columns])
 
   const tree_view_columns = useMemo(() => {
     if (!filter_text_input) {
@@ -194,6 +349,11 @@ export default function TableColumnControls({
     )
     return group_columns_into_tree_view(filtered_columns)
   }, [all_columns, filter_text_input])
+
+  // update local_table_state on table_state change
+  useEffect(() => {
+    set_local_table_state(table_state)
+  }, [table_state])
 
   useEffect(() => {
     if (filter_text_input.length > 0) {
@@ -237,12 +397,12 @@ export default function TableColumnControls({
 
   useEffect(() => {
     set_shown_column_items(
-      (table_state_columns || []).map((column) => ({
+      (local_table_state_columns || []).map((column) => ({
         ...column,
         id: column.column_id
       }))
     )
-  }, [all_columns, table_state_columns])
+  }, [local_table_state_columns])
 
   const was_menu_open = useRef(false)
 
@@ -323,7 +483,7 @@ export default function TableColumnControls({
       set_filter_text_input(value)
 
       const shown_items = []
-      for (const column of table_state_columns || []) {
+      for (const column of local_table_state_columns || []) {
         if (value && !fuzzy_match(value, column.column_id)) {
           continue
         }
@@ -335,7 +495,7 @@ export default function TableColumnControls({
       set_shown_column_items(shown_items)
       set_loaded_all(true)
     },
-    [table_state_columns, tree_view_columns]
+    [local_table_state_columns, tree_view_columns]
   )
 
   const handle_drag_end = useCallback(
@@ -351,14 +511,18 @@ export default function TableColumnControls({
         set_shown_column_items(
           arrayMove(shown_column_items, old_index, new_index)
         )
-        const new_columns = arrayMove(table_state.columns, old_index, new_index)
-        on_table_state_change({
-          ...table_state,
+        const new_columns = arrayMove(
+          local_table_state.columns,
+          old_index,
+          new_index
+        )
+        set_local_table_state({
+          ...local_table_state,
           columns: new_columns
         })
       }
     },
-    [shown_column_items, table_state, on_table_state_change]
+    [shown_column_items, local_table_state]
   )
 
   const handle_click_away = useCallback(
@@ -428,14 +592,20 @@ export default function TableColumnControls({
         </>
       )
     },
-    [
-      open_categories,
-      count_children,
-      shown_column_index,
-      set_column_visible,
-      set_column_hidden
-    ]
+    [open_categories, count_children, shown_column_index, local_table_state]
   )
+
+  const handle_apply = useCallback(() => {
+    on_table_state_change(local_table_state)
+  }, [local_table_state, on_table_state_change])
+
+  const handle_discard = useCallback(() => {
+    set_local_table_state(table_state)
+  }, [table_state])
+
+  const is_local_table_state_changed = useMemo(() => {
+    return JSON.stringify(local_table_state) !== JSON.stringify(table_state)
+  }, [local_table_state, table_state])
 
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
@@ -453,6 +623,16 @@ export default function TableColumnControls({
           <DehazeIcon style={{ transform: 'rotate(90deg)' }} />
           Columns
         </div>
+        {column_controls_open && is_local_table_state_changed && (
+          <div className='table-control-container-state-buttons'>
+            <div className='controls-discard' onClick={handle_apply}>
+              Apply
+            </div>
+            <div className='controls-apply' onClick={handle_discard}>
+              Discard
+            </div>
+          </div>
+        )}
         {column_controls_open && (
           <>
             <div className='table-expanding-control-input-container'>
@@ -471,7 +651,7 @@ export default function TableColumnControls({
               />
             </div>
             <div className='column-controls-body' ref={parent_ref}>
-              {prefix_columns.map((column) => (
+              {/* {prefix_columns.map((column) => (
                 <div key={column.column_id} className='column-item prefix'>
                   <div className='column-data-type'>
                     <DataTypeIcon data_type={column.data_type} />
@@ -480,16 +660,14 @@ export default function TableColumnControls({
                     {column.column_title || column.column_id}
                   </div>
                 </div>
-              ))}
+              ))} */}
               <div className='section-header'>
                 <div style={{ display: 'flex', alignSelf: 'center' }}>
                   Shown in table
                 </div>
                 <div>
-                  <div
-                    className='action'
-                    onClick={() => set_all_columns_hidden()}>
-                    Hide all
+                  <div className='action' onClick={set_all_columns_hidden}>
+                    Remove All
                   </div>
                 </div>
               </div>
@@ -499,13 +677,15 @@ export default function TableColumnControls({
                   modifiers={[restrictToVerticalAxis]}
                   onDragEnd={handle_drag_end}>
                   <SortableContext items={shown_column_items}>
-                    {shown_column_items.map((column) => (
+                    {shown_column_items.map((column, column_index) => (
                       <SortableItem
                         key={column.column_id}
                         {...{
                           column,
                           set_column_hidden,
-                          filter_text_input
+                          filter_text_input,
+                          set_local_table_state,
+                          column_index
                         }}
                       />
                     ))}
@@ -553,11 +733,7 @@ export default function TableColumnControls({
 TableColumnControls.propTypes = {
   table_state: PropTypes.object.isRequired,
   all_columns: PropTypes.array,
-  set_column_visible: PropTypes.func,
-  set_column_hidden: PropTypes.func,
-  set_all_columns_hidden: PropTypes.func,
   on_table_state_change: PropTypes.func,
-  table_state_columns: PropTypes.array,
   prefix_columns: PropTypes.array,
   column_controls_open: PropTypes.bool.isRequired,
   set_column_controls_open: PropTypes.func.isRequired

@@ -7,6 +7,12 @@
   font-size 14px
   min-height 28px
   padding-right 18px
+  flex-wrap wrap
+  border 1px solid transparent
+
+  &.column-expanded
+    border 1px solid #e0e0e0
+    background rgba(233, 233, 233, 0.5)
 
   &.prefix
     background darken(white, 4%)
@@ -39,6 +45,10 @@
       width 16px
       height 16px
 
+  .column-params-container
+    width 100%
+    display flex
+
 @media (pointer:fine)
   .column-item
     .column-action
@@ -46,7 +56,8 @@
       transition opacity 20ms ease-in 0s
 
     &:hover
-      background rgb(233, 233, 233)
+    &.column-expanded
+      background rgba(233, 233, 233, 0.5)
 
       .column-action
         opacity 1
