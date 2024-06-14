@@ -11,7 +11,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import TextField from '@mui/material/TextField'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 
-import { debounce, get_string_from_object } from '../utils'
+import { get_string_from_object } from '../utils'
 import {
   TABLE_DATA_TYPES,
   DATA_TYPE_DEFAULT_OPERATORS,
@@ -20,7 +20,6 @@ import {
   OPERATOR_MENU_OPTIONS
 } from '../constants.mjs'
 
-const FILTER_ITEM_DEBOUNCE_DELAY = 3000
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
 
 const FilterItemOperator = ({
@@ -234,21 +233,12 @@ export default function FilterItem({
     ]
   )
 
-  const handle_value_change_debounced = useMemo(
-    () => debounce(handle_value_change_main, FILTER_ITEM_DEBOUNCE_DELAY),
-    [handle_value_change_main]
-  )
-
   const handle_value_change = useCallback(
     (event) => {
       set_filter_value(event.target.value)
-      if (data_type === TABLE_DATA_TYPES.SELECT) {
-        handle_value_change_main(event)
-      } else {
-        handle_value_change_debounced(event)
-      }
+      handle_value_change_main(event)
     },
-    [data_type, handle_value_change_debounced]
+    [handle_value_change_main]
   )
 
   const show_value = useMemo(() => {
