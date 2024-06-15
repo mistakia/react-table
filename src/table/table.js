@@ -31,6 +31,7 @@ import {
   group_columns_by_groups,
   use_trace_update
 } from '../utils'
+import { table_context } from '../table-context'
 
 import '../styles/mui-unstyled-popper.styl'
 import '../styles/table-expanding-control-container.styl'
@@ -68,7 +69,8 @@ export default function Table({
   delete_view = () => {},
   disable_rank_aggregation = false,
   style = {},
-  percentiles = {}
+  percentiles = {},
+  enable_duplicate_column_ids = false
 }) {
   is_fetching_more = is_fetching
   console.log('Table')
@@ -178,7 +180,7 @@ export default function Table({
   }, [table_state, selected_view, on_view_change])
 
   const set_table_sort = useCallback(
-    ({ column_id, desc, multi }) => {
+    ({ column_id, desc, multi, column_index = 0 }) => {
       const column_definition = memoized_all_columns.find(
         (column) => column.column_id === column_id
       )
@@ -186,26 +188,27 @@ export default function Table({
         console.error(`Column with id ${column_id} not found`)
         return
       }
-
       const table_sort = table_state.sort || []
       const table_sort_map = new Map(
-        table_sort.map((item) => [item.column_id, item])
+        table_sort.map((item) => [
+          `${item.column_id}-${item.column_index}`,
+          item
+        ])
       )
-
-      if (table_sort_map.has(column_id)) {
-        const existing_sort = table_sort_map.get(column_id)
+      const key = `${column_id}-${column_index}`
+      if (table_sort_map.has(key)) {
+        const existing_sort = table_sort_map.get(key)
         if (existing_sort.desc === desc) {
-          table_sort_map.delete(column_id)
+          table_sort_map.delete(key)
         } else {
-          table_sort_map.set(column_id, { column_id, desc })
+          table_sort_map.set(key, { column_id, desc, column_index })
         }
       } else {
         if (!multi) {
           table_sort_map.clear()
         }
-        table_sort_map.set(column_id, { column_id, desc })
+        table_sort_map.set(key, { column_id, desc, column_index })
       }
-
       on_table_state_change({
         ...table_state,
         sort: Array.from(table_sort_map.values())
@@ -214,48 +217,13 @@ export default function Table({
     [memoized_all_columns, table_state, on_table_state_change]
   )
 
-  const set_column_hidden = useCallback(
-    (column_id) => {
-      const columns = []
-
-      for (const column of table_state.columns || []) {
-        const cid = typeof column === 'string' ? column : column.column_id
-        if (cid === column_id) {
-          continue
-        }
-        columns.push(cid)
-      }
-
+  const set_column_hidden_by_index = useCallback(
+    (index) => {
+      const columns = [...(table_state.columns || [])]
+      columns.splice(index, 1)
       on_table_state_change({ ...table_state, columns })
     },
     [table_state, on_table_state_change]
-  )
-
-  const set_column_visible = useCallback(
-    (column) => {
-      on_table_state_change({
-        ...table_state,
-        columns: [...(table_state.columns || []), column]
-      })
-    },
-    [table_state, on_table_state_change]
-  )
-
-  const set_column_visibility = useCallback(
-    (updater_fn) => {
-      const new_column_item = updater_fn()
-
-      // get first key of new_column_item
-      const column_id = Object.keys(new_column_item)[0]
-      const is_visible = new_column_item[column_id]
-      if (is_visible) {
-        // TODO - check if working correctly
-        set_column_visible(column_id)
-      } else {
-        set_column_hidden(column_id)
-      }
-    },
-    [set_column_visible, set_column_hidden]
   )
 
   const set_all_columns_hidden = useCallback(() => {
@@ -263,6 +231,7 @@ export default function Table({
   }, [table_state, on_table_state_change])
 
   const table_state_columns = useMemo(() => {
+    let starting_index = (table_state.prefix_columns || []).length
     const columns = []
     for (const column of table_state.columns || []) {
       const column_id =
@@ -270,11 +239,15 @@ export default function Table({
           ? column
           : column.column_id || column.id || column.column_name
       if (column_id && all_columns[column_id]) {
-        columns.push(all_columns[column_id])
+        columns.push({
+          ...all_columns[column_id],
+          index: starting_index
+        })
+        starting_index += 1
       }
     }
     return columns
-  }, [table_state.columns, all_columns])
+  }, [table_state.columns, table_state.prefix_columns, all_columns])
 
   const grouped_columns = useMemo(
     () => group_columns_by_groups(table_state_columns),
@@ -283,6 +256,7 @@ export default function Table({
 
   const prefix_columns = useMemo(() => {
     const columns = []
+    let index = 0
     for (const column of table_state.prefix_columns || []) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_def = all_columns[column_id]
@@ -292,8 +266,10 @@ export default function Table({
 
       columns.push({
         ...column_def,
+        index,
         prefix: true
       })
+      index += 1
     }
     return columns
   }, [table_state.prefix_columns, all_columns])
@@ -318,7 +294,6 @@ export default function Table({
     defaultColumn,
     state: table_state,
     getCoreRowModel: getCoreRowModel(),
-    onColumnVisibilityChange: set_column_visibility,
     columnResizeMode: 'onChange'
   })
 
@@ -488,9 +463,10 @@ export default function Table({
   ])
 
   return (
-    <div style={style}>
+    <table_context.Provider value={{ enable_duplicate_column_ids }}>
       <div
         ref={table_container_ref}
+        style={style}
         className={get_string_from_object({
           table: true,
           noselect: is_table_resizing()
@@ -603,7 +579,8 @@ export default function Table({
                     on_table_state_change,
                     set_column_controls_open,
                     set_filter_controls_open,
-                    set_table_sort
+                    set_table_sort,
+                    set_column_hidden_by_index
                   }}
                 />
               ))}
@@ -625,6 +602,7 @@ export default function Table({
                     flexRender(cell.column.columnDef.cell, {
                       key: index,
                       percentiles,
+                      enable_duplicate_column_ids,
                       ...cell.getContext()
                     })
                   )}
@@ -650,7 +628,7 @@ export default function Table({
           </div>
         )}
       </div>
-    </div>
+    </table_context.Provider>
   )
 }
 
@@ -674,5 +652,6 @@ Table.propTypes = {
   percentiles: PropTypes.object,
   disable_create_view: PropTypes.bool,
   on_save_view: PropTypes.func,
-  saved_table_state: PropTypes.object
+  saved_table_state: PropTypes.object,
+  enable_duplicate_column_ids: PropTypes.bool
 }

@@ -1,4 +1,11 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+  useContext
+} from 'react'
 import PropTypes from 'prop-types'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
@@ -29,6 +36,7 @@ import {
   use_trace_update,
   use_count_children
 } from '../utils'
+import { table_context } from '../table-context'
 
 import './table-column-controls.styl'
 
@@ -39,9 +47,16 @@ const COLUMN_CONTROLS_MENU_CLOSE_TIMEOUT = 300
 const ColumnControlsTableColumnItem = React.memo(
   React.forwardRef(
     (
-      { column, set_column_visible, set_column_hidden, is_visible, depth = 0 },
+      {
+        column,
+        set_column_visible,
+        set_column_hidden_by_id,
+        is_visible,
+        depth = 0
+      },
       ref
     ) => {
+      const { enable_duplicate_column_ids } = useContext(table_context)
       return (
         <div
           ref={ref}
@@ -56,16 +71,22 @@ const ColumnControlsTableColumnItem = React.memo(
           <div className='column-name'>
             {column.column_title || column.column_id}
           </div>
-          <Button
-            size='small'
-            className='column-action'
-            onClick={() =>
-              is_visible
-                ? set_column_hidden(column.column_id)
-                : set_column_visible(column.column_id)
-            }>
-            {is_visible ? <CloseIcon /> : <AddIcon />}
-          </Button>
+          {(!is_visible || enable_duplicate_column_ids) && (
+            <Button
+              size='small'
+              className='column-action'
+              onClick={() => set_column_visible(column.column_id)}>
+              <AddIcon />
+            </Button>
+          )}
+          {is_visible && (
+            <Button
+              size='small'
+              className='column-action'
+              onClick={() => set_column_hidden_by_id(column.column_id)}>
+              <CloseIcon />
+            </Button>
+          )}
         </div>
       )
     }
@@ -75,7 +96,7 @@ ColumnControlsTableColumnItem.displayName = 'ColumnControlsTableColumnItem'
 ColumnControlsTableColumnItem.propTypes = {
   column: PropTypes.object.isRequired,
   set_column_visible: PropTypes.func.isRequired,
-  set_column_hidden: PropTypes.func.isRequired,
+  set_column_hidden_by_id: PropTypes.func.isRequired,
   is_visible: PropTypes.bool,
   depth: PropTypes.number
 }
@@ -83,7 +104,7 @@ ColumnControlsTableColumnItem.propTypes = {
 const ColumnControlsSortableItem = React.memo(
   ({
     column,
-    set_column_hidden,
+    set_column_hidden_by_index,
     filter_text_input,
     set_local_table_state,
     column_index
@@ -134,7 +155,7 @@ const ColumnControlsSortableItem = React.memo(
           <Button
             size='small'
             className='column-action'
-            onClick={() => set_column_hidden(column.column_id)}>
+            onClick={() => set_column_hidden_by_index(column_index)}>
             <CloseIcon />
           </Button>
           {is_drag_enabled && (
@@ -164,7 +185,7 @@ const ColumnControlsSortableItem = React.memo(
 ColumnControlsSortableItem.displayName = 'ColumnControlsSortableItem'
 ColumnControlsSortableItem.propTypes = {
   column: PropTypes.object.isRequired,
-  set_column_hidden: PropTypes.func.isRequired,
+  set_column_hidden_by_index: PropTypes.func.isRequired,
   filter_text_input: PropTypes.string.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
   column_index: PropTypes.number.isRequired
@@ -240,7 +261,19 @@ export default function TableColumnControls({
     }))
   }, [])
 
-  const set_column_hidden = useCallback((column_id) => {
+  const set_column_hidden_by_index = useCallback(
+    (table_state_columns_index) => {
+      set_local_table_state((prev) => ({
+        ...prev,
+        columns: prev.columns.filter(
+          (column, index) => index !== table_state_columns_index
+        )
+      }))
+    },
+    []
+  )
+
+  const set_column_hidden_by_id = useCallback((column_id) => {
     set_local_table_state((prev) => ({
       ...prev,
       columns: prev.columns.filter((column) => column !== column_id)
@@ -503,8 +536,7 @@ export default function TableColumnControls({
                       is_visible={Boolean(
                         shown_column_index[sub_category.column_id]
                       )}
-                      set_column_visible={set_column_visible}
-                      set_column_hidden={set_column_hidden}
+                      {...{ set_column_hidden_by_id, set_column_visible }}
                       depth={depth + 1}
                     />
                   )
@@ -604,7 +636,7 @@ export default function TableColumnControls({
                         key={column.column_id}
                         {...{
                           column,
-                          set_column_hidden,
+                          set_column_hidden_by_index,
                           filter_text_input,
                           set_local_table_state,
                           column_index
@@ -630,8 +662,7 @@ export default function TableColumnControls({
                         key={item.column_id}
                         column={item}
                         is_visible={Boolean(shown_column_index[item.column_id])}
-                        set_column_visible={set_column_visible}
-                        set_column_hidden={set_column_hidden}
+                        {...{ set_column_visible, set_column_hidden_by_id }}
                       />
                     )}
                   </div>

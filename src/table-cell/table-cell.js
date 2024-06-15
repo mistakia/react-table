@@ -9,7 +9,8 @@ export default function TableCell({
   column,
   row,
   table,
-  percentiles
+  percentiles,
+  enable_duplicate_column_ids
 }) {
   if (column.columnDef.id === 'add_column_action') {
     return null
@@ -22,6 +23,19 @@ export default function TableCell({
       </div>
     )
   }
+
+  const column_index = useMemo(() => {
+    const columns_with_same_id = table
+      .getAllLeafColumns()
+      .filter((col) => col.columnDef.column_id === column.columnDef.column_id)
+    const sorted_columns_with_same_id = columns_with_same_id.sort(
+      (a, b) => a.columnDef.index - b.columnDef.index
+    )
+
+    return sorted_columns_with_same_id.findIndex(
+      (col) => col.columnDef.index === column.columnDef.index
+    )
+  }, [column, table])
 
   const sticky_left = useMemo(() => {
     if (!column.columnDef.sticky) return 0
@@ -45,7 +59,11 @@ export default function TableCell({
 
   const { sort } = table.getState()
   const is_sorted = Boolean(
-    sort.find((s) => s.column_id === column.columnDef.column_id)
+    sort.find(
+      (s) =>
+        s.column_id === column.columnDef.column_id &&
+        (s.column_index || 0) === column_index
+    )
   )
 
   if (column.columnDef.component) {
@@ -68,7 +86,15 @@ export default function TableCell({
     )
   }
 
-  let value = getValue()
+  let value
+
+  if (enable_duplicate_column_ids) {
+    const accessor_path = `${column.columnDef.accessorKey}_${column_index}`
+    value = row.original[accessor_path]
+  } else {
+    value = getValue()
+  }
+
   if (value !== undefined && value !== null && typeof value === 'object') {
     value = 'invalid value'
   }
@@ -86,7 +112,10 @@ export default function TableCell({
     column.parent.columns[column.parent.columns.length - 1].id === column.id
 
   const color = useMemo(() => {
-    const percentile = percentiles[column.id]
+    const key = enable_duplicate_column_ids
+      ? `${column.columnDef.accessorKey}_${column_index}`
+      : column.columnDef.accessorKey
+    const percentile = percentiles[key]
     if (percentile && !Number.isNaN(value)) {
       if (value < percentile.p25) {
         const max_percent =
@@ -136,5 +165,6 @@ TableCell.propTypes = {
   column: PropTypes.object,
   row: PropTypes.object,
   table: PropTypes.object,
-  percentiles: PropTypes.object
+  percentiles: PropTypes.object,
+  enable_duplicate_column_ids: PropTypes.bool
 }

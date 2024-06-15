@@ -1,4 +1,11 @@
-import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
+import React, {
+  useState,
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext
+} from 'react'
 import PropTypes from 'prop-types'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -22,6 +29,7 @@ import {
   use_count_children
 } from '../utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
+import { table_context } from '../table-context'
 import FilterItem from '../table-filter-controls-filter-item'
 
 import './table-filter-controls.styl'
@@ -34,33 +42,35 @@ const FilterControlItem = React.memo(
     is_visible,
     depth = 0
   }) => {
-    const handle_add_filter = useCallback(() => {
+    const { enable_duplicate_column_ids } = useContext(table_context)
+    const handle_remove_filter_by_column_id = useCallback(() => {
       const where_param = table_state.where || []
       const index = where_param.findIndex(
         (item) => item.column_id === column_item.column_id
       )
-      if (index === -1) {
-        const operator = column_item.operators
-          ? column_item.operators[0]
-          : OPERATOR_MENU_DEFAULT_VALUE
-        on_table_state_change({
-          ...table_state,
-          where: [
-            ...where_param,
-            {
-              column_id: column_item.column_id,
-              operator,
-              value: ''
-            }
-          ]
-        })
-      } else {
-        where_param.splice(index, 1)
-        on_table_state_change({
-          ...table_state,
-          where: where_param
-        })
-      }
+      where_param.splice(index, 1)
+      on_table_state_change({
+        ...table_state,
+        where: where_param
+      })
+    }, [table_state, on_table_state_change])
+
+    const handle_add_filter = useCallback(() => {
+      const where_param = table_state.where || []
+      const operator = column_item.operators
+        ? column_item.operators[0]
+        : OPERATOR_MENU_DEFAULT_VALUE
+      on_table_state_change({
+        ...table_state,
+        where: [
+          ...where_param,
+          {
+            column_id: column_item.column_id,
+            operator,
+            value: ''
+          }
+        ]
+      })
     }, [column_item.column_id, on_table_state_change, table_state])
 
     return (
@@ -77,9 +87,18 @@ const FilterControlItem = React.memo(
         <div className='column-name'>
           {column_item.column_title || column_item.column_id}
         </div>
-        <div onClick={handle_add_filter} className='column-action'>
-          {is_visible ? <CloseIcon /> : <AddIcon />}
-        </div>
+        {(!is_visible || enable_duplicate_column_ids) && (
+          <div onClick={handle_add_filter} className='column-action'>
+            <AddIcon />
+          </div>
+        )}
+        {is_visible && (
+          <div
+            onClick={handle_remove_filter_by_column_id}
+            className='column-action'>
+            <CloseIcon />
+          </div>
+        )}
       </div>
     )
   }
@@ -400,7 +419,6 @@ export default function TableFilterControls({
                         column_definition={all_columns.find(
                           (column) => column.column_id === where_item.column_id
                         )}
-                        is_visible={true}
                         table_state={local_table_state}
                         {...{
                           where_index,

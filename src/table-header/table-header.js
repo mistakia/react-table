@@ -44,20 +44,43 @@ export default function TableHeader({
   on_table_state_change,
   set_column_controls_open,
   set_filter_controls_open,
-  set_table_sort
+  set_table_sort,
+  set_column_hidden_by_index
 }) {
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
+  const column_index = useMemo(() => {
+    const columns_with_same_id = table
+      .getAllLeafColumns()
+      .filter((col) => col.columnDef.column_id === column.columnDef.column_id)
+    const sorted_columns_with_same_id = columns_with_same_id.sort(
+      (a, b) => a.columnDef.index - b.columnDef.index
+    )
+
+    return sorted_columns_with_same_id.findIndex(
+      (col) => col.columnDef.index === column.columnDef.index
+    )
+  }, [column, table])
+  const table_state_columns_index = (table_state.columns || []).findIndex(
+    (c) =>
+      (typeof c === 'string' ? c : c.column_id) ===
+        column.columnDef.column_id &&
+      (typeof c === 'string' ? 0 : c.column_index || 0) === column_index
+  )
 
   const table_sort = table_state.sort || []
   const column_sort = table_sort?.find(
-    (i) => i.column_id === column.columnDef.column_id
+    (i) =>
+      i.column_id === column.columnDef.column_id &&
+      (i.column_index || 0) === column_index
   )
   const column_sort_direction = column_sort?.desc ? 'desc' : 'asc'
   const is_sorted = Boolean(column_sort) && !header.isPlaceholder
   const is_multi = Boolean(table_sort?.length > 1)
   const has_other_sort = table_sort?.some(
-    (sort) => sort.column_id !== column.columnDef.column_id
+    (sort) =>
+      sort.column_id !== column.columnDef.column_id ||
+      (sort.column_index || 0) !== column_index
   )
   const { data_type } = header.column.columnDef
   const is_sortable = data_type !== TABLE_DATA_TYPES.JSON
@@ -66,6 +89,7 @@ export default function TableHeader({
     () =>
       set_table_sort({
         column_id: column.columnDef.column_id,
+        column_index,
         desc: false,
         multi: false
       }),
@@ -74,6 +98,7 @@ export default function TableHeader({
   const handle_sort_descending = useCallback(() => {
     set_table_sort({
       column_id: column.columnDef.column_id,
+      column_index,
       desc: true,
       multi: false
     })
@@ -82,6 +107,7 @@ export default function TableHeader({
     () =>
       set_table_sort({
         column_id: column.columnDef.column_id,
+        column_index,
         desc: false,
         multi: true
       }),
@@ -91,6 +117,7 @@ export default function TableHeader({
     () =>
       set_table_sort({
         column_id: column.columnDef.column_id,
+        column_index,
         desc: true,
         multi: true
       }),
@@ -258,7 +285,9 @@ export default function TableHeader({
           <div className='header-menu-item'>
             <div
               className='header-menu-item-button'
-              onClick={() => column.toggleVisibility(false)}>
+              onClick={() =>
+                set_column_hidden_by_index(table_state_columns_index)
+              }>
               <div className='header-menu-item-icon'>
                 <VisibilityOffIcon />
               </div>
@@ -377,5 +406,6 @@ TableHeader.propTypes = {
   set_filter_controls_open: PropTypes.func.isRequired,
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired,
-  set_table_sort: PropTypes.func.isRequired
+  set_table_sort: PropTypes.func.isRequired,
+  set_column_hidden_by_index: PropTypes.func.isRequired
 }
