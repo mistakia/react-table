@@ -557,7 +557,7 @@ export default function TableColumnControls({
       const is_open = open_categories[category_path] || false
       const total_children_count = count_children(category.columns || [])
       return (
-        <>
+        <div key={category_path}>
           <ListItem
             disablePadding
             onClick={() => toggle_category(category_path)}
@@ -589,7 +589,7 @@ export default function TableColumnControls({
                 )}
             </List>
           </Collapse>
-        </>
+        </div>
       )
     },
     [open_categories, count_children, shown_column_index, local_table_state]
