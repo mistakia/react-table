@@ -13,12 +13,14 @@ export default function FilterBase({ label, selected_label, body }) {
 
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
-      <div
-        className='table-filter-item'
-        onClick={handle_toggle_click}
-        ref={button_ref}>
-        <div className='table-filter-item-label'>{label}</div>
-        <div className='table-filter-item-selection'>{selected_label}</div>
+      <div>
+        <div
+          className='table-filter-item'
+          onClick={handle_toggle_click}
+          ref={button_ref}>
+          <div className='table-filter-item-label'>{label}</div>
+          <div className='table-filter-item-selection'>{selected_label}</div>
+        </div>
         <Popper
           open={visible}
           anchorEl={button_ref.current}
