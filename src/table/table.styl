@@ -15,6 +15,7 @@
 .table
   position relative
   padding-left 96px
+  width fit-content
 
   .table-top-container
     display flex
@@ -200,6 +201,8 @@
     border-radius 4px
     border 1px solid transparent
     width fit-content
+    position sticky
+    left 30px
 
     &:hover
     &.-open
@@ -263,3 +266,7 @@
 
   &:hover
     box-shadow #D0D0D0 4px 4px 0px 0px
+
+@media (min-width: 769px)
+  .table
+    padding-top 48px
