@@ -20,9 +20,8 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 
-import ColumnParamSelectFilter from '../column-param-select-filter'
+import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
 import DataTypeIcon from '../data-type-icon'
-import { TABLE_DATA_TYPES } from '../constants.mjs'
 import {
   fuzzy_match,
   group_columns_into_tree_view,
@@ -37,7 +36,7 @@ const COLUMN_CONTROLS_INITIAL_VISIBLE_COLUMNS = 13
 const COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD = 33
 const COLUMN_CONTROLS_MENU_CLOSE_TIMEOUT = 300
 
-const TableColumnItem = React.memo(
+const ColumnControlsTableColumnItem = React.memo(
   React.forwardRef(
     (
       { column, set_column_visible, set_column_hidden, is_visible, depth = 0 },
@@ -72,8 +71,8 @@ const TableColumnItem = React.memo(
     }
   )
 )
-TableColumnItem.displayName = 'TableColumnItem'
-TableColumnItem.propTypes = {
+ColumnControlsTableColumnItem.displayName = 'ColumnControlsTableColumnItem'
+ColumnControlsTableColumnItem.propTypes = {
   column: PropTypes.object.isRequired,
   set_column_visible: PropTypes.func.isRequired,
   set_column_hidden: PropTypes.func.isRequired,
@@ -81,84 +80,7 @@ TableColumnItem.propTypes = {
   depth: PropTypes.number
 }
 
-const ColumnControlsColumnParamSelectFilter = React.memo(
-  ({ column_param, column, set_local_table_state, column_index }) => {
-    const handle_change = (values) => {
-      const new_column = {
-        column_id: column.column_id,
-        params: {
-          ...column.selected_params,
-          [column_param.param_name]: values
-        }
-      }
-      set_local_table_state((prev_state) => ({
-        ...prev_state,
-        columns: [
-          ...prev_state.columns.slice(0, column_index),
-          new_column,
-          ...prev_state.columns.slice(column_index + 1)
-        ]
-      }))
-    }
-
-    const state = {
-      label: column_param.param_name,
-      on_change: handle_change,
-      filter_values: [],
-      is_column_param_defined: Boolean(
-        column.selected_params[column_param.param_name]
-      )
-    }
-
-    const selected_param_values =
-      column.selected_params[column_param.param_name] || []
-    for (const param_value of column_param.param_values.values) {
-      state.filter_values.push({
-        label: param_value,
-        value: param_value,
-        selected: selected_param_values.includes(param_value)
-      })
-    }
-
-    return <ColumnParamSelectFilter {...state} />
-  }
-)
-
-ColumnControlsColumnParamSelectFilter.displayName =
-  'ColumnControlsColumnParamSelectFilter'
-ColumnControlsColumnParamSelectFilter.propTypes = {
-  column_param: PropTypes.object.isRequired,
-  column: PropTypes.object.isRequired,
-  set_local_table_state: PropTypes.func.isRequired,
-  column_index: PropTypes.number.isRequired
-}
-
-const ColumnParamItem = React.memo(
-  ({ column_param, column, set_local_table_state, column_index }) => {
-    const { data_type } = column_param.param_values
-
-    switch (data_type) {
-      case TABLE_DATA_TYPES.SELECT:
-        return (
-          <ColumnControlsColumnParamSelectFilter
-            {...{ column_param, column, set_local_table_state, column_index }}
-          />
-        )
-      default:
-        return null
-    }
-  }
-)
-
-ColumnParamItem.displayName = 'ColumnParamItem'
-ColumnParamItem.propTypes = {
-  column_param: PropTypes.object.isRequired,
-  column: PropTypes.object.isRequired,
-  set_local_table_state: PropTypes.func.isRequired,
-  column_index: PropTypes.number.isRequired
-}
-
-const SortableItem = React.memo(
+const ColumnControlsSortableItem = React.memo(
   ({
     column,
     set_column_hidden,
@@ -178,8 +100,8 @@ const SortableItem = React.memo(
     })
 
     const is_drag_enabled = !filter_text_input
-    const has_params = Boolean(column.column_params)
-    const [show_params, set_show_params] = useState(false)
+    const has_column_params = Boolean(column.column_params)
+    const [show_column_params, set_show_column_params] = useState(false)
     const style = {
       position: 'relative',
       transform: CSS.Transform.toString(transform),
@@ -193,7 +115,7 @@ const SortableItem = React.memo(
           className={get_string_from_object({
             'column-item': true,
             reorder: true,
-            'column-expanded': show_params
+            'column-expanded': show_column_params
           })}>
           <div className='column-data-type'>
             <DataTypeIcon data_type={column.data_type} />
@@ -201,12 +123,12 @@ const SortableItem = React.memo(
           <div className='column-name'>
             {column.column_title || column.column_id}
           </div>
-          {has_params && (
+          {has_column_params && (
             <Button
               size='small'
               className='column-action'
-              onClick={() => set_show_params(!show_params)}>
-              {show_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              onClick={() => set_show_column_params(!show_column_params)}>
+              {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
             </Button>
           )}
           <Button
@@ -220,11 +142,11 @@ const SortableItem = React.memo(
               <DragIndicatorIcon />
             </div>
           )}
-          {show_params && (
+          {show_column_params && (
             <div className='column-params-container'>
               {Object.entries(column.column_params).map(
                 ([param_name, param_values]) => (
-                  <ColumnParamItem
+                  <ColumnControlsColumnParamItem
                     key={param_name}
                     column_param={{ param_name, param_values }}
                     {...{ column, set_local_table_state, column_index }}
@@ -239,8 +161,8 @@ const SortableItem = React.memo(
   }
 )
 
-SortableItem.displayName = 'SortableItem'
-SortableItem.propTypes = {
+ColumnControlsSortableItem.displayName = 'ColumnControlsSortableItem'
+ColumnControlsSortableItem.propTypes = {
   column: PropTypes.object.isRequired,
   set_column_hidden: PropTypes.func.isRequired,
   filter_text_input: PropTypes.string.isRequired,
@@ -575,7 +497,7 @@ export default function TableColumnControls({
                   sub_category.columns ? (
                     render_category(sub_category, depth + 1, category_path)
                   ) : (
-                    <TableColumnItem
+                    <ColumnControlsTableColumnItem
                       key={sub_category.column_id}
                       column={sub_category}
                       is_visible={Boolean(
@@ -678,7 +600,7 @@ export default function TableColumnControls({
                   onDragEnd={handle_drag_end}>
                   <SortableContext items={shown_column_items}>
                     {shown_column_items.map((column, column_index) => (
-                      <SortableItem
+                      <ColumnControlsSortableItem
                         key={column.column_id}
                         {...{
                           column,
@@ -704,7 +626,7 @@ export default function TableColumnControls({
                     {item.columns ? (
                       render_category(item)
                     ) : (
-                      <TableColumnItem
+                      <ColumnControlsTableColumnItem
                         key={item.column_id}
                         column={item}
                         is_visible={Boolean(shown_column_index[item.column_id])}

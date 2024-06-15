@@ -274,7 +274,7 @@ export default function TableFilterControls({
       const is_open = open_categories[category_path] || false
       const total_children_count = count_children(category.columns || [])
       return (
-        <>
+        <div key={category_path}>
           <ListItem
             disablePadding
             onClick={() => toggle_category(category_path)}
@@ -308,7 +308,7 @@ export default function TableFilterControls({
                 )}
             </List>
           </Collapse>
-        </>
+        </div>
       )
     },
     [
@@ -393,19 +393,23 @@ export default function TableFilterControls({
                 className='table-selected-filters-container'
                 style={{ maxHeight: 'calc((80vh - 32px - 89px) / 2)' }}>
                 <List component='div' disablePadding>
-                  {(local_table_state.where || []).map((where_item) => (
-                    <FilterItem
-                      key={where_item.column_id}
-                      column_definition={all_columns.find(
-                        (column) => column.column_id === where_item.column_id
-                      )}
-                      is_visible={true}
-                      table_state={local_table_state}
-                      on_table_state_change={(new_table_state) =>
-                        set_local_table_state(new_table_state)
-                      }
-                    />
-                  ))}
+                  {(local_table_state.where || []).map(
+                    (where_item, where_index) => (
+                      <FilterItem
+                        key={where_item.column_id}
+                        column_definition={all_columns.find(
+                          (column) => column.column_id === where_item.column_id
+                        )}
+                        is_visible={true}
+                        table_state={local_table_state}
+                        {...{
+                          where_index,
+                          local_table_state,
+                          set_local_table_state
+                        }}
+                      />
+                    )
+                  )}
                 </List>
               </div>
             )}

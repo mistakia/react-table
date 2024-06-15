@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
-import IconButton from '@mui/material/IconButton'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
@@ -10,6 +9,9 @@ import { Popper } from '@mui/base/Popper'
 import DeleteIcon from '@mui/icons-material/Delete'
 import TextField from '@mui/material/TextField'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
+import Button from '@mui/material/Button'
 
 import { get_string_from_object } from '../utils'
 import {
@@ -19,6 +21,7 @@ import {
   OPERATOR_MENU_DEFAULT_VALUE,
   OPERATOR_MENU_OPTIONS
 } from '../constants.mjs'
+import FilterControlsColumnParamItem from '../filter-controls-column-param-item'
 
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
 
@@ -61,7 +64,7 @@ const FilterItemValue = ({
   where_item,
   filter_value,
   handle_value_change,
-  column_values,
+  column_values = [],
   show_value,
   data_type
 }) => {
@@ -108,30 +111,33 @@ FilterItemValue.propTypes = {
   where_item: PropTypes.object.isRequired,
   filter_value: PropTypes.string.isRequired,
   handle_value_change: PropTypes.func.isRequired,
-  column_values: PropTypes.array.isRequired,
+  column_values: PropTypes.array,
   show_value: PropTypes.bool.isRequired,
   data_type: PropTypes.number.isRequired
 }
 
 export default function FilterItem({
   column_definition,
-  table_state,
-  on_table_state_change,
-  is_visible
+  local_table_state,
+  set_local_table_state,
+  is_visible,
+  where_index
 }) {
   const anchor_el = useRef()
-  const { column_id, column_title, column_values, data_type } =
+  const { column_id, column_title, column_values, data_type, column_params } =
     column_definition
   const where_item = useMemo(() => {
-    const where_param = table_state.where || []
+    const where_param = local_table_state.where || []
     return where_param.find((item) => item.column_id === column_id) || {}
-  }, [table_state, column_id])
+  }, [local_table_state, column_id])
   const [filter_value, set_filter_value] = useState(
     where_item?.value ||
       (where_item?.operator === 'IN' || where_item?.operator === 'NOT IN'
         ? []
         : '')
   )
+  const [show_column_params, set_show_column_params] = useState(false)
+  const has_column_params = Boolean(column_definition.column_params)
   const [misc_menu_open, set_misc_menu_open] = useState(false)
 
   useEffect(() => {
@@ -142,37 +148,43 @@ export default function FilterItem({
 
   const handle_create_filter = useCallback(
     ({ operator = OPERATOR_MENU_DEFAULT_VALUE, value = '' }) => {
-      const where_param = JSON.parse(JSON.stringify(table_state.where || []))
+      const where_param = JSON.parse(
+        JSON.stringify(local_table_state.where || [])
+      )
       where_param.push({
         column_id,
         operator,
         value
       })
-      on_table_state_change({
-        ...table_state,
+      set_local_table_state({
+        ...local_table_state,
         where: where_param
       })
       set_misc_menu_open(false)
     },
-    [column_id, on_table_state_change, table_state]
+    [column_id, set_local_table_state, local_table_state]
   )
 
   const handle_remove_click = useCallback(() => {
-    const where_param = JSON.parse(JSON.stringify(table_state.where || []))
+    const where_param = JSON.parse(
+      JSON.stringify(local_table_state.where || [])
+    )
     const index = where_param.findIndex(
       (item) => item.column_id === where_item.column_id
     )
     where_param.splice(index, 1)
-    on_table_state_change({
-      ...table_state,
+    set_local_table_state({
+      ...local_table_state,
       where: where_param
     })
     set_misc_menu_open(false)
-  }, [on_table_state_change, table_state, where_item.column_id])
+  }, [set_local_table_state, local_table_state, where_item.column_id])
 
   const handle_operator_change = useCallback(
     (event) => {
-      const where_param = JSON.parse(JSON.stringify(table_state.where || []))
+      const where_param = JSON.parse(
+        JSON.stringify(local_table_state.where || [])
+      )
       const index = where_param.findIndex(
         (item) => item.column_id === where_item.column_id
       )
@@ -191,15 +203,15 @@ export default function FilterItem({
       }
 
       where_param[index].operator = event.target.value
-      on_table_state_change({
-        ...table_state,
+      set_local_table_state({
+        ...local_table_state,
         where: where_param
       })
     },
     [
       handle_create_filter,
-      on_table_state_change,
-      table_state,
+      set_local_table_state,
+      local_table_state,
       where_item.column_id
     ]
   )
@@ -207,7 +219,9 @@ export default function FilterItem({
   const handle_value_change_main = useMemo(
     () => (event) => {
       const { value } = event.target
-      const where_param = JSON.parse(JSON.stringify(table_state.where || []))
+      const where_param = JSON.parse(
+        JSON.stringify(local_table_state.where || [])
+      )
       const index = where_param.findIndex(
         (item) => item.column_id === where_item.column_id
       )
@@ -220,15 +234,15 @@ export default function FilterItem({
 
       where_param[index].value = value
 
-      on_table_state_change({
-        ...table_state,
+      set_local_table_state({
+        ...local_table_state,
         where: where_param
       })
     },
     [
       handle_create_filter,
-      on_table_state_change,
-      table_state,
+      set_local_table_state,
+      local_table_state,
       where_item.column_id
     ]
   )
@@ -279,14 +293,21 @@ export default function FilterItem({
         />
       </div>
       <div className='filter-item-right'>
+        {has_column_params && (
+          <Button
+            size='small'
+            className='column-action'
+            onClick={() => set_show_column_params(!show_column_params)}>
+            {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+          </Button>
+        )}
         <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
           <div>
-            <IconButton
-              className='filter-item-right-action'
+            <Button
               ref={anchor_el}
               onClick={() => set_misc_menu_open(!misc_menu_open)}>
               <MoreHorizIcon />
-            </IconButton>
+            </Button>
             <Popper
               className='misc-menu'
               open={misc_menu_open}
@@ -304,6 +325,21 @@ export default function FilterItem({
           </div>
         </ClickAwayListener>
       </div>
+      {show_column_params && (
+        <div className='column-params-container'>
+          {Object.entries(column_params).map(([param_name, param_values]) => (
+            <FilterControlsColumnParamItem
+              key={param_name}
+              column_param={{ param_name, param_values }}
+              {...{
+                where_item,
+                set_local_table_state,
+                where_index
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -312,7 +348,8 @@ FilterItem.displayName = 'FilterItem'
 
 FilterItem.propTypes = {
   column_definition: PropTypes.object.isRequired,
-  table_state: PropTypes.object.isRequired,
-  on_table_state_change: PropTypes.func.isRequired,
-  is_visible: PropTypes.bool.isRequired
+  local_table_state: PropTypes.object.isRequired,
+  set_local_table_state: PropTypes.func.isRequired,
+  is_visible: PropTypes.bool.isRequired,
+  where_index: PropTypes.number.isRequired
 }
