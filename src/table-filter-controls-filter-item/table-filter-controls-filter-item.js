@@ -13,7 +13,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import Button from '@mui/material/Button'
 
-import { get_string_from_object } from '../utils'
 import {
   TABLE_DATA_TYPES,
   DATA_TYPE_DEFAULT_OPERATORS,
@@ -120,16 +119,15 @@ export default function FilterItem({
   column_definition,
   local_table_state,
   set_local_table_state,
-  is_visible,
   where_index
 }) {
   const anchor_el = useRef()
   const { column_id, column_title, column_values, data_type, column_params } =
     column_definition
-  const where_item = useMemo(() => {
-    const where_param = local_table_state.where || []
-    return where_param.find((item) => item.column_id === column_id) || {}
-  }, [local_table_state, column_id])
+  const where_item = useMemo(
+    () => local_table_state.where?.[where_index] || {},
+    [local_table_state, where_index]
+  )
   const [filter_value, set_filter_value] = useState(
     where_item?.value ||
       (where_item?.operator === 'IN' || where_item?.operator === 'NOT IN'
@@ -169,40 +167,33 @@ export default function FilterItem({
     const where_param = JSON.parse(
       JSON.stringify(local_table_state.where || [])
     )
-    const index = where_param.findIndex(
-      (item) => item.column_id === where_item.column_id
-    )
-    where_param.splice(index, 1)
+    where_param.splice(where_index, 1)
     set_local_table_state({
       ...local_table_state,
       where: where_param
     })
     set_misc_menu_open(false)
-  }, [set_local_table_state, local_table_state, where_item.column_id])
+  }, [set_local_table_state, local_table_state, where_index])
 
   const handle_operator_change = useCallback(
     (event) => {
       const where_param = JSON.parse(
         JSON.stringify(local_table_state.where || [])
       )
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
-
-      if (index === -1) {
+      if (where_index === -1) {
         return handle_create_filter({
           operator: event.target.value
         })
       }
 
       if (event.target.value === 'IN' || event.target.value === 'NOT IN') {
-        where_param[index].value = []
-          .concat(where_param[index].value)
+        where_param[where_index].value = []
+          .concat(where_param[where_index].value)
           .filter(Boolean)
-        set_filter_value(where_param[index].value)
+        set_filter_value(where_param[where_index].value)
       }
 
-      where_param[index].operator = event.target.value
+      where_param[where_index].operator = event.target.value
       set_local_table_state({
         ...local_table_state,
         where: where_param
@@ -212,7 +203,7 @@ export default function FilterItem({
       handle_create_filter,
       set_local_table_state,
       local_table_state,
-      where_item.column_id
+      where_index
     ]
   )
 
@@ -222,17 +213,14 @@ export default function FilterItem({
       const where_param = JSON.parse(
         JSON.stringify(local_table_state.where || [])
       )
-      const index = where_param.findIndex(
-        (item) => item.column_id === where_item.column_id
-      )
 
-      if (index === -1) {
+      if (where_index === -1) {
         return handle_create_filter({
           value
         })
       }
 
-      where_param[index].value = value
+      where_param[where_index].value = value
 
       set_local_table_state({
         ...local_table_state,
@@ -243,7 +231,7 @@ export default function FilterItem({
       handle_create_filter,
       set_local_table_state,
       local_table_state,
-      where_item.column_id
+      where_index
     ]
   )
 
@@ -265,11 +253,7 @@ export default function FilterItem({
   }, [where_item.operator])
 
   return (
-    <div
-      className={get_string_from_object({
-        'filter-item': true,
-        visible: is_visible
-      })}>
+    <div className='filter_item visible'>
       <div className='filter-item-left'>
         <div className='filter-item-left-column'>
           {column_title || column_id}
@@ -350,6 +334,5 @@ FilterItem.propTypes = {
   column_definition: PropTypes.object.isRequired,
   local_table_state: PropTypes.object.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
-  is_visible: PropTypes.bool.isRequired,
   where_index: PropTypes.number.isRequired
 }
