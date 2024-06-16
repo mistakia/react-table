@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-export default function TableFooter({ column, header }) {
+const TableFooter = ({ column, header }) => {
   const is_group_header = header.column.columns.length
 
   if (is_group_header) {
@@ -42,3 +42,5 @@ TableFooter.propTypes = {
   column: PropTypes.object,
   header: PropTypes.object
 }
+
+export default React.memo(TableFooter)

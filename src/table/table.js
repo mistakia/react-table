@@ -28,8 +28,7 @@ import {
   get_string_from_object,
   get_scroll_parent,
   throttle_leading_edge,
-  group_columns_by_groups,
-  use_trace_update
+  group_columns_by_groups
 } from '../utils'
 import { table_context } from '../table-context'
 
@@ -73,26 +72,6 @@ export default function Table({
   enable_duplicate_column_ids = false
 }) {
   is_fetching_more = is_fetching
-  console.log('Table')
-  use_trace_update('Table', {
-    data,
-    on_view_change,
-    table_state,
-    all_columns,
-    selected_view,
-    views,
-    select_view,
-    fetch_more,
-    is_fetching,
-    is_fetching_more,
-    is_loading,
-    total_rows_fetched,
-    total_row_count,
-    delete_view,
-    disable_rank_aggregation,
-    style,
-    percentiles
-  })
 
   const INITIAL_LOAD_NUMBER = 20
   const OVERSCAN_COUNT = 10

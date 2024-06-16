@@ -133,14 +133,14 @@ ViewItem.propTypes = {
   disable_create_view: PropTypes.bool
 }
 
-export default function TableViewController({
+const TableViewController = ({
   select_view,
   selected_view,
   views,
   on_view_change,
   delete_view,
   disable_create_view = false
-}) {
+}) => {
   const anchor_el = React.useRef()
   const input_ref = React.useRef()
   const [input_value, set_input_value] = React.useState(
@@ -286,3 +286,5 @@ TableViewController.propTypes = {
   delete_view: PropTypes.func.isRequired,
   disable_create_view: PropTypes.bool
 }
+
+export default React.memo(TableViewController)

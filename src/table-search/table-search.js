@@ -8,11 +8,7 @@ import { debounce, get_string_from_object } from '../utils'
 
 import './table-search.styl'
 
-export default function TableSearch({
-  selected_view,
-  table_state,
-  on_table_state_change
-}) {
+const TableSearch = ({ selected_view, table_state, on_table_state_change }) => {
   const [text_search_value, set_text_search_value] = useState('')
   const [is_open, set_is_open] = useState(false)
   const input_ref = useRef(null)
@@ -159,3 +155,5 @@ TableSearch.propTypes = {
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired
 }
+
+export default React.memo(TableSearch)

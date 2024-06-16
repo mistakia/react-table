@@ -36,7 +36,7 @@ AddColumnAction.propTypes = {
   set_column_controls_open: PropTypes.func.isRequired
 }
 
-export default function TableHeader({
+const TableHeader = ({
   header,
   column,
   table,
@@ -46,7 +46,7 @@ export default function TableHeader({
   set_filter_controls_open,
   set_table_sort,
   set_column_hidden_by_index
-}) {
+}) => {
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
   const column_index = useMemo(() => {
@@ -409,3 +409,5 @@ TableHeader.propTypes = {
   set_table_sort: PropTypes.func.isRequired,
   set_column_hidden_by_index: PropTypes.func.isRequired
 }
+
+export default React.memo(TableHeader)

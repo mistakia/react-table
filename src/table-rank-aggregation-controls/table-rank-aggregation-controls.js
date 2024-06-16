@@ -127,11 +127,11 @@ RankItem.propTypes = {
   index: PropTypes.number.isRequired
 }
 
-export default function TableRankAggregationControls({
+const TableRankAggregationControls = ({
   table_state,
   on_table_state_change,
   all_columns = []
-}) {
+}) => {
   const [container_expanded, set_container_expanded] = useState(false)
   const [container_closing, set_container_closing] = useState(false)
 
@@ -265,3 +265,5 @@ TableRankAggregationControls.propTypes = {
   on_table_state_change: PropTypes.func.isRequired,
   all_columns: PropTypes.array.isRequired
 }
+
+export default React.memo(TableRankAggregationControls)

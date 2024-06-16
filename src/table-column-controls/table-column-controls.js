@@ -33,7 +33,6 @@ import {
   fuzzy_match,
   group_columns_into_tree_view,
   get_string_from_object,
-  use_trace_update,
   use_count_children
 } from '../utils'
 import { table_context } from '../table-context'
@@ -191,23 +190,14 @@ ColumnControlsSortableItem.propTypes = {
   column_index: PropTypes.number.isRequired
 }
 
-export default function TableColumnControls({
+const TableColumnControls = ({
   table_state,
   all_columns = [],
   on_table_state_change,
   prefix_columns = [],
   column_controls_open,
   set_column_controls_open
-}) {
-  console.log('TableColumnControls')
-  use_trace_update('TableColumnControls', {
-    table_state,
-    all_columns,
-    on_table_state_change,
-    prefix_columns,
-    column_controls_open,
-    set_column_controls_open
-  })
+}) => {
   const [local_table_state, set_local_table_state] = useState(table_state)
 
   const parent_ref = useRef()
@@ -691,3 +681,5 @@ TableColumnControls.propTypes = {
   column_controls_open: PropTypes.bool.isRequired,
   set_column_controls_open: PropTypes.func.isRequired
 }
+
+export default React.memo(TableColumnControls)

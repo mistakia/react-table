@@ -25,7 +25,6 @@ import {
   group_columns_into_tree_view,
   fuzzy_match,
   get_string_from_object,
-  use_trace_update,
   use_count_children
 } from '../utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
@@ -114,20 +113,13 @@ FilterControlItem.propTypes = {
   depth: PropTypes.number
 }
 
-export default function TableFilterControls({
+const TableFilterControls = ({
   table_state,
   on_table_state_change,
   all_columns,
   filter_controls_open,
   set_filter_controls_open
-}) {
-  console.log('TableFilterControls')
-  use_trace_update('TableFilterControls', {
-    table_state,
-    on_table_state_change,
-    all_columns
-  })
-
+}) => {
   const previous_filter_text = useRef('')
   const [cached_open_categories, set_cached_open_categories] = useState({})
   const [filter_text_input, set_filter_text_input] = useState('')
@@ -490,3 +482,5 @@ TableFilterControls.propTypes = {
   filter_controls_open: PropTypes.bool.isRequired,
   set_filter_controls_open: PropTypes.func.isRequired
 }
+
+export default React.memo(TableFilterControls)

@@ -4,14 +4,14 @@ import copy from 'copy-text-to-clipboard'
 
 import { get_string_from_object } from '../utils'
 
-export default function TableCell({
+const TableCell = ({
   getValue,
   column,
   row,
   table,
   percentiles,
   enable_duplicate_column_ids
-}) {
+}) => {
   if (column.columnDef.id === 'add_column_action') {
     return null
   }
@@ -168,3 +168,5 @@ TableCell.propTypes = {
   percentiles: PropTypes.object,
   enable_duplicate_column_ids: PropTypes.bool
 }
+
+export default React.memo(TableCell)

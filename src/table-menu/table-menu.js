@@ -7,7 +7,7 @@ import { get_string_from_object, export_csv, export_json } from '../utils'
 
 import './table-menu.styl'
 
-export default function TableMenu({ data, table_state, all_columns }) {
+const TableMenu = ({ data, table_state, all_columns }) => {
   const [is_open, set_is_open] = useState(false)
 
   const handle_click = () => {
@@ -152,3 +152,5 @@ TableMenu.propTypes = {
   table_state: PropTypes.object.isRequired,
   all_columns: PropTypes.object.isRequired
 }
+
+export default React.memo(TableMenu)
