@@ -1,4 +1,10 @@
-import React, { useRef, useState, useCallback, useMemo } from 'react'
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+  useContext
+} from 'react'
 import PropTypes from 'prop-types'
 import AddIcon from '@mui/icons-material/Add'
 import { Popper } from '@mui/base/Popper'
@@ -13,6 +19,7 @@ import IconButton from '@mui/material/IconButton'
 import { get_string_from_object } from '../utils'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 import DataTypeIcon from '../data-type-icon'
+import { table_context } from '../table-context'
 
 import './table-header.styl'
 
@@ -36,17 +43,15 @@ AddColumnAction.propTypes = {
   set_column_controls_open: PropTypes.func.isRequired
 }
 
-const TableHeader = ({
-  header,
-  column,
-  table,
-  table_state,
-  on_table_state_change,
-  set_column_controls_open,
-  set_filter_controls_open,
-  set_table_sort,
-  set_column_hidden_by_index
-}) => {
+const TableHeader = ({ header, column, table }) => {
+  const {
+    table_state,
+    on_table_state_change,
+    set_column_controls_open,
+    set_filter_controls_open,
+    set_table_sort,
+    set_column_hidden_by_index
+  } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
   const column_index = useMemo(() => {
@@ -401,13 +406,7 @@ const TableHeader = ({
 TableHeader.propTypes = {
   header: PropTypes.object,
   column: PropTypes.object,
-  table: PropTypes.object,
-  set_column_controls_open: PropTypes.func.isRequired,
-  set_filter_controls_open: PropTypes.func.isRequired,
-  table_state: PropTypes.object.isRequired,
-  on_table_state_change: PropTypes.func.isRequired,
-  set_table_sort: PropTypes.func.isRequired,
-  set_column_hidden_by_index: PropTypes.func.isRequired
+  table: PropTypes.object
 }
 
 export default React.memo(TableHeader)

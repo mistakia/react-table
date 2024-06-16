@@ -37,6 +37,7 @@ import '../styles/table-expanding-control-container.styl'
 import '../styles/table-control-column-item.styl'
 import './table.styl'
 
+const is_mobile = window.innerWidth < 500
 const column_helper = createColumnHelper()
 const defaultColumn = {
   minWidth: 50,
@@ -46,6 +47,38 @@ const defaultColumn = {
   header: TableHeader,
   footer: TableFooter,
   sortType: 'alphanumericFalsyLast'
+}
+
+const MemoizedRow = React.memo(
+  ({ row }) => (
+    <div className={`row ${row.original.className}`}>
+      {row.getAllCells().map((cell, index) =>
+        flexRender(cell.column.columnDef.cell, {
+          key: index,
+          ...cell.getContext()
+        })
+      )}
+    </div>
+  ),
+  (prevProps, nextProps) => prevProps.row.id === nextProps.row.id
+)
+
+MemoizedRow.displayName = 'MemoizedRow'
+MemoizedRow.propTypes = {
+  row: PropTypes.object.isRequired
+}
+
+const MemoizedHeader = React.memo(({ headerGroup }) => (
+  <div className='row'>
+    {headerGroup.headers.map((header, index) => (
+      <TableHeader key={index} {...header.getContext()} />
+    ))}
+  </div>
+))
+
+MemoizedHeader.displayName = 'MemoizedHeader'
+MemoizedHeader.propTypes = {
+  headerGroup: PropTypes.object.isRequired
 }
 
 export default function Table({
@@ -73,10 +106,10 @@ export default function Table({
 }) {
   is_fetching_more = is_fetching
 
-  const INITIAL_LOAD_NUMBER = 20
+  const INITIAL_LOAD_NUMBER = 50
   const OVERSCAN_COUNT = 5
-  const ROWS_ADDED_ON_SCROLL = 10
-  const SCROLL_DISTANCE_THRESHOLD = window.innerHeight * 1.3
+  const ROWS_ADDED_ON_SCROLL = is_mobile ? 10 : 25
+  const SCROLL_DISTANCE_THRESHOLD = window.innerHeight * 0.5
   const SLICE_SIZE_INCREMENT_DELAY = 2000
 
   const [slice_size, set_slice_size] = useState(INITIAL_LOAD_NUMBER)
@@ -90,6 +123,13 @@ export default function Table({
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
     [all_columns]
+  )
+
+  const throttled_set_slice_size = useCallback(
+    throttle_leading_edge(() => {
+      set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
+    }, SLICE_SIZE_INCREMENT_DELAY),
+    [slice_size]
   )
 
   const on_table_state_change = useCallback(
@@ -276,14 +316,7 @@ export default function Table({
     columnResizeMode: 'onChange'
   })
 
-  const { rows } = table.getRowModel()
-
-  const throttled_set_slice_size = useCallback(
-    throttle_leading_edge(() => {
-      set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
-    }, SLICE_SIZE_INCREMENT_DELAY),
-    [slice_size]
-  )
+  const rows = useMemo(() => table.getRowModel().rows, [data.length])
 
   const fetch_more_on_bottom_reached = useCallback(
     (container_ref) => {
@@ -328,14 +361,19 @@ export default function Table({
   useEffect(() => {
     const scroll_parent = get_scroll_parent(table_container_ref.current)
     const container_is_body = document.body === scroll_parent
-    const onscroll = () => fetch_more_on_bottom_reached(scroll_parent)
+    const onscroll = is_mobile
+      ? throttle_leading_edge(
+          () => fetch_more_on_bottom_reached(scroll_parent),
+          150
+        )
+      : () => fetch_more_on_bottom_reached(scroll_parent)
 
     if (container_is_body) {
       window.removeEventListener('scroll', onscroll)
-      window.addEventListener('scroll', onscroll)
+      window.addEventListener('scroll', onscroll, { passive: true })
     } else {
       scroll_parent.removeEventListener('scroll', onscroll)
-      scroll_parent.addEventListener('scroll', onscroll)
+      scroll_parent.addEventListener('scroll', onscroll, { passive: true })
     }
 
     return () => {
@@ -441,8 +479,33 @@ export default function Table({
     on_table_state_change
   ])
 
+  const header_items = useMemo(() => {
+    return table
+      .getHeaderGroups()
+      .map((headerGroup, index) => (
+        <MemoizedHeader key={index} headerGroup={headerGroup} />
+      ))
+  }, [table_state])
+
+  const row_items = useMemo(() => {
+    return virtual_rows.map((virtual_row) => {
+      const row = rows[virtual_row.index]
+      return <MemoizedRow key={virtual_row.index} row={row} />
+    })
+  }, [virtual_rows, rows])
+
   return (
-    <table_context.Provider value={{ enable_duplicate_column_ids }}>
+    <table_context.Provider
+      value={{
+        enable_duplicate_column_ids,
+        percentiles,
+        table_state,
+        on_table_state_change,
+        set_column_controls_open,
+        set_filter_controls_open,
+        set_table_sort,
+        set_column_hidden_by_index
+      }}>
       <div
         ref={table_container_ref}
         style={style}
@@ -546,25 +609,7 @@ export default function Table({
             </div>
           )}
         <div className='header'>
-          {table.getHeaderGroups().map((headerGroup, index) => (
-            <div key={index} className='row'>
-              {headerGroup.headers.map((header, index) => (
-                <TableHeader
-                  key={index}
-                  {...{
-                    ...header.getContext(),
-                    key: index,
-                    table_state,
-                    on_table_state_change,
-                    set_column_controls_open,
-                    set_filter_controls_open,
-                    set_table_sort,
-                    set_column_hidden_by_index
-                  }}
-                />
-              ))}
-            </div>
-          ))}
+          {header_items}
           {(is_fetching_more || is_loading) && (
             <div className='table-loading-container'>
               <LinearProgress />
@@ -572,23 +617,7 @@ export default function Table({
           )}
         </div>
         {!is_loading && rows.length > 0 && (
-          <div className='body'>
-            {virtual_rows.map((virtual_row) => {
-              const row = rows[virtual_row.index]
-              return (
-                <div key={row.id} className={`row ${row.original.className}`}>
-                  {row.getVisibleCells().map((cell, index) =>
-                    flexRender(cell.column.columnDef.cell, {
-                      key: index,
-                      percentiles,
-                      enable_duplicate_column_ids,
-                      ...cell.getContext()
-                    })
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          <div className='body'>{row_items}</div>
         )}
         {!is_loading && rows.length > 0 && (
           <div className='footer'>

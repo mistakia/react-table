@@ -1,17 +1,11 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback, useContext } from 'react'
 import PropTypes from 'prop-types'
 import copy from 'copy-text-to-clipboard'
 
 import { get_string_from_object } from '../utils'
+import { table_context } from '../table-context'
 
-const TableCell = ({
-  getValue,
-  column,
-  row,
-  table,
-  percentiles,
-  enable_duplicate_column_ids
-}) => {
+const TableCell = ({ getValue, column, row, table }) => {
   if (column.columnDef.id === 'add_column_action') {
     return null
   }
@@ -23,6 +17,8 @@ const TableCell = ({
       </div>
     )
   }
+
+  const { enable_duplicate_column_ids, percentiles } = useContext(table_context)
 
   const column_index = useMemo(() => {
     const columns_with_same_id = table
