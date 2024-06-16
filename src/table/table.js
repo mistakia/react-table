@@ -74,9 +74,9 @@ export default function Table({
   is_fetching_more = is_fetching
 
   const INITIAL_LOAD_NUMBER = 20
-  const OVERSCAN_COUNT = 10
-  const ROWS_ADDED_ON_SCROLL = 50
-  const SCROLL_DISTANCE_THRESHOLD = 2000
+  const OVERSCAN_COUNT = 5
+  const ROWS_ADDED_ON_SCROLL = 10
+  const SCROLL_DISTANCE_THRESHOLD = window.innerHeight * 1.3
   const SLICE_SIZE_INCREMENT_DELAY = 2000
 
   const [slice_size, set_slice_size] = useState(INITIAL_LOAD_NUMBER)
