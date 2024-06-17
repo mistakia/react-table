@@ -316,7 +316,7 @@ export default function Table({
     columnResizeMode: 'onChange'
   })
 
-  const rows = useMemo(() => table.getRowModel().rows, [data.length])
+  const rows = useMemo(() => table.getRowModel().rows, [data])
 
   const fetch_more_on_bottom_reached = useCallback(
     (container_ref) => {
