@@ -5,7 +5,8 @@ export const TABLE_DATA_TYPES = {
   BOOLEAN: 4,
   DATE: 5,
   BINARY_UUID: 6,
-  SELECT: 7
+  SELECT: 7,
+  RANGE: 8
 }
 
 export const TABLE_OPERATORS = {
