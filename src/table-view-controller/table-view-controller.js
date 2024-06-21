@@ -140,7 +140,8 @@ const TableViewController = ({
   on_view_change,
   delete_view,
   disable_create_view = false,
-  disable_edit_view = false
+  disable_edit_view = false,
+  new_view_prefix_columns = []
 }) => {
   const anchor_el = React.useRef()
   const input_ref = React.useRef()
@@ -186,6 +187,7 @@ const TableViewController = ({
         view_name: 'New view',
         view_description: 'New view description',
         table_state: {
+          prefix_columns: new_view_prefix_columns,
           columns: [],
           sort: [],
           where: []
@@ -286,7 +288,8 @@ TableViewController.propTypes = {
   on_view_change: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
   disable_create_view: PropTypes.bool,
-  disable_edit_view: PropTypes.bool
+  disable_edit_view: PropTypes.bool,
+  new_view_prefix_columns: PropTypes.array
 }
 
 export default React.memo(TableViewController)

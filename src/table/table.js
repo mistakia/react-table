@@ -103,7 +103,8 @@ export default function Table({
   disable_rank_aggregation = false,
   style = {},
   percentiles = {},
-  enable_duplicate_column_ids = false
+  enable_duplicate_column_ids = false,
+  new_view_prefix_columns = []
 }) {
   is_fetching_more = is_fetching
 
@@ -526,7 +527,8 @@ export default function Table({
                   on_view_change,
                   delete_view,
                   disable_create_view,
-                  disable_edit_view
+                  disable_edit_view,
+                  new_view_prefix_columns
                 }}
               />
             )}
@@ -664,5 +666,6 @@ Table.propTypes = {
   disable_edit_view: PropTypes.bool,
   on_save_view: PropTypes.func,
   saved_table_state: PropTypes.object,
-  enable_duplicate_column_ids: PropTypes.bool
+  enable_duplicate_column_ids: PropTypes.bool,
+  new_view_prefix_columns: PropTypes.array
 }
