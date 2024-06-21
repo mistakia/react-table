@@ -38,7 +38,7 @@ function ViewItem({
   set_views_popper_open,
   delete_view,
   on_view_change,
-  disable_create_view
+  disable_edit_view
 }) {
   const anchor_el = React.useRef()
   const [misc_menu_open, set_misc_menu_open] = React.useState(false)
@@ -76,7 +76,7 @@ function ViewItem({
           {view.view_description}
         </div>
       </div>
-      {!disable_create_view && (
+      {!disable_edit_view && (
         <div className='table-view-item-right'>
           <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
             <div>
@@ -130,7 +130,7 @@ ViewItem.propTypes = {
   set_views_popper_open: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
   on_view_change: PropTypes.func.isRequired,
-  disable_create_view: PropTypes.bool
+  disable_edit_view: PropTypes.bool
 }
 
 const TableViewController = ({
@@ -139,7 +139,8 @@ const TableViewController = ({
   views,
   on_view_change,
   delete_view,
-  disable_create_view = false
+  disable_create_view = false,
+  disable_edit_view = false
 }) => {
   const anchor_el = React.useRef()
   const input_ref = React.useRef()
@@ -218,7 +219,7 @@ const TableViewController = ({
         view,
         index,
         on_view_change,
-        disable_create_view
+        disable_edit_view
       }}
     />
   ))
@@ -284,7 +285,8 @@ TableViewController.propTypes = {
   views: PropTypes.array,
   on_view_change: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
-  disable_create_view: PropTypes.bool
+  disable_create_view: PropTypes.bool,
+  disable_edit_view: PropTypes.bool
 }
 
 export default React.memo(TableViewController)

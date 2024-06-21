@@ -96,6 +96,7 @@ export default function Table({
   is_fetching_more = false,
   is_loading = false,
   disable_create_view = false,
+  disable_edit_view = false,
   total_rows_fetched,
   total_row_count,
   delete_view = () => {},
@@ -524,7 +525,8 @@ export default function Table({
                   views,
                   on_view_change,
                   delete_view,
-                  disable_create_view
+                  disable_create_view,
+                  disable_edit_view
                 }}
               />
             )}
@@ -659,6 +661,7 @@ Table.propTypes = {
   style: PropTypes.object,
   percentiles: PropTypes.object,
   disable_create_view: PropTypes.bool,
+  disable_edit_view: PropTypes.bool,
   on_save_view: PropTypes.func,
   saved_table_state: PropTypes.object,
   enable_duplicate_column_ids: PropTypes.bool
