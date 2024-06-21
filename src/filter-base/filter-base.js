@@ -5,11 +5,13 @@ import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
 import './filter-base.styl'
 
-export default function FilterBase({ label, selected_label, body }) {
+export default function FilterBase({ label, selected_label, body, width }) {
   const [visible, set_visible] = useState(false)
   const button_ref = useRef()
   const dropdown_ref = useRef()
   const handle_toggle_click = () => set_visible(!visible)
+
+  const selection_style = width ? { minWidth: width } : {}
 
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
@@ -19,7 +21,9 @@ export default function FilterBase({ label, selected_label, body }) {
           onClick={handle_toggle_click}
           ref={button_ref}>
           <div className='table-filter-item-label'>{label}</div>
-          <div className='table-filter-item-selection'>{selected_label}</div>
+          <div className='table-filter-item-selection' style={selection_style}>
+            {selected_label}
+          </div>
         </div>
         <Popper
           open={visible}
@@ -37,5 +41,6 @@ export default function FilterBase({ label, selected_label, body }) {
 FilterBase.propTypes = {
   label: PropTypes.string.isRequired,
   selected_label: PropTypes.string.isRequired,
-  body: PropTypes.node.isRequired
+  body: PropTypes.node.isRequired,
+  width: PropTypes.string
 }

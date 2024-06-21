@@ -604,7 +604,7 @@ export default function Table({
                 <KeyboardArrowDownIcon />
               </div>
               {is_quick_filters_expanded && (
-                <div className='filter-items'>{view_quick_filters}</div>
+                <div className='quick-filter-items'>{view_quick_filters}</div>
               )}
             </div>
           )}

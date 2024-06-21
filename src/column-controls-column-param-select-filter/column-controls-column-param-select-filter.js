@@ -6,27 +6,8 @@ import ColumnParamSelectFilter from '../column-param-select-filter'
 const ColumnControlsColumnParamSelectFilter = ({
   column_param,
   column,
-  set_local_table_state,
-  column_index
+  handle_change
 }) => {
-  const handle_change = (values) => {
-    const new_column = {
-      column_id: column.column_id,
-      params: {
-        ...column.selected_params,
-        [column_param.param_name]: values
-      }
-    }
-    set_local_table_state((prev_state) => ({
-      ...prev_state,
-      columns: [
-        ...prev_state.columns.slice(0, column_index),
-        new_column,
-        ...prev_state.columns.slice(column_index + 1)
-      ]
-    }))
-  }
-
   const state = {
     label: column_param.param_name,
     on_change: handle_change,
@@ -54,8 +35,7 @@ ColumnControlsColumnParamSelectFilter.displayName =
 ColumnControlsColumnParamSelectFilter.propTypes = {
   column_param: PropTypes.object.isRequired,
   column: PropTypes.object.isRequired,
-  set_local_table_state: PropTypes.func.isRequired,
-  column_index: PropTypes.number.isRequired
+  handle_change: PropTypes.func.isRequired
 }
 
 export default React.memo(ColumnControlsColumnParamSelectFilter)

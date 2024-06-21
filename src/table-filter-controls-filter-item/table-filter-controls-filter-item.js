@@ -253,7 +253,7 @@ export default function FilterItem({
   }, [where_item.operator])
 
   return (
-    <div className='filter_item visible'>
+    <div className='filter-item visible'>
       <div className='filter-item-left'>
         <div className='filter-item-left-column'>
           {column_title || column_id}
