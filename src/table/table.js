@@ -158,12 +158,12 @@ export default function Table({
     [selected_view, on_view_change]
   )
 
-  const is_table_state_changed = useMemo(() => {
-    return (
+  const is_table_state_changed = useMemo(
+    () =>
       saved_table_state &&
-      JSON.stringify(table_state) !== JSON.stringify(saved_table_state)
-    )
-  }, [table_state, saved_table_state])
+      JSON.stringify(table_state) !== JSON.stringify(saved_table_state),
+    [table_state, saved_table_state]
+  )
 
   const save_table_state_change = useCallback(() => {
     if (is_table_state_changed) {
@@ -241,15 +241,23 @@ export default function Table({
   const set_column_hidden_by_index = useCallback(
     (index) => {
       const columns = [...(table_state.columns || [])]
+
+      // Remove that column_id from sort
+      const column_to_hide = columns[index]
+      const column_id_to_hide =
+        typeof column_to_hide === 'string'
+          ? column_to_hide
+          : column_to_hide.column_id
+      const table_sort = table_state.sort || []
+      const sort = table_sort.filter((s) => s.column_id !== column_id_to_hide)
+
+      // Remove the column by index
       columns.splice(index, 1)
-      on_table_state_change({ ...table_state, columns })
+
+      on_table_state_change({ ...table_state, columns, sort })
     },
     [table_state, on_table_state_change]
   )
-
-  const set_all_columns_hidden = useCallback(() => {
-    on_table_state_change({ ...table_state, columns: [] })
-  }, [table_state, on_table_state_change])
 
   const table_state_columns = useMemo(() => {
     let starting_index = (table_state.prefix_columns || []).length
@@ -563,13 +571,10 @@ export default function Table({
               <TableColumnControls
                 {...{
                   table_state,
-                  table_state_columns,
-                  on_table_state_change,
                   all_columns: memoized_all_columns, // TODO
-                  set_all_columns_hidden,
-                  column_controls_open,
-                  set_column_controls_open,
-                  prefix_columns
+                  on_table_state_change,
+                  prefix_columns,
+                  column_controls_open
                 }}
               />
               {is_table_state_changed && (

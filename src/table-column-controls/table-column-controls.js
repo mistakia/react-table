@@ -195,9 +195,9 @@ const TableColumnControls = ({
   all_columns = [],
   on_table_state_change,
   prefix_columns = [],
-  column_controls_open,
-  set_column_controls_open
+  column_controls_open
 }) => {
+  const { set_column_controls_open } = useContext(table_context)
   const [local_table_state, set_local_table_state] = useState(table_state)
 
   const parent_ref = useRef()
@@ -244,36 +244,54 @@ const TableColumnControls = ({
     }))
   )
 
-  const set_column_visible = useCallback((column_id) => {
-    set_local_table_state((prev) => ({
-      ...prev,
-      columns: [...(prev.columns || []), column_id]
-    }))
-  }, [])
-
-  const set_column_hidden_by_index = useCallback(
-    (table_state_columns_index) => {
+  const set_column_visible = useCallback(
+    (column_id) => {
       set_local_table_state((prev) => ({
         ...prev,
-        columns: prev.columns.filter(
-          (column, index) => index !== table_state_columns_index
-        )
+        columns: [...(prev.columns || []), column_id],
+        sort: (prev.sort || []).length ? prev.sort : [{ column_id, desc: true }]
       }))
+    },
+    [table_state]
+  )
+
+  const set_column_hidden_by_index = useCallback(
+    ({ table_state_columns_index }) => {
+      set_local_table_state((prev) => {
+        const column_to_hide = prev.columns[table_state_columns_index]
+        const column_id_to_hide =
+          typeof column_to_hide === 'string'
+            ? column_to_hide
+            : column_to_hide.column_id
+        return {
+          ...prev,
+          columns: prev.columns.filter(
+            (column, index) => index !== table_state_columns_index
+          ),
+          sort: (prev.sort || []).filter(
+            (s) => s.column_id !== column_id_to_hide
+          )
+        }
+      })
     },
     []
   )
 
-  const set_column_hidden_by_id = useCallback((column_id) => {
-    set_local_table_state((prev) => ({
-      ...prev,
-      columns: prev.columns.filter((column) => column !== column_id)
-    }))
+  const set_column_hidden_by_id = useCallback(({ column_id }) => {
+    set_local_table_state((prev) => {
+      return {
+        ...prev,
+        columns: prev.columns.filter((column) => column !== column_id),
+        sort: (prev.sort || []).filter((s) => s.column_id !== column_id)
+      }
+    })
   }, [])
 
   const set_all_columns_hidden = useCallback(() => {
     set_local_table_state((prev) => ({
       ...prev,
-      columns: []
+      columns: [],
+      sort: []
     }))
   }, [])
 
@@ -678,8 +696,7 @@ TableColumnControls.propTypes = {
   all_columns: PropTypes.array,
   on_table_state_change: PropTypes.func,
   prefix_columns: PropTypes.array,
-  column_controls_open: PropTypes.bool.isRequired,
-  set_column_controls_open: PropTypes.func.isRequired
+  column_controls_open: PropTypes.bool.isRequired
 }
 
 export default React.memo(TableColumnControls)

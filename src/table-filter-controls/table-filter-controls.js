@@ -114,11 +114,11 @@ FilterControlItem.propTypes = {
 }
 
 const TableFilterControls = ({
+  filter_controls_open,
+  set_filter_controls_open,
   table_state,
   on_table_state_change,
-  all_columns,
-  filter_controls_open,
-  set_filter_controls_open
+  all_columns
 }) => {
   const previous_filter_text = useRef('')
   const [cached_open_categories, set_cached_open_categories] = useState({})

@@ -186,6 +186,7 @@ const TableViewController = ({
         view_id: generate_view_id(),
         view_name: 'New view',
         view_description: 'New view description',
+        saved_table_state: null,
         table_state: {
           prefix_columns: new_view_prefix_columns,
           columns: [],
