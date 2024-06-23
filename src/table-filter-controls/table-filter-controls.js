@@ -348,6 +348,10 @@ const TableFilterControls = ({
     set_local_table_state(table_state)
   }, [table_state])
 
+  const handle_remove_all_filters = useCallback(() => {
+    set_local_table_state({ ...local_table_state, where: [] })
+  }, [local_table_state])
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -403,6 +407,16 @@ const TableFilterControls = ({
               <div
                 className='table-selected-filters-container'
                 style={{ maxHeight: 'calc((80vh - 32px - 89px) / 2)' }}>
+                <div className='section-header'>
+                  <div style={{ display: 'flex', alignSelf: 'center' }}>
+                    Shown in table
+                  </div>
+                  <div>
+                    <div className='action' onClick={handle_remove_all_filters}>
+                      Remove All
+                    </div>
+                  </div>
+                </div>
                 <List component='div' disablePadding>
                   {(local_table_state.where || []).map(
                     (where_item, where_index) => (
@@ -426,6 +440,9 @@ const TableFilterControls = ({
             <div
               ref={parent_ref}
               style={{ height: '100%', overflow: 'auto', flex: 1 }}>
+              <div className='section-header'>
+                <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
+              </div>
               <div
                 className='column-category-container'
                 style={{

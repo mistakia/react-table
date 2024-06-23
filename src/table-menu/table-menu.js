@@ -4,6 +4,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
 import copy from 'copy-text-to-clipboard'
+import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
 import { get_string_from_object, export_csv, export_json } from '../utils'
 
@@ -142,51 +143,53 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
   }
 
   return (
-    <div className='table-menu-container'>
-      <div
-        className='table-menu-button'
-        aria-controls='simple-menu'
-        aria-haspopup='true'
-        onClick={handle_click}>
-        <MoreHorizIcon />
+    <ClickAwayListener onClickAway={handle_close}>
+      <div className='table-menu-container'>
+        <div
+          className='table-menu-button'
+          aria-controls='simple-menu'
+          aria-haspopup='true'
+          onClick={handle_click}>
+          <MoreHorizIcon />
+        </div>
+        <div
+          className={get_string_from_object({
+            'table-menu': true,
+            'table-menu-open': is_open
+          })}
+          role='menu'>
+          <div
+            className='table-menu-item'
+            onClick={handle_shareable_link}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <LinkIcon fontSize='small' />
+            </div>
+            <div className='table-menu-item-text'>
+              {link_copied ? 'Copied' : 'Copy Link'}
+            </div>
+          </div>
+          <div
+            className='table-menu-item'
+            onClick={handle_export_csv}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <CodeIcon fontSize='small' />
+            </div>
+            <div className='table-menu-item-text'>Export CSV</div>
+          </div>
+          <div
+            className='table-menu-item'
+            onClick={handle_export_json}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <CodeIcon fontSize='small' />
+            </div>
+            <div className='table-menu-item-text'>Export JSON</div>
+          </div>
+        </div>
       </div>
-      <div
-        className={get_string_from_object({
-          'table-menu': true,
-          'table-menu-open': is_open
-        })}
-        role='menu'>
-        <div
-          className='table-menu-item'
-          onClick={handle_shareable_link}
-          role='menuitem'>
-          <div className='table-menu-item-icon'>
-            <LinkIcon fontSize='small' />
-          </div>
-          <div className='table-menu-item-text'>
-            {link_copied ? 'Copied' : 'Copy Link'}
-          </div>
-        </div>
-        <div
-          className='table-menu-item'
-          onClick={handle_export_csv}
-          role='menuitem'>
-          <div className='table-menu-item-icon'>
-            <CodeIcon fontSize='small' />
-          </div>
-          <div className='table-menu-item-text'>Export CSV</div>
-        </div>
-        <div
-          className='table-menu-item'
-          onClick={handle_export_json}
-          role='menuitem'>
-          <div className='table-menu-item-icon'>
-            <CodeIcon fontSize='small' />
-          </div>
-          <div className='table-menu-item-text'>Export JSON</div>
-        </div>
-      </div>
-    </div>
+    </ClickAwayListener>
   )
 }
 

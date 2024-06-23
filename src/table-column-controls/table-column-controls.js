@@ -116,7 +116,7 @@ const ColumnControlsSortableItem = React.memo(
       transition,
       isDragging
     } = useSortable({
-      id: column.column_id
+      id: `${column.column_id}-${column_index}`
     })
 
     const is_drag_enabled = !filter_text_input
@@ -238,9 +238,9 @@ const TableColumnControls = ({
   }, [local_table_state.columns, all_columns])
 
   const [shown_column_items, set_shown_column_items] = useState(
-    (local_table_state_columns || []).map((column) => ({
+    (local_table_state_columns || []).map((column, index) => ({
       ...column,
-      id: column.column_id
+      id: `${column.column_id}-${index}`
     }))
   )
 
@@ -256,18 +256,34 @@ const TableColumnControls = ({
   )
 
   const set_column_hidden_by_index = useCallback(
-    ({ table_state_columns_index }) => {
+    (table_state_columns_index) => {
       set_local_table_state((prev) => {
         const column_to_hide = prev.columns[table_state_columns_index]
         const column_id_to_hide =
           typeof column_to_hide === 'string'
             ? column_to_hide
             : column_to_hide.column_id
+
+        const columns = prev.columns.filter(
+          (column, index) => index !== table_state_columns_index
+        )
+
+        if (
+          columns.some(
+            (column) =>
+              typeof column !== 'string' &&
+              column.column_id === column_id_to_hide
+          )
+        ) {
+          return {
+            ...prev,
+            columns
+          }
+        }
+
         return {
           ...prev,
-          columns: prev.columns.filter(
-            (column, index) => index !== table_state_columns_index
-          ),
+          columns,
           sort: (prev.sort || []).filter(
             (s) => s.column_id !== column_id_to_hide
           )
@@ -277,11 +293,15 @@ const TableColumnControls = ({
     []
   )
 
-  const set_column_hidden_by_id = useCallback(({ column_id }) => {
+  const set_column_hidden_by_id = useCallback((column_id) => {
     set_local_table_state((prev) => {
       return {
         ...prev,
-        columns: prev.columns.filter((column) => column !== column_id),
+        columns: prev.columns.filter((column) =>
+          typeof column !== 'string'
+            ? column.column_id !== column_id
+            : column !== column_id
+        ),
         sort: (prev.sort || []).filter((s) => s.column_id !== column_id)
       }
     })
@@ -360,9 +380,9 @@ const TableColumnControls = ({
 
   useEffect(() => {
     set_shown_column_items(
-      (local_table_state_columns || []).map((column) => ({
+      (local_table_state_columns || []).map((column, index) => ({
         ...column,
-        id: column.column_id
+        id: `${column.column_id}-${index}`
       }))
     )
   }, [local_table_state_columns])
@@ -446,15 +466,15 @@ const TableColumnControls = ({
       set_filter_text_input(value)
 
       const shown_items = []
-      for (const column of local_table_state_columns || []) {
+      local_table_state_columns?.forEach((column, index) => {
         if (value && !fuzzy_match(value, column.column_id)) {
-          continue
+          return
         }
         shown_items.push({
           ...column,
-          id: column.column_id
+          id: `${column.column_id}-${index}`
         })
-      }
+      })
       set_shown_column_items(shown_items)
       set_loaded_all(true)
     },
@@ -612,6 +632,41 @@ const TableColumnControls = ({
                 inputRef={filter_input_ref}
               />
             </div>
+            {shown_column_items.length > 0 && (
+              <div className='table-selected-filters-container'>
+                <div className='section-header'>
+                  <div style={{ display: 'flex', alignSelf: 'center' }}>
+                    Shown in table
+                  </div>
+                  <div>
+                    <div className='action' onClick={set_all_columns_hidden}>
+                      Remove All
+                    </div>
+                  </div>
+                </div>
+                <div className='selected-columns-container'>
+                  <DndContext
+                    sensors={sensors}
+                    modifiers={[restrictToVerticalAxis]}
+                    onDragEnd={handle_drag_end}>
+                    <SortableContext items={shown_column_items}>
+                      {shown_column_items.map((column, column_index) => (
+                        <ColumnControlsSortableItem
+                          key={`${column.column_id}-${column_index}`}
+                          {...{
+                            column,
+                            set_column_hidden_by_index,
+                            filter_text_input,
+                            set_local_table_state,
+                            column_index
+                          }}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              </div>
+            )}
             <div className='column-controls-body' ref={parent_ref}>
               {/* {prefix_columns.map((column) => (
                 <div key={column.column_id} className='column-item prefix'>
@@ -623,37 +678,6 @@ const TableColumnControls = ({
                   </div>
                 </div>
               ))} */}
-              <div className='section-header'>
-                <div style={{ display: 'flex', alignSelf: 'center' }}>
-                  Shown in table
-                </div>
-                <div>
-                  <div className='action' onClick={set_all_columns_hidden}>
-                    Remove All
-                  </div>
-                </div>
-              </div>
-              <div className='selected-columns-container'>
-                <DndContext
-                  sensors={sensors}
-                  modifiers={[restrictToVerticalAxis]}
-                  onDragEnd={handle_drag_end}>
-                  <SortableContext items={shown_column_items}>
-                    {shown_column_items.map((column, column_index) => (
-                      <ColumnControlsSortableItem
-                        key={column.column_id}
-                        {...{
-                          column,
-                          set_column_hidden_by_index,
-                          filter_text_input,
-                          set_local_table_state,
-                          column_index
-                        }}
-                      />
-                    ))}
-                  </SortableContext>
-                </DndContext>
-              </div>
               <div className='section-header'>
                 <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
               </div>
