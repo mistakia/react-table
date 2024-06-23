@@ -523,7 +523,7 @@ export default function Table({
           table: true,
           noselect: is_table_resizing()
         })}>
-        <TableMenu {...{ data, table_state, all_columns }} />
+        <TableMenu {...{ data, table_state, all_columns, selected_view }} />
         <div className='table-top-container'>
           <div className='table-top-container-body'>
             {Boolean(views.length) && (
