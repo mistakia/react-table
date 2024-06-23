@@ -21,6 +21,7 @@ import {
   OPERATOR_MENU_OPTIONS
 } from '../constants.mjs'
 import FilterControlsColumnParamItem from '../filter-controls-column-param-item'
+import { get_string_from_object } from '../utils'
 
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
 
@@ -252,8 +253,14 @@ export default function FilterItem({
     )
   }, [where_item.operator])
 
+  const classnames = get_string_from_object({
+    'filter-item': true,
+    visible: true,
+    'filter-item-expanded': show_column_params
+  })
+
   return (
-    <div className='filter-item visible'>
+    <div className={classnames}>
       <div className='filter-item-left'>
         <div className='filter-item-left-column'>
           {column_title || column_id}

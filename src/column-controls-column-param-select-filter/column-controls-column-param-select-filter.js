@@ -10,6 +10,8 @@ const ColumnControlsColumnParamSelectFilter = ({
 }) => {
   const state = {
     label: column_param.param_name,
+    single: Boolean(column.column_params[column_param.param_name]?.single),
+    default_value: column.column_params[column_param.param_name]?.default_value,
     on_change: handle_change,
     filter_values: [],
     is_column_param_defined: Boolean(

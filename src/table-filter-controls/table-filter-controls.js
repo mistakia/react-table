@@ -417,7 +417,7 @@ const TableFilterControls = ({
                     </div>
                   </div>
                 </div>
-                <List component='div' disablePadding>
+                <div className='selected-columns-container'>
                   {(local_table_state.where || []).map(
                     (where_item, where_index) => (
                       <FilterItem
@@ -434,7 +434,7 @@ const TableFilterControls = ({
                       />
                     )
                   )}
-                </List>
+                </div>
               </div>
             )}
             <div

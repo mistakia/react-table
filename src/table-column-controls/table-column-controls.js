@@ -633,7 +633,9 @@ const TableColumnControls = ({
               />
             </div>
             {shown_column_items.length > 0 && (
-              <div className='table-selected-filters-container'>
+              <div
+                className='table-selected-filters-container'
+                style={{ maxHeight: 'calc((80vh - 32px - 89px) / 2)' }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
                     Shown in table

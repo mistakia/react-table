@@ -11,11 +11,12 @@ export default function ColumnParamSelectFilter({
   body,
   filter_values = [],
   on_change = () => {},
-  is_column_param_defined
+  is_column_param_defined,
+  default_value = null
 }) {
   const count = filter_values.filter((v) => v.selected).length
   const all_selected =
-    !is_column_param_defined || count === filter_values.length
+    !single && (!is_column_param_defined || count === filter_values.length)
 
   const handle_all_click = () => {
     const values = filter_values.map((i) => i.value)
@@ -43,14 +44,19 @@ export default function ColumnParamSelectFilter({
 
   const items = filter_values.map((v, index) => {
     const class_names = ['table-filter-item-dropdown-item']
-    if (v.selected || all_selected) class_names.push('selected')
+    const is_selected =
+      v.selected ||
+      all_selected ||
+      (single && !is_column_param_defined && v.value === default_value) ||
+      (single && !is_column_param_defined && !default_value && index === 0)
+    if (is_selected) class_names.push('selected')
     if (v.className) class_names.push(v.className)
     return (
       <div
         key={v.value}
         className={class_names.join(' ')}
         onClick={(e) => handle_select(e, index)}>
-        <Checkbox checked={v.selected || all_selected} size='small' />
+        <Checkbox checked={is_selected} size='small' />
         {v.label}
       </div>
     )
@@ -58,6 +64,8 @@ export default function ColumnParamSelectFilter({
 
   const default_selected_label = all_selected
     ? 'ALL'
+    : single && !is_column_param_defined
+    ? default_value || filter_values[0]?.label
     : filter_values
         .filter((v) => v.selected)
         .map((v) => v.label)
@@ -99,5 +107,6 @@ ColumnParamSelectFilter.propTypes = {
   label: PropTypes.string,
   selected_label: PropTypes.string,
   body: PropTypes.node,
-  is_column_param_defined: PropTypes.bool
+  is_column_param_defined: PropTypes.bool,
+  default_value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 }

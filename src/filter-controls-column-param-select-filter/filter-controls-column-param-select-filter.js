@@ -12,6 +12,8 @@ function FilterControlsColumnParamSelectFilter({
 
   const state = {
     label: column_param.param_name,
+    single: Boolean(column_param.param_values.single),
+    default_value: column_param.param_values.default_value,
     on_change: handle_change,
     filter_values: [],
     is_column_param_defined: Boolean(where_item_params[column_param.param_name])
