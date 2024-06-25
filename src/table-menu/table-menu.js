@@ -54,33 +54,37 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
   const handle_export_csv = () => {
     const download_data = []
     const headers = []
+    const all_columns_array = [
+      ...(table_state.prefix_columns || []),
+      ...table_state.columns
+    ]
+    const column_indices = {}
 
-    if (table_state.prefix_columns) {
-      for (const column of table_state.prefix_columns) {
-        const column_id = typeof column === 'string' ? column : column.column_id
-        const column_def = all_columns[column_id]
-        const column_label = column_def.column_title || column_id
-        headers.push({
-          column_label,
-          accessorKey: column_def.accessorKey
-        })
-      }
-    }
-
-    for (const column of table_state.columns) {
+    for (const column of all_columns_array) {
       const column_id = typeof column === 'string' ? column : column.column_id
+      column_indices[column_id] = column_indices[column_id] || 0
+
       const column_def = all_columns[column_id]
       const column_label = column_def.column_title || column_id
+      const column_index = column_indices[column_id]
+
       headers.push({
         column_label,
-        accessorKey: column_def.accessorKey
+        accessorKey: column_def.accessorKey,
+        column_id,
+        column_index
       })
+
+      column_indices[column_id]++
     }
 
     for (const row of data) {
       const row_data = {}
       for (const header of headers) {
-        row_data[header.column_label] = row[header.accessorKey]
+        row_data[header.column_label] =
+          row[`${header.accessorKey}_${header.column_index}`] ||
+          row[header.accessorKey] ||
+          ''
       }
       download_data.push(row_data)
     }
@@ -98,33 +102,40 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     const download_data = []
     const headers = []
 
-    if (table_state.prefix_columns) {
-      for (const column of table_state.prefix_columns) {
-        const column_id = typeof column === 'string' ? column : column.column_id
-        const column_def = all_columns[column_id]
-        const column_label = column_def.column_title || column_id
-        headers.push({
-          column_label,
-          accessorKey: column_def.accessorKey
-        })
-      }
-    }
+    const all_columns_array = [
+      ...(table_state.prefix_columns || []),
+      ...table_state.columns
+    ]
+    const column_id_counts = {}
+    const column_indices = {}
 
-    for (const column of table_state.columns) {
+    for (const column of all_columns_array) {
       const column_id = typeof column === 'string' ? column : column.column_id
+      column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
+      column_indices[column_id] = column_indices[column_id] || 0
+
       const column_def = all_columns[column_id]
       const column_label = column_def.column_title || column_id
+      const column_index = column_indices[column_id]
+
       headers.push({
         column_label,
-        accessorKey: column_def.accessorKey
+        accessorKey: column_def.accessorKey,
+        column_id,
+        column_index
       })
+
+      column_indices[column_id]++
     }
 
     for (const row of data) {
       const row_data = {}
 
       for (const header of headers) {
-        row_data[header.column_label] = row[header.accessorKey]
+        row_data[header.column_label] =
+          row[`${header.accessorKey}_${header.column_index}`] ||
+          row[header.accessorKey] ||
+          null
       }
 
       download_data.push(row_data)

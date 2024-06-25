@@ -9,7 +9,7 @@ export const fuzzy_match = (needle, haystack = '') => {
   const needle_words = needle.split(' ') // Split needle into words
   const haystack_length = haystack.length
 
-  return needle_words.every(needle_word => {
+  return needle_words.every((needle_word) => {
     const needle_word_length = needle_word.length
     if (needle_word_length > haystack_length) {
       return false
