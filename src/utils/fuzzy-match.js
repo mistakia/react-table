@@ -6,25 +6,28 @@ export const fuzzy_match = (needle, haystack = '') => {
 
   needle = needle.toLowerCase()
   haystack = haystack.toLowerCase()
-  const hlen = haystack.length
-  const nlen = needle.length
-  if (nlen > hlen) {
-    return false
-  }
+  const needle_words = needle.split(' ') // Split needle into words
+  const haystack_length = haystack.length
 
-  if (nlen === hlen) {
-    return needle === haystack
-  }
-  // eslint-disable-next-line
-  outer: for (let i = 0, j = 0; i < nlen; i++) {
-    const nch = needle.charCodeAt(i)
-    while (j < hlen) {
-      if (haystack.charCodeAt(j++) === nch) {
-        // eslint-disable-next-line
-        continue outer
-      }
+  return needle_words.every(needle_word => {
+    const needle_word_length = needle_word.length
+    if (needle_word_length > haystack_length) {
+      return false
     }
-    return false
-  }
-  return true
+
+    if (needle_word_length === haystack_length) {
+      return needle_word === haystack
+    }
+
+    outer: for (let i = 0, j = 0; i < needle_word_length; i++) {
+      const nch = needle_word.charCodeAt(i)
+      while (j < haystack_length) {
+        if (haystack.charCodeAt(j++) === nch) {
+          continue outer
+        }
+      }
+      return false
+    }
+    return true
+  })
 }
