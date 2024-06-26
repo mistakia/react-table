@@ -132,6 +132,8 @@ const TableFilterControls = ({
     [local_table_state, table_state]
   )
   const count_children = use_count_children()
+  const container_ref = useRef(null)
+  const [transform, set_transform] = useState('')
 
   const shown_column_index = useMemo(() => {
     const index = {}
@@ -198,13 +200,25 @@ const TableFilterControls = ({
 
   useEffect(() => {
     if (filter_controls_open) {
+      if (container_ref.current) {
+        const original_rect = container_ref.current.getBoundingClientRect()
+        const scroll_left =
+          window.pageXOffset || document.documentElement.scrollLeft
+        const window_center_x = window.innerWidth / 2 + scroll_left
+        const element_width =
+          window.innerWidth < 768
+            ? 0.9 * window.innerWidth
+            : 0.6 * window.innerWidth
+        const element_center_x =
+          original_rect.left + element_width / 2 + scroll_left
+
+        const translate_x = window_center_x - element_center_x
+
+        set_transform(`translateX(${translate_x}px)`)
+      }
+
       setTimeout(() => {
         if (window.innerWidth < 768) {
-          document.querySelector('.filter-controls-container').scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-          })
           setTimeout(() => {
             if (filter_input_ref.current) filter_input_ref.current.focus()
           }, 400)
@@ -213,6 +227,8 @@ const TableFilterControls = ({
         }
       }, 300)
     } else {
+      set_transform('')
+
       if (filter_input_ref.current) {
         filter_input_ref.current.blur()
       }
@@ -355,6 +371,8 @@ const TableFilterControls = ({
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
+        ref={container_ref}
+        style={{ transform }}
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'filter-controls-container': true,
@@ -440,9 +458,6 @@ const TableFilterControls = ({
             <div
               ref={parent_ref}
               style={{ height: '100%', overflow: 'auto', flex: 1 }}>
-              <div className='section-header'>
-                <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
-              </div>
               <div
                 className='column-category-container'
                 style={{

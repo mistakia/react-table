@@ -6,13 +6,12 @@ import FilterBase from '../filter-base'
 
 export default function ColumnParamSelectFilter({
   label,
-  selected_label,
   single,
-  body,
   filter_values = [],
   on_change = () => {},
   is_column_param_defined,
-  default_value = null
+  default_value = null,
+  mixed_state = false
 }) {
   const count = filter_values.filter((v) => v.selected).length
   const all_selected =
@@ -28,9 +27,26 @@ export default function ColumnParamSelectFilter({
   }
 
   const handle_select = (event, index) => {
+    if (mixed_state) {
+      // If in mixed state, treat as if nothing was previously selected
+      if (single) {
+        return on_change([filter_values[index].value])
+      } else {
+        const new_values = filter_values.map((v, i) => ({
+          ...v,
+          selected: i === index
+        }))
+        const filtered_values = new_values
+          .filter((i) => i.selected)
+          .map((i) => i.value)
+        return on_change(filtered_values)
+      }
+    }
+
     if (single) {
       return on_change([filter_values[index].value])
     }
+
     const values = filter_values.map((v, i) =>
       index === i
         ? { ...v, selected: all_selected ? false : !v.selected }
@@ -45,10 +61,11 @@ export default function ColumnParamSelectFilter({
   const items = filter_values.map((v, index) => {
     const class_names = ['table-filter-item-dropdown-item']
     const is_selected =
-      v.selected ||
-      all_selected ||
-      (single && !is_column_param_defined && v.value === default_value) ||
-      (single && !is_column_param_defined && !default_value && index === 0)
+      !mixed_state &&
+      (v.selected ||
+        all_selected ||
+        (single && !is_column_param_defined && v.value === default_value) ||
+        (single && !is_column_param_defined && !default_value && index === 0))
     if (is_selected) class_names.push('selected')
     if (v.className) class_names.push(v.className)
     return (
@@ -62,7 +79,9 @@ export default function ColumnParamSelectFilter({
     )
   })
 
-  const default_selected_label = all_selected
+  const selected_label = mixed_state
+    ? '-'
+    : all_selected
     ? 'ALL'
     : single && !is_column_param_defined
     ? default_value || filter_values[0]?.label
@@ -71,7 +90,7 @@ export default function ColumnParamSelectFilter({
         .map((v) => v.label)
         .join(', ')
 
-  const default_body = (
+  const body = (
     <>
       {!single && (
         <div className='table-filter-item-dropdown-head'>
@@ -92,11 +111,7 @@ export default function ColumnParamSelectFilter({
   )
 
   return (
-    <FilterBase
-      label={label}
-      selected_label={selected_label || default_selected_label}
-      body={body || default_body}
-    />
+    <FilterBase label={label} selected_label={selected_label} body={body} />
   )
 }
 
@@ -105,8 +120,7 @@ ColumnParamSelectFilter.propTypes = {
   filter_values: PropTypes.array,
   single: PropTypes.bool,
   label: PropTypes.string,
-  selected_label: PropTypes.string,
-  body: PropTypes.node,
   is_column_param_defined: PropTypes.bool,
-  default_value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  default_value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  mixed_state: PropTypes.bool
 }

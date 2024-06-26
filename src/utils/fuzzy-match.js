@@ -19,10 +19,12 @@ export const fuzzy_match = (needle, haystack = '') => {
       return needle_word === haystack
     }
 
+    // eslint-disable-next-line no-labels
     outer: for (let i = 0, j = 0; i < needle_word_length; i++) {
       const nch = needle_word.charCodeAt(i)
       while (j < haystack_length) {
         if (haystack.charCodeAt(j++) === nch) {
+          // eslint-disable-next-line no-labels
           continue outer
         }
       }

@@ -35,6 +35,7 @@ import { table_context } from '../table-context'
 import '../styles/mui-unstyled-popper.styl'
 import '../styles/table-expanding-control-container.styl'
 import '../styles/table-control-column-item.styl'
+import '../styles/button.styl'
 import './table.styl'
 
 const is_mobile = window.innerWidth < 500

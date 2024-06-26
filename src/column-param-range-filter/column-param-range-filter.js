@@ -13,7 +13,8 @@ export default function ColumnParamRangeFilter({
   max,
   step = 1,
   on_change = () => {},
-  selected_param_values = []
+  selected_param_values = [],
+  mixed_state = false
 }) {
   const [value, set_value] = useState([
     selected_param_values[0] || min,
@@ -26,7 +27,7 @@ export default function ColumnParamRangeFilter({
 
   const handle_reset = () => {
     set_value([min, max])
-    on_change(null)
+    on_change(undefined)
   }
 
   const handle_change = (event) => {
@@ -58,8 +59,12 @@ export default function ColumnParamRangeFilter({
     </div>
   )
 
-  const isAll = value[0] === min && value[1] === max
-  const selected_label = isAll ? 'All' : `${value[0]} to ${value[1]}`
+  const selected_label =
+    mixed_state && is_default
+      ? '-'
+      : is_default
+      ? 'All'
+      : `${value[0]} to ${value[1]}`
 
   const potential_characters = [min.toString().length, max.toString().length]
   if (step && step !== 1) {
@@ -83,5 +88,6 @@ ColumnParamRangeFilter.propTypes = {
   max: PropTypes.number.isRequired,
   step: PropTypes.number,
   on_change: PropTypes.func.isRequired,
-  selected_param_values: PropTypes.array
+  selected_param_values: PropTypes.array,
+  mixed_state: PropTypes.bool
 }

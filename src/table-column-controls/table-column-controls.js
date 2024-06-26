@@ -26,8 +26,10 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import Checkbox from '@mui/material/Checkbox'
 
 import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
+import ColumnControlsSelectedColumnsParameters from '../column-controls-selected-columns-parameters'
 import DataTypeIcon from '../data-type-icon'
 import {
   fuzzy_match,
@@ -106,7 +108,9 @@ const ColumnControlsSortableItem = React.memo(
     set_column_hidden_by_index,
     filter_text_input,
     set_local_table_state,
-    column_index
+    column_index,
+    selected_column_indexes,
+    set_selected_column_indexes
   }) => {
     const {
       attributes,
@@ -128,6 +132,8 @@ const ColumnControlsSortableItem = React.memo(
       transition,
       zIndex: isDragging ? 100 : null
     }
+    const is_selectable =
+      column.column_params && Object.keys(column.column_params).length
 
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
@@ -135,7 +141,8 @@ const ColumnControlsSortableItem = React.memo(
           className={get_string_from_object({
             'column-item': true,
             reorder: true,
-            'column-expanded': show_column_params
+            'column-expanded': show_column_params,
+            selected: selected_column_indexes.includes(column_index)
           })}>
           <div className='column-data-type'>
             <DataTypeIcon data_type={column.data_type} />
@@ -157,6 +164,20 @@ const ColumnControlsSortableItem = React.memo(
             onClick={() => set_column_hidden_by_index(column_index)}>
             <CloseIcon />
           </Button>
+          {is_selectable && (
+            <Checkbox
+              checked={selected_column_indexes.includes(column_index)}
+              onChange={(event) => {
+                set_selected_column_indexes(
+                  event.target.checked
+                    ? [...selected_column_indexes, column_index]
+                    : selected_column_indexes.filter(
+                        (index) => index !== column_index
+                      )
+                )
+              }}
+            />
+          )}
           {is_drag_enabled && (
             <div className='column-drag-handle' {...listeners}>
               <DragIndicatorIcon />
@@ -165,10 +186,11 @@ const ColumnControlsSortableItem = React.memo(
           {show_column_params && (
             <div className='column-params-container'>
               {Object.entries(column.column_params).map(
-                ([param_name, param_values]) => (
+                ([column_param_name, column_param_definition]) => (
                   <ColumnControlsColumnParamItem
-                    key={param_name}
-                    column_param={{ param_name, param_values }}
+                    key={column_param_name}
+                    column_param_name={column_param_name}
+                    column_param_definition={column_param_definition}
                     {...{ column, set_local_table_state, column_index }}
                   />
                 )
@@ -187,7 +209,9 @@ ColumnControlsSortableItem.propTypes = {
   set_column_hidden_by_index: PropTypes.func.isRequired,
   filter_text_input: PropTypes.string.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
-  column_index: PropTypes.number.isRequired
+  column_index: PropTypes.number.isRequired,
+  selected_column_indexes: PropTypes.array.isRequired,
+  set_selected_column_indexes: PropTypes.func.isRequired
 }
 
 const TableColumnControls = ({
@@ -199,6 +223,7 @@ const TableColumnControls = ({
 }) => {
   const { set_column_controls_open } = useContext(table_context)
   const [local_table_state, set_local_table_state] = useState(table_state)
+  const [selected_column_indexes, set_selected_column_indexes] = useState([])
 
   const parent_ref = useRef()
   const load_remaining_columns = () => set_loaded_all(true)
@@ -215,6 +240,9 @@ const TableColumnControls = ({
   const [loaded_all, set_loaded_all] = useState(false)
   const filter_input_ref = useRef(null)
   const count_children = use_count_children()
+
+  const container_ref = useRef(null)
+  const [transform, set_transform] = useState('')
 
   const local_table_state_columns = useMemo(() => {
     const columns = []
@@ -268,6 +296,14 @@ const TableColumnControls = ({
           (column, index) => index !== table_state_columns_index
         )
 
+        set_selected_column_indexes((prev_indexes) =>
+          prev_indexes
+            .filter((index) => index !== table_state_columns_index)
+            .map((index) =>
+              index > table_state_columns_index ? index - 1 : index
+            )
+        )
+
         if (
           columns.some(
             (column) =>
@@ -290,24 +326,47 @@ const TableColumnControls = ({
         }
       })
     },
-    []
+    [set_selected_column_indexes]
   )
 
-  const set_column_hidden_by_id = useCallback((column_id) => {
-    set_local_table_state((prev) => {
-      return {
-        ...prev,
-        columns: prev.columns.filter((column) =>
-          typeof column !== 'string'
-            ? column.column_id !== column_id
-            : column !== column_id
-        ),
-        sort: (prev.sort || []).filter((s) => s.column_id !== column_id)
-      }
-    })
-  }, [])
+  const set_column_hidden_by_id = useCallback(
+    (column_id) => {
+      set_local_table_state((prev) => {
+        const removed_indexes = []
+        const new_columns = prev.columns.filter((column, index) => {
+          const should_remove =
+            typeof column !== 'string'
+              ? column.column_id === column_id
+              : column === column_id
+          if (should_remove) {
+            removed_indexes.push(index)
+          }
+          return !should_remove
+        })
+
+        set_selected_column_indexes((prev_indexes) =>
+          prev_indexes
+            .filter((index) => !removed_indexes.includes(index))
+            .map((index) => {
+              const shift = removed_indexes.filter(
+                (removed) => removed < index
+              ).length
+              return index - shift
+            })
+        )
+
+        return {
+          ...prev,
+          columns: new_columns,
+          sort: (prev.sort || []).filter((s) => s.column_id !== column_id)
+        }
+      })
+    },
+    [set_selected_column_indexes]
+  )
 
   const set_all_columns_hidden = useCallback(() => {
+    set_selected_column_indexes([])
     set_local_table_state((prev) => ({
       ...prev,
       columns: [],
@@ -393,11 +452,6 @@ const TableColumnControls = ({
     if (column_controls_open && !was_menu_open.current) {
       setTimeout(() => {
         if (window.innerWidth < 768) {
-          document.querySelector('.table-column-controls').scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-          })
           setTimeout(() => {
             if (filter_input_ref.current) filter_input_ref.current.focus()
           }, 400)
@@ -429,6 +483,29 @@ const TableColumnControls = ({
     was_menu_open.current = column_controls_open
   }, [column_controls_open, tree_view_columns])
 
+  useEffect(() => {
+    if (column_controls_open) {
+      if (container_ref.current) {
+        const original_rect = container_ref.current.getBoundingClientRect()
+        const scroll_left =
+          window.pageXOffset || document.documentElement.scrollLeft
+        const window_center_x = window.innerWidth / 2 + scroll_left
+        const element_width =
+          window.innerWidth < 768
+            ? 0.9 * window.innerWidth
+            : 0.6 * window.innerWidth
+        const element_center_x =
+          original_rect.left + element_width / 2 + scroll_left
+
+        const translate_x = window_center_x - element_center_x
+
+        set_transform(`translateX(${translate_x}px)`)
+      }
+    } else {
+      set_transform('')
+    }
+  }, [column_controls_open])
+
   const handle_menu_toggle = useCallback(() => {
     if (column_controls_open) {
       set_closing(true)
@@ -452,6 +529,7 @@ const TableColumnControls = ({
     if (column_controls_open) {
       document.addEventListener('keydown', handleKeyDown)
     } else {
+      set_selected_column_indexes([])
       document.removeEventListener('keydown', handleKeyDown)
     }
 
@@ -592,6 +670,8 @@ const TableColumnControls = ({
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
+        ref={container_ref}
+        style={{ transform }}
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'table-column-controls': true,
@@ -607,10 +687,14 @@ const TableColumnControls = ({
         </div>
         {column_controls_open && is_local_table_state_changed && (
           <div className='table-control-container-state-buttons'>
-            <div className='controls-discard' onClick={handle_apply}>
+            <div
+              className='controls-button controls-discard'
+              onClick={handle_apply}>
               Apply
             </div>
-            <div className='controls-apply' onClick={handle_discard}>
+            <div
+              className='controls-button controls-apply'
+              onClick={handle_discard}>
               Discard
             </div>
           </div>
@@ -640,10 +724,41 @@ const TableColumnControls = ({
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
                     Shown in table
                   </div>
-                  <div>
-                    <div className='action' onClick={set_all_columns_hidden}>
-                      Remove All
-                    </div>
+                  <div style={{ display: 'flex' }}>
+                    {selected_column_indexes.length > 0 && (
+                      <ColumnControlsSelectedColumnsParameters
+                        selected_column_indexes={selected_column_indexes}
+                        local_table_state={local_table_state}
+                        local_table_state_columns={local_table_state_columns}
+                        set_local_table_state={set_local_table_state}
+                      />
+                    )}
+                    {selected_column_indexes.length > 0 && (
+                      <div
+                        className='action'
+                        onClick={() => set_selected_column_indexes([])}>
+                        Deselect All
+                      </div>
+                    )}
+                    {selected_column_indexes.length !==
+                      local_table_state_columns.length && (
+                      <div
+                        className='action'
+                        onClick={() =>
+                          set_selected_column_indexes(
+                            local_table_state_columns.map(
+                              (column, index) => index
+                            )
+                          )
+                        }>
+                        Select All
+                      </div>
+                    )}
+                    {local_table_state_columns.length > 0 && (
+                      <div className='action' onClick={set_all_columns_hidden}>
+                        Remove All
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className='selected-columns-container'>
@@ -660,7 +775,9 @@ const TableColumnControls = ({
                             set_column_hidden_by_index,
                             filter_text_input,
                             set_local_table_state,
-                            column_index
+                            column_index,
+                            selected_column_indexes,
+                            set_selected_column_indexes
                           }}
                         />
                       ))}
@@ -680,9 +797,6 @@ const TableColumnControls = ({
                   </div>
                 </div>
               ))} */}
-              <div className='section-header'>
-                <div style={{ display: 'flex', alignSelf: 'center' }}>All</div>
-              </div>
               <div className='column-category-container'>
                 {(loaded_all
                   ? tree_view_columns
