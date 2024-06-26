@@ -16,6 +16,7 @@ export default function ColumnParamRangeFilter({
   selected_param_values = [],
   mixed_state = false
 }) {
+  const [trigger_close, set_trigger_close] = useState(null)
   const [value, set_value] = useState([
     selected_param_values[0] || min,
     selected_param_values[1] || max
@@ -42,20 +43,29 @@ export default function ColumnParamRangeFilter({
 
   const body = (
     <div className='column-param-range-filter'>
-      <div>{label}</div>
-      <Slider
-        value={value}
-        onChange={handle_change}
-        step={step}
-        min={min}
-        max={max}
-      />
-      {!is_default && (
-        <div className='column-param-range-filter-buttons'>
-          {is_changed && <Button onClick={handle_set}>Save</Button>}
-          <Button onClick={handle_reset}>Reset</Button>
+      <div className='column-param-range-filter-header'>
+        <div>{label}</div>
+        <div
+          className='controls-button'
+          onClick={() => set_trigger_close(!trigger_close)}>
+          Close
         </div>
-      )}
+      </div>
+      <div className='column-param-range-filter-body'>
+        <Slider
+          value={value}
+          onChange={handle_change}
+          step={step}
+          min={min}
+          max={max}
+        />
+        {!is_default && (
+          <div className='column-param-range-filter-buttons'>
+            {is_changed && <Button onClick={handle_set}>Save</Button>}
+            <Button onClick={handle_reset}>Reset</Button>
+          </div>
+        )}
+      </div>
     </div>
   )
 
@@ -79,7 +89,9 @@ export default function ColumnParamRangeFilter({
   const char_count = max_length * 2 + 4
   const width = `${char_count}ch`
 
-  return <FilterBase {...{ selected_label, body, label, width }} />
+  return (
+    <FilterBase {...{ selected_label, body, label, width, trigger_close }} />
+  )
 }
 
 ColumnParamRangeFilter.propTypes = {

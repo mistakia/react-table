@@ -38,7 +38,7 @@ ColumnControlsColumnParamSelectFilter.propTypes = {
   column_param_name: PropTypes.string.isRequired,
   handle_change: PropTypes.func.isRequired,
   column_param_definition: PropTypes.object.isRequired,
-  selected_param_values: PropTypes.array.isRequired,
+  selected_param_values: PropTypes.array,
   mixed_state: PropTypes.bool
 }
 

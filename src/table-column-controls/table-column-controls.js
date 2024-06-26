@@ -667,6 +667,13 @@ const TableColumnControls = ({
     return JSON.stringify(local_table_state) !== JSON.stringify(table_state)
   }, [local_table_state, table_state])
 
+  const has_selectable_columns = useMemo(() => {
+    return local_table_state_columns.some(
+      (column) =>
+        column.column_params && Object.keys(column.column_params).length
+    )
+  }, [local_table_state_columns])
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -741,19 +748,25 @@ const TableColumnControls = ({
                       </div>
                     )}
                     {selected_column_indexes.length !==
-                      local_table_state_columns.length && (
-                      <div
-                        className='action'
-                        onClick={() =>
-                          set_selected_column_indexes(
-                            local_table_state_columns.map(
-                              (column, index) => index
+                      local_table_state_columns.length &&
+                      has_selectable_columns && (
+                        <div
+                          className='action'
+                          onClick={() =>
+                            set_selected_column_indexes(
+                              local_table_state_columns
+                                .map((column, index) => ({ column, index }))
+                                .filter(
+                                  ({ column }) =>
+                                    column.column_params &&
+                                    Object.keys(column.column_params).length
+                                )
+                                .map(({ index }) => index)
                             )
-                          )
-                        }>
-                        Select All
-                      </div>
-                    )}
+                          }>
+                          Select All
+                        </div>
+                      )}
                     {local_table_state_columns.length > 0 && (
                       <div className='action' onClick={set_all_columns_hidden}>
                         Remove All

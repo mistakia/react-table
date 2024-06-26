@@ -140,7 +140,7 @@ export default function ColumnControlsSelectedColumnsParameters({
             <div className='selected-columns-parameters-header'>
               <div>
                 Set parameters for {selected_column_indexes.length} selected
-                columns
+                {selected_column_indexes.length === 1 ? 'column' : 'columns'}
               </div>
               <div
                 className='controls-button'

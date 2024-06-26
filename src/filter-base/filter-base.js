@@ -1,17 +1,27 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Popper from '@mui/material/Popper'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
 import './filter-base.styl'
 
-export default function FilterBase({ label, selected_label, body, width }) {
+export default function FilterBase({
+  label,
+  selected_label,
+  body,
+  width,
+  trigger_close
+}) {
   const [visible, set_visible] = useState(false)
   const button_ref = useRef()
   const dropdown_ref = useRef()
   const handle_toggle_click = () => set_visible(!visible)
 
   const selection_style = width ? { minWidth: width } : {}
+
+  useEffect(() => {
+    set_visible(false)
+  }, [trigger_close])
 
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
@@ -42,5 +52,6 @@ FilterBase.propTypes = {
   label: PropTypes.string.isRequired,
   selected_label: PropTypes.string.isRequired,
   body: PropTypes.node.isRequired,
-  width: PropTypes.string
+  width: PropTypes.string,
+  trigger_close: PropTypes.bool
 }

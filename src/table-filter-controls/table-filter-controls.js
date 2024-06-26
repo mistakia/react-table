@@ -320,7 +320,7 @@ const TableFilterControls = ({
                     render_category(sub_category, depth + 1, category_path)
                   ) : (
                     <FilterControlItem
-                      key={sub_category.header}
+                      key={sub_category.column_id}
                       depth={depth + 1}
                       column_item={sub_category}
                       is_visible={Boolean(

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 
@@ -13,6 +13,7 @@ export default function ColumnParamSelectFilter({
   default_value = null,
   mixed_state = false
 }) {
+  const [trigger_close, set_trigger_close] = useState(null)
   const count = filter_values.filter((v) => v.selected).length
   const all_selected =
     !single && (!is_column_param_defined || count === filter_values.length)
@@ -94,15 +95,16 @@ export default function ColumnParamSelectFilter({
     <>
       {!single && (
         <div className='table-filter-item-dropdown-head'>
-          <div
-            className='table-filter-item-dropdown-action'
-            onClick={handle_all_click}>
+          <div className='controls-button' onClick={handle_all_click}>
             All
           </div>
-          <div
-            className='table-filter-item-dropdown-action'
-            onClick={handle_clear_click}>
+          <div className='controls-button' onClick={handle_clear_click}>
             Clear
+          </div>
+          <div
+            className='controls-button close'
+            onClick={() => set_trigger_close(!trigger_close)}>
+            Close
           </div>
         </div>
       )}
@@ -110,9 +112,7 @@ export default function ColumnParamSelectFilter({
     </>
   )
 
-  return (
-    <FilterBase label={label} selected_label={selected_label} body={body} />
-  )
+  return <FilterBase {...{ label, selected_label, body, trigger_close }} />
 }
 
 ColumnParamSelectFilter.propTypes = {

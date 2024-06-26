@@ -64,8 +64,16 @@
 .table-filter-item-dropdown-head
   display flex
   border-bottom 1px solid $borderColor
-  justify-content space-between
+  justify-content flex-start
   padding 8px
+  gap 12px
+
+  .controls-button
+    background #f0f0f0
+    border 1px solid #e0e0e0
+
+    &.close
+      margin-left auto
 
 .table-filter-item-dropdown-action
   background #f0f0f0
