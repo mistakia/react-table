@@ -195,16 +195,13 @@ const TableHeader = ({ header, column, table }) => {
             borderRight: '1px solid #D0D0D0'
           }
         }}>
-        <div className='cell-content'>
-          <div
-            style={{
-              display: 'flex ',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: '100%'
-            }}>
-            {header.column.columnDef.header}
-          </div>
+        <div
+          className='cell-content'
+          style={{
+            textAlign: 'center',
+            paddingTop: '6px'
+          }}>
+          {header.column.columnDef.header}
         </div>
       </div>
     )

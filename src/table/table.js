@@ -280,8 +280,8 @@ export default function Table({
   }, [table_state.columns, table_state.prefix_columns, all_columns])
 
   const grouped_columns = useMemo(
-    () => group_columns_by_groups(table_state_columns),
-    [table_state_columns]
+    () => group_columns_by_groups(table_state_columns, table_state.columns),
+    [table_state_columns, table_state.columns]
   )
 
   const prefix_columns = useMemo(() => {
@@ -296,6 +296,7 @@ export default function Table({
 
       columns.push({
         ...column_def,
+        id: `prefix-${column_id}`,
         index,
         prefix: true
       })
