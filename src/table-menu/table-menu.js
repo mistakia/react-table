@@ -80,8 +80,9 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
     for (const row of data) {
       const row_data = {}
-      for (const header of headers) {
-        row_data[header.column_label] =
+      for (let i = 0; i < headers.length; i++) {
+        const header = headers[i]
+        row_data[`${header.column_label}_${header.column_index}`] =
           row[`${header.accessorKey}_${header.column_index}`] ||
           row[header.accessorKey] ||
           ''
@@ -131,8 +132,9 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     for (const row of data) {
       const row_data = {}
 
-      for (const header of headers) {
-        row_data[header.column_label] =
+      for (let i = 0; i < headers.length; i++) {
+        const header = headers[i]
+        row_data[`${header.column_label}_${header.column_index}`] =
           row[`${header.accessorKey}_${header.column_index}`] ||
           row[header.accessorKey] ||
           null
