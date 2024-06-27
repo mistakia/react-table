@@ -51,7 +51,7 @@ export default function group_columns_by_groups(
     } else if (group.params) {
       return Object.entries(group.params).every(
         ([key, value]) =>
-          JSON.stringify(column_state.params[key]) === JSON.stringify(value)
+          JSON.stringify(column_state.params?.[key]) === JSON.stringify(value)
       )
     }
     return false
@@ -97,29 +97,31 @@ export default function group_columns_by_groups(
       }
     }
 
-    // Add params to identifiers
-    for (const [param_key, param_value] of Object.entries(
-      column_state.params
-    )) {
-      if (
-        !parent_groups.some(
-          (group) =>
-            group.params &&
-            JSON.stringify(group.params[param_key]) ===
-              JSON.stringify(param_value)
-        )
-      ) {
-        const is_range =
-          column.column_params &&
-          column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
-        identifiers.push({
-          type: 'param',
-          id: `${param_key}_${JSON.stringify(param_value)}`,
-          label: `${param_key}: ${
-            is_range ? param_value.join('-') : param_value
-          }`,
-          value: { [param_key]: param_value }
-        })
+    if (column_state.params) {
+      for (const [param_key, param_value] of Object.entries(
+        column_state.params
+      )) {
+        if (
+          !parent_groups.some(
+            (group) =>
+              group.params &&
+              JSON.stringify(group.params[param_key]) ===
+                JSON.stringify(param_value)
+          )
+        ) {
+          const is_range =
+            column.column_params &&
+            column.column_params[param_key] &&
+            column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
+          identifiers.push({
+            type: 'param',
+            id: `${param_key}_${JSON.stringify(param_value)}`,
+            label: `${param_key}: ${
+              is_range ? param_value.join('-') : param_value
+            }`,
+            value: { [param_key]: param_value }
+          })
+        }
       }
     }
 
@@ -156,7 +158,9 @@ export default function group_columns_by_groups(
         const [key, value] = Object.entries(identifier.value)[0]
         return (
           JSON.stringify(
-            table_state_columns[table_columns.indexOf(other_column)].params[key]
+            table_state_columns[table_columns.indexOf(other_column)].params?.[
+              key
+            ]
           ) === JSON.stringify(value)
         )
       }
