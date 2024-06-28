@@ -84,7 +84,9 @@ const TableCell = ({ getValue, column, row, table }) => {
 
   let value
 
-  if (enable_duplicate_column_ids) {
+  if (column.columnDef.is_split) {
+    value = row.original[column.columnDef.id]
+  } else if (enable_duplicate_column_ids) {
     const accessor_path = `${column.columnDef.accessorKey}_${column_index}`
     value = row.original[accessor_path]
   } else {

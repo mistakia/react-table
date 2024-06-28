@@ -305,18 +305,41 @@ export default function Table({
     return columns
   }, [table_state.prefix_columns, all_columns])
 
+  const splits_columns = useMemo(() => {
+    if (!table_state.splits || table_state.splits.length === 0) {
+      return null
+    }
+
+    const columns = []
+    for (const split of table_state.splits || []) {
+      columns.push(
+        column_helper.display({
+          id: split,
+          header_label: split,
+          is_split: true
+        })
+      )
+    }
+    return column_helper.group({
+      header: 'Splits',
+      columns
+    })
+  }, [table_state.splits])
+
   const table_columns = useMemo(
-    () => [
-      column_helper.display({
-        id: 'column_index'
-      }),
-      ...prefix_columns,
-      ...grouped_columns,
-      column_helper.display({
-        id: 'add_column_action'
-      })
-    ],
-    [prefix_columns, grouped_columns]
+    () =>
+      [
+        column_helper.display({
+          id: 'column_index'
+        }),
+        ...prefix_columns,
+        splits_columns,
+        ...grouped_columns,
+        column_helper.display({
+          id: 'add_column_action'
+        })
+      ].filter(Boolean),
+    [prefix_columns, splits_columns, grouped_columns]
   )
 
   const table = useReactTable({

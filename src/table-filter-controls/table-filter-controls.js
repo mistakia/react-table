@@ -396,10 +396,14 @@ const TableFilterControls = ({
         </Badge>
         {filter_controls_open && table_state_comparison && (
           <div className='table-control-container-state-buttons'>
-            <div className='controls-button controls-discard' onClick={handle_discard_click}>
+            <div
+              className='controls-button controls-discard'
+              onClick={handle_discard_click}>
               Discard
             </div>
-            <div className='controls-button controls-apply' onClick={handle_apply_click}>
+            <div
+              className='controls-button controls-apply'
+              onClick={handle_apply_click}>
               Apply
             </div>
           </div>
