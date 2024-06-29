@@ -38,12 +38,12 @@ import {
   use_count_children
 } from '../utils'
 import { table_context } from '../table-context'
+import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
 
 import './table-column-controls.styl'
 
 const COLUMN_CONTROLS_INITIAL_VISIBLE_COLUMNS = 13
 const COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD = 33
-const COLUMN_CONTROLS_MENU_CLOSE_TIMEOUT = 300
 
 const ColumnControlsTableColumnItem = React.memo(
   React.forwardRef(
@@ -512,7 +512,7 @@ const TableColumnControls = ({
 
       setTimeout(() => {
         set_closing(false)
-      }, COLUMN_CONTROLS_MENU_CLOSE_TIMEOUT)
+      }, MENU_CLOSE_TIMEOUT)
     } else {
       set_column_controls_open(true)
     }
@@ -597,7 +597,7 @@ const TableColumnControls = ({
 
         setTimeout(() => {
           set_closing(false)
-        }, COLUMN_CONTROLS_MENU_CLOSE_TIMEOUT)
+        }, MENU_CLOSE_TIMEOUT)
       }
       set_filter_text_input('')
     },

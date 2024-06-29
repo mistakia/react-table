@@ -10,9 +10,10 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CallSplitIcon from '@mui/icons-material/CallSplit'
 import Alert from '@mui/material/Alert'
 
+import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
+
 import './table-splits-controls.styl'
 
-const SPLITS_CONTROLS_MENU_CLOSE_TIMEOUT = 300
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
 const checkedIcon = <CheckBoxIcon fontSize='small' />
 
@@ -82,7 +83,7 @@ const TableSplitsControls = ({
 
       setTimeout(() => {
         set_closing(false)
-      }, SPLITS_CONTROLS_MENU_CLOSE_TIMEOUT)
+      }, MENU_CLOSE_TIMEOUT)
     } else {
       set_splits_controls_open(true)
     }
@@ -114,7 +115,7 @@ const TableSplitsControls = ({
 
         setTimeout(() => {
           set_closing(false)
-        }, SPLITS_CONTROLS_MENU_CLOSE_TIMEOUT)
+        }, MENU_CLOSE_TIMEOUT)
       }
     },
     [splits_controls_open]

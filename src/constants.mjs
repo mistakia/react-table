@@ -1,3 +1,5 @@
+export const MENU_CLOSE_TIMEOUT = 300
+
 export const TABLE_DATA_TYPES = {
   NUMBER: 1,
   TEXT: 2,
