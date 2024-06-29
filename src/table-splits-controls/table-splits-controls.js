@@ -189,6 +189,7 @@ const TableSplitsControls = ({
                 }))
               }}
               renderOption={(props, option, { selected }) => {
+                // eslint-disable-next-line react/prop-types
                 const { key, ...optionProps } = props
                 return (
                   <li key={key} {...optionProps}>
