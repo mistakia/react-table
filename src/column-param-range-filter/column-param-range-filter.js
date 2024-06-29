@@ -8,14 +8,16 @@ import FilterBase from '../filter-base'
 import './column-param-range-filter.styl'
 
 export default function ColumnParamRangeFilter({
-  label,
-  min,
-  max,
-  step = 1,
-  on_change = () => {},
+  column_param_name,
+  column_param_definition,
   selected_param_values = [],
+  handle_change = () => {},
   mixed_state = false
 }) {
+  const label = column_param_name
+  const min = column_param_definition.min
+  const max = column_param_definition.max
+  const step = column_param_definition.step
   const [trigger_close, set_trigger_close] = useState(null)
   const [value, set_value] = useState([
     selected_param_values[0] || min,
@@ -23,15 +25,15 @@ export default function ColumnParamRangeFilter({
   ])
 
   const handle_set = () => {
-    on_change(value)
+    handle_change(value)
   }
 
   const handle_reset = () => {
     set_value([min, max])
-    on_change(undefined)
+    handle_change(undefined)
   }
 
-  const handle_change = (event) => {
+  const handle_range_change = (event) => {
     const value = event.target.value
     set_value(value)
   }
@@ -54,7 +56,7 @@ export default function ColumnParamRangeFilter({
       <div className='column-param-range-filter-body'>
         <Slider
           value={value}
-          onChange={handle_change}
+          onChange={handle_range_change}
           step={step}
           min={min}
           max={max}
@@ -95,11 +97,9 @@ export default function ColumnParamRangeFilter({
 }
 
 ColumnParamRangeFilter.propTypes = {
-  label: PropTypes.string.isRequired,
-  min: PropTypes.number.isRequired,
-  max: PropTypes.number.isRequired,
-  step: PropTypes.number,
-  on_change: PropTypes.func.isRequired,
+  column_param_name: PropTypes.string.isRequired,
+  column_param_definition: PropTypes.object.isRequired,
+  handle_change: PropTypes.func.isRequired,
   selected_param_values: PropTypes.array,
   mixed_state: PropTypes.bool
 }

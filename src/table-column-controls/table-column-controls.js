@@ -132,8 +132,6 @@ const ColumnControlsSortableItem = React.memo(
       transition,
       zIndex: isDragging ? 100 : null
     }
-    const is_selectable =
-      column.column_params && Object.keys(column.column_params).length
 
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
@@ -164,7 +162,7 @@ const ColumnControlsSortableItem = React.memo(
             onClick={() => set_column_hidden_by_index(column_index)}>
             <CloseIcon />
           </Button>
-          {is_selectable && (
+          {has_column_params && (
             <Checkbox
               checked={selected_column_indexes.includes(column_index)}
               onChange={(event) => {
@@ -189,9 +187,13 @@ const ColumnControlsSortableItem = React.memo(
                 ([column_param_name, column_param_definition]) => (
                   <ColumnControlsColumnParamItem
                     key={column_param_name}
-                    column_param_name={column_param_name}
-                    column_param_definition={column_param_definition}
-                    {...{ column, set_local_table_state, column_index }}
+                    {...{
+                      column,
+                      set_local_table_state,
+                      column_index,
+                      column_param_name,
+                      column_param_definition
+                    }}
                   />
                 )
               )}

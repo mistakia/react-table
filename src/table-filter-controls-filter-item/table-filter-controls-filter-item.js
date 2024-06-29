@@ -22,6 +22,7 @@ import {
 } from '../constants.mjs'
 import FilterControlsColumnParamItem from '../filter-controls-column-param-item'
 import { get_string_from_object } from '../utils'
+import { Checkbox } from '@mui/material'
 
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
 
@@ -120,7 +121,9 @@ export default function FilterItem({
   column_definition,
   local_table_state,
   set_local_table_state,
-  where_index
+  where_index,
+  selected_where_indexes,
+  set_selected_where_indexes
 }) {
   const anchor_el = useRef()
   const { column_id, column_title, column_values, data_type, column_params } =
@@ -292,6 +295,20 @@ export default function FilterItem({
             {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
           </Button>
         )}
+        {has_column_params && (
+          <Checkbox
+            checked={selected_where_indexes.includes(where_index)}
+            onChange={(event) => {
+              set_selected_where_indexes(
+                event.target.checked
+                  ? [...selected_where_indexes, where_index]
+                  : selected_where_indexes.filter(
+                      (index) => index !== where_index
+                    )
+              )
+            }}
+          />
+        )}
         <ClickAwayListener onClickAway={() => set_misc_menu_open(false)}>
           <div>
             <Button
@@ -318,17 +335,20 @@ export default function FilterItem({
       </div>
       {show_column_params && (
         <div className='column-params-container'>
-          {Object.entries(column_params).map(([param_name, param_values]) => (
-            <FilterControlsColumnParamItem
-              key={param_name}
-              column_param={{ param_name, param_values }}
-              {...{
-                where_item,
-                set_local_table_state,
-                where_index
-              }}
-            />
-          ))}
+          {Object.entries(column_params).map(
+            ([column_param_name, column_param_definition]) => (
+              <FilterControlsColumnParamItem
+                key={column_param_name}
+                {...{
+                  where_item,
+                  set_local_table_state,
+                  where_index,
+                  column_param_name,
+                  column_param_definition
+                }}
+              />
+            )
+          )}
         </div>
       )}
     </div>
@@ -341,5 +361,7 @@ FilterItem.propTypes = {
   column_definition: PropTypes.object.isRequired,
   local_table_state: PropTypes.object.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
-  where_index: PropTypes.number.isRequired
+  where_index: PropTypes.number.isRequired,
+  selected_where_indexes: PropTypes.array.isRequired,
+  set_selected_where_indexes: PropTypes.func.isRequired
 }

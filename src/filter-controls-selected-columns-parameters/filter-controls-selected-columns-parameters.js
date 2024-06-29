@@ -7,23 +7,21 @@ import ColumnParamSelectFilter from '../column-param-select-filter'
 import ColumnParamRangeFilter from '../column-param-range-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 
-import './column-controls-selected-columns-parameters.styl'
-
-const SharedColumnParamItem = ({
+const SharedWhereParamItem = ({
   column_param_name,
   local_table_state,
   column_param_definition,
-  selected_column_indexes,
+  selected_where_indexes,
   set_local_table_state
 }) => {
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {
-    const columns = local_table_state.columns.map((column, index) => {
-      if (selected_column_indexes.includes(index)) {
+    const where = local_table_state.where.map((column, index) => {
+      if (selected_where_indexes.includes(index)) {
         const existing_params = column?.params || {}
         return {
-          column_id: typeof column === 'string' ? column : column.column_id,
+          column_id: column.column_id,
           params: {
             ...existing_params,
             [column_param_name]: values
@@ -35,13 +33,13 @@ const SharedColumnParamItem = ({
 
     set_local_table_state({
       ...local_table_state,
-      columns
+      where
     })
   }
 
   const { selected_param_values, is_equal } = useMemo(() => {
-    const param_values = selected_column_indexes.map(
-      (index) => local_table_state.columns[index]?.params?.[column_param_name]
+    const param_values = selected_where_indexes.map(
+      (index) => local_table_state.where[index]?.params?.[column_param_name]
     )
 
     const is_equal = param_values.every(
@@ -51,7 +49,7 @@ const SharedColumnParamItem = ({
       selected_param_values: is_equal ? param_values[0] : undefined,
       is_equal
     }
-  }, [local_table_state, column_param_name])
+  }, [local_table_state, column_param_name, selected_where_indexes])
 
   const param_props = {
     column_param_name,
@@ -71,32 +69,31 @@ const SharedColumnParamItem = ({
   }
 }
 
-SharedColumnParamItem.displayName = 'SharedColumnParamItem'
-SharedColumnParamItem.propTypes = {
+SharedWhereParamItem.propTypes = {
   column_param_name: PropTypes.string.isRequired,
   local_table_state: PropTypes.object.isRequired,
   column_param_definition: PropTypes.object.isRequired,
-  selected_column_indexes: PropTypes.array.isRequired,
+  selected_where_indexes: PropTypes.array.isRequired,
   set_local_table_state: PropTypes.func.isRequired
 }
 
-export default function ColumnControlsSelectedColumnsParameters({
-  selected_column_indexes,
-  local_table_state_columns,
+export default function FilterControlsSelectedColumnsParameters({
   local_table_state,
-  set_local_table_state
+  set_local_table_state,
+  selected_where_indexes,
+  local_table_state_where_columns
 }) {
   const [visible, set_visible] = useState(false)
   const anchor_ref = useRef(null)
 
   const shared_parameters = useMemo(() => {
-    if (local_table_state_columns.length === 0) {
+    if (local_table_state_where_columns.length === 0) {
       return {}
     }
 
-    return selected_column_indexes
+    return selected_where_indexes
       .map((index) => {
-        const column = local_table_state_columns[index]
+        const column = local_table_state_where_columns[index]
         if (!column || !column.column_params) {
           return []
         }
@@ -112,7 +109,9 @@ export default function ColumnControlsSelectedColumnsParameters({
         acc[curr.column_param_name] = curr
         return acc
       }, {})
-  }, [selected_column_indexes, local_table_state_columns])
+  }, [selected_where_indexes, local_table_state_where_columns])
+
+  console.log({ shared_parameters })
 
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
@@ -127,8 +126,8 @@ export default function ColumnControlsSelectedColumnsParameters({
           <div className='selected-columns-parameters'>
             <div className='selected-columns-parameters-header'>
               <div>
-                Set parameters for {selected_column_indexes.length} selected
-                {selected_column_indexes.length === 1 ? 'column' : 'columns'}
+                Set parameters for {selected_where_indexes.length} selected
+                {selected_where_indexes.length === 1 ? 'filter' : 'filters'}
               </div>
               <div
                 className='controls-button'
@@ -139,13 +138,15 @@ export default function ColumnControlsSelectedColumnsParameters({
             <div className='selected-columns-parameters-body'>
               {Object.values(shared_parameters).map(
                 ({ column_param_name, column_param_definition }) => (
-                  <SharedColumnParamItem
+                  <SharedWhereParamItem
                     key={column_param_name}
-                    column_param_name={column_param_name}
-                    local_table_state={local_table_state}
-                    column_param_definition={column_param_definition}
-                    selected_column_indexes={selected_column_indexes}
-                    set_local_table_state={set_local_table_state}
+                    {...{
+                      column_param_name,
+                      local_table_state,
+                      column_param_definition,
+                      selected_where_indexes,
+                      set_local_table_state
+                    }}
                   />
                 )
               )}
@@ -157,9 +158,9 @@ export default function ColumnControlsSelectedColumnsParameters({
   )
 }
 
-ColumnControlsSelectedColumnsParameters.propTypes = {
-  selected_column_indexes: PropTypes.array.isRequired,
-  local_table_state_columns: PropTypes.array.isRequired,
+FilterControlsSelectedColumnsParameters.propTypes = {
   local_table_state: PropTypes.object.isRequired,
-  set_local_table_state: PropTypes.func.isRequired
+  set_local_table_state: PropTypes.func.isRequired,
+  selected_where_indexes: PropTypes.array.isRequired,
+  local_table_state_where_columns: PropTypes.array.isRequired
 }

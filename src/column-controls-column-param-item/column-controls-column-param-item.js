@@ -1,8 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import ColumnControlsColumnParamSelectFilter from '../column-controls-column-param-select-filter'
-import ColumnControlsColumnParamRangeFilter from '../column-controls-column-param-range-filter'
+import ColumnParamSelectFilter from '../column-param-select-filter'
+import ColumnParamRangeFilter from '../column-param-range-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 
 const ColumnControlsColumnParamItem = ({
@@ -34,29 +34,18 @@ const ColumnControlsColumnParamItem = ({
 
   const selected_param_values = column.selected_params[column_param_name]
 
+  const param_props = {
+    column_param_name,
+    column_param_definition,
+    selected_param_values,
+    handle_change
+  }
+
   switch (data_type) {
     case TABLE_DATA_TYPES.SELECT:
-      return (
-        <ColumnControlsColumnParamSelectFilter
-          {...{
-            column_param_name,
-            handle_change,
-            selected_param_values,
-            column_param_definition
-          }}
-        />
-      )
+      return <ColumnParamSelectFilter {...param_props} />
     case TABLE_DATA_TYPES.RANGE:
-      return (
-        <ColumnControlsColumnParamRangeFilter
-          {...{
-            column_param_name,
-            handle_change,
-            selected_param_values,
-            column_param_definition
-          }}
-        />
-      )
+      return <ColumnParamRangeFilter {...param_props} />
     default:
       return null
   }

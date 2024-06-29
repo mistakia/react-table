@@ -5,14 +5,27 @@ import Checkbox from '@mui/material/Checkbox'
 import FilterBase from '../filter-base'
 
 export default function ColumnParamSelectFilter({
-  label,
-  single,
-  filter_values = [],
-  on_change = () => {},
-  is_column_param_defined,
-  default_value = null,
+  column_param_name,
+  column_param_definition,
+  selected_param_values,
+  handle_change = () => {},
   mixed_state = false
 }) {
+  const label = column_param_name
+  const single = Boolean(column_param_definition?.single)
+  const default_value = column_param_definition?.default_value
+  const is_column_param_defined = Boolean(selected_param_values)
+  const filter_values = []
+
+  for (const param_value of column_param_definition?.values || []) {
+    filter_values.push({
+      label: param_value,
+      value: param_value,
+      selected:
+        !mixed_state && (selected_param_values || []).includes(param_value)
+    })
+  }
+
   const [trigger_close, set_trigger_close] = useState(null)
   const count = filter_values.filter((v) => v.selected).length
   const all_selected =
@@ -20,18 +33,18 @@ export default function ColumnParamSelectFilter({
 
   const handle_all_click = () => {
     const values = filter_values.map((i) => i.value)
-    on_change(values)
+    handle_change(values)
   }
 
   const handle_clear_click = () => {
-    on_change([])
+    handle_change([])
   }
 
   const handle_select = (event, index) => {
     if (mixed_state) {
       // If in mixed state, treat as if nothing was previously selected
       if (single) {
-        return on_change([filter_values[index].value])
+        return handle_change([filter_values[index].value])
       } else {
         const new_values = filter_values.map((v, i) => ({
           ...v,
@@ -40,12 +53,12 @@ export default function ColumnParamSelectFilter({
         const filtered_values = new_values
           .filter((i) => i.selected)
           .map((i) => i.value)
-        return on_change(filtered_values)
+        return handle_change(filtered_values)
       }
     }
 
     if (single) {
-      return on_change([filter_values[index].value])
+      return handle_change([filter_values[index].value])
     }
 
     const values = filter_values.map((v, i) =>
@@ -56,7 +69,7 @@ export default function ColumnParamSelectFilter({
         : v
     )
     const filtered_values = values.filter((i) => i.selected).map((i) => i.value)
-    on_change(filtered_values)
+    handle_change(filtered_values)
   }
 
   const items = filter_values.map((v, index) => {
@@ -116,11 +129,9 @@ export default function ColumnParamSelectFilter({
 }
 
 ColumnParamSelectFilter.propTypes = {
-  on_change: PropTypes.func,
-  filter_values: PropTypes.array,
-  single: PropTypes.bool,
-  label: PropTypes.string,
-  is_column_param_defined: PropTypes.bool,
-  default_value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  handle_change: PropTypes.func,
+  column_param_name: PropTypes.string,
+  column_param_definition: PropTypes.object,
+  selected_param_values: PropTypes.array,
   mixed_state: PropTypes.bool
 }

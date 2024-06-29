@@ -30,6 +30,7 @@ import {
 import { OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
 import { table_context } from '../table-context'
 import FilterItem from '../table-filter-controls-filter-item'
+import FilterControlsSelectedColumnsParameters from '../filter-controls-selected-columns-parameters'
 
 import './table-filter-controls.styl'
 
@@ -121,6 +122,7 @@ const TableFilterControls = ({
   all_columns
 }) => {
   const previous_filter_text = useRef('')
+  const [selected_where_indexes, set_selected_where_indexes] = useState([])
   const [cached_open_categories, set_cached_open_categories] = useState({})
   const [filter_text_input, set_filter_text_input] = useState('')
   const [open_categories, set_open_categories] = useState({})
@@ -368,6 +370,31 @@ const TableFilterControls = ({
     set_local_table_state({ ...local_table_state, where: [] })
   }, [local_table_state])
 
+  const local_table_state_where_columns = useMemo(() => {
+    const columns = []
+    for (const column of local_table_state.where || []) {
+      const column_id = column.column_id || column.id || column.column_name
+      if (column_id) {
+        // TODO use key/value store
+        const column_data = all_columns.find((c) => c.column_id === column_id)
+        if (column_data) {
+          columns.push({
+            ...column_data,
+            selected_params: column.params || {}
+          })
+        }
+      }
+    }
+    return columns
+  }, [local_table_state.where, all_columns])
+
+  const has_selectable_where_columns = useMemo(() => {
+    return local_table_state_where_columns.some(
+      (column) =>
+        column.column_params && Object.keys(column.column_params).length
+    )
+  }, [local_table_state_where_columns])
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -433,7 +460,44 @@ const TableFilterControls = ({
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
                     Shown in table
                   </div>
-                  <div>
+                  <div style={{ display: 'flex' }}>
+                    {selected_where_indexes.length > 0 && (
+                      <FilterControlsSelectedColumnsParameters
+                        local_table_state={local_table_state}
+                        set_local_table_state={set_local_table_state}
+                        selected_where_indexes={selected_where_indexes}
+                        local_table_state_where_columns={
+                          local_table_state_where_columns
+                        }
+                      />
+                    )}
+                    {selected_where_indexes.length > 0 && (
+                      <div
+                        className='action'
+                        onClick={() => set_selected_where_indexes([])}>
+                        Deselect All
+                      </div>
+                    )}
+                    {selected_where_indexes.length !==
+                      local_table_state_where_columns.length &&
+                      has_selectable_where_columns && (
+                        <div
+                          className='action'
+                          onClick={() =>
+                            set_selected_where_indexes(
+                              local_table_state_where_columns
+                                .map((column, index) => ({ column, index }))
+                                .filter(
+                                  ({ column }) =>
+                                    column.column_params &&
+                                    Object.keys(column.column_params).length
+                                )
+                                .map(({ index }) => index)
+                            )
+                          }>
+                          Select All
+                        </div>
+                      )}
                     <div className='action' onClick={handle_remove_all_filters}>
                       Remove All
                     </div>
@@ -444,12 +508,14 @@ const TableFilterControls = ({
                     (where_item, where_index) => (
                       <FilterItem
                         key={where_item.column_id}
-                        column_definition={all_columns.find(
-                          (column) => column.column_id === where_item.column_id
-                        )}
+                        column_definition={
+                          local_table_state_where_columns[where_index]
+                        }
                         table_state={local_table_state}
                         {...{
                           where_index,
+                          selected_where_indexes,
+                          set_selected_where_indexes,
                           local_table_state,
                           set_local_table_state
                         }}
