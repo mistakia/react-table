@@ -225,7 +225,6 @@ const TableColumnControls = ({
   const [local_table_state, set_local_table_state] = useState(table_state)
   const [selected_column_indexes, set_selected_column_indexes] = useState([])
 
-  const parent_ref = useRef()
   const load_remaining_columns = () => set_loaded_all(true)
   const sensors = useSensors(useSensor(PointerSensor))
   const [cached_open_categories, set_cached_open_categories] = useState({})
@@ -696,13 +695,13 @@ const TableColumnControls = ({
           <div className='table-control-container-state-buttons'>
             <div
               className='controls-button controls-discard'
-              onClick={handle_apply}>
-              Apply
+              onClick={handle_discard}>
+              Discard
             </div>
             <div
               className='controls-button controls-apply'
-              onClick={handle_discard}>
-              Discard
+              onClick={handle_apply}>
+              Apply
             </div>
           </div>
         )}
@@ -799,7 +798,7 @@ const TableColumnControls = ({
                 </div>
               </div>
             )}
-            <div className='column-controls-body' ref={parent_ref}>
+            <div className='column-controls-body'>
               {/* {prefix_columns.map((column) => (
                 <div key={column.column_id} className='column-item prefix'>
                   <div className='column-data-type'>

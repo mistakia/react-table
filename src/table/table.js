@@ -18,6 +18,7 @@ import TableCell from '../table-cell'
 import TableHeader from '../table-header'
 import TableFooter from '../table-footer'
 import TableColumnControls from '../table-column-controls'
+import TableSplitsControls from '../table-splits-controls'
 import TableViewController from '../table-view-controller'
 import TableFilterControls from '../table-filter-controls'
 import TableQuickFilter from '../table-quick-filter'
@@ -136,7 +137,7 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    ({ sort, prefix_columns, columns, where, rank_aggregation }) => {
+    ({ sort, prefix_columns, columns, where, rank_aggregation, splits }) => {
       const { view_id, view_name, view_description } = selected_view
       on_view_change(
         {
@@ -148,7 +149,8 @@ export default function Table({
             prefix_columns,
             columns,
             where,
-            rank_aggregation
+            rank_aggregation,
+            splits
           }
         },
         {
@@ -180,7 +182,7 @@ export default function Table({
 
   const discard_table_state_changes = useCallback(() => {
     const { view_id, view_name, view_description } = selected_view
-    const { sort, prefix_columns, columns, where, rank_aggregation } =
+    const { sort, prefix_columns, columns, where, rank_aggregation, splits } =
       saved_table_state
     on_view_change(
       {
@@ -192,7 +194,8 @@ export default function Table({
           prefix_columns,
           columns,
           where,
-          rank_aggregation
+          rank_aggregation,
+          splits
         }
       },
       {
@@ -575,15 +578,6 @@ export default function Table({
                 'table-controls-container': true,
                 'rank-aggregation-controls-visible': !disable_rank_aggregation
               })}>
-              <TableFilterControls
-                {...{
-                  filter_controls_open,
-                  set_filter_controls_open,
-                  table_state,
-                  on_table_state_change,
-                  all_columns: memoized_all_columns // TODO
-                }}
-              />
               {!disable_rank_aggregation && (
                 <TableRankAggregationControls
                   {...{
@@ -600,6 +594,22 @@ export default function Table({
                   on_table_state_change,
                   prefix_columns,
                   column_controls_open
+                }}
+              />
+              <TableFilterControls
+                {...{
+                  filter_controls_open,
+                  set_filter_controls_open,
+                  table_state,
+                  on_table_state_change,
+                  all_columns: memoized_all_columns // TODO
+                }}
+              />
+              <TableSplitsControls
+                {...{
+                  table_state,
+                  on_table_state_change,
+                  table_state_columns
                 }}
               />
               {is_table_state_changed && (

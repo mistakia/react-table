@@ -55,13 +55,21 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
   const handle_export_csv = () => {
     const download_data = []
     const headers = []
-    const all_columns_array = [
-      ...(table_state.prefix_columns || []),
-      ...table_state.columns
-    ]
-    const column_indices = {}
 
-    for (const column of all_columns_array) {
+    for (const column of table_state.prefix_columns || []) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_def = all_columns[column_id]
+      const column_label = column_def.column_title || column_id
+
+      headers.push({
+        column_label,
+        accessorFn: column_def.accessorFn,
+        accessorKey: column_def.accessorKey
+      })
+    }
+
+    const column_indices = {}
+    for (const column of table_state.columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
       column_indices[column_id] = column_indices[column_id] || 0
 
@@ -71,22 +79,36 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
       headers.push({
         column_label,
+        accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey,
-        column_id,
         column_index
       })
 
       column_indices[column_id]++
     }
 
+    for (const split of table_state.splits) {
+      headers.push({
+        column_label: split,
+        accessorKey: split
+      })
+    }
+
     for (const row of data) {
       const row_data = {}
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
-        row_data[`${header.column_label}_${header.column_index}`] =
-          row[`${header.accessorKey}_${header.column_index}`] ||
-          row[header.accessorKey] ||
-          ''
+        if (header.accessorFn) {
+          row_data[header.column_label] = header.accessorFn({
+            row,
+            column_index: header.column_index
+          })
+        } else {
+          row_data[header.column_label] =
+            row[`${header.accessorKey}_${header.column_index}`] ||
+            row[header.accessorKey] ||
+            ''
+        }
       }
       download_data.push(row_data)
     }
@@ -104,14 +126,21 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     const download_data = []
     const headers = []
 
-    const all_columns_array = [
-      ...(table_state.prefix_columns || []),
-      ...table_state.columns
-    ]
+    for (const column of table_state.prefix_columns || []) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_def = all_columns[column_id]
+      const column_label = column_def.column_title || column_id
+
+      headers.push({
+        column_label,
+        accessorFn: column_def.accessorFn,
+        accessorKey: column_def.accessorKey
+      })
+    }
+
     const column_id_counts = {}
     const column_indices = {}
-
-    for (const column of all_columns_array) {
+    for (const column of table_state.columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
       column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
       column_indices[column_id] = column_indices[column_id] || 0
@@ -121,13 +150,20 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const column_index = column_indices[column_id]
 
       headers.push({
-        column_label,
+        column_label: `${column_label}_${column_index}`,
+        accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey,
-        column_id,
         column_index
       })
 
       column_indices[column_id]++
+    }
+
+    for (const split of table_state.splits) {
+      headers.push({
+        column_label: split,
+        accessorKey: split
+      })
     }
 
     for (const row of data) {
@@ -135,10 +171,17 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
-        row_data[`${header.column_label}_${header.column_index}`] =
-          row[`${header.accessorKey}_${header.column_index}`] ||
-          row[header.accessorKey] ||
-          null
+        if (header.accessorFn) {
+          row_data[header.column_label] = header.accessorFn({
+            row,
+            column_index: header.column_index
+          })
+        } else {
+          row_data[header.column_label] =
+            row[`${header.accessorKey}_${header.column_index}`] ||
+            row[header.accessorKey] ||
+            null
+        }
       }
 
       download_data.push(row_data)
