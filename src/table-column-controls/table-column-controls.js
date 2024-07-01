@@ -260,6 +260,7 @@ const TableColumnControls = ({
   const { set_column_controls_open } = useContext(table_context)
   const [local_table_state, set_local_table_state] = useState(table_state)
   const [selected_column_indexes, set_selected_column_indexes] = useState([])
+  const [all_columns_expanded, set_all_columns_expanded] = useState(true)
 
   const load_remaining_columns = () => set_loaded_all(true)
   const sensors = useSensors(useSensor(PointerSensor))
@@ -577,18 +578,6 @@ const TableColumnControls = ({
     (event) => {
       const { value } = event.target
       set_filter_text_input(value)
-
-      const shown_items = []
-      local_table_state_columns?.forEach((column, index) => {
-        if (value && !fuzzy_match(value, column.column_id)) {
-          return
-        }
-        shown_items.push({
-          ...column,
-          id: `${column.column_id}-${index}`
-        })
-      })
-      set_shown_column_items(shown_items)
       set_loaded_all(true)
     },
     [local_table_state_columns, tree_view_columns]
@@ -743,25 +732,14 @@ const TableColumnControls = ({
         )}
         {column_controls_open && (
           <>
-            <div className='table-expanding-control-input-container'>
-              <TextField
-                variant='outlined'
-                margin='normal'
-                fullWidth
-                id='filter'
-                label='Search columns'
-                name='filter'
-                size='small'
-                autoComplete='off'
-                value={filter_text_input}
-                onChange={handle_filter_change}
-                inputRef={filter_input_ref}
-              />
-            </div>
             {shown_column_items.length > 0 && (
               <div
                 className='table-selected-filters-container'
-                style={{ maxHeight: 'calc((80vh - 32px - 89px) / 2)' }}>
+                style={{
+                  maxHeight: all_columns_expanded
+                    ? 'calc((80vh - 32px - 89px) / 2)'
+                    : '100%'
+                }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
                     Shown in table
@@ -834,44 +812,65 @@ const TableColumnControls = ({
                 </div>
               </div>
             )}
-            <div className='column-controls-body'>
-              {/* {prefix_columns.map((column) => (
-                <div key={column.column_id} className='column-item prefix'>
-                  <div className='column-data-type'>
-                    <DataTypeIcon data_type={column.data_type} />
-                  </div>
-                  <div className='column-name'>
-                    {column.column_title || column.column_id}
-                  </div>
-                </div>
-              ))} */}
-              <div className='column-category-container'>
-                {(loaded_all
-                  ? tree_view_columns
-                  : visible_tree_view_columns
-                ).map((item, index) => (
-                  <div key={index}>
-                    {item.columns ? (
-                      render_category(item)
-                    ) : (
-                      <ColumnControlsTableColumnItem
-                        key={item.column_id}
-                        column={item}
-                        is_visible={Boolean(shown_column_index[item.column_id])}
-                        {...{ set_column_visible, set_column_hidden_by_id }}
-                      />
-                    )}
-                  </div>
-                ))}
+            <div className='section-header'>
+              <div style={{ display: 'flex', alignSelf: 'center' }}>
+                {all_columns.length} Available Columns
               </div>
-              {!loaded_all && (
-                <div
-                  className='table-column-controls-load-all-columns'
-                  onClick={load_remaining_columns}>
-                  Load Remaining Columns
-                </div>
-              )}
+              <div
+                className='action'
+                onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
+                {all_columns_expanded ? 'Minimize' : 'Show Available Columns'}
+              </div>
             </div>
+            {all_columns_expanded && (
+              <>
+                <div className='table-expanding-control-input-container'>
+                  <TextField
+                    variant='outlined'
+                    margin='normal'
+                    fullWidth
+                    id='filter'
+                    label='Search columns'
+                    name='filter'
+                    size='small'
+                    autoComplete='off'
+                    value={filter_text_input}
+                    onChange={handle_filter_change}
+                    inputRef={filter_input_ref}
+                  />
+                </div>
+                <div className='column-controls-body'>
+                  <div className='column-category-container'>
+                    {(loaded_all
+                      ? tree_view_columns
+                      : visible_tree_view_columns
+                    ).map((item, index) => (
+                      <div key={index}>
+                        {item.columns ? (
+                          render_category(item)
+                        ) : (
+                          <ColumnControlsTableColumnItem
+                            key={item.column_id}
+                            column={item}
+                            is_visible={Boolean(
+                              shown_column_index[item.column_id]
+                            )}
+                            {...{ set_column_visible, set_column_hidden_by_id }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {!loaded_all && (
+                    <div
+                      className='table-column-controls-load-all-columns'
+                      onClick={load_remaining_columns}>
+                      Load Remaining Columns
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

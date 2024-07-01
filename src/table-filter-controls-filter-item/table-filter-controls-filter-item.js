@@ -43,6 +43,7 @@ const FilterItemOperator = ({
           label='Operator'
           labelId='operator-label'
           variant='outlined'
+          style={{ maxWidth: '100px' }}
           defaultValue={DATA_TYPE_DEFAULT_OPERATORS[data_type]}>
           {available_operators.map((option) => (
             <MenuItem key={option} value={option}>
@@ -87,7 +88,8 @@ const FilterItemValue = ({
             onChange={handle_value_change}
             label='Value'
             labelId='select-label'
-            variant='outlined'>
+            variant='outlined'
+            style={{ maxWidth: '100px' }}>
             {column_values.map((value) => (
               <MenuItem key={value} value={value}>
                 {value}
@@ -102,6 +104,7 @@ const FilterItemValue = ({
           variant='outlined'
           value={filter_value}
           onChange={handle_value_change}
+          style={{ maxWidth: '100px' }}
         />
       )}
     </div>

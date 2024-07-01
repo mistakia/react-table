@@ -124,6 +124,7 @@ const TableFilterControls = ({
   const previous_filter_text = useRef('')
   const [selected_where_indexes, set_selected_where_indexes] = useState([])
   const [cached_open_categories, set_cached_open_categories] = useState({})
+  const [all_columns_expanded, set_all_columns_expanded] = useState(true)
   const [filter_text_input, set_filter_text_input] = useState('')
   const [open_categories, set_open_categories] = useState({})
   const [menu_closing, set_menu_closing] = useState(false)
@@ -437,28 +438,17 @@ const TableFilterControls = ({
         )}
         {filter_controls_open && (
           <>
-            <div className='table-expanding-control-input-container'>
-              <TextField
-                variant='outlined'
-                margin='normal'
-                fullWidth
-                id='filter'
-                label='Search columns'
-                name='filter'
-                size='small'
-                autoComplete='off'
-                value={filter_text_input}
-                onChange={(e) => set_filter_text_input(e.target.value)}
-                inputRef={filter_input_ref}
-              />
-            </div>
             {(local_table_state.where || []).length > 0 && (
               <div
                 className='table-selected-filters-container'
-                style={{ maxHeight: 'calc((80vh - 32px - 89px) / 2)' }}>
+                style={{
+                  maxHeight: all_columns_expanded
+                    ? 'calc((80vh - 32px - 89px) / 2)'
+                    : '100%'
+                }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
-                    Shown in table
+                    Applied Filters
                   </div>
                   <div style={{ display: 'flex' }}>
                     {selected_where_indexes.length > 0 && (
@@ -525,51 +515,80 @@ const TableFilterControls = ({
                 </div>
               </div>
             )}
-            <div
-              ref={parent_ref}
-              style={{ height: '100%', overflow: 'auto', flex: 1 }}>
+            <div className='section-header'>
+              <div style={{ display: 'flex', alignSelf: 'center' }}>
+                {all_columns.length} Available Filters
+              </div>
               <div
-                className='column-category-container'
-                style={{
-                  height: `${row_virtualizer.getTotalSize()}px`,
-                  width: '100%',
-                  position: 'relative'
-                }}>
-                {row_virtualizer.getVirtualItems().map((virtual_row) => {
-                  const item = tree_view_columns[virtual_row.index]
-                  return (
-                    <div
-                      key={virtual_row.key}
-                      data-index={virtual_row.index}
-                      ref={row_virtualizer.measureElement}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 8,
-                        right: 8,
-                        width: 'calc(100% - 16px)',
-                        transform: `translateY(${virtual_row.start}px)`
-                      }}>
-                      {item.columns ? (
-                        render_category(item)
-                      ) : (
-                        <FilterControlItem
-                          key={item.header}
-                          column_item={item}
-                          is_visible={Boolean(
-                            shown_column_index[item.column_id]
-                          )}
-                          table_state={local_table_state}
-                          on_table_state_change={(new_table_state) => {
-                            set_local_table_state(new_table_state)
-                          }}
-                        />
-                      )}
-                    </div>
-                  )
-                })}
+                className='action'
+                onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
+                {all_columns_expanded ? 'Minimize' : 'Show Available Filters'}
               </div>
             </div>
+            {all_columns_expanded && (
+              <>
+                <div className='table-expanding-control-input-container'>
+                  <TextField
+                    variant='outlined'
+                    margin='normal'
+                    fullWidth
+                    id='filter'
+                    label='Search columns'
+                    name='filter'
+                    size='small'
+                    autoComplete='off'
+                    value={filter_text_input}
+                    onChange={(e) => set_filter_text_input(e.target.value)}
+                    inputRef={filter_input_ref}
+                  />
+                </div>
+                <div
+                  ref={parent_ref}
+                  style={{ height: '100%', overflow: 'auto', flex: 1 }}>
+                  <div
+                    className='column-category-container'
+                    style={{
+                      height: `${row_virtualizer.getTotalSize()}px`,
+                      width: '100%',
+                      position: 'relative'
+                    }}>
+                    {row_virtualizer.getVirtualItems().map((virtual_row) => {
+                      const item = tree_view_columns[virtual_row.index]
+                      return (
+                        <div
+                          key={virtual_row.key}
+                          data-index={virtual_row.index}
+                          ref={row_virtualizer.measureElement}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 8,
+                            right: 8,
+                            width: 'calc(100% - 16px)',
+                            transform: `translateY(${virtual_row.start}px)`
+                          }}>
+                          {item.columns ? (
+                            render_category(item)
+                          ) : (
+                            <FilterControlItem
+                              key={item.header}
+                              column_item={item}
+                              is_visible={Boolean(
+                                shown_column_index[item.column_id]
+                              )}
+                              table_state={local_table_state}
+                              on_table_state_change={(new_table_state) => {
+                                set_local_table_state(new_table_state)
+                              }}
+                            />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>
