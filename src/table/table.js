@@ -319,7 +319,8 @@ export default function Table({
         column_helper.display({
           id: split,
           header_label: split,
-          is_split: true
+          is_split: true,
+          size: 70
         })
       )
     }
