@@ -159,6 +159,15 @@ export default function FilterItem({
   }, [])
 
   useEffect(() => {
+    set_filter_value(
+      where_item?.value ||
+        (where_item?.operator === 'IN' || where_item?.operator === 'NOT IN'
+          ? []
+          : '')
+    )
+  }, [where_item])
+
+  useEffect(() => {
     if (show_column_params && param_filter_input_ref.current) {
       param_filter_input_ref.current.focus()
     }
