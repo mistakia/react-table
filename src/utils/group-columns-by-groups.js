@@ -113,12 +113,27 @@ export default function group_columns_by_groups(
             column.column_params &&
             column.column_params[param_key] &&
             column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
+
+          let label
+          if (is_range) {
+            const low_value = Math.min(param_value[0], param_value[1])
+            const high_value = Math.max(param_value[0], param_value[1])
+
+            const column_def = column.column_params[param_key]
+            if (high_value === column_def.max) {
+              label = `${param_key}: ${low_value}+`
+            } else if (low_value === column_def.min) {
+              label = `${param_key}: <${high_value}`
+            } else {
+              label = `${param_key}: ${low_value}-${high_value}`
+            }
+          } else {
+            label = `${param_key}: ${param_value}`
+          }
           identifiers.push({
             type: 'param',
             id: `${param_key}_${JSON.stringify(param_value)}`,
-            label: `${param_key}: ${
-              is_range ? param_value.join('-') : param_value
-            }`,
+            label,
             value: { [param_key]: param_value }
           })
         }
