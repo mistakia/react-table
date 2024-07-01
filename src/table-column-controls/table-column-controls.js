@@ -126,12 +126,33 @@ const ColumnControlsSortableItem = React.memo(
     const is_drag_enabled = !filter_text_input
     const has_column_params = Boolean(column.column_params)
     const [show_column_params, set_show_column_params] = useState(false)
+    const [param_filter_text, set_param_filter_text] = useState('')
+    const param_filter_input_ref = useRef(null)
     const style = {
       position: 'relative',
       transform: CSS.Transform.toString(transform),
       transition,
       zIndex: isDragging ? 100 : null
     }
+
+    useEffect(() => {
+      if (show_column_params && param_filter_input_ref.current) {
+        param_filter_input_ref.current.focus()
+      }
+    }, [show_column_params])
+
+    const handle_param_filter_change = (event) => {
+      set_param_filter_text(event.target.value)
+    }
+
+    const filtered_params = useMemo(() => {
+      if (param_filter_text) {
+        return Object.entries(column.column_params).filter(([param_name]) =>
+          fuzzy_match(param_filter_text, param_name)
+        )
+      }
+      return Object.entries(column.column_params)
+    }, [param_filter_text, column.column_params])
 
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
@@ -183,7 +204,20 @@ const ColumnControlsSortableItem = React.memo(
           )}
           {show_column_params && (
             <div className='column-params-container'>
-              {Object.entries(column.column_params).map(
+              <TextField
+                variant='outlined'
+                margin='normal'
+                fullWidth
+                id='param-filter'
+                label='Search parameters'
+                name='param_filter'
+                size='small'
+                autoComplete='off'
+                value={param_filter_text}
+                onChange={handle_param_filter_change}
+                inputRef={param_filter_input_ref}
+              />
+              {filtered_params.map(
                 ([column_param_name, column_param_definition]) => (
                   <ColumnControlsColumnParamItem
                     key={column_param_name}
