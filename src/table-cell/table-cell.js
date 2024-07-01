@@ -150,7 +150,9 @@ const TableCell = ({ getValue, column, row, table }) => {
         className='cell-content'
         style={{
           padding: '5px 8px 6px',
-          minHeight: '32px'
+          minHeight: '32px',
+          // TODO dynamically calculate based on largest character count in this column
+          minWidth: `min(${column.columnDef.size}px, 100%)`
         }}>
         {value}
       </div>
