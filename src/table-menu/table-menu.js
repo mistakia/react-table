@@ -62,7 +62,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const column_label = column_def.column_title || column_id
 
       headers.push({
-        column_label,
+        row_key: column_label,
         accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey
       })
@@ -78,7 +78,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const column_index = column_indices[column_id]
 
       headers.push({
-        column_label,
+        row_key: `${column_label}_${column_index}`,
         accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey,
         column_index
@@ -89,7 +89,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
     for (const split of table_state.splits) {
       headers.push({
-        column_label: split,
+        row_key: split,
         accessorKey: split
       })
     }
@@ -99,12 +99,12 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
         if (header.accessorFn) {
-          row_data[header.column_label] = header.accessorFn({
+          row_data[header.row_key] = header.accessorFn({
             row,
             column_index: header.column_index
           })
         } else {
-          row_data[header.column_label] =
+          row_data[header.row_key] =
             row[`${header.accessorKey}_${header.column_index}`] ||
             row[header.accessorKey] ||
             ''
@@ -114,7 +114,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     }
 
     export_csv({
-      headers: headers.map((header) => header.column_label),
+      headers: headers.map((header) => header.row_key),
       data: download_data,
       file_name: 'table-export'
     })
@@ -132,7 +132,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const column_label = column_def.column_title || column_id
 
       headers.push({
-        column_label,
+        row_key: column_label,
         accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey
       })
@@ -150,7 +150,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const column_index = column_indices[column_id]
 
       headers.push({
-        column_label: `${column_label}_${column_index}`,
+        row_key: `${column_label}_${column_index}`,
         accessorFn: column_def.accessorFn,
         accessorKey: column_def.accessorKey,
         column_index
@@ -161,7 +161,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
     for (const split of table_state.splits) {
       headers.push({
-        column_label: split,
+        row_key: split,
         accessorKey: split
       })
     }
@@ -172,12 +172,12 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
         if (header.accessorFn) {
-          row_data[header.column_label] = header.accessorFn({
+          row_data[header.row_key] = header.accessorFn({
             row,
             column_index: header.column_index
           })
         } else {
-          row_data[header.column_label] =
+          row_data[header.row_key] =
             row[`${header.accessorKey}_${header.column_index}`] ||
             row[header.accessorKey] ||
             null
