@@ -123,7 +123,6 @@ const ColumnControlsSortableItem = React.memo(
       id: `${column.column_id}-${column_index}`
     })
 
-    const is_drag_enabled = !filter_text_input
     const has_column_params = Boolean(column.column_params)
     const [show_column_params, set_show_column_params] = useState(false)
     const [param_filter_text, set_param_filter_text] = useState('')
@@ -147,11 +146,11 @@ const ColumnControlsSortableItem = React.memo(
 
     const filtered_params = useMemo(() => {
       if (param_filter_text) {
-        return Object.entries(column.column_params).filter(([param_name]) =>
+        return Object.entries(column.column_params || {}).filter(([param_name]) =>
           fuzzy_match(param_filter_text, param_name)
         )
       }
-      return Object.entries(column.column_params)
+      return Object.entries(column.column_params || {})
     }, [param_filter_text, column.column_params])
 
     return (
@@ -197,11 +196,9 @@ const ColumnControlsSortableItem = React.memo(
               }}
             />
           )}
-          {is_drag_enabled && (
-            <div className='column-drag-handle' {...listeners}>
-              <DragIndicatorIcon />
-            </div>
-          )}
+          <div className='column-drag-handle' {...listeners}>
+            <DragIndicatorIcon />
+          </div>
           {show_column_params && (
             <div className='column-params-container'>
               <TextField
