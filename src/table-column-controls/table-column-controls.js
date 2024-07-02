@@ -146,8 +146,8 @@ const ColumnControlsSortableItem = React.memo(
 
     const filtered_params = useMemo(() => {
       if (param_filter_text) {
-        return Object.entries(column.column_params || {}).filter(([param_name]) =>
-          fuzzy_match(param_filter_text, param_name)
+        return Object.entries(column.column_params || {}).filter(
+          ([param_name]) => fuzzy_match(param_filter_text, param_name)
         )
       }
       return Object.entries(column.column_params || {})

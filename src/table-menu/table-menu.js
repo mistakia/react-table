@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import copy from 'copy-text-to-clipboard'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
@@ -87,7 +88,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       column_indices[column_id]++
     }
 
-    for (const split of table_state.splits) {
+    for (const split of table_state.splits || []) {
       headers.push({
         row_key: split,
         accessorKey: split
@@ -159,7 +160,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       column_indices[column_id]++
     }
 
-    for (const split of table_state.splits) {
+    for (const split of table_state.splits || []) {
       headers.push({
         row_key: split,
         accessorKey: split
@@ -195,6 +196,74 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       },
       file_name: 'table-export'
     })
+
+    handle_close()
+  }
+
+  const handle_copy_to_clipboard = () => {
+    const headers = []
+    const tsv_rows = []
+
+    // Prepare headers
+    for (const column of table_state.prefix_columns || []) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_def = all_columns[column_id]
+      headers.push(column_def.column_title || column_id)
+    }
+
+    for (const split of table_state.splits || []) {
+      headers.push(split)
+    }
+
+    for (const column of table_state.columns) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_def = all_columns[column_id]
+      headers.push(column_def.column_title || column_id)
+    }
+
+    tsv_rows.push(headers.join('\t'))
+
+    // Prepare data rows
+    for (const row of data) {
+      const row_data = []
+
+      for (const column of table_state.prefix_columns || []) {
+        const column_id = typeof column === 'string' ? column : column.column_id
+        const column_def = all_columns[column_id]
+        row_data.push(
+          column_def.accessorFn
+            ? column_def.accessorFn({ row })
+            : row[column_def.accessorKey] || ''
+        )
+      }
+
+      for (const split of table_state.splits || []) {
+        row_data.push(row[split] || '')
+      }
+
+      const column_indices = {}
+      for (const column of table_state.columns) {
+        const column_id = typeof column === 'string' ? column : column.column_id
+        column_indices[column_id] = column_indices[column_id] || 0
+
+        const column_def = all_columns[column_id]
+        const column_index = column_indices[column_id]
+        row_data.push(
+          column_def.accessorFn
+            ? column_def.accessorFn({ row, column_index })
+            : row[`${column_def.accessorKey}_${column_index}`] ||
+                row[column_def.accessorKey] ||
+                ''
+        )
+
+        column_indices[column_id]++
+      }
+
+      tsv_rows.push(row_data.join('\t'))
+    }
+
+    const tsv_content = tsv_rows.join('\n')
+    copy(tsv_content)
 
     handle_close()
   }
@@ -243,6 +312,15 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
               <CodeIcon fontSize='small' />
             </div>
             <div className='table-menu-item-text'>Export JSON</div>
+          </div>
+          <div
+            className='table-menu-item'
+            onClick={handle_copy_to_clipboard}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <ContentCopyIcon fontSize='small' />
+            </div>
+            <div className='table-menu-item-text'>Copy To Clipboard</div>
           </div>
         </div>
       </div>
