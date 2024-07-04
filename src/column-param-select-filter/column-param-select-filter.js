@@ -11,18 +11,19 @@ export default function ColumnParamSelectFilter({
   handle_change = () => {},
   mixed_state = false
 }) {
-  const label = column_param_name
+  const label = column_param_definition?.label || column_param_name
   const single = Boolean(column_param_definition?.single)
   const default_value = column_param_definition?.default_value
   const is_column_param_defined = Boolean(selected_param_values)
   const filter_values = []
 
   for (const param_value of column_param_definition?.values || []) {
+    const label = param_value.label || param_value
+    const value = param_value.value || param_value
     filter_values.push({
-      label: param_value,
-      value: param_value,
-      selected:
-        !mixed_state && (selected_param_values || []).includes(param_value)
+      label,
+      value,
+      selected: !mixed_state && (selected_param_values || []).includes(value)
     })
   }
 
@@ -98,7 +99,8 @@ export default function ColumnParamSelectFilter({
     : all_selected
     ? 'ALL'
     : single && !is_column_param_defined
-    ? default_value || filter_values[0]?.label
+    ? filter_values.find((v) => v.value === default_value)?.label ||
+      filter_values[0]?.label
     : filter_values
         .filter((v) => v.selected)
         .map((v) => v.label)

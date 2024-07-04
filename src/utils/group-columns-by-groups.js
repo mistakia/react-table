@@ -114,6 +114,9 @@ export default function group_columns_by_groups(
             column.column_params[param_key] &&
             column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
 
+          const param_label =
+            column.column_params[param_key]?.label || param_key
+
           let label
           if (is_range) {
             const low_value = Math.min(param_value[0], param_value[1])
@@ -121,14 +124,28 @@ export default function group_columns_by_groups(
 
             const column_def = column.column_params[param_key]
             if (high_value === column_def.max) {
-              label = `${param_key}: ${low_value}+`
+              label = `${param_label}: ${low_value}+`
             } else if (low_value === column_def.min) {
-              label = `${param_key}: <${high_value}`
+              label = `${param_label}: <${high_value}`
             } else {
-              label = `${param_key}: ${low_value}-${high_value}`
+              label = `${param_label}: ${low_value}-${high_value}`
             }
           } else {
-            label = `${param_key}: ${param_value}`
+            let column_param_labels
+            if (Array.isArray(param_value)) {
+              column_param_labels = param_value.map(
+                (param_v) =>
+                  column.column_params[param_key]?.values.find(
+                    (def_v) => def_v.value === param_v
+                  )?.label || param_v
+              )
+            } else {
+              column_param_labels =
+                column.column_params[param_key]?.values.find(
+                  (v) => v.value === param_value
+                )?.label || param_value
+            }
+            label = `${param_label}: ${column_param_labels}`
           }
           identifiers.push({
             type: 'param',
