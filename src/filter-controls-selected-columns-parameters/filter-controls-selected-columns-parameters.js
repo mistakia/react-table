@@ -22,6 +22,8 @@ const SharedWhereParamItem = ({
         const existing_params = column?.params || {}
         return {
           column_id: column.column_id,
+          operator: column.operator,
+          value: column.value,
           params: {
             ...existing_params,
             [column_param_name]: values
