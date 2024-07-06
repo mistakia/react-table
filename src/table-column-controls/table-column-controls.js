@@ -110,7 +110,8 @@ const ColumnControlsSortableItem = React.memo(
     set_local_table_state,
     column_index,
     selected_column_indexes,
-    set_selected_column_indexes
+    set_selected_column_indexes,
+    splits
   }) => {
     const {
       attributes,
@@ -223,7 +224,8 @@ const ColumnControlsSortableItem = React.memo(
                       set_local_table_state,
                       column_index,
                       column_param_name,
-                      column_param_definition
+                      column_param_definition,
+                      splits
                     }}
                   />
                 )
@@ -244,7 +246,8 @@ ColumnControlsSortableItem.propTypes = {
   set_local_table_state: PropTypes.func.isRequired,
   column_index: PropTypes.number.isRequired,
   selected_column_indexes: PropTypes.array.isRequired,
-  set_selected_column_indexes: PropTypes.func.isRequired
+  set_selected_column_indexes: PropTypes.func.isRequired,
+  splits: PropTypes.array
 }
 
 const TableColumnControls = ({
@@ -800,7 +803,8 @@ const TableColumnControls = ({
                             set_local_table_state,
                             column_index,
                             selected_column_indexes,
-                            set_selected_column_indexes
+                            set_selected_column_indexes,
+                            splits: local_table_state.splits || []
                           }}
                         />
                       ))}

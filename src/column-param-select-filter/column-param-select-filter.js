@@ -9,10 +9,18 @@ export default function ColumnParamSelectFilter({
   column_param_definition,
   selected_param_values,
   handle_change = () => {},
-  mixed_state = false
+  mixed_state = false,
+  splits
 }) {
   const label = column_param_definition?.label || column_param_name
-  const single = Boolean(column_param_definition?.single)
+  const single =
+    Boolean(column_param_definition?.single) &&
+    !(
+      column_param_definition?.enable_multi_on_split &&
+      splits.some((split) =>
+        column_param_definition?.enable_multi_on_split?.includes(split)
+      )
+    )
   const default_value = column_param_definition?.default_value
   const is_column_param_defined = Boolean(selected_param_values)
   const filter_values = []
@@ -135,5 +143,6 @@ ColumnParamSelectFilter.propTypes = {
   column_param_name: PropTypes.string,
   column_param_definition: PropTypes.object,
   selected_param_values: PropTypes.array,
-  mixed_state: PropTypes.bool
+  mixed_state: PropTypes.bool,
+  splits: PropTypes.array
 }

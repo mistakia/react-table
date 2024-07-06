@@ -10,7 +10,8 @@ const ColumnControlsColumnParamItem = ({
   column_param_definition,
   set_local_table_state,
   column_index,
-  column
+  column,
+  splits
 }) => {
   const { data_type } = column_param_definition
 
@@ -38,7 +39,8 @@ const ColumnControlsColumnParamItem = ({
     column_param_name,
     column_param_definition,
     selected_param_values,
-    handle_change
+    handle_change,
+    splits
   }
 
   switch (data_type) {
@@ -57,7 +59,8 @@ ColumnControlsColumnParamItem.propTypes = {
   column_param_definition: PropTypes.object.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
   column_index: PropTypes.number.isRequired,
-  column: PropTypes.object.isRequired
+  column: PropTypes.object.isRequired,
+  splits: PropTypes.array
 }
 
 export default React.memo(ColumnControlsColumnParamItem)
