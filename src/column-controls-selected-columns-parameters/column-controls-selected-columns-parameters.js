@@ -14,7 +14,8 @@ const SharedColumnParamItem = ({
   local_table_state,
   column_param_definition,
   selected_column_indexes,
-  set_local_table_state
+  set_local_table_state,
+  splits
 }) => {
   const { data_type } = column_param_definition
 
@@ -58,7 +59,8 @@ const SharedColumnParamItem = ({
     column_param_definition,
     selected_param_values,
     handle_change,
-    mixed_state: !is_equal
+    mixed_state: !is_equal,
+    splits
   }
 
   switch (data_type) {
@@ -77,7 +79,8 @@ SharedColumnParamItem.propTypes = {
   local_table_state: PropTypes.object.isRequired,
   column_param_definition: PropTypes.object.isRequired,
   selected_column_indexes: PropTypes.array.isRequired,
-  set_local_table_state: PropTypes.func.isRequired
+  set_local_table_state: PropTypes.func.isRequired,
+  splits: PropTypes.array
 }
 
 export default function ColumnControlsSelectedColumnsParameters({
@@ -146,6 +149,7 @@ export default function ColumnControlsSelectedColumnsParameters({
                     column_param_definition={column_param_definition}
                     selected_column_indexes={selected_column_indexes}
                     set_local_table_state={set_local_table_state}
+                    splits={local_table_state.splits}
                   />
                 )
               )}
