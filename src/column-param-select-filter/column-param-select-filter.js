@@ -10,7 +10,7 @@ export default function ColumnParamSelectFilter({
   selected_param_values,
   handle_change = () => {},
   mixed_state = false,
-  splits
+  splits = []
 }) {
   const label = column_param_definition?.label || column_param_name
   const single =
