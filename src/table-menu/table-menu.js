@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import PropTypes from 'prop-types'
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import CodeIcon from '@mui/icons-material/Code'
@@ -8,12 +8,14 @@ import copy from 'copy-text-to-clipboard'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
 import { get_string_from_object, export_csv, export_json } from '../utils'
+import { table_context } from '../table-context'
 
 import './table-menu.styl'
 
 const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
+  const { shorten_url } = useContext(table_context)
   const [is_open, set_is_open] = useState(false)
-  const [link_copied, set_link_copied] = useState(false)
+  const [link_state, set_link_state] = useState('Copy Link')
 
   const handle_click = () => {
     set_is_open(!is_open)
@@ -23,7 +25,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     set_is_open(false)
   }
 
-  const handle_shareable_link = () => {
+  const handle_shareable_link = async () => {
     const params = new URLSearchParams()
 
     const { columns, prefix_columns, sort, where, splits } = table_state
@@ -45,11 +47,19 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     const shareable_link = `${window.location.origin}${
       window.location.pathname
     }?${params.toString()}`
-    copy(shareable_link)
-    set_link_copied(true)
+
+    if (shorten_url) {
+      set_link_state('Generating Link')
+      const response = await shorten_url(shareable_link)
+      const shortened_url = `${window.location.origin}${response.short_url}`
+      copy(shortened_url)
+    } else {
+      copy(shareable_link)
+    }
+    set_link_state('Copied Link')
 
     setTimeout(() => {
-      set_link_copied(false)
+      set_link_state('Copy Link')
     }, 2000)
   }
 
@@ -291,9 +301,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
             <div className='table-menu-item-icon'>
               <LinkIcon fontSize='small' />
             </div>
-            <div className='table-menu-item-text'>
-              {link_copied ? 'Copied' : 'Copy Link'}
-            </div>
+            <div className='table-menu-item-text'>{link_state}</div>
           </div>
           <div
             className='table-menu-item'

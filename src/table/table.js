@@ -106,7 +106,8 @@ export default function Table({
   style = {},
   percentiles = {},
   enable_duplicate_column_ids = false,
-  new_view_prefix_columns = []
+  new_view_prefix_columns = [],
+  shorten_url
 }) {
   is_fetching_more = is_fetching
 
@@ -543,7 +544,8 @@ export default function Table({
         set_column_controls_open,
         set_filter_controls_open,
         set_table_sort,
-        set_column_hidden_by_index
+        set_column_hidden_by_index,
+        shorten_url
       }}>
       <div
         ref={table_container_ref}
@@ -708,5 +710,6 @@ Table.propTypes = {
   on_save_view: PropTypes.func,
   saved_table_state: PropTypes.object,
   enable_duplicate_column_ids: PropTypes.bool,
-  new_view_prefix_columns: PropTypes.array
+  new_view_prefix_columns: PropTypes.array,
+  shorten_url: PropTypes.func
 }
