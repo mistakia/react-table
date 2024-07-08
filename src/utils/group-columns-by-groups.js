@@ -114,21 +114,30 @@ export default function group_columns_by_groups(
             column.column_params[param_key] &&
             column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
 
+          const is_single =
+            column.column_params &&
+            column.column_params[param_key] &&
+            column.column_params[param_key].is_single
+
           const param_label =
             column.column_params[param_key]?.label || param_key
 
           let label
           if (is_range) {
-            const low_value = Math.min(param_value[0], param_value[1])
-            const high_value = Math.max(param_value[0], param_value[1])
-
-            const column_def = column.column_params[param_key]
-            if (high_value === column_def.max) {
-              label = `${param_label}: ${low_value}+`
-            } else if (low_value === column_def.min) {
-              label = `${param_label}: <${high_value}`
+            if (is_single) {
+              label = `${param_label}: ${param_value}`
             } else {
-              label = `${param_label}: ${low_value}-${high_value}`
+              const low_value = Math.min(param_value[0], param_value[1])
+              const high_value = Math.max(param_value[0], param_value[1])
+
+              const column_def = column.column_params[param_key]
+              if (high_value === column_def.max) {
+                label = `${param_label}: ${low_value}+`
+              } else if (low_value === column_def.min) {
+                label = `${param_label}: <${high_value}`
+              } else {
+                label = `${param_label}: ${low_value}-${high_value}`
+              }
             }
           } else {
             let column_param_labels
