@@ -10,9 +10,18 @@ const FilterControlsColumnParamItem = ({
   column_param_definition,
   where_item,
   set_local_table_state,
-  where_index
+  where_index,
+  splits = []
 }) => {
   const { data_type } = column_param_definition
+  if (column_param_definition?.enable_on_splits) {
+    const is_enabled = splits.some((split) =>
+      column_param_definition.enable_on_splits.includes(split)
+    )
+    if (!is_enabled) {
+      return null
+    }
+  }
   const where_item_params = where_item.params || {}
   const selected_param_values = where_item_params[column_param_name]
 
@@ -59,7 +68,8 @@ FilterControlsColumnParamItem.propTypes = {
   set_local_table_state: PropTypes.func.isRequired,
   where_index: PropTypes.number.isRequired,
   column_param_name: PropTypes.string.isRequired,
-  column_param_definition: PropTypes.object.isRequired
+  column_param_definition: PropTypes.object.isRequired,
+  splits: PropTypes.array.isRequired
 }
 
 export default React.memo(FilterControlsColumnParamItem)

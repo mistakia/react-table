@@ -11,8 +11,16 @@ const ColumnControlsColumnParamItem = ({
   set_local_table_state,
   column_index,
   column,
-  splits
+  splits = []
 }) => {
+  if (column_param_definition?.enable_on_splits) {
+    const is_enabled = splits.some((split) =>
+      column_param_definition.enable_on_splits.includes(split)
+    )
+    if (!is_enabled) {
+      return null
+    }
+  }
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {

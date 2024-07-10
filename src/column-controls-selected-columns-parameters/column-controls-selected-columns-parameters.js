@@ -15,8 +15,16 @@ const SharedColumnParamItem = ({
   column_param_definition,
   selected_column_indexes,
   set_local_table_state,
-  splits
+  splits = []
 }) => {
+  if (column_param_definition?.enable_on_splits) {
+    const is_enabled = splits.some((split) =>
+      column_param_definition.enable_on_splits.includes(split)
+    )
+    if (!is_enabled) {
+      return null
+    }
+  }
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {
@@ -131,7 +139,7 @@ export default function ColumnControlsSelectedColumnsParameters({
             <div className='selected-columns-parameters-header'>
               <div>
                 Set parameters for {selected_column_indexes.length} selected
-                {selected_column_indexes.length === 1 ? 'column' : 'columns'}
+                {selected_column_indexes.length === 1 ? ' column' : ' columns'}
               </div>
               <div
                 className='controls-button'

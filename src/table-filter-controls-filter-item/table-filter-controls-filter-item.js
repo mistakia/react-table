@@ -34,7 +34,7 @@ const FilterItemOperator = ({
   const available_operators = DATA_TYPE_OPERATORS[data_type]
   return (
     <div className='filter-item-left-operator'>
-      <FormControl>
+      <FormControl size='small'>
         <InputLabel id='operator-label'>Operator</InputLabel>
         <Select
           size='small'
@@ -77,8 +77,7 @@ const FilterItemValue = ({
   return (
     <div className='filter-item-left-value'>
       {data_type === TABLE_DATA_TYPES.SELECT ? (
-        <FormControl>
-          <InputLabel id='select-label'>Value</InputLabel>
+        <FormControl size='small'>
           <Select
             size='small'
             multiple={
@@ -86,10 +85,9 @@ const FilterItemValue = ({
             }
             value={filter_value}
             onChange={handle_value_change}
-            label='Value'
             labelId='select-label'
             variant='outlined'
-            style={{ maxWidth: '100px' }}>
+            style={{ maxWidth: '100px', minWidth: '70px' }}>
             {column_values.map((value) => (
               <MenuItem key={value} value={value}>
                 {value}
@@ -395,7 +393,8 @@ export default function FilterItem({
                   set_local_table_state,
                   where_index,
                   column_param_name,
-                  column_param_definition
+                  column_param_definition,
+                  splits: local_table_state.splits
                 }}
               />
             )

@@ -12,8 +12,17 @@ const SharedWhereParamItem = ({
   local_table_state,
   column_param_definition,
   selected_where_indexes,
-  set_local_table_state
+  set_local_table_state,
+  splits = []
 }) => {
+  if (column_param_definition?.enable_on_splits) {
+    const is_enabled = splits.some((split) =>
+      column_param_definition.enable_on_splits.includes(split)
+    )
+    if (!is_enabled) {
+      return null
+    }
+  }
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {
@@ -76,7 +85,8 @@ SharedWhereParamItem.propTypes = {
   local_table_state: PropTypes.object.isRequired,
   column_param_definition: PropTypes.object.isRequired,
   selected_where_indexes: PropTypes.array.isRequired,
-  set_local_table_state: PropTypes.func.isRequired
+  set_local_table_state: PropTypes.func.isRequired,
+  splits: PropTypes.array.isRequired
 }
 
 export default function FilterControlsSelectedColumnsParameters({
@@ -113,8 +123,6 @@ export default function FilterControlsSelectedColumnsParameters({
       }, {})
   }, [selected_where_indexes, local_table_state_where_columns])
 
-  console.log({ shared_parameters })
-
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
       <div>
@@ -129,7 +137,7 @@ export default function FilterControlsSelectedColumnsParameters({
             <div className='selected-columns-parameters-header'>
               <div>
                 Set parameters for {selected_where_indexes.length} selected
-                {selected_where_indexes.length === 1 ? 'filter' : 'filters'}
+                {selected_where_indexes.length === 1 ? ' filter' : ' filters'}
               </div>
               <div
                 className='controls-button'
@@ -147,7 +155,8 @@ export default function FilterControlsSelectedColumnsParameters({
                       local_table_state,
                       column_param_definition,
                       selected_where_indexes,
-                      set_local_table_state
+                      set_local_table_state,
+                      splits: local_table_state.splits
                     }}
                   />
                 )
