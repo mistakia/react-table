@@ -101,28 +101,32 @@ export default function ColumnControlsSelectedColumnsParameters({
   const anchor_ref = useRef(null)
 
   const shared_parameters = useMemo(() => {
-    if (local_table_state_columns.length === 0) {
+    if (
+      local_table_state_columns.length === 0 ||
+      selected_column_indexes.length === 0
+    ) {
       return {}
     }
 
-    return selected_column_indexes
-      .map((index) => {
-        const column = local_table_state_columns[index]
-        if (!column || !column.column_params) {
-          return []
-        }
-        return Object.entries(column.column_params).map(
-          ([column_param_name, column_param_definition]) => ({
-            column_param_name,
-            column_param_definition
-          })
-        )
-      })
-      .flat()
-      .reduce((acc, curr) => {
-        acc[curr.column_param_name] = curr
-        return acc
-      }, {})
+    const all_params = selected_column_indexes.map((index) => {
+      const column = local_table_state_columns[index]
+      return column && column.column_params
+        ? Object.keys(column.column_params)
+        : []
+    })
+
+    const shared_param_names = all_params.reduce((shared, params) =>
+      shared.filter((param) => params.includes(param))
+    )
+
+    return shared_param_names.reduce((acc, param_name) => {
+      const column = local_table_state_columns[selected_column_indexes[0]]
+      acc[param_name] = {
+        column_param_name: param_name,
+        column_param_definition: column.column_params[param_name]
+      }
+      return acc
+    }, {})
   }, [selected_column_indexes, local_table_state_columns])
 
   return (
