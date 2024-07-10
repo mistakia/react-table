@@ -124,6 +124,8 @@ export default function Table({
   const table_container_ref = useRef()
   const [column_controls_open, set_column_controls_open] = useState(false)
   const is_view_editable = Boolean(selected_view.editable)
+  const [filters_local_table_state, set_filters_local_table_state] =
+    useState(table_state)
 
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
@@ -545,7 +547,9 @@ export default function Table({
         set_filter_controls_open,
         set_table_sort,
         set_column_hidden_by_index,
-        shorten_url
+        shorten_url,
+        filters_local_table_state,
+        set_filters_local_table_state
       }}>
       <div
         ref={table_container_ref}

@@ -17,7 +17,7 @@ import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 
 import { get_string_from_object } from '../utils'
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { TABLE_DATA_TYPES, OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
 import DataTypeIcon from '../data-type-icon'
 import { table_context } from '../table-context'
 
@@ -46,11 +46,11 @@ AddColumnAction.propTypes = {
 const TableHeader = ({ header, column, table }) => {
   const {
     table_state,
-    on_table_state_change,
     set_column_controls_open,
     set_filter_controls_open,
     set_table_sort,
-    set_column_hidden_by_index
+    set_column_hidden_by_index,
+    set_filters_local_table_state
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -130,17 +130,29 @@ const TableHeader = ({ header, column, table }) => {
   )
   const handle_open_filter = useCallback(() => {
     const where_param = table_state.where || []
-    where_param.push({
-      column_id: column.columnDef.column_id,
-      operator: '=',
-      value: ''
-    })
-    on_table_state_change({
+    const operator = column.columnDef.operators
+      ? column.columnDef.operators[0]
+      : OPERATOR_MENU_DEFAULT_VALUE
+    set_filters_local_table_state({
       ...table_state,
-      where: where_param
+      where: [
+        ...where_param,
+        {
+          column_id: column.columnDef.column_id,
+          operator,
+          value: ''
+        }
+      ]
     })
-    set_filter_controls_open(true)
-  }, [table_state, column, on_table_state_change, set_filter_controls_open])
+    setTimeout(() => {
+      set_filter_controls_open(true)
+    }, 10)
+  }, [
+    column.columnDef,
+    table_state,
+    set_filter_controls_open,
+    set_filters_local_table_state
+  ])
 
   const is_grouped = Boolean(column.parent?.columns.length)
   const is_group_end =

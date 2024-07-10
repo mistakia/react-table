@@ -121,6 +121,8 @@ const TableFilterControls = ({
   on_table_state_change,
   all_columns
 }) => {
+  const { filters_local_table_state, set_filters_local_table_state } =
+    useContext(table_context)
   const previous_filter_text = useRef('')
   const [selected_where_indexes, set_selected_where_indexes] = useState([])
   const [cached_open_categories, set_cached_open_categories] = useState({})
@@ -129,10 +131,10 @@ const TableFilterControls = ({
   const [open_categories, set_open_categories] = useState({})
   const [menu_closing, set_menu_closing] = useState(false)
   const filter_input_ref = useRef(null)
-  const [local_table_state, set_local_table_state] = useState(table_state)
   const table_state_comparison = useMemo(
-    () => JSON.stringify(local_table_state) !== JSON.stringify(table_state),
-    [local_table_state, table_state]
+    () =>
+      JSON.stringify(filters_local_table_state) !== JSON.stringify(table_state),
+    [filters_local_table_state, table_state]
   )
   const count_children = use_count_children()
   const container_ref = useRef(null)
@@ -140,11 +142,11 @@ const TableFilterControls = ({
 
   const shown_column_index = useMemo(() => {
     const index = {}
-    for (const item of local_table_state.where || []) {
+    for (const item of filters_local_table_state.where || []) {
       index[item.column_id] = true
     }
     return index
-  }, [local_table_state])
+  }, [filters_local_table_state])
 
   const tree_view_columns = useMemo(() => {
     if (!filter_text_input) {
@@ -156,9 +158,9 @@ const TableFilterControls = ({
     return group_columns_into_tree_view(filtered_columns)
   }, [all_columns, filter_text_input])
 
-  // update local_table_state on table_state change
+  // update filters_local_table_state on table_state change
   useEffect(() => {
-    set_local_table_state(table_state)
+    set_filters_local_table_state(table_state)
   }, [table_state])
 
   useEffect(() => {
@@ -329,9 +331,9 @@ const TableFilterControls = ({
                       is_visible={Boolean(
                         shown_column_index[sub_category.column_id]
                       )}
-                      table_state={local_table_state}
+                      table_state={filters_local_table_state}
                       on_table_state_change={(new_table_state) => {
-                        set_local_table_state(new_table_state)
+                        set_filters_local_table_state(new_table_state)
                       }}
                     />
                   )
@@ -345,7 +347,7 @@ const TableFilterControls = ({
       count_children,
       open_categories,
       shown_column_index,
-      local_table_state,
+      filters_local_table_state,
       toggle_category
     ]
   )
@@ -360,20 +362,20 @@ const TableFilterControls = ({
   })
 
   const handle_apply_click = useCallback(() => {
-    on_table_state_change(local_table_state)
-  }, [local_table_state, on_table_state_change])
+    on_table_state_change(filters_local_table_state)
+  }, [filters_local_table_state, on_table_state_change])
 
   const handle_discard_click = useCallback(() => {
-    set_local_table_state(table_state)
+    set_filters_local_table_state(table_state)
   }, [table_state])
 
   const handle_remove_all_filters = useCallback(() => {
-    set_local_table_state({ ...local_table_state, where: [] })
-  }, [local_table_state])
+    set_filters_local_table_state({ ...filters_local_table_state, where: [] })
+  }, [filters_local_table_state])
 
   const local_table_state_where_columns = useMemo(() => {
     const columns = []
-    for (const column of local_table_state.where || []) {
+    for (const column of filters_local_table_state.where || []) {
       const column_id = column.column_id || column.id || column.column_name
       if (column_id) {
         // TODO use key/value store
@@ -387,7 +389,7 @@ const TableFilterControls = ({
       }
     }
     return columns
-  }, [local_table_state.where, all_columns])
+  }, [filters_local_table_state.where, all_columns])
 
   const has_selectable_where_columns = useMemo(() => {
     return local_table_state_where_columns.some(
@@ -409,7 +411,7 @@ const TableFilterControls = ({
         })}
         tabIndex={0}>
         <Badge
-          badgeContent={(local_table_state.where || []).length}
+          badgeContent={(filters_local_table_state.where || []).length}
           anchorOrigin={{
             vertical: 'top',
             horizontal: 'right'
@@ -438,7 +440,7 @@ const TableFilterControls = ({
         )}
         {filter_controls_open && (
           <>
-            {(local_table_state.where || []).length > 0 && (
+            {(filters_local_table_state.where || []).length > 0 && (
               <div
                 className='table-selected-filters-container'
                 style={{
@@ -453,8 +455,8 @@ const TableFilterControls = ({
                   <div style={{ display: 'flex' }}>
                     {selected_where_indexes.length > 0 && (
                       <FilterControlsSelectedColumnsParameters
-                        local_table_state={local_table_state}
-                        set_local_table_state={set_local_table_state}
+                        local_table_state={filters_local_table_state}
+                        set_local_table_state={set_filters_local_table_state}
                         selected_where_indexes={selected_where_indexes}
                         local_table_state_where_columns={
                           local_table_state_where_columns
@@ -494,20 +496,20 @@ const TableFilterControls = ({
                   </div>
                 </div>
                 <div className='selected-columns-container'>
-                  {(local_table_state.where || []).map(
+                  {(filters_local_table_state.where || []).map(
                     (where_item, where_index) => (
                       <FilterItem
                         key={where_item.column_id}
                         column_definition={
                           local_table_state_where_columns[where_index]
                         }
-                        table_state={local_table_state}
+                        table_state={filters_local_table_state}
                         {...{
                           where_index,
                           selected_where_indexes,
                           set_selected_where_indexes,
-                          local_table_state,
-                          set_local_table_state
+                          local_table_state: filters_local_table_state,
+                          set_local_table_state: set_filters_local_table_state
                         }}
                       />
                     )
@@ -576,9 +578,9 @@ const TableFilterControls = ({
                               is_visible={Boolean(
                                 shown_column_index[item.column_id]
                               )}
-                              table_state={local_table_state}
+                              table_state={filters_local_table_state}
                               on_table_state_change={(new_table_state) => {
-                                set_local_table_state(new_table_state)
+                                set_filters_local_table_state(new_table_state)
                               }}
                             />
                           )}
