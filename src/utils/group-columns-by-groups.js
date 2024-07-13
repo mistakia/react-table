@@ -119,6 +119,12 @@ export default function group_columns_by_groups(
             column.column_params[param_key] &&
             column.column_params[param_key].is_single
 
+          const is_boolean =
+            column.column_params &&
+            column.column_params[param_key] &&
+            column.column_params[param_key].data_type ===
+              TABLE_DATA_TYPES.BOOLEAN
+
           const param_label =
             column.column_params[param_key]?.label || param_key
 
@@ -139,6 +145,8 @@ export default function group_columns_by_groups(
                 label = `${param_label}: ${low_value}-${high_value}`
               }
             }
+          } else if (is_boolean) {
+            label = `${param_label}: ${param_value ? 'YES' : 'NO'}`
           } else {
             let column_param_labels
             if (Array.isArray(param_value)) {

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import ColumnParamSelectFilter from '../column-param-select-filter'
 import ColumnParamRangeFilter from '../column-param-range-filter'
+import ColumnParamBooleanFilter from '../column-param-boolean-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 
 const ColumnControlsColumnParamItem = ({
@@ -54,6 +55,8 @@ const ColumnControlsColumnParamItem = ({
   switch (data_type) {
     case TABLE_DATA_TYPES.SELECT:
       return <ColumnParamSelectFilter {...param_props} />
+    case TABLE_DATA_TYPES.BOOLEAN:
+      return <ColumnParamBooleanFilter {...param_props} />
     case TABLE_DATA_TYPES.RANGE:
       return <ColumnParamRangeFilter {...param_props} />
     default:

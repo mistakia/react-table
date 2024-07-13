@@ -1,11 +1,14 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Popper from '@mui/material/Popper'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
+import TextField from '@mui/material/TextField'
 
 import ColumnParamSelectFilter from '../column-param-select-filter'
 import ColumnParamRangeFilter from '../column-param-range-filter'
+import ColumnParamBooleanFilter from '../column-param-boolean-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { fuzzy_match } from '../utils'
 
 const SharedWhereParamItem = ({
   column_param_name,
@@ -75,6 +78,8 @@ const SharedWhereParamItem = ({
       return <ColumnParamSelectFilter {...param_props} />
     case TABLE_DATA_TYPES.RANGE:
       return <ColumnParamRangeFilter {...param_props} />
+    case TABLE_DATA_TYPES.BOOLEAN:
+      return <ColumnParamBooleanFilter {...param_props} />
     default:
       return null
   }
@@ -97,6 +102,8 @@ export default function FilterControlsSelectedColumnsParameters({
 }) {
   const [visible, set_visible] = useState(false)
   const anchor_ref = useRef(null)
+  const [param_filter_text, set_param_filter_text] = useState('')
+  const param_filter_input_ref = useRef(null)
 
   const shared_parameters = useMemo(() => {
     if (
@@ -127,6 +134,25 @@ export default function FilterControlsSelectedColumnsParameters({
     }, {})
   }, [selected_where_indexes, local_table_state_where_columns])
 
+  const filtered_params = useMemo(() => {
+    if (param_filter_text) {
+      return Object.values(shared_parameters).filter(({ column_param_name }) =>
+        fuzzy_match(param_filter_text, column_param_name)
+      )
+    }
+    return Object.values(shared_parameters)
+  }, [param_filter_text, shared_parameters])
+
+  useEffect(() => {
+    if (visible && param_filter_input_ref.current) {
+      param_filter_input_ref.current.focus()
+    }
+  }, [visible])
+
+  const handle_param_filter_change = (event) => {
+    set_param_filter_text(event.target.value)
+  }
+
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
       <div>
@@ -150,7 +176,20 @@ export default function FilterControlsSelectedColumnsParameters({
               </div>
             </div>
             <div className='selected-columns-parameters-body'>
-              {Object.values(shared_parameters).map(
+              <TextField
+                variant='outlined'
+                margin='normal'
+                fullWidth
+                id='param-filter'
+                label='Search parameters'
+                name='param_filter'
+                size='small'
+                autoComplete='off'
+                value={param_filter_text}
+                onChange={handle_param_filter_change}
+                inputRef={param_filter_input_ref}
+              />
+              {filtered_params.map(
                 ({ column_param_name, column_param_definition }) => (
                   <SharedWhereParamItem
                     key={column_param_name}
