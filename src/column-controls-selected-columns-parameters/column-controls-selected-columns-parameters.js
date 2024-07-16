@@ -149,11 +149,6 @@ export default function ColumnControlsSelectedColumnsParameters({
     set_param_filter_text(event.target.value)
   }
 
-  console.log({
-    shared_parameters,
-    filtered_parameters
-  })
-
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
       <div>
