@@ -305,7 +305,7 @@ const TableHeader = ({ header, column, table }) => {
               <div className='header-menu-item-icon'>
                 <VisibilityOffIcon />
               </div>
-              <div>Hide column</div>
+              <div>Remove column</div>
             </div>
           </div>
           {is_sortable && (
