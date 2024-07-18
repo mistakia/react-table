@@ -130,9 +130,14 @@ const TableHeader = ({ header, column, table }) => {
   )
   const handle_open_filter = useCallback(() => {
     const where_param = table_state.where || []
+    const matching_columns = table_state.columns.filter(
+      (col) => col.column_id === column.columnDef.column_id
+    )
+    const existing_column = matching_columns[column_index]
     const operator = column.columnDef.operators
       ? column.columnDef.operators[0]
       : OPERATOR_MENU_DEFAULT_VALUE
+
     set_filters_local_table_state({
       ...table_state,
       where: [
@@ -140,7 +145,8 @@ const TableHeader = ({ header, column, table }) => {
         {
           column_id: column.columnDef.column_id,
           operator,
-          value: ''
+          value: '',
+          params: existing_column?.params || {}
         }
       ]
     })
