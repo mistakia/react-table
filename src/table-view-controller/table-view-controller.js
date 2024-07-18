@@ -54,6 +54,11 @@ function ViewItem({
     set_misc_menu_open(false)
   }
 
+  const handle_select_click = () => {
+    handle_select_view(view)
+    set_misc_menu_open(false)
+  }
+
   const handle_duplicate_click = () => {
     on_view_change(
       {
@@ -70,7 +75,7 @@ function ViewItem({
 
   return (
     <div className='table-view-item'>
-      <div className='table-view-item-left' onClick={handle_select_view(view)}>
+      <div className='table-view-item-left' onClick={handle_select_click}>
         <div className='table-view-item-name'>{view.view_name}</div>
         <div className='table-view-item-description'>
           {view.view_description}
@@ -160,16 +165,12 @@ const TableViewController = ({
     const { value } = event.target
     set_input_value(value)
   }
-  const handle_input_blur = () => {
-    set_input_value('')
-  }
-
   const handle_input_focus = (event) => {
     set_input_value('')
     event.target.select()
     set_views_popper_open(true)
   }
-  const handle_select_view = (view) => () => {
+  const handle_select_view = (view) => {
     set_views_popper_open(false)
     select_view(view.view_id)
     set_input_value(view.view_name)
@@ -177,6 +178,7 @@ const TableViewController = ({
   const handle_click_away = () => {
     set_input_value(selected_view.view_name)
     set_views_popper_open(false)
+    set_input_value('')
   }
 
   const handle_add_click = () => {
@@ -212,7 +214,7 @@ const TableViewController = ({
 
   const filtered_items = filtered_views.map((view, index) => (
     <ViewItem
-      key={index}
+      key={view.view_id}
       {...{
         handle_select_view,
         set_selected_edit_view,
@@ -243,7 +245,6 @@ const TableViewController = ({
             inputRef={input_ref}
             InputProps={{
               onFocus: handle_input_focus,
-              onBlur: handle_input_blur,
               endAdornment: (
                 <InputAdornment position='end'>
                   <ArrowDropDownIcon onClick={handle_adornment_click} />
