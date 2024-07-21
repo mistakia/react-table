@@ -23,7 +23,7 @@ export default function TableQuickFilter({
       ? filter_where_param.value.length
       : column_values.length
   const all = count === column_values.length
-  const selected_label = all ? 'ALL' : filter_where_param.value.join(', ')
+  const selected_label = all ? 'ALL' : Array.isArray(filter_where_param.value) ? filter_where_param.value.join(', ') : filter_where_param.value
 
   const handleAllClick = () => {
     const new_where_param = [...where_param]
