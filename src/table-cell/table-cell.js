@@ -97,6 +97,15 @@ const TableCell = ({ getValue, column, row, table }) => {
     value = 'invalid value'
   }
 
+  if (
+    typeof value === 'number' &&
+    !Number.isInteger(value) &&
+    column.columnDef.fixed !== undefined
+  ) {
+    const fixed_places = column.columnDef.fixed
+    value = value.toFixed(fixed_places)
+  }
+
   const handle_click = useCallback(() => {
     if (value !== undefined && value !== null) {
       copy(`${value}`)
