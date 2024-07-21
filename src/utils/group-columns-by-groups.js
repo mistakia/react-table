@@ -101,6 +101,10 @@ export default function group_columns_by_groups(
       for (const [param_key, param_value] of Object.entries(
         column_state.params
       )) {
+        if (!param_value) {
+          continue
+        }
+
         if (
           !parent_groups.some(
             (group) =>
