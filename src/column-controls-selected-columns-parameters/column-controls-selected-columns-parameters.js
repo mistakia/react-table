@@ -7,6 +7,7 @@ import TextField from '@mui/material/TextField'
 import ColumnParamSelectFilter from '../column-param-select-filter'
 import ColumnParamRangeFilter from '../column-param-range-filter'
 import ColumnParamBooleanFilter from '../column-param-boolean-filter'
+import ColumnParamDateFilter from '../column-param-date-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 import { fuzzy_match } from '../utils'
 
@@ -28,6 +29,11 @@ const SharedColumnParamItem = ({
       return null
     }
   }
+
+  if (column_param_definition?.disable_on_splits && splits.length) {
+    return null
+  }
+
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {
@@ -81,6 +87,8 @@ const SharedColumnParamItem = ({
       return <ColumnParamRangeFilter {...param_props} />
     case TABLE_DATA_TYPES.BOOLEAN:
       return <ColumnParamBooleanFilter {...param_props} />
+    case TABLE_DATA_TYPES.DATE:
+      return <ColumnParamDateFilter {...param_props} />
     default:
       return null
   }

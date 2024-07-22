@@ -142,6 +142,29 @@ export default function Table({
   const on_table_state_change = useCallback(
     ({ sort, prefix_columns, columns, where, rank_aggregation, splits }) => {
       const { view_id, view_name, view_description } = selected_view
+
+      // cleanup state
+      // check if any params are set to disable on splits and remove them
+      if (splits && splits.length > 0) {
+        const remove_disabled_params = (item) => {
+          if (typeof item === 'object' && item.params) {
+            const column_definition = all_columns[item.column_id]
+            if (column_definition && column_definition.column_params) {
+              Object.keys(item.params).forEach((param_name) => {
+                const param_definition =
+                  column_definition.column_params[param_name]
+                if (param_definition && param_definition.disable_on_splits) {
+                  delete item.params[param_name]
+                }
+              })
+            }
+          }
+        }
+
+        columns && columns.forEach(remove_disabled_params)
+        where && where.forEach(remove_disabled_params)
+      }
+
       on_view_change(
         {
           view_id,

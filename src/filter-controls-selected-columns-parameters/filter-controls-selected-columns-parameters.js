@@ -26,6 +26,11 @@ const SharedWhereParamItem = ({
       return null
     }
   }
+
+  if (column_param_definition?.disable_on_splits && splits.length) {
+    return null
+  }
+
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {

@@ -15,7 +15,6 @@ const FilterControlsColumnParamItem = ({
   where_index,
   splits = []
 }) => {
-  const { data_type } = column_param_definition
   if (column_param_definition?.enable_on_splits) {
     const is_enabled = splits.some((split) =>
       column_param_definition.enable_on_splits.includes(split)
@@ -24,6 +23,12 @@ const FilterControlsColumnParamItem = ({
       return null
     }
   }
+
+  if (column_param_definition?.disable_on_splits && splits.length) {
+    return null
+  }
+
+  const { data_type } = column_param_definition
   const where_item_params = where_item.params || {}
   const selected_param_values = where_item_params[column_param_name]
 

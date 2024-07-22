@@ -156,14 +156,14 @@ export default function group_columns_by_groups(
             if (Array.isArray(param_value)) {
               column_param_labels = param_value.map(
                 (param_v) =>
-                  column.column_params[param_key]?.values.find(
-                    (def_v) => def_v.value === param_v
+                  column.column_params?.[param_key]?.values?.find(
+                    (def_v) => def_v?.value === param_v
                   )?.label || param_v
               )
             } else {
               column_param_labels =
-                column.column_params[param_key]?.values.find(
-                  (v) => v.value === param_value
+                column.column_params?.[param_key]?.values?.find(
+                  (v) => v?.value === param_value
                 )?.label || param_value
             }
             label = `${param_label}: ${column_param_labels}`

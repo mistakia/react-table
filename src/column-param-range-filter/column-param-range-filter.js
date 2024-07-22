@@ -5,8 +5,6 @@ import Button from '@mui/material/Button'
 
 import FilterBase from '../filter-base'
 
-import './column-param-range-filter.styl'
-
 export default function ColumnParamRangeFilter({
   column_param_name,
   column_param_definition,
@@ -58,7 +56,7 @@ export default function ColumnParamRangeFilter({
 
   const body = (
     <div className='column-param-range-filter'>
-      <div className='column-param-range-filter-header'>
+      <div className='column-param-filter-header'>
         <div>{label}</div>
         <div
           className='controls-button'
@@ -66,7 +64,7 @@ export default function ColumnParamRangeFilter({
           Close
         </div>
       </div>
-      <div className='column-param-range-filter-body'>
+      <div className='column-param-filter-body'>
         <Slider
           value={value}
           onChange={handle_range_change}
@@ -76,7 +74,7 @@ export default function ColumnParamRangeFilter({
           max={max}
         />
         {!is_default && (
-          <div className='column-param-range-filter-buttons'>
+          <div className='column-param-filter-buttons'>
             {is_changed && <Button onClick={handle_set}>Save</Button>}
             <Button onClick={handle_reset}>Reset</Button>
           </div>
