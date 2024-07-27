@@ -39,10 +39,11 @@ export default function ColumnParamSelectFilter({
   const count = filter_values.filter((v) => v.selected).length
   const all_selected =
     !single && (!is_column_param_defined || count === filter_values.length)
+  const set_null_on_all_click = !single && !default_value
 
   const handle_all_click = () => {
     const values = filter_values.map((i) => i.value)
-    handle_change(values)
+    handle_change(set_null_on_all_click ? null : values)
   }
 
   const handle_clear_click = () => {
