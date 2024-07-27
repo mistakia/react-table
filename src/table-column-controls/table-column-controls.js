@@ -42,7 +42,9 @@ import {
   fuzzy_match,
   group_columns_into_tree_view,
   get_string_from_object,
-  use_count_children
+  use_count_children,
+  levenstein_distance,
+  debounce
 } from '../utils'
 import { table_context } from '../table-context'
 import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
@@ -111,6 +113,7 @@ ColumnControlsTableColumnItem.propTypes = {
 
 const ColumnControlsSortableItem = React.memo(
   ({
+    all_columns,
     column,
     set_column_hidden_by_index,
     filter_text_input,
@@ -137,6 +140,11 @@ const ColumnControlsSortableItem = React.memo(
     const param_filter_input_ref = useRef(null)
     const [more_menu_open, set_more_menu_open] = useState(false)
     const more_button_ref = useRef(null)
+    const [column_select_open, set_column_select_open] = useState(false)
+    const column_select_button_ref = useRef(null)
+    const [column_select_filter, set_column_select_filter] = useState('')
+    const [filtered_columns, set_filtered_columns] = useState(all_columns)
+
     const style = {
       position: 'relative',
       transform: CSS.Transform.toString(transform),
@@ -154,6 +162,10 @@ const ColumnControlsSortableItem = React.memo(
       set_param_filter_text(event.target.value)
     }
 
+    const handle_column_select_filter_change = (event) => {
+      set_column_select_filter(event.target.value)
+    }
+
     const filtered_params = useMemo(() => {
       if (param_filter_text) {
         return Object.entries(column.column_params || {}).filter(
@@ -162,6 +174,36 @@ const ColumnControlsSortableItem = React.memo(
       }
       return Object.entries(column.column_params || {})
     }, [param_filter_text, column.column_params])
+
+    const debounced_filter_columns = useCallback(
+      debounce((filter) => {
+        if (filter) {
+          const filtered = all_columns
+            .filter((col) =>
+              fuzzy_match(filter, col.column_title || col.column_id)
+            )
+            .sort((a, b) => {
+              const distance_a = levenstein_distance(
+                filter,
+                a.column_title || a.column_id
+              )
+              const distance_b = levenstein_distance(
+                filter,
+                b.column_title || b.column_id
+              )
+              return distance_a - distance_b
+            })
+          set_filtered_columns(filtered)
+        } else {
+          set_filtered_columns(all_columns)
+        }
+      }, 100),
+      [all_columns]
+    )
+
+    useEffect(() => {
+      debounced_filter_columns(column_select_filter)
+    }, [column_select_filter, debounced_filter_columns])
 
     const handle_more_click = () => {
       set_more_menu_open(!more_menu_open)
@@ -193,6 +235,28 @@ const ColumnControlsSortableItem = React.memo(
       set_more_menu_open(false)
     }
 
+    const handle_column_select = (new_column) => {
+      set_local_table_state((prev) => ({
+        ...prev,
+        columns: prev.columns.map((col, index) =>
+          index === column_index
+            ? typeof col === 'string'
+              ? new_column.column_id
+              : {
+                  ...col,
+                  column_id: new_column.column_id,
+                  column_params: Object.fromEntries(
+                    Object.entries(col.column_params || {}).filter(([key]) =>
+                      new_column.column_params.hasOwnProperty(key)
+                    )
+                  )
+                }
+            : col
+        )
+      }))
+      set_column_select_open(false)
+    }
+
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
         <div
@@ -201,14 +265,53 @@ const ColumnControlsSortableItem = React.memo(
             reorder: true,
             'column-expanded': show_column_params,
             selected: selected_column_indexes.includes(column_index),
-            'more-menu-open': more_menu_open
+            'more-menu-open': more_menu_open,
+            'column-select-open': column_select_open
           })}>
           <div className='column-data-type'>
             <DataTypeIcon data_type={column.data_type} />
           </div>
-          <div className='column-name'>
+          <div
+            ref={column_select_button_ref}
+            onClick={() => set_column_select_open(!column_select_open)}
+            className='column-name'>
             {column.column_title || column.column_id}
           </div>
+          <Popper
+            open={column_select_open}
+            anchorEl={column_select_button_ref.current}
+            placement='bottom-start'>
+            <ClickAwayListener
+              onClickAway={() => set_column_select_open(false)}>
+              <div className='column-select-menu'>
+                <div className='column-select-filter-container'>
+                  <TextField
+                    variant='outlined'
+                    margin='none'
+                    fullWidth
+                    id='column-select-filter'
+                    label='Search columns'
+                    size='small'
+                    autoComplete='off'
+                    autoFocus
+                    value={column_select_filter}
+                    onChange={handle_column_select_filter_change}
+                  />
+                </div>
+                <div className='column-select-list'>
+                  <MenuList>
+                    {filtered_columns.map((col) => (
+                      <MenuItem
+                        key={col.column_id}
+                        onClick={() => handle_column_select(col)}>
+                        {col.column_title || col.column_id}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </div>
+              </div>
+            </ClickAwayListener>
+          </Popper>
           {has_column_params && (
             <Button
               size='small'
@@ -891,6 +994,7 @@ const TableColumnControls = ({
                         <ColumnControlsSortableItem
                           key={`${column.column_id}-${column_index}`}
                           {...{
+                            all_columns,
                             column,
                             set_column_hidden_by_index,
                             filter_text_input,

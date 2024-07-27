@@ -12,6 +12,7 @@
 
   &.column-expanded
   &.more-menu-open
+  &.column-select-open
     border 1px solid #e0e0e0
     background rgba(233, 233, 233, 0.5)
 
@@ -31,6 +32,21 @@
     font-size 1rem
     line-height 1.5
     letter-spacing 0.00938em
+    border 1px solid transparent
+    border-radius 3px
+    margin 4px 0
+    padding 0 12px 0 4px
+    position relative
+
+    &::after
+      content '\270E'
+      position absolute
+      right 4px
+      top 50%
+      transform translateY(-50%) scaleX(-1)
+      font-size 18px
+      color #1976d2
+      opacity 0
 
   .column-category
     font-family IBM Plex Mono,monospace
@@ -47,6 +63,16 @@
       height 16px
 
 @media (pointer:fine)
+  .column-name
+    cursor pointer
+
+    &:hover
+      border 1px solid #1976d2
+      background rgba(25, 118, 210, 0.04)
+
+      &::after
+        opacity 1
+
   .column-item
     .column-action
       opacity 0

@@ -9,3 +9,4 @@ export { default as group_columns_into_tree_view } from './group-columns-into-tr
 export { default as use_trace_update } from './use-trace-update'
 export { default as export_csv } from './export-csv'
 export { default as export_json } from './export-json'
+export { default as levenstein_distance } from './levenstein-distance'
