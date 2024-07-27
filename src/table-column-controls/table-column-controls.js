@@ -890,6 +890,17 @@ const TableColumnControls = ({
     set_selected_column_indexes([])
   }
 
+  const handle_remove_selected_columns = () => {
+    const new_columns = local_table_state.columns.filter(
+      (_, index) => !selected_column_indexes.includes(index)
+    )
+    set_local_table_state({
+      ...local_table_state,
+      columns: new_columns
+    })
+    set_selected_column_indexes([])
+  }
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -956,6 +967,11 @@ const TableColumnControls = ({
                           onClick={() => set_selected_column_indexes([])}>
                           Deselect All
                         </div>
+                        <div
+                          className='action'
+                          onClick={handle_remove_selected_columns}>
+                          Remove Selected
+                        </div>
                       </>
                     )}
                     {selected_column_indexes.length !==
@@ -978,11 +994,14 @@ const TableColumnControls = ({
                           Select All
                         </div>
                       )}
-                    {local_table_state_columns.length > 0 && (
-                      <div className='action' onClick={set_all_columns_hidden}>
-                        Remove All
-                      </div>
-                    )}
+                    {local_table_state_columns.length > 0 &&
+                      !selected_column_indexes.length && (
+                        <div
+                          className='action'
+                          onClick={set_all_columns_hidden}>
+                          Remove All
+                        </div>
+                      )}
                   </div>
                 </div>
                 <div className='selected-columns-container'>
