@@ -17,6 +17,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
+import ListItemIcon from '@mui/material/ListItemIcon'
 import Collapse from '@mui/material/Collapse'
 import Badge from '@mui/material/Badge'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
@@ -27,6 +28,12 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import Checkbox from '@mui/material/Checkbox'
+import Popper from '@mui/material/Popper'
+import MenuList from '@mui/material/MenuList'
+import MenuItem from '@mui/material/MenuItem'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
+import DeleteIcon from '@mui/icons-material/Delete'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
 import ColumnControlsSelectedColumnsParameters from '../column-controls-selected-columns-parameters'
@@ -128,6 +135,8 @@ const ColumnControlsSortableItem = React.memo(
     const [show_column_params, set_show_column_params] = useState(false)
     const [param_filter_text, set_param_filter_text] = useState('')
     const param_filter_input_ref = useRef(null)
+    const [more_menu_open, set_more_menu_open] = useState(false)
+    const more_button_ref = useRef(null)
     const style = {
       position: 'relative',
       transform: CSS.Transform.toString(transform),
@@ -154,6 +163,36 @@ const ColumnControlsSortableItem = React.memo(
       return Object.entries(column.column_params || {})
     }, [param_filter_text, column.column_params])
 
+    const handle_more_click = () => {
+      set_more_menu_open(!more_menu_open)
+    }
+
+    const handle_remove_click = () => {
+      set_column_hidden_by_index(column_index)
+      set_more_menu_open(false)
+    }
+
+    const handle_duplicate_click = () => {
+      set_local_table_state((prev) => ({
+        ...prev,
+        columns: [
+          ...prev.columns.slice(0, column_index + 1),
+          prev.columns[column_index],
+          ...prev.columns.slice(column_index + 1)
+        ]
+      }))
+      // Shift selected column indexes to account for the added column
+      set_selected_column_indexes((prev_indexes) => {
+        return prev_indexes.map((index) => {
+          if (index > column_index) {
+            return index + 1
+          }
+          return index
+        })
+      })
+      set_more_menu_open(false)
+    }
+
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
         <div
@@ -161,7 +200,8 @@ const ColumnControlsSortableItem = React.memo(
             'column-item': true,
             reorder: true,
             'column-expanded': show_column_params,
-            selected: selected_column_indexes.includes(column_index)
+            selected: selected_column_indexes.includes(column_index),
+            'more-menu-open': more_menu_open
           })}>
           <div className='column-data-type'>
             <DataTypeIcon data_type={column.data_type} />
@@ -183,6 +223,34 @@ const ColumnControlsSortableItem = React.memo(
             onClick={() => set_column_hidden_by_index(column_index)}>
             <CloseIcon />
           </Button>
+          <Button
+            size='small'
+            className='column-action'
+            onClick={handle_more_click}
+            ref={more_button_ref}>
+            <MoreVertIcon />
+          </Button>
+          <Popper
+            open={more_menu_open}
+            anchorEl={more_button_ref.current}
+            placement='bottom-start'>
+            <ClickAwayListener onClickAway={() => set_more_menu_open(false)}>
+              <MenuList className='more-menu'>
+                <MenuItem onClick={handle_remove_click}>
+                  <ListItemIcon>
+                    <DeleteIcon fontSize='small' />
+                  </ListItemIcon>
+                  <ListItemText>Remove</ListItemText>
+                </MenuItem>
+                <MenuItem onClick={handle_duplicate_click}>
+                  <ListItemIcon>
+                    <ContentCopyIcon fontSize='small' />
+                  </ListItemIcon>
+                  <ListItemText>Duplicate</ListItemText>
+                </MenuItem>
+              </MenuList>
+            </ClickAwayListener>
+          </Popper>
           {has_column_params && (
             <Checkbox
               checked={selected_column_indexes.includes(column_index)}
@@ -685,6 +753,7 @@ const TableColumnControls = ({
 
   const handle_discard = useCallback(() => {
     set_local_table_state(table_state)
+    set_selected_column_indexes([])
   }, [table_state])
 
   const is_local_table_state_changed = useMemo(() => {
@@ -697,6 +766,25 @@ const TableColumnControls = ({
         column.column_params && Object.keys(column.column_params).length
     )
   }, [local_table_state_columns])
+
+  const handle_duplicate_columns = () => {
+    if (selected_column_indexes.length === 0) return
+
+    const new_columns = [...local_table_state.columns]
+    const last_selected_index = Math.max(...selected_column_indexes)
+
+    const sorted_column_indexes = selected_column_indexes.sort((a, b) => b - a)
+    sorted_column_indexes.forEach((index) => {
+      const duplicate_column = new_columns[index]
+      new_columns.splice(last_selected_index + 1, 0, duplicate_column)
+    })
+
+    set_local_table_state((prev_state) => ({
+      ...prev_state,
+      columns: new_columns
+    }))
+    set_selected_column_indexes([])
+  }
 
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
@@ -746,19 +834,25 @@ const TableColumnControls = ({
                   </div>
                   <div style={{ display: 'flex' }}>
                     {selected_column_indexes.length > 0 && (
-                      <ColumnControlsSelectedColumnsParameters
-                        selected_column_indexes={selected_column_indexes}
-                        local_table_state={local_table_state}
-                        local_table_state_columns={local_table_state_columns}
-                        set_local_table_state={set_local_table_state}
-                      />
-                    )}
-                    {selected_column_indexes.length > 0 && (
-                      <div
-                        className='action'
-                        onClick={() => set_selected_column_indexes([])}>
-                        Deselect All
-                      </div>
+                      <>
+                        <ColumnControlsSelectedColumnsParameters
+                          selected_column_indexes={selected_column_indexes}
+                          local_table_state={local_table_state}
+                          local_table_state_columns={local_table_state_columns}
+                          set_local_table_state={set_local_table_state}
+                        />
+                        <div
+                          className='action'
+                          onClick={handle_duplicate_columns}>
+                          Duplicate {selected_column_indexes.length} column
+                          {selected_column_indexes.length > 1 ? 's' : ''}
+                        </div>
+                        <div
+                          className='action'
+                          onClick={() => set_selected_column_indexes([])}>
+                          Deselect All
+                        </div>
+                      </>
                     )}
                     {selected_column_indexes.length !==
                       local_table_state_columns.length &&
