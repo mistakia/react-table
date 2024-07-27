@@ -246,8 +246,8 @@ const ColumnControlsSortableItem = React.memo(
                   ...col,
                   column_id: new_column.column_id,
                   column_params: Object.fromEntries(
-                    Object.entries(col.column_params || {}).filter(([key]) =>
-                      new_column.column_params.hasOwnProperty(key)
+                    Object.entries(col.column_params || {}).filter(
+                      ([key]) => new_column.column_params[key]
                     )
                   )
                 }
@@ -418,7 +418,8 @@ ColumnControlsSortableItem.propTypes = {
   column_index: PropTypes.number.isRequired,
   selected_column_indexes: PropTypes.array.isRequired,
   set_selected_column_indexes: PropTypes.func.isRequired,
-  splits: PropTypes.array
+  splits: PropTypes.array,
+  all_columns: PropTypes.array
 }
 
 const TableColumnControls = ({

@@ -241,6 +241,82 @@ const TableFilterControls = ({
     }
   }, [filter_controls_open])
 
+  const remove_where_params_from_columns = () => {
+    // remove any where items with a null, undefined, or empty string value that match a column in table_state.columns (column_id and params)
+    const updated_where = (filters_local_table_state.where || []).filter(
+      (where_item) => {
+        const matching_column = table_state.columns.find((column) => {
+          const column_id =
+            typeof column === 'string' ? column : column.column_id
+          const column_params =
+            typeof column === 'string' ? {} : column.column_params
+          return (
+            (where_item.column_id === column_id &&
+              (where_item.params === null ||
+                where_item.params === undefined ||
+                Object.keys(where_item.params).length === 0) &&
+              (column_params === null ||
+                column_params === undefined ||
+                Object.keys(column_params).length === 0)) ||
+            JSON.stringify(where_item.params) === JSON.stringify(column_params)
+          )
+        })
+        return (
+          matching_column &&
+          where_item.value !== null &&
+          where_item.value !== undefined &&
+          where_item.value !== ''
+        )
+      }
+    )
+    set_filters_local_table_state({
+      ...filters_local_table_state,
+      where: updated_where
+    })
+  }
+
+  const add_where_params_from_columns = () => {
+    // populate local_table_state where filters with filters from table_state.columns that do not exist
+    // compare columnn_id and params (json.stringify)
+    const new_where = []
+    for (const column of table_state.columns || []) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_params =
+        typeof column === 'string' ? {} : column.column_params
+      if (
+        !(filters_local_table_state.where || []).some(
+          (filter) =>
+            filter.column_id === column_id &&
+            (((filter.params === null ||
+              filter.params === undefined ||
+              Object.keys(filter.params).length === 0) &&
+              (column_params === null ||
+                column_params === undefined ||
+                Object.keys(column_params).length === 0)) ||
+              JSON.stringify(filter.params) === JSON.stringify(column_params))
+        )
+      ) {
+        const column_definition = all_columns.find(
+          (c) => c.column_id === column_id
+        )
+        const operator = column_definition.operators
+          ? column_definition.operators[0]
+          : OPERATOR_MENU_DEFAULT_VALUE
+        new_where.push({
+          column_id,
+          params: column_params,
+          value: null,
+          operator
+        })
+      }
+    }
+
+    set_filters_local_table_state({
+      ...filters_local_table_state,
+      where: [...(filters_local_table_state.where || []), ...new_where]
+    })
+  }
+
   const handle_menu_toggle = useCallback(() => {
     if (filter_controls_open) {
       set_menu_closing(true)
@@ -284,8 +360,14 @@ const TableFilterControls = ({
   useEffect(() => {
     if (filter_controls_open) {
       document.addEventListener('keydown', handle_key_down)
+      setTimeout(() => {
+        add_where_params_from_columns()
+      }, 400)
     } else {
       document.removeEventListener('keydown', handle_key_down)
+      setTimeout(() => {
+        remove_where_params_from_columns()
+      }, 400)
     }
 
     return () => {

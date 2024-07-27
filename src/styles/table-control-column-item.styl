@@ -38,16 +38,6 @@
     padding 0 12px 0 4px
     position relative
 
-    &::after
-      content '\270E'
-      position absolute
-      right 4px
-      top 50%
-      transform translateY(-50%) scaleX(-1)
-      font-size 18px
-      color #1976d2
-      opacity 0
-
   .column-category
     font-family IBM Plex Mono,monospace
 
@@ -62,8 +52,18 @@
       width 16px
       height 16px
 
+.selected-columns-container .column-name::after
+  content '\270E'
+  position absolute
+  right 4px
+  top 50%
+  transform translateY(-50%) scaleX(-1)
+  font-size 18px
+  color #1976d2
+  opacity 0
+
 @media (pointer:fine)
-  .column-name
+  .selected-columns-container .column-name
     cursor pointer
 
     &:hover

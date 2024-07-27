@@ -144,6 +144,7 @@ export default function Table({
       const { view_id, view_name, view_description } = selected_view
 
       // cleanup state
+
       // check if any params are set to disable on splits and remove them
       if (splits && splits.length > 0) {
         const remove_disabled_params = (item) => {
@@ -163,6 +164,14 @@ export default function Table({
 
         columns && columns.forEach(remove_disabled_params)
         where && where.forEach(remove_disabled_params)
+      }
+
+      // remove any where items with a null, undefined, or empty string value
+      if (where) {
+        where = where.filter(
+          (item) =>
+            item.value !== null && item.value !== undefined && item.value !== ''
+        )
       }
 
       on_view_change(
