@@ -72,20 +72,20 @@ const ColumnControlsTableColumnItem = React.memo(
           <div className='column-name'>
             {column.column_title || column.column_id}
           </div>
-          {(!is_visible || enable_duplicate_column_ids) && (
-            <Button
-              size='small'
-              className='column-action'
-              onClick={() => set_column_visible(column.column_id)}>
-              <AddIcon />
-            </Button>
-          )}
           {is_visible && (
             <Button
               size='small'
               className='column-action'
               onClick={() => set_column_hidden_by_id(column.column_id)}>
               <CloseIcon />
+            </Button>
+          )}
+          {(!is_visible || enable_duplicate_column_ids) && (
+            <Button
+              size='small'
+              className='column-action'
+              onClick={() => set_column_visible(column.column_id)}>
+              <AddIcon />
             </Button>
           )}
         </div>
