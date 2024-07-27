@@ -101,10 +101,19 @@ export default function group_columns_by_groups(
       for (const [param_key, param_value] of Object.entries(
         column_state.params
       )) {
-        if (!param_value) {
+        // check if param value is not defined
+        // param_value could be an array of objects with a value property
+        if (
+          !param_value ||
+          (Array.isArray(param_value) &&
+            typeof param_value[0] === 'object' &&
+            !param_value.some((v) => v.value))
+        ) {
           continue
         }
 
+        // Check if the current parameter is not already present in any parent group
+        // This prevents duplicate grouping for the same parameter
         if (
           !parent_groups.some(
             (group) =>
@@ -113,21 +122,25 @@ export default function group_columns_by_groups(
                 JSON.stringify(param_value)
           )
         ) {
-          const is_range =
+          const is_range = Boolean(
             column.column_params &&
-            column.column_params[param_key] &&
-            column.column_params[param_key].data_type === TABLE_DATA_TYPES.RANGE
+              column.column_params[param_key] &&
+              column.column_params[param_key].data_type ===
+                TABLE_DATA_TYPES.RANGE
+          )
 
-          const is_single =
+          const is_single = Boolean(
             column.column_params &&
-            column.column_params[param_key] &&
-            column.column_params[param_key].is_single
+              column.column_params[param_key] &&
+              column.column_params[param_key].is_single
+          )
 
-          const is_boolean =
+          const is_boolean = Boolean(
             column.column_params &&
-            column.column_params[param_key] &&
-            column.column_params[param_key].data_type ===
-              TABLE_DATA_TYPES.BOOLEAN
+              column.column_params[param_key] &&
+              column.column_params[param_key].data_type ===
+                TABLE_DATA_TYPES.BOOLEAN
+          )
 
           const param_label =
             column.column_params[param_key]?.label || param_key
