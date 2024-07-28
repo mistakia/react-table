@@ -581,7 +581,8 @@ export default function Table({
         set_column_hidden_by_index,
         shorten_url,
         filters_local_table_state,
-        set_filters_local_table_state
+        set_filters_local_table_state,
+        all_columns
       }}>
       <div
         ref={table_container_ref}

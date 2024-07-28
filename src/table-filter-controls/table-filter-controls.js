@@ -368,6 +368,7 @@ const TableFilterControls = ({
       setTimeout(() => {
         remove_where_params_from_columns()
       }, 400)
+      set_selected_where_indexes([])
     }
 
     return () => {
@@ -480,6 +481,17 @@ const TableFilterControls = ({
     )
   }, [local_table_state_where_columns])
 
+  const handle_remove_selected_filters = () => {
+    const new_where = filters_local_table_state.where.filter(
+      (_, index) => !selected_where_indexes.includes(index)
+    )
+    set_filters_local_table_state({
+      ...filters_local_table_state,
+      where: new_where
+    })
+    set_selected_where_indexes([])
+  }
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -536,21 +548,26 @@ const TableFilterControls = ({
                   </div>
                   <div style={{ display: 'flex' }}>
                     {selected_where_indexes.length > 0 && (
-                      <FilterControlsSelectedColumnsParameters
-                        local_table_state={filters_local_table_state}
-                        set_local_table_state={set_filters_local_table_state}
-                        selected_where_indexes={selected_where_indexes}
-                        local_table_state_where_columns={
-                          local_table_state_where_columns
-                        }
-                      />
-                    )}
-                    {selected_where_indexes.length > 0 && (
-                      <div
-                        className='action'
-                        onClick={() => set_selected_where_indexes([])}>
-                        Deselect All
-                      </div>
+                      <>
+                        <FilterControlsSelectedColumnsParameters
+                          local_table_state={filters_local_table_state}
+                          set_local_table_state={set_filters_local_table_state}
+                          selected_where_indexes={selected_where_indexes}
+                          local_table_state_where_columns={
+                            local_table_state_where_columns
+                          }
+                        />
+                        <div
+                          className='action'
+                          onClick={() => set_selected_where_indexes([])}>
+                          Deselect All
+                        </div>
+                        <div
+                          className='action'
+                          onClick={handle_remove_selected_filters}>
+                          Remove Selected
+                        </div>
+                      </>
                     )}
                     {selected_where_indexes.length !==
                       local_table_state_where_columns.length &&
@@ -572,9 +589,13 @@ const TableFilterControls = ({
                           Select All
                         </div>
                       )}
-                    <div className='action' onClick={handle_remove_all_filters}>
-                      Remove All
-                    </div>
+                    {!selected_where_indexes.length && (
+                      <div
+                        className='action'
+                        onClick={handle_remove_all_filters}>
+                        Remove All
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className='selected-columns-container'>

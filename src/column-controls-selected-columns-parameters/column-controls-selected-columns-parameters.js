@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useContext } from 'react'
 import PropTypes from 'prop-types'
 import Popper from '@mui/material/Popper'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
@@ -10,6 +10,7 @@ import ColumnParamBooleanFilter from '../column-param-boolean-filter'
 import ColumnParamDateFilter from '../column-param-date-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
 import { fuzzy_match } from '../utils'
+import { table_context } from '../table-context'
 
 import './column-controls-selected-columns-parameters.styl'
 
@@ -21,6 +22,8 @@ const SharedColumnParamItem = ({
   set_local_table_state,
   splits = []
 }) => {
+  const { all_columns } = useContext(table_context)
+
   if (column_param_definition?.enable_on_splits) {
     const is_enabled = splits.some((split) =>
       column_param_definition.enable_on_splits.includes(split)
@@ -39,12 +42,20 @@ const SharedColumnParamItem = ({
   const handle_change = (values) => {
     const columns = local_table_state.columns.map((column, index) => {
       if (selected_column_indexes.includes(index)) {
-        const existing_params = column?.params || {}
-        return {
-          column_id: typeof column === 'string' ? column : column.column_id,
-          params: {
-            ...existing_params,
-            [column_param_name]: values
+        // check if this column supports this parameter
+        const column_id = typeof column === 'string' ? column : column.column_id
+        const column_definition = all_columns.find(
+          (c) => c.column_id === column_id
+        )
+
+        if (column_definition?.column_params?.[column_param_name]) {
+          const existing_params = column?.params || {}
+          return {
+            column_id: typeof column === 'string' ? column : column.column_id,
+            params: {
+              ...existing_params,
+              [column_param_name]: values
+            }
           }
         }
       }
@@ -115,12 +126,15 @@ export default function ColumnControlsSelectedColumnsParameters({
   const [param_filter_text, set_param_filter_text] = useState('')
   const param_filter_input_ref = useRef(null)
 
-  const shared_parameters = useMemo(() => {
+  const { shared_parameters, all_parameters } = useMemo(() => {
     if (
       local_table_state_columns.length === 0 ||
       selected_column_indexes.length === 0
     ) {
-      return {}
+      return {
+        shared_parameters: {},
+        all_parameters: {}
+      }
     }
 
     const all_params = selected_column_indexes.map((index) => {
@@ -134,28 +148,65 @@ export default function ColumnControlsSelectedColumnsParameters({
       shared.filter((param) => params.includes(param))
     )
 
-    return shared_param_names.reduce((acc, param_name) => {
-      const column = local_table_state_columns[selected_column_indexes[0]]
-      acc[param_name] = {
-        column_param_name: param_name,
-        column_param_definition: column.column_params[param_name]
+    const all_param_names = [...new Set(all_params.flat())]
+    const non_shared_param_names = all_param_names.filter(
+      (param) => !shared_param_names.includes(param)
+    )
+
+    // Create an index of param definitions
+    const param_definitions = {}
+    selected_column_indexes.forEach((index) => {
+      const column = local_table_state_columns[index]
+      if (column && column.column_params) {
+        Object.entries(column.column_params).forEach(
+          ([param_name, definition]) => {
+            if (!param_definitions[param_name]) {
+              param_definitions[param_name] = definition
+            }
+          }
+        )
       }
-      return acc
-    }, {})
+    })
+
+    const create_param_object = (param_name) => ({
+      column_param_name: param_name,
+      column_param_definition: param_definitions[param_name]
+    })
+
+    return {
+      shared_parameters: shared_param_names.reduce((acc, param_name) => {
+        acc[param_name] = create_param_object(param_name)
+        return acc
+      }, {}),
+      all_parameters: non_shared_param_names.reduce((acc, param_name) => {
+        acc[param_name] = create_param_object(param_name)
+        return acc
+      }, {})
+    }
   }, [selected_column_indexes, local_table_state_columns])
 
   const filtered_parameters = useMemo(() => {
-    if (param_filter_text) {
-      return Object.values(shared_parameters).filter(({ column_param_name }) =>
+    const filter_params = (params) => {
+      if (!param_filter_text) {
+        return Object.values(params)
+      }
+      return Object.values(params).filter(({ column_param_name }) =>
         fuzzy_match(param_filter_text, column_param_name)
       )
     }
-    return Object.values(shared_parameters)
-  }, [param_filter_text, shared_parameters])
+
+    return {
+      shared: filter_params(shared_parameters),
+      all: filter_params(all_parameters)
+    }
+  }, [param_filter_text, shared_parameters, all_parameters])
 
   const handle_param_filter_change = (event) => {
     set_param_filter_text(event.target.value)
   }
+
+  const total_params_count =
+    Object.keys(shared_parameters).length + Object.keys(all_parameters).length
 
   return (
     <ClickAwayListener onClickAway={() => set_visible(false)}>
@@ -164,7 +215,7 @@ export default function ColumnControlsSelectedColumnsParameters({
           className='action'
           onClick={() => set_visible(!visible)}
           ref={anchor_ref}>
-          Set {Object.keys(shared_parameters).length} Parameters
+          Set {total_params_count} Parameters
         </div>
         <Popper open={visible} anchorEl={anchor_ref.current}>
           <div className='selected-columns-parameters'>
@@ -179,10 +230,10 @@ export default function ColumnControlsSelectedColumnsParameters({
                 Close
               </div>
             </div>
-            <div className='selected-columns-parameters-body'>
+            <div className='param-filter-container'>
               <TextField
                 variant='outlined'
-                margin='normal'
+                margin='none'
                 fullWidth
                 id='param-filter'
                 label='Search parameters'
@@ -193,18 +244,47 @@ export default function ColumnControlsSelectedColumnsParameters({
                 onChange={handle_param_filter_change}
                 inputRef={param_filter_input_ref}
               />
-              {filtered_parameters.map(
-                ({ column_param_name, column_param_definition }) => (
-                  <SharedColumnParamItem
-                    key={column_param_name}
-                    column_param_name={column_param_name}
-                    local_table_state={local_table_state}
-                    column_param_definition={column_param_definition}
-                    selected_column_indexes={selected_column_indexes}
-                    set_local_table_state={set_local_table_state}
-                    splits={local_table_state.splits}
-                  />
-                )
+            </div>
+            <div className='selected-columns-parameters-body'>
+              {Object.keys(shared_parameters).length > 0 && (
+                <>
+                  <div className='section-header'>Shared</div>
+                  <div className='parameters-container'>
+                    {filtered_parameters.shared.map(
+                      ({ column_param_name, column_param_definition }) => (
+                        <SharedColumnParamItem
+                          key={column_param_name}
+                          column_param_name={column_param_name}
+                          local_table_state={local_table_state}
+                          column_param_definition={column_param_definition}
+                          selected_column_indexes={selected_column_indexes}
+                          set_local_table_state={set_local_table_state}
+                          splits={local_table_state.splits}
+                        />
+                      )
+                    )}
+                  </div>
+                </>
+              )}
+              {Object.keys(all_parameters).length > 0 && (
+                <>
+                  <div className='section-header'>All</div>
+                  <div className='parameters-container'>
+                    {filtered_parameters.all.map(
+                      ({ column_param_name, column_param_definition }) => (
+                        <SharedColumnParamItem
+                          key={column_param_name}
+                          column_param_name={column_param_name}
+                          local_table_state={local_table_state}
+                          column_param_definition={column_param_definition}
+                          selected_column_indexes={selected_column_indexes}
+                          set_local_table_state={set_local_table_state}
+                          splits={local_table_state.splits}
+                        />
+                      )
+                    )}
+                  </div>
+                </>
               )}
             </div>
           </div>
