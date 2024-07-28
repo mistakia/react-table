@@ -243,6 +243,14 @@ const TableFilterControls = ({
 
   const remove_where_params_from_columns = () => {
     // remove any where items with a null, undefined, or empty string value that match a column in table_state.columns (column_id and params)
+
+    if (
+      !filters_local_table_state.where ||
+      !filters_local_table_state.where.length
+    ) {
+      return
+    }
+
     const updated_where = (filters_local_table_state.where || []).filter(
       (where_item) => {
         const matching_column = table_state.columns.find((column) => {
@@ -262,10 +270,10 @@ const TableFilterControls = ({
           )
         })
         return (
-          matching_column &&
-          where_item.value !== null &&
-          where_item.value !== undefined &&
-          where_item.value !== ''
+          !matching_column ||
+          (where_item.value !== null &&
+            where_item.value !== undefined &&
+            where_item.value !== '')
         )
       }
     )
