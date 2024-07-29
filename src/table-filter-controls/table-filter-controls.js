@@ -87,16 +87,16 @@ const FilterControlItem = React.memo(
         <div className='column-name'>
           {column_item.column_title || column_item.column_id}
         </div>
-        {(!is_visible || enable_duplicate_column_ids) && (
-          <div onClick={handle_add_filter} className='column-action'>
-            <AddIcon />
-          </div>
-        )}
         {is_visible && (
           <div
             onClick={handle_remove_filter_by_column_id}
             className='column-action'>
             <CloseIcon />
+          </div>
+        )}
+        {(!is_visible || enable_duplicate_column_ids) && (
+          <div onClick={handle_add_filter} className='column-action'>
+            <AddIcon />
           </div>
         )}
       </div>
