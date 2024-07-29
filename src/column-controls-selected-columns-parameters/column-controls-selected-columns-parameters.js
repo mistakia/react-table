@@ -44,10 +44,7 @@ const SharedColumnParamItem = ({
       if (selected_column_indexes.includes(index)) {
         // check if this column supports this parameter
         const column_id = typeof column === 'string' ? column : column.column_id
-        const column_definition = all_columns.find(
-          (c) => c.column_id === column_id
-        )
-
+        const column_definition = all_columns[column_id]
         if (column_definition?.column_params?.[column_param_name]) {
           const existing_params = column?.params || {}
           return {
@@ -69,9 +66,17 @@ const SharedColumnParamItem = ({
   }
 
   const { selected_param_values, is_equal } = useMemo(() => {
-    const param_values = selected_column_indexes.map(
-      (index) => local_table_state.columns[index]?.params?.[column_param_name]
-    )
+    const param_values = selected_column_indexes
+      // filter out columns that support the parameter
+      .filter((index) => {
+        const column = local_table_state.columns[index]
+        const column_id = typeof column === 'string' ? column : column.column_id
+        const column_definition = all_columns[column_id]
+        return column_definition?.column_params?.[column_param_name]
+      })
+      .map(
+        (index) => local_table_state.columns[index]?.params?.[column_param_name]
+      )
 
     const is_equal = param_values.every(
       (value) => JSON.stringify(value) === JSON.stringify(param_values[0])
@@ -80,7 +85,7 @@ const SharedColumnParamItem = ({
       selected_param_values: is_equal ? param_values[0] : undefined,
       is_equal
     }
-  }, [local_table_state, column_param_name])
+  }, [local_table_state, column_param_name, all_columns])
 
   const param_props = {
     column_param_name,
