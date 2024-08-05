@@ -147,7 +147,7 @@ export default function group_columns_by_groups(
 
           let label
           if (is_range) {
-            if (is_single) {
+            if (is_single || !Array.isArray(param_value)) {
               label = `${param_label}: ${param_value}`
             } else {
               const low_value = Math.min(param_value[0], param_value[1])
