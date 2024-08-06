@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
+import TextField from '@mui/material/TextField'
 
 import FilterBase from '../filter-base'
 
@@ -13,36 +14,37 @@ export default function ColumnParamSelectFilter({
   splits = []
 }) {
   const label = column_param_definition?.label || column_param_name
-  const single =
-    Boolean(column_param_definition?.single) &&
-    !(
-      column_param_definition?.enable_multi_on_split &&
-      splits.some((split) =>
-        column_param_definition?.enable_multi_on_split?.includes(split)
-      )
-    )
+  const single = is_single_select({ column_param_definition, splits })
   const default_value = column_param_definition?.default_value
   const is_column_param_defined = Boolean(selected_param_values)
-  const filter_values = []
-
-  for (const param_value of column_param_definition?.values || []) {
-    const label = param_value.label || param_value
-    const value = param_value.value || param_value
-    filter_values.push({
-      label,
-      value,
-      selected: !mixed_state && (selected_param_values || []).includes(value)
-    })
-  }
 
   const [trigger_close, set_trigger_close] = useState(null)
-  const count = filter_values.filter((v) => v.selected).length
+  const [dynamic_values, set_dynamic_values] = useState({})
+
+  useEffect(() => {
+    update_dynamic_values({ selected_param_values, set_dynamic_values })
+  }, [selected_param_values])
+
+  const static_values = create_static_values({
+    column_param_definition,
+    selected_param_values,
+    mixed_state
+  })
+  const dynamic_filter_values = create_dynamic_values({
+    column_param_definition,
+    selected_param_values,
+    mixed_state
+  })
+  const all_filter_values = [...dynamic_filter_values, ...static_values]
+
+  const count = all_filter_values.filter((v) => v.selected).length
   const all_selected =
-    !single && (!is_column_param_defined || count === filter_values.length)
+    !single && (!is_column_param_defined || count === all_filter_values.length)
   const set_null_on_all_click = !single && !default_value
 
+  // TODO should probably always set it to null
   const handle_all_click = () => {
-    const values = filter_values.map((i) => i.value)
+    const values = all_filter_values.map((i) => i.value)
     handle_change(set_null_on_all_click ? null : values)
   }
 
@@ -50,39 +52,238 @@ export default function ColumnParamSelectFilter({
     handle_change([])
   }
 
-  const handle_select = (event, index) => {
+  const handle_select = (index) => {
     if (mixed_state) {
-      // If in mixed state, treat as if nothing was previously selected
-      if (single) {
-        return handle_change([filter_values[index].value])
-      } else {
-        const new_values = filter_values.map((v, i) => ({
-          ...v,
-          selected: i === index
-        }))
-        const filtered_values = new_values
-          .filter((i) => i.selected)
-          .map((i) => i.value)
-        return handle_change(filtered_values)
-      }
+      return handle_mixed_state_select(
+        index,
+        single,
+        all_filter_values,
+        handle_change
+      )
     }
 
     if (single) {
-      return handle_change([filter_values[index].value])
+      return handle_change([all_filter_values[index].value])
     }
 
-    const values = filter_values.map((v, i) =>
-      index === i
-        ? { ...v, selected: all_selected ? false : !v.selected }
-        : all_selected
-        ? { ...v, selected: true }
-        : v
-    )
-    const filtered_values = values.filter((i) => i.selected).map((i) => i.value)
-    handle_change(filtered_values)
+    if (all_filter_values[index].is_dynamic) {
+      return handle_dynamic_select({
+        index,
+        all_filter_values,
+        selected_param_values,
+        dynamic_values,
+        handle_change
+      })
+    }
+
+    handle_static_select({
+      index,
+      all_filter_values,
+      selected_param_values,
+      all_selected,
+      handle_change
+    })
   }
 
-  const items = filter_values.map((v, index) => {
+  const handle_dynamic_value_change = (dynamic_type, value) => {
+    const new_value = value.trim() === '' ? null : value
+    set_dynamic_values((prev) => ({
+      ...prev,
+      [dynamic_type]: new_value
+    }))
+
+    const new_values =
+      selected_param_values?.filter(
+        (v) => typeof v !== 'object' || v.dynamic_type !== dynamic_type
+      ) || []
+
+    if (new_value !== null) {
+      new_values.push({ dynamic_type, value: new_value })
+    }
+
+    handle_change(new_values)
+  }
+
+  const items = create_filter_items({
+    all_filter_values,
+    mixed_state,
+    single,
+    is_column_param_defined,
+    default_value,
+    dynamic_values,
+    handle_select,
+    handle_dynamic_value_change,
+    all_selected
+  })
+
+  const selected_label = create_selected_label({
+    mixed_state,
+    all_selected,
+    single,
+    is_column_param_defined,
+    all_filter_values,
+    default_value
+  })
+
+  const body = create_filter_body({
+    single,
+    handle_all_click,
+    handle_clear_click,
+    set_trigger_close,
+    items
+  })
+
+  return <FilterBase {...{ label, selected_label, body, trigger_close }} />
+}
+
+// Helper functions
+
+function is_single_select({ column_param_definition, splits }) {
+  return (
+    Boolean(column_param_definition?.single) &&
+    !(
+      column_param_definition?.enable_multi_on_split &&
+      splits.some((split) =>
+        column_param_definition?.enable_multi_on_split?.includes(split)
+      )
+    )
+  )
+}
+
+function update_dynamic_values({ selected_param_values, set_dynamic_values }) {
+  const new_dynamic_values = {}
+  selected_param_values?.forEach((value) => {
+    if (typeof value === 'object' && value.dynamic_type) {
+      new_dynamic_values[value.dynamic_type] = value.value
+    }
+  })
+  set_dynamic_values(new_dynamic_values)
+}
+
+function create_static_values({
+  column_param_definition,
+  selected_param_values,
+  mixed_state
+}) {
+  return (column_param_definition?.values || []).map((param_value) => ({
+    label: param_value.label || param_value,
+    value: param_value.value || param_value,
+    selected:
+      !mixed_state &&
+      (selected_param_values || []).includes(param_value.value || param_value)
+  }))
+}
+
+function create_dynamic_values({
+  column_param_definition,
+  selected_param_values,
+  mixed_state
+}) {
+  return (column_param_definition?.dynamic_values || []).map(
+    (dynamic_value) => ({
+      label: dynamic_value.label,
+      value: dynamic_value.dynamic_type,
+      is_dynamic: true,
+      default_value: dynamic_value.default_value,
+      selected:
+        !mixed_state &&
+        selected_param_values?.some(
+          (v) =>
+            typeof v === 'object' &&
+            v !== null &&
+            v.dynamic_type === dynamic_value.dynamic_type
+        )
+    })
+  )
+}
+
+function handle_mixed_state_select({
+  index,
+  single,
+  all_filter_values,
+  handle_change
+}) {
+  if (single) {
+    return handle_change([all_filter_values[index].value])
+  } else {
+    const new_values = all_filter_values.map((v, i) => ({
+      ...v,
+      selected: i === index
+    }))
+    const filtered_values = new_values
+      .filter((i) => i.selected)
+      .map((i) => i.value)
+    return handle_change(filtered_values)
+  }
+}
+
+function handle_dynamic_select({
+  index,
+  all_filter_values,
+  selected_param_values,
+  dynamic_values,
+  handle_change
+}) {
+  const dynamic_type = all_filter_values[index].value
+  const is_currently_selected = selected_param_values?.some(
+    (v) => typeof v === 'object' && v.dynamic_type === dynamic_type
+  )
+
+  let new_values
+  if (is_currently_selected) {
+    new_values = selected_param_values.filter(
+      (v) => typeof v !== 'object' || v.dynamic_type !== dynamic_type
+    )
+  } else {
+    const dynamic_value =
+      dynamic_values[dynamic_type] || all_filter_values[index].default_value
+    new_values = [
+      ...(selected_param_values || []),
+      { dynamic_type, value: dynamic_value }
+    ]
+  }
+  return handle_change(new_values)
+}
+
+function handle_static_select({
+  index,
+  all_filter_values,
+  selected_param_values,
+  all_selected,
+  handle_change
+}) {
+  const static_values = all_filter_values.map((v, i) =>
+    index === i
+      ? { ...v, selected: all_selected ? false : !v.selected }
+      : all_selected
+      ? { ...v, selected: true }
+      : v
+  )
+
+  const new_static_values = static_values
+    .filter((v) => v.selected && !v.is_dynamic)
+    .map((v) => v.value)
+
+  const existing_dynamic_values =
+    selected_param_values?.filter((v) => typeof v === 'object') || []
+
+  const filtered_values = [...new_static_values, ...existing_dynamic_values]
+
+  handle_change(filtered_values)
+}
+
+function create_filter_items({
+  all_filter_values,
+  mixed_state,
+  single,
+  is_column_param_defined,
+  default_value,
+  dynamic_values,
+  handle_select,
+  handle_dynamic_value_change,
+  all_selected
+}) {
+  return all_filter_values.map((v, index) => {
     const class_names = ['table-filter-item-dropdown-item']
     const is_selected =
       !mixed_state &&
@@ -92,30 +293,102 @@ export default function ColumnParamSelectFilter({
         (single && !is_column_param_defined && !default_value && index === 0))
     if (is_selected) class_names.push('selected')
     if (v.className) class_names.push(v.className)
-    return (
-      <div
-        key={v.value}
-        className={class_names.join(' ')}
-        onClick={(e) => handle_select(e, index)}>
-        <Checkbox checked={is_selected} size='small' />
-        {v.label}
-      </div>
-    )
+    if (v.is_dynamic) {
+      return create_dynamic_item({
+        v,
+        index,
+        class_names,
+        is_selected,
+        dynamic_values,
+        handle_select,
+        handle_dynamic_value_change
+      })
+    }
+    return create_static_item({
+      v,
+      index,
+      class_names,
+      is_selected,
+      handle_select
+    })
   })
+}
 
-  const selected_label = mixed_state
-    ? '-'
-    : all_selected
-    ? 'ALL'
-    : single && !is_column_param_defined
-    ? filter_values.find((v) => v.value === default_value)?.label ||
-      filter_values[0]?.label
-    : filter_values
-        .filter((v) => v.selected)
-        .map((v) => v.label)
-        .join(', ')
+function create_dynamic_item({
+  v,
+  index,
+  class_names,
+  is_selected,
+  dynamic_values,
+  handle_select,
+  handle_dynamic_value_change
+}) {
+  return (
+    <div
+      key={v.value}
+      className={class_names.join(' ')}
+      onClick={() => handle_select(index)}>
+      <Checkbox checked={is_selected} size='small' />
+      {v.label}
+      <TextField
+        size='small'
+        value={dynamic_values[v.value] ?? ''}
+        onChange={(e) => handle_dynamic_value_change(v.value, e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        placeholder={v.default_value.toString()}
+      />
+    </div>
+  )
+}
 
-  const body = (
+function create_static_item({
+  v,
+  index,
+  class_names,
+  is_selected,
+  handle_select
+}) {
+  return (
+    <div
+      key={v.value}
+      className={class_names.join(' ')}
+      onClick={() => handle_select(index)}>
+      <Checkbox checked={is_selected} size='small' />
+      <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
+    </div>
+  )
+}
+
+function create_selected_label({
+  mixed_state,
+  all_selected,
+  single,
+  is_column_param_defined,
+  all_filter_values,
+  default_value
+}) {
+  if (mixed_state) return '-'
+  if (all_selected) return 'ALL'
+  if (single && !is_column_param_defined) {
+    return (
+      all_filter_values.find((v) => v.value === default_value)?.label ||
+      all_filter_values[0]?.label
+    )
+  }
+  return all_filter_values
+    .filter((v) => v.selected)
+    .map((v) => v.label)
+    .join(', ')
+}
+
+function create_filter_body({
+  single,
+  handle_all_click,
+  handle_clear_click,
+  set_trigger_close,
+  items
+}) {
+  return (
     <>
       {!single && (
         <div className='table-filter-item-dropdown-head'>
@@ -127,7 +400,7 @@ export default function ColumnParamSelectFilter({
           </div>
           <div
             className='controls-button close'
-            onClick={() => set_trigger_close(!trigger_close)}>
+            onClick={() => set_trigger_close((prev) => !prev)}>
             Close
           </div>
         </div>
@@ -135,8 +408,6 @@ export default function ColumnParamSelectFilter({
       <div className='table-filter-item-dropdown-body'>{items}</div>
     </>
   )
-
-  return <FilterBase {...{ label, selected_label, body, trigger_close }} />
 }
 
 ColumnParamSelectFilter.propTypes = {

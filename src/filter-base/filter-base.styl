@@ -39,8 +39,11 @@
 
 .table-filter-item-dropdown-item
   flex 1
-  padding 8px 16px
+  padding 8px 8px
   display flex
+  align-items center
+  cursor pointer
+  gap 8px
 
   &.selected
     background rgba(25, 118, 210, 0.08)
@@ -49,11 +52,18 @@
     background #fafafa
 
   .MuiCheckbox-root
-    padding 0 9px 0 0
+    padding 0
 
   .MuiSvgIcon-root
     width 16px
     height 16px
+
+  .MuiInputBase-root
+    height 24px
+    width 60px
+
+.table-filter-item-dropdown-item-label
+  flex 1
 
 .table-filter-item-selection
   white-space nowrap

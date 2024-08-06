@@ -102,13 +102,7 @@ export default function group_columns_by_groups(
         column_state.params
       )) {
         // check if param value is not defined
-        // param_value could be an array of objects with a value property
-        if (
-          !param_value ||
-          (Array.isArray(param_value) &&
-            typeof param_value[0] === 'object' &&
-            !param_value.some((v) => v.value))
-        ) {
+        if (!param_value) {
           continue
         }
 
@@ -122,65 +116,31 @@ export default function group_columns_by_groups(
                 JSON.stringify(param_value)
           )
         ) {
-          const is_range = Boolean(
-            column.column_params &&
-              column.column_params[param_key] &&
-              column.column_params[param_key].data_type ===
-                TABLE_DATA_TYPES.RANGE
-          )
-
-          const is_single = Boolean(
-            column.column_params &&
-              column.column_params[param_key] &&
-              column.column_params[param_key].is_single
-          )
-
-          const is_boolean = Boolean(
-            column.column_params &&
-              column.column_params[param_key] &&
-              column.column_params[param_key].data_type ===
-                TABLE_DATA_TYPES.BOOLEAN
-          )
-
           const param_label =
             column.column_params[param_key]?.label || param_key
 
           let label
-          if (is_range) {
-            if (is_single || !Array.isArray(param_value)) {
-              label = `${param_label}: ${param_value}`
-            } else {
-              const low_value = Math.min(param_value[0], param_value[1])
-              const high_value = Math.max(param_value[0], param_value[1])
-
-              const column_def = column.column_params[param_key]
-              if (high_value === column_def.max) {
-                label = `${param_label}: ${low_value}+`
-              } else if (low_value === column_def.min) {
-                label = `${param_label}: <${high_value}`
-              } else {
-                label = `${param_label}: ${low_value}-${high_value}`
-              }
-            }
-          } else if (is_boolean) {
-            label = `${param_label}: ${param_value ? 'YES' : 'NO'}`
+          if (Array.isArray(param_value)) {
+            label = handle_array_param_value(
+              param_value,
+              param_key,
+              column,
+              param_label
+            )
+          } else if (
+            typeof param_value === 'object' &&
+            param_value.dynamic_type
+          ) {
+            label = handle_dynamic_param_value(param_value, param_label)
           } else {
-            let column_param_labels
-            if (Array.isArray(param_value)) {
-              column_param_labels = param_value.map(
-                (param_v) =>
-                  column.column_params?.[param_key]?.values?.find(
-                    (def_v) => def_v?.value === param_v
-                  )?.label || param_v
-              )
-            } else {
-              column_param_labels =
-                column.column_params?.[param_key]?.values?.find(
-                  (v) => v?.value === param_value
-                )?.label || param_value
-            }
-            label = `${param_label}: ${column_param_labels}`
+            label = handle_single_param_value(
+              param_value,
+              param_key,
+              column,
+              param_label
+            )
           }
+
           identifiers.push({
             type: 'param',
             id: `${param_key}_${JSON.stringify(param_value)}`,
@@ -328,4 +288,64 @@ export default function group_columns_by_groups(
   }
 
   return root_group.columns
+}
+
+function handle_array_param_value(param_value, param_key, column, param_label) {
+  const is_range =
+    column.column_params[param_key]?.data_type === TABLE_DATA_TYPES.RANGE
+
+  if (is_range) {
+    return handle_range_param_value(param_value, param_key, column, param_label)
+  } else {
+    const column_param_labels = param_value.map((param_v) => {
+      if (typeof param_v === 'object' && param_v.dynamic_type) {
+        return `${param_v.dynamic_type} (${param_v.value})`
+      } else {
+        return (
+          column.column_params?.[param_key]?.values?.find(
+            (def_v) => def_v?.value === param_v
+          )?.label || param_v
+        )
+      }
+    })
+    return `${param_label}: ${column_param_labels.join(', ')}`
+  }
+}
+
+function handle_range_param_value(param_value, param_key, column, param_label) {
+  const low_value = Math.min(param_value[0], param_value[1])
+  const high_value = Math.max(param_value[0], param_value[1])
+
+  const column_def = column.column_params[param_key]
+  if (high_value === column_def.max) {
+    return `${param_label}: ${low_value}+`
+  } else if (low_value === column_def.min) {
+    return `${param_label}: <${high_value}`
+  } else {
+    return `${param_label}: ${low_value}-${high_value}`
+  }
+}
+
+function handle_dynamic_param_value(param_value, param_label) {
+  return `${param_label}: ${param_value.dynamic_type} (${param_value.value})`
+}
+
+function handle_single_param_value(
+  param_value,
+  param_key,
+  column,
+  param_label
+) {
+  const is_boolean =
+    column.column_params[param_key]?.data_type === TABLE_DATA_TYPES.BOOLEAN
+
+  if (is_boolean) {
+    return `${param_label}: ${param_value ? 'YES' : 'NO'}`
+  } else {
+    const column_param_label =
+      column.column_params?.[param_key]?.values?.find(
+        (v) => v?.value === param_value
+      )?.label || param_value
+    return `${param_label}: ${column_param_label}`
+  }
 }
