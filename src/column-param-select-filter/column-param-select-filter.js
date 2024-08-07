@@ -25,7 +25,7 @@ export default function ColumnParamSelectFilter({
     update_dynamic_values({ selected_param_values, set_dynamic_values })
   }, [selected_param_values])
 
-  const static_values = create_static_values({
+  const preset_values = create_preset_values({
     column_param_definition,
     selected_param_values,
     mixed_state
@@ -35,7 +35,16 @@ export default function ColumnParamSelectFilter({
     selected_param_values,
     mixed_state
   })
-  const all_filter_values = [...dynamic_filter_values, ...static_values]
+  const static_values = create_static_values({
+    column_param_definition,
+    selected_param_values,
+    mixed_state
+  })
+  const all_filter_values = [
+    ...preset_values,
+    ...dynamic_filter_values,
+    ...static_values
+  ]
 
   const count = all_filter_values.filter((v) => v.selected).length
   const all_selected =
@@ -76,6 +85,15 @@ export default function ColumnParamSelectFilter({
       })
     }
 
+    if (all_filter_values[index].is_preset) {
+      return handle_preset_select({
+        index,
+        all_filter_values,
+        selected_param_values,
+        handle_change
+      })
+    }
+
     handle_static_select({
       index,
       all_filter_values,
@@ -105,7 +123,9 @@ export default function ColumnParamSelectFilter({
   }
 
   const items = create_filter_items({
-    all_filter_values,
+    preset_values,
+    dynamic_filter_values,
+    static_values,
     mixed_state,
     single,
     is_column_param_defined,
@@ -197,6 +217,21 @@ function create_dynamic_values({
   )
 }
 
+function create_preset_values({
+  column_param_definition,
+  selected_param_values,
+  mixed_state
+}) {
+  return (column_param_definition?.preset_values || []).map((preset) => ({
+    label: preset.label,
+    value: preset.values,
+    is_preset: true,
+    selected:
+      !mixed_state &&
+      preset.values.every((v) => selected_param_values?.includes(v))
+  }))
+}
+
 function handle_mixed_state_select({
   index,
   single,
@@ -245,6 +280,28 @@ function handle_dynamic_select({
   return handle_change(new_values)
 }
 
+function handle_preset_select({
+  index,
+  all_filter_values,
+  selected_param_values,
+  handle_change
+}) {
+  const preset_values = all_filter_values[index].value
+  const is_currently_selected = preset_values.every((v) =>
+    selected_param_values?.includes(v)
+  )
+
+  let new_values
+  if (is_currently_selected) {
+    new_values = selected_param_values.filter((v) => !preset_values.includes(v))
+  } else {
+    new_values = [
+      ...new Set([...(selected_param_values || []), ...preset_values])
+    ]
+  }
+  return handle_change(new_values)
+}
+
 function handle_static_select({
   index,
   all_filter_values,
@@ -273,7 +330,9 @@ function handle_static_select({
 }
 
 function create_filter_items({
-  all_filter_values,
+  preset_values,
+  dynamic_filter_values,
+  static_values,
   mixed_state,
   single,
   is_column_param_defined,
@@ -283,7 +342,7 @@ function create_filter_items({
   handle_dynamic_value_change,
   all_selected
 }) {
-  return all_filter_values.map((v, index) => {
+  const create_item = (v, index) => {
     const class_names = ['table-filter-item-dropdown-item']
     const is_selected =
       !mixed_state &&
@@ -293,6 +352,7 @@ function create_filter_items({
         (single && !is_column_param_defined && !default_value && index === 0))
     if (is_selected) class_names.push('selected')
     if (v.className) class_names.push(v.className)
+
     if (v.is_dynamic) {
       return create_dynamic_item({
         v,
@@ -312,7 +372,26 @@ function create_filter_items({
       handle_select,
       is_default_value: v.value === default_value
     })
-  })
+  }
+
+  const preset_items = preset_values.map((v, index) => create_item(v, index))
+  const dynamic_items = dynamic_filter_values.map((v, index) =>
+    create_item(v, preset_values.length + index)
+  )
+  const static_items = static_values.map((v, index) =>
+    create_item(v, preset_values.length + dynamic_filter_values.length + index)
+  )
+
+  return [
+    preset_items.length > 0 && (
+      <div key='preset-section' className='table-filter-item-dropdown-section'>
+        {preset_items}
+      </div>
+    ),
+    <div key='other-section' className='table-filter-item-dropdown-section'>
+      {[...dynamic_items, ...static_items]}
+    </div>
+  ]
 }
 
 function create_dynamic_item({
@@ -352,15 +431,16 @@ function create_static_item({
 }) {
   return (
     <div
-      key={v.value}
+      key={v.is_preset ? v.label : v.value}
       className={class_names.join(' ')}
       onClick={() => handle_select(index)}>
       <Checkbox checked={is_selected} size='small' />
       <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
       {is_default_value && (
-        <div className='table-filter-item-dropdown-item-default-value'>
-          Default
-        </div>
+        <div className='table-filter-item-dropdown-item-tag'>Default</div>
+      )}
+      {v.is_preset && (
+        <div className='table-filter-item-dropdown-item-tag'>Preset</div>
       )}
     </div>
   )
