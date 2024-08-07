@@ -54,12 +54,12 @@ export default function ColumnParamSelectFilter({
 
   const handle_select = (index) => {
     if (mixed_state) {
-      return handle_mixed_state_select(
+      return handle_mixed_state_select({
         index,
         single,
         all_filter_values,
         handle_change
-      )
+      })
     }
 
     if (single) {
@@ -309,7 +309,8 @@ function create_filter_items({
       index,
       class_names,
       is_selected,
-      handle_select
+      handle_select,
+      is_default_value: v.value === default_value
     })
   })
 }
@@ -329,7 +330,7 @@ function create_dynamic_item({
       className={class_names.join(' ')}
       onClick={() => handle_select(index)}>
       <Checkbox checked={is_selected} size='small' />
-      {v.label}
+      <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
       <TextField
         size='small'
         value={dynamic_values[v.value] ?? ''}
@@ -346,7 +347,8 @@ function create_static_item({
   index,
   class_names,
   is_selected,
-  handle_select
+  handle_select,
+  is_default_value
 }) {
   return (
     <div
@@ -355,6 +357,11 @@ function create_static_item({
       onClick={() => handle_select(index)}>
       <Checkbox checked={is_selected} size='small' />
       <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
+      {is_default_value && (
+        <div className='table-filter-item-dropdown-item-default-value'>
+          Default
+        </div>
+      )}
     </div>
   )
 }

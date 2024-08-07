@@ -131,6 +131,7 @@ export default function ColumnControlsSelectedColumnsParameters({
   const [param_filter_text, set_param_filter_text] = useState('')
   const param_filter_input_ref = useRef(null)
 
+  // TODO handle situation when there is a shared param with different definitions
   const { shared_parameters, all_parameters } = useMemo(() => {
     if (
       local_table_state_columns.length === 0 ||
