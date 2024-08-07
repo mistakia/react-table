@@ -16,45 +16,153 @@ export default function ColumnParamRangeFilter({
     selected_param_values = column_param_definition.is_single ? null : []
   }
 
-  const label = column_param_definition?.label || column_param_name
-  const min = column_param_definition.min
-  const max = column_param_definition.max
-  const step = column_param_definition.step
-  const is_single = column_param_definition.is_single
+  const { label, min, max, step, is_single, default_value } =
+    extract_column_param_properties({
+      column_param_name,
+      column_param_definition
+    })
+
   const [trigger_close, set_trigger_close] = useState(null)
   const [value, set_value] = useState(
-    is_single
-      ? selected_param_values ?? column_param_definition.default_value ?? min
-      : [selected_param_values[0] ?? min, selected_param_values[1] ?? max]
+    initialize_value({
+      is_single,
+      selected_param_values,
+      default_value,
+      min,
+      max
+    })
   )
 
-  const handle_set = () => {
-    handle_change(value)
-  }
+  const is_changed = check_if_changed({
+    is_single,
+    value,
+    selected_param_values
+  })
+  const is_default = check_if_default({
+    is_single,
+    value,
+    default_value,
+    min,
+    max
+  })
 
-  const handle_reset = () => {
-    if (is_single) {
-      set_value(column_param_definition.default_value ?? min)
-    } else {
-      set_value([min, max])
-    }
-    handle_change(undefined)
-  }
+  const handle_set = () => handle_change(value)
+  const handle_reset = () =>
+    reset_value({
+      is_single,
+      set_value,
+      default_value,
+      min,
+      max,
+      handle_change
+    })
+  const handle_range_change = (event) => set_value(event.target.value)
 
-  const handle_range_change = (event) => {
-    const value = event.target.value
-    set_value(value)
-  }
+  const body = create_filter_body({
+    label,
+    trigger_close,
+    set_trigger_close,
+    value,
+    handle_range_change,
+    is_single,
+    step,
+    min,
+    max,
+    is_default,
+    is_changed,
+    handle_set,
+    handle_reset
+  })
 
-  const is_changed = is_single
+  const selected_label = create_selected_label({
+    mixed_state,
+    is_default,
+    is_single,
+    value,
+    default_value,
+    min
+  })
+  const width = calculate_width({ min, max, step })
+
+  return (
+    <FilterBase {...{ selected_label, body, label, width, trigger_close }} />
+  )
+}
+
+function extract_column_param_properties({
+  column_param_name,
+  column_param_definition
+}) {
+  return {
+    label: column_param_definition?.label || column_param_name,
+    min: column_param_definition.min,
+    max: column_param_definition.max,
+    step: column_param_definition.step,
+    is_single: column_param_definition.is_single,
+    default_value: column_param_definition.default_value
+  }
+}
+
+function initialize_value({
+  is_single,
+  selected_param_values,
+  default_value,
+  min,
+  max
+}) {
+  if (!selected_param_values) {
+    selected_param_values = is_single ? null : []
+  }
+  return is_single
+    ? selected_param_values ?? default_value ?? min
+    : [selected_param_values[0] ?? min, selected_param_values[1] ?? max]
+}
+
+function check_if_changed({ is_single, value, selected_param_values }) {
+  return is_single
     ? value !== selected_param_values
     : value[0] !== selected_param_values[0] ||
-      value[1] !== selected_param_values[1]
-  const is_default = is_single
-    ? value === (column_param_definition.default_value ?? min)
-    : value[0] === min && value[1] === max
+        value[1] !== selected_param_values[1]
+}
 
-  const body = (
+function check_if_default({ is_single, value, default_value, min, max }) {
+  return is_single
+    ? value === (default_value ?? min)
+    : value[0] === min && value[1] === max
+}
+
+function reset_value({
+  is_single,
+  set_value,
+  default_value,
+  min,
+  max,
+  handle_change
+}) {
+  if (is_single) {
+    set_value(default_value ?? min)
+  } else {
+    set_value([min, max])
+  }
+  handle_change(undefined)
+}
+
+function create_filter_body({
+  label,
+  trigger_close,
+  set_trigger_close,
+  value,
+  handle_range_change,
+  is_single,
+  step,
+  min,
+  max,
+  is_default,
+  is_changed,
+  handle_set,
+  handle_reset
+}) {
+  return (
     <div className='column-param-range-filter'>
       <div className='column-param-filter-header'>
         <div>{label}</div>
@@ -82,18 +190,22 @@ export default function ColumnParamRangeFilter({
       </div>
     </div>
   )
+}
 
-  const selected_label =
-    mixed_state && is_default
-      ? '-'
-      : is_default
-      ? is_single
-        ? column_param_definition.default_value ?? min
-        : 'All'
-      : is_single
-      ? value
-      : `${value[0]} to ${value[1]}`
+function create_selected_label({
+  mixed_state,
+  is_default,
+  is_single,
+  value,
+  default_value,
+  min
+}) {
+  if (mixed_state && is_default) return '-'
+  if (is_default) return is_single ? default_value ?? min : 'All'
+  return is_single ? value : `${value[0]} to ${value[1]}`
+}
 
+function calculate_width({ min, max, step }) {
   const potential_characters = [min.toString().length, max.toString().length]
   if (step && step !== 1) {
     const adjusted_min = min + step
@@ -105,11 +217,7 @@ export default function ColumnParamRangeFilter({
   }
   const max_length = Math.max(...potential_characters)
   const char_count = max_length * 2 + 4
-  const width = `${char_count}ch`
-
-  return (
-    <FilterBase {...{ selected_label, body, label, width, trigger_close }} />
-  )
+  return `${char_count}ch`
 }
 
 ColumnParamRangeFilter.propTypes = {
