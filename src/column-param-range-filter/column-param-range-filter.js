@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import Slider from '@mui/material/Slider'
 import Button from '@mui/material/Button'
+import Checkbox from '@mui/material/Checkbox'
 
 import FilterBase from '../filter-base'
 
@@ -46,6 +47,12 @@ export default function ColumnParamRangeFilter({
     max
   })
 
+  const preset_values = create_preset_values({
+    column_param_definition,
+    selected_param_values,
+    mixed_state
+  })
+
   const handle_set = () => handle_change(value)
   const handle_reset = () =>
     reset_value({
@@ -57,6 +64,10 @@ export default function ColumnParamRangeFilter({
       handle_change
     })
   const handle_range_change = (event) => set_value(event.target.value)
+  const handle_preset_select = (preset) => {
+    set_value(preset.values)
+    handle_change(preset.values)
+  }
 
   const body = create_filter_body({
     label,
@@ -71,7 +82,9 @@ export default function ColumnParamRangeFilter({
     is_default,
     is_changed,
     handle_set,
-    handle_reset
+    handle_reset,
+    preset_values,
+    handle_preset_select
   })
 
   const selected_label = create_selected_label({
@@ -147,6 +160,45 @@ function reset_value({
   handle_change(undefined)
 }
 
+function create_preset_values({
+  column_param_definition,
+  selected_param_values,
+  mixed_state
+}) {
+  return (column_param_definition?.preset_values || []).map((preset) => ({
+    label: preset.label,
+    values: preset.values,
+    selected:
+      !mixed_state &&
+      preset.values[0] === selected_param_values[0] &&
+      preset.values[1] === selected_param_values[1]
+  }))
+}
+
+function create_preset_items({ preset_values, handle_preset_select }) {
+  return preset_values.map((preset) =>
+    create_preset_item({ preset, handle_preset_select })
+  )
+}
+
+function create_preset_item({ preset, handle_preset_select }) {
+  const class_names = ['table-filter-item-dropdown-item']
+  if (preset.selected) class_names.push('selected')
+
+  return (
+    <div
+      key={preset.label}
+      className={class_names.join(' ')}
+      onClick={() => handle_preset_select(preset)}>
+      <Checkbox checked={preset.selected} size='small' />
+      <div className='table-filter-item-dropdown-item-label'>
+        {preset.label}
+      </div>
+      <div className='table-filter-item-dropdown-item-tag'>Preset</div>
+    </div>
+  )
+}
+
 function create_filter_body({
   label,
   trigger_close,
@@ -160,7 +212,9 @@ function create_filter_body({
   is_default,
   is_changed,
   handle_set,
-  handle_reset
+  handle_reset,
+  preset_values,
+  handle_preset_select
 }) {
   return (
     <div className='column-param-range-filter'>
@@ -172,6 +226,11 @@ function create_filter_body({
           Close
         </div>
       </div>
+      {preset_values.length > 0 && (
+        <div className='table-filter-item-dropdown-section'>
+          {create_preset_items({ preset_values, handle_preset_select })}
+        </div>
+      )}
       <div className='column-param-filter-body'>
         <Slider
           value={value}
