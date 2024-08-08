@@ -9,7 +9,7 @@ import ColumnParamRangeFilter from '../column-param-range-filter'
 import ColumnParamBooleanFilter from '../column-param-boolean-filter'
 import ColumnParamDateFilter from '../column-param-date-filter'
 import { TABLE_DATA_TYPES } from '../constants.mjs'
-import { fuzzy_match } from '../utils'
+import { fuzzy_match, group_parameters } from '../utils'
 import { table_context } from '../table-context'
 
 import './column-controls-selected-columns-parameters.styl'
@@ -132,6 +132,10 @@ export default function ColumnControlsSelectedColumnsParameters({
   const param_filter_input_ref = useRef(null)
 
   // TODO handle situation when there is a shared param with different definitions
+  const create_param_object = (param_name, definition) => ({
+    [param_name]: definition
+  })
+
   const { shared_parameters, all_parameters } = useMemo(() => {
     if (
       local_table_state_columns.length === 0 ||
@@ -174,19 +178,18 @@ export default function ColumnControlsSelectedColumnsParameters({
       }
     })
 
-    const create_param_object = (param_name) => ({
-      column_param_name: param_name,
-      column_param_definition: param_definitions[param_name]
-    })
-
     return {
       shared_parameters: shared_param_names.reduce((acc, param_name) => {
-        acc[param_name] = create_param_object(param_name)
-        return acc
+        return {
+          ...acc,
+          ...create_param_object(param_name, param_definitions[param_name])
+        }
       }, {}),
       all_parameters: non_shared_param_names.reduce((acc, param_name) => {
-        acc[param_name] = create_param_object(param_name)
-        return acc
+        return {
+          ...acc,
+          ...create_param_object(param_name, param_definitions[param_name])
+        }
       }, {})
     }
   }, [selected_column_indexes, local_table_state_columns])
@@ -194,11 +197,14 @@ export default function ColumnControlsSelectedColumnsParameters({
   const filtered_parameters = useMemo(() => {
     const filter_params = (params) => {
       if (!param_filter_text) {
-        return Object.values(params)
+        return group_parameters(params)
       }
-      return Object.values(params).filter(({ column_param_name }) =>
-        fuzzy_match(param_filter_text, column_param_name)
+      const filtered = Object.fromEntries(
+        Object.entries(params).filter(([column_param_name]) =>
+          fuzzy_match(param_filter_text, column_param_name)
+        )
       )
+      return group_parameters(filtered)
     }
 
     return {
@@ -256,17 +262,32 @@ export default function ColumnControlsSelectedColumnsParameters({
                 <>
                   <div className='section-header'>Shared</div>
                   <div className='parameters-container'>
-                    {filtered_parameters.shared.map(
-                      ({ column_param_name, column_param_definition }) => (
-                        <SharedColumnParamItem
-                          key={column_param_name}
-                          column_param_name={column_param_name}
-                          local_table_state={local_table_state}
-                          column_param_definition={column_param_definition}
-                          selected_column_indexes={selected_column_indexes}
-                          set_local_table_state={set_local_table_state}
-                          splits={local_table_state.splits}
-                        />
+                    {Object.entries(filtered_parameters.shared).map(
+                      ([group_name, params]) => (
+                        <div key={group_name} className='column-param-group'>
+                          {group_name !== 'Ungrouped' && (
+                            <div className='column-param-group-title'>
+                              {group_name}
+                            </div>
+                          )}
+                          {params.map(
+                            ([column_param_name, column_param_definition]) => (
+                              <SharedColumnParamItem
+                                key={column_param_name}
+                                column_param_name={column_param_name}
+                                local_table_state={local_table_state}
+                                column_param_definition={
+                                  column_param_definition
+                                }
+                                selected_column_indexes={
+                                  selected_column_indexes
+                                }
+                                set_local_table_state={set_local_table_state}
+                                splits={local_table_state.splits}
+                              />
+                            )
+                          )}
+                        </div>
                       )
                     )}
                   </div>
@@ -276,17 +297,32 @@ export default function ColumnControlsSelectedColumnsParameters({
                 <>
                   <div className='section-header'>All</div>
                   <div className='parameters-container'>
-                    {filtered_parameters.all.map(
-                      ({ column_param_name, column_param_definition }) => (
-                        <SharedColumnParamItem
-                          key={column_param_name}
-                          column_param_name={column_param_name}
-                          local_table_state={local_table_state}
-                          column_param_definition={column_param_definition}
-                          selected_column_indexes={selected_column_indexes}
-                          set_local_table_state={set_local_table_state}
-                          splits={local_table_state.splits}
-                        />
+                    {Object.entries(filtered_parameters.all).map(
+                      ([group_name, params]) => (
+                        <div key={group_name} className='column-param-group'>
+                          {group_name !== 'Ungrouped' && (
+                            <div className='column-param-group-title'>
+                              {group_name}
+                            </div>
+                          )}
+                          {params.map(
+                            ([column_param_name, column_param_definition]) => (
+                              <SharedColumnParamItem
+                                key={column_param_name}
+                                column_param_name={column_param_name}
+                                local_table_state={local_table_state}
+                                column_param_definition={
+                                  column_param_definition
+                                }
+                                selected_column_indexes={
+                                  selected_column_indexes
+                                }
+                                set_local_table_state={set_local_table_state}
+                                splits={local_table_state.splits}
+                              />
+                            )
+                          )}
+                        </div>
                       )
                     )}
                   </div>

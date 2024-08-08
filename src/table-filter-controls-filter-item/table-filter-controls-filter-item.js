@@ -21,7 +21,7 @@ import {
   OPERATOR_MENU_OPTIONS
 } from '../constants.mjs'
 import FilterControlsColumnParamItem from '../filter-controls-column-param-item'
-import { fuzzy_match, get_string_from_object } from '../utils'
+import { fuzzy_match, get_string_from_object, group_parameters } from '../utils'
 import { Checkbox } from '@mui/material'
 
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'
@@ -175,13 +175,16 @@ export default function FilterItem({
     set_param_filter_text(event.target.value)
   }
 
-  const filtered_params = useMemo(() => {
-    if (param_filter_text) {
-      return Object.entries(column_params).filter(([param_name]) =>
-        fuzzy_match(param_filter_text, param_name)
-      )
-    }
-    return Object.entries(column_params)
+  const grouped_params = useMemo(() => {
+    const filtered = param_filter_text
+      ? Object.fromEntries(
+          Object.entries(column_params).filter(([param_name]) =>
+            fuzzy_match(param_filter_text, param_name)
+          )
+        )
+      : column_params
+
+    return group_parameters(filtered)
   }, [param_filter_text, column_params])
 
   const handle_create_filter = useCallback(
@@ -384,21 +387,26 @@ export default function FilterItem({
             onChange={handle_param_filter_change}
             inputRef={param_filter_input_ref}
           />
-          {filtered_params.map(
-            ([column_param_name, column_param_definition]) => (
-              <FilterControlsColumnParamItem
-                key={column_param_name}
-                {...{
-                  where_item,
-                  set_local_table_state,
-                  where_index,
-                  column_param_name,
-                  column_param_definition,
-                  splits: local_table_state.splits
-                }}
-              />
-            )
-          )}
+          {Object.entries(grouped_params).map(([group_name, params]) => (
+            <div key={group_name} className='column-param-group'>
+              {group_name !== 'Ungrouped' && (
+                <div className='column-param-group-title'>{group_name}</div>
+              )}
+              {params.map(([column_param_name, column_param_definition]) => (
+                <FilterControlsColumnParamItem
+                  key={column_param_name}
+                  {...{
+                    where_item,
+                    set_local_table_state,
+                    where_index,
+                    column_param_name,
+                    column_param_definition,
+                    splits: local_table_state.splits
+                  }}
+                />
+              ))}
+            </div>
+          ))}
         </div>
       )}
     </div>
