@@ -19,6 +19,7 @@ import TextField from '@mui/material/TextField'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
+import { distance } from 'fastest-levenshtein'
 
 import DataTypeIcon from '../data-type-icon'
 import {
@@ -148,14 +149,25 @@ const TableFilterControls = ({
     return index
   }, [filters_local_table_state])
 
-  const tree_view_columns = useMemo(() => {
+  const filtered_and_sorted_columns = useMemo(() => {
     if (!filter_text_input) {
       return group_columns_into_tree_view(all_columns)
     }
-    const filtered_columns = all_columns.filter((column) =>
-      fuzzy_match(filter_text_input, column.column_title || column.column_id)
-    )
-    return group_columns_into_tree_view(filtered_columns)
+    return all_columns
+      .filter((column) =>
+        fuzzy_match(filter_text_input, column.column_title || column.column_id)
+      )
+      .sort((a, b) => {
+        const distance_a = distance(
+          filter_text_input,
+          a.column_title || a.column_id
+        )
+        const distance_b = distance(
+          filter_text_input,
+          b.column_title || b.column_id
+        )
+        return distance_a - distance_b
+      })
   }, [all_columns, filter_text_input])
 
   // update filters_local_table_state on table_state change
@@ -175,33 +187,16 @@ const TableFilterControls = ({
     previous_filter_text.current = filter_text_input
   }, [
     filter_text_input,
-    tree_view_columns,
+    filtered_and_sorted_columns,
     open_categories,
     cached_open_categories
   ])
 
   useEffect(() => {
     if (filter_text_input.length > 0) {
-      const all_open_categories = tree_view_columns.reduce((acc, column) => {
-        const total_children = count_children(column.columns || [])
-        if (total_children < 5) {
-          acc[`/${column.header}/`] = true
-          const set_descendants_visible = (parent_column, path) => {
-            if (parent_column.columns) {
-              parent_column.columns.forEach((child_column) => {
-                const new_path = `${path}${child_column.header}/`
-                acc[new_path] = true
-                set_descendants_visible(child_column, new_path)
-              })
-            }
-          }
-          set_descendants_visible(column, `/${column.header}/`)
-        }
-        return acc
-      }, {})
-      set_open_categories(all_open_categories)
+      set_open_categories({})
     }
-  }, [tree_view_columns, filter_text_input])
+  }, [filtered_and_sorted_columns, filter_text_input])
 
   useEffect(() => {
     if (filter_controls_open) {
@@ -446,7 +441,7 @@ const TableFilterControls = ({
   const parent_ref = useRef()
 
   const row_virtualizer = useVirtualizer({
-    count: tree_view_columns.length,
+    count: filtered_and_sorted_columns.length,
     getScrollElement: () => parent_ref.current,
     estimateSize: () => 35,
     overscan: 5
@@ -666,7 +661,8 @@ const TableFilterControls = ({
                       position: 'relative'
                     }}>
                     {row_virtualizer.getVirtualItems().map((virtual_row) => {
-                      const item = tree_view_columns[virtual_row.index]
+                      const item =
+                        filtered_and_sorted_columns[virtual_row.index]
                       return (
                         <div
                           key={virtual_row.key}
@@ -680,11 +676,23 @@ const TableFilterControls = ({
                             width: 'calc(100% - 16px)',
                             transform: `translateY(${virtual_row.start}px)`
                           }}>
-                          {item.columns ? (
+                          {filter_text_input ? (
+                            <FilterControlItem
+                              key={item.column_id}
+                              column_item={item}
+                              is_visible={Boolean(
+                                shown_column_index[item.column_id]
+                              )}
+                              table_state={filters_local_table_state}
+                              on_table_state_change={(new_table_state) => {
+                                set_filters_local_table_state(new_table_state)
+                              }}
+                            />
+                          ) : item.columns ? (
                             render_category(item)
                           ) : (
                             <FilterControlItem
-                              key={item.header}
+                              key={item.column_id}
                               column_item={item}
                               is_visible={Boolean(
                                 shown_column_index[item.column_id]

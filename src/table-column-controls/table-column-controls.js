@@ -22,6 +22,7 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 import DehazeIcon from '@mui/icons-material/Dehaze'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
+import { distance } from 'fastest-levenshtein'
 
 import ColumnControlsSelectedColumnsParameters from '../column-controls-selected-columns-parameters'
 import ColumnControlsSelectedColumn from '../column-controls-selected-column'
@@ -265,14 +266,25 @@ const TableColumnControls = ({
     return index
   }, [local_table_state_columns])
 
-  const tree_view_columns = useMemo(() => {
+  const filtered_and_sorted_columns = useMemo(() => {
     if (!filter_text_input) {
       return group_columns_into_tree_view(all_columns)
     }
-    const filtered_columns = all_columns.filter((column) =>
-      fuzzy_match(filter_text_input, column.column_title || column.column_id)
-    )
-    return group_columns_into_tree_view(filtered_columns)
+    return all_columns
+      .filter((column) =>
+        fuzzy_match(filter_text_input, column.column_title || column.column_id)
+      )
+      .sort((a, b) => {
+        const distance_a = distance(
+          filter_text_input,
+          a.column_title || a.column_id
+        )
+        const distance_b = distance(
+          filter_text_input,
+          b.column_title || b.column_id
+        )
+        return distance_a - distance_b
+      })
   }, [all_columns, filter_text_input])
 
   // update local_table_state on table_state change
@@ -282,26 +294,9 @@ const TableColumnControls = ({
 
   useEffect(() => {
     if (filter_text_input.length > 0) {
-      const all_open_categories = tree_view_columns.reduce((acc, column) => {
-        const total_children = count_children(column.columns || [])
-        if (total_children < 5) {
-          acc[`/${column.header}/`] = true
-          const set_descendants_visible = (parent_column, path) => {
-            if (parent_column.columns) {
-              parent_column.columns.forEach((child_column) => {
-                const new_path = `${path}${child_column.header}/`
-                acc[new_path] = true
-                set_descendants_visible(child_column, new_path)
-              })
-            }
-          }
-          set_descendants_visible(column, `/${column.header}/`)
-        }
-        return acc
-      }, {})
-      set_open_categories(all_open_categories)
+      set_open_categories({})
     }
-  }, [tree_view_columns, filter_text_input])
+  }, [filtered_and_sorted_columns, filter_text_input])
 
   useEffect(() => {
     if (filter_text_input.length && !previous_filter_text.current.length) {
@@ -315,7 +310,7 @@ const TableColumnControls = ({
     previous_filter_text.current = filter_text_input
   }, [
     filter_text_input,
-    tree_view_columns,
+    filtered_and_sorted_columns,
     open_categories,
     cached_open_categories
   ])
@@ -344,15 +339,22 @@ const TableColumnControls = ({
       }, 300)
 
       set_visible_tree_view_columns(
-        tree_view_columns.slice(0, COLUMN_CONTROLS_INITIAL_VISIBLE_COLUMNS)
+        filtered_and_sorted_columns.slice(
+          0,
+          COLUMN_CONTROLS_INITIAL_VISIBLE_COLUMNS
+        )
       )
       setTimeout(() => {
         set_visible_tree_view_columns(
-          tree_view_columns.slice(0, COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD)
+          filtered_and_sorted_columns.slice(
+            0,
+            COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD
+          )
         )
       }, 1250)
       set_loaded_all(
-        tree_view_columns.length < COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD
+        filtered_and_sorted_columns.length <
+          COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD
       )
     } else if (!column_controls_open && was_menu_open.current) {
       if (filter_input_ref.current) {
@@ -364,7 +366,7 @@ const TableColumnControls = ({
     }
 
     was_menu_open.current = column_controls_open
-  }, [column_controls_open, tree_view_columns])
+  }, [column_controls_open, filtered_and_sorted_columns])
 
   useEffect(() => {
     if (column_controls_open) {
@@ -427,7 +429,7 @@ const TableColumnControls = ({
       set_filter_text_input(value)
       set_loaded_all(true)
     },
-    [local_table_state_columns, tree_view_columns]
+    [local_table_state_columns, filtered_and_sorted_columns]
   )
 
   const handle_drag_end = useCallback(
@@ -735,11 +737,20 @@ const TableColumnControls = ({
                 <div className='column-controls-body'>
                   <div className='column-category-container'>
                     {(loaded_all
-                      ? tree_view_columns
+                      ? filtered_and_sorted_columns
                       : visible_tree_view_columns
                     ).map((item, index) => (
                       <div key={index}>
-                        {item.columns ? (
+                        {filter_text_input ? (
+                          <ColumnControlsTableColumnItem
+                            key={item.column_id}
+                            column={item}
+                            is_visible={Boolean(
+                              shown_column_index[item.column_id]
+                            )}
+                            {...{ set_column_visible, set_column_hidden_by_id }}
+                          />
+                        ) : item.columns ? (
                           render_category(item)
                         ) : (
                           <ColumnControlsTableColumnItem
