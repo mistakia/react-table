@@ -15,7 +15,7 @@ import Checkbox from '@mui/material/Checkbox'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import TextField from '@mui/material/TextField'
-import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -233,64 +233,66 @@ const ColumnControlsSelectedColumn = React.memo(
               </div>
             </ClickAwayListener>
           </Popper>
-          {has_column_params && (
-            <Button
+          <div className='column-actions'>
+            {has_column_params && (
+              <IconButton
+                size='small'
+                className='column-action'
+                onClick={() => set_show_column_params(!show_column_params)}>
+                {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+              </IconButton>
+            )}
+            <IconButton
               size='small'
               className='column-action'
-              onClick={() => set_show_column_params(!show_column_params)}>
-              {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-            </Button>
-          )}
-          <Button
-            size='small'
-            className='column-action'
-            onClick={() => set_column_hidden_by_index(column_index)}>
-            <CloseIcon />
-          </Button>
-          <Button
-            size='small'
-            className='column-action'
-            onClick={handle_more_click}
-            ref={more_button_ref}>
-            <MoreVertIcon />
-          </Button>
-          <Popper
-            open={more_menu_open}
-            anchorEl={more_button_ref.current}
-            placement='bottom-start'>
-            <ClickAwayListener onClickAway={() => set_more_menu_open(false)}>
-              <MenuList className='more-menu'>
-                <MenuItem onClick={handle_remove_click}>
-                  <ListItemIcon>
-                    <DeleteIcon fontSize='small' />
-                  </ListItemIcon>
-                  <ListItemText>Remove</ListItemText>
-                </MenuItem>
-                <MenuItem onClick={handle_duplicate_click}>
-                  <ListItemIcon>
-                    <ContentCopyIcon fontSize='small' />
-                  </ListItemIcon>
-                  <ListItemText>Duplicate</ListItemText>
-                </MenuItem>
-              </MenuList>
-            </ClickAwayListener>
-          </Popper>
-          {has_column_params && (
-            <Checkbox
-              checked={selected_column_indexes.includes(column_index)}
-              onChange={(event) => {
-                set_selected_column_indexes(
-                  event.target.checked
-                    ? [...selected_column_indexes, column_index]
-                    : selected_column_indexes.filter(
-                        (index) => index !== column_index
-                      )
-                )
-              }}
-            />
-          )}
-          <div className='column-drag-handle' {...listeners}>
-            <DragIndicatorIcon />
+              onClick={() => set_column_hidden_by_index(column_index)}>
+              <CloseIcon />
+            </IconButton>
+            <IconButton
+              size='small'
+              className='column-action'
+              onClick={handle_more_click}
+              ref={more_button_ref}>
+              <MoreVertIcon />
+            </IconButton>
+            <Popper
+              open={more_menu_open}
+              anchorEl={more_button_ref.current}
+              placement='bottom-start'>
+              <ClickAwayListener onClickAway={() => set_more_menu_open(false)}>
+                <MenuList className='more-menu'>
+                  <MenuItem onClick={handle_remove_click}>
+                    <ListItemIcon>
+                      <DeleteIcon fontSize='small' />
+                    </ListItemIcon>
+                    <ListItemText>Remove</ListItemText>
+                  </MenuItem>
+                  <MenuItem onClick={handle_duplicate_click}>
+                    <ListItemIcon>
+                      <ContentCopyIcon fontSize='small' />
+                    </ListItemIcon>
+                    <ListItemText>Duplicate</ListItemText>
+                  </MenuItem>
+                </MenuList>
+              </ClickAwayListener>
+            </Popper>
+            {has_column_params && (
+              <Checkbox
+                checked={selected_column_indexes.includes(column_index)}
+                onChange={(event) => {
+                  set_selected_column_indexes(
+                    event.target.checked
+                      ? [...selected_column_indexes, column_index]
+                      : selected_column_indexes.filter(
+                          (index) => index !== column_index
+                        )
+                  )
+                }}
+              />
+            )}
+            <div className='column-drag-handle' {...listeners}>
+              <DragIndicatorIcon />
+            </div>
           </div>
           {show_column_params && (
             <div className='column-params-container'>

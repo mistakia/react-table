@@ -307,23 +307,25 @@ export default function FilterItem({
         <div className='filter-item-left-column'>
           {column_title || column_id}
         </div>
-        <FilterItemOperator
-          {...{
-            where_item,
-            handle_operator_change,
-            data_type
-          }}
-        />
-        <FilterItemValue
-          {...{
-            where_item,
-            filter_value,
-            handle_value_change,
-            column_values,
-            show_value,
-            data_type
-          }}
-        />
+        <div className='filter-item-left-operator-and-value-container'>
+          <FilterItemOperator
+            {...{
+              where_item,
+              handle_operator_change,
+              data_type
+            }}
+          />
+          <FilterItemValue
+            {...{
+              where_item,
+              filter_value,
+              handle_value_change,
+              column_values,
+              show_value,
+              data_type
+            }}
+          />
+        </div>
       </div>
       <div className='filter-item-right'>
         {has_column_params && (
@@ -361,6 +363,34 @@ export default function FilterItem({
               anchorEl={anchor_el.current}
               placement={MISC_MENU_DEFAULT_PLACEMENT}>
               <div>
+                {has_column_params && (
+                  <div
+                    className='misc-menu-item'
+                    onClick={() => {
+                      const is_selected =
+                        selected_where_indexes.includes(where_index)
+                      set_selected_where_indexes(
+                        is_selected
+                          ? selected_where_indexes.filter(
+                              (index) => index !== where_index
+                            )
+                          : [...selected_where_indexes, where_index]
+                      )
+                      set_misc_menu_open(false)
+                    }}>
+                    <div className='misc-menu-item-icon'>
+                      <Checkbox
+                        checked={selected_where_indexes.includes(where_index)}
+                        size='small'
+                      />
+                    </div>
+                    <div className='misc-menu-item-text'>
+                      {selected_where_indexes.includes(where_index)
+                        ? 'Deselect'
+                        : 'Select'}
+                    </div>
+                  </div>
+                )}
                 <div className='misc-menu-item' onClick={handle_remove_click}>
                   <div className='misc-menu-item-icon'>
                     <DeleteIcon size='small' />

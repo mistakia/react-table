@@ -2,7 +2,6 @@
   z-index 4
 
 .filter-controls-container
-  left 153px
   width 90px
 
   .filter-item
@@ -11,6 +10,7 @@
     flex-wrap wrap
     gap 8px
     border 1px solid transparent
+    background #fafafa
 
     &.filter-item-expanded
       border 1px solid #e0e0e0
@@ -21,7 +21,6 @@
     display flex
     align-items center
     justify-content flex-end
-    width 120px
 
     button
       min-width fit-content
@@ -42,8 +41,9 @@
     display flex
     align-items center
 
-.rank-aggregation-controls-visible .filter-controls-container
-  left 233px
+  .filter-item-left-operator-and-value-container
+    display flex
+    gap 8px
 
 .misc-menu.base-Popper-root
   min-width 160px !important
@@ -66,6 +66,12 @@
 
   .misc-menu-item-text
     font-size 14px
+
+  .misc-menu-item-icon
+    width 34px
+    display flex
+    align-items center
+    justify-content center
 
 .table-filter-add-content
   display flex
@@ -150,3 +156,21 @@
   &:hover
     .filter-item-right-action
       display block
+
+@media (max-width 600px)
+  .filter-controls-container
+    left 104px
+
+  .rank-aggregation-controls-visible .filter-controls-container
+    left 184px
+
+  .filter-item-left
+  .filter-item-right
+    flex-direction column
+
+@media (min-width 601px)
+  .filter-controls-container
+    left 153px
+
+  .rank-aggregation-controls-visible .filter-controls-container
+    left 233px

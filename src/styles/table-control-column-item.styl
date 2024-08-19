@@ -21,9 +21,6 @@
 
   &.shown
     background rgba(21, 255, 0, 0.334)
-  
-  .column-action
-    margin-right 14px
 
   .column-name
     flex 1
@@ -52,15 +49,21 @@
       width 16px
       height 16px
 
-.selected-columns-container .column-name::after
-  content '\270E'
-  position absolute
-  right 4px
-  top 50%
-  transform translateY(-50%) scaleX(-1)
-  font-size 18px
-  color #1976d2
-  opacity 0
+.selected-columns-container
+  .column-name::after
+    content '\270E'
+    position absolute
+    right 4px
+    top 50%
+    transform translateY(-50%) scaleX(-1)
+    font-size 18px
+    color #1976d2
+    opacity 0
+  .column-item
+    background #fafafa
+
+.column-actions
+  display flex
 
 @media (pointer:fine)
   .selected-columns-container .column-name
@@ -84,3 +87,7 @@
       .column-action
         opacity 1
         transition opacity 20ms ease-in 0s
+
+@media (max-width 601px)
+  .column-item
+    justify-content flex-end

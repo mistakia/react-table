@@ -19,15 +19,17 @@
 
   .table-top-container
     display flex
-    align-items center
     justify-content space-between
     position sticky
-    left 23px
-    margin-left 23px
+    left 30px
     width fit-content
     padding-top 12px
     padding-bottom 8px
     z-index 3
+    gap 8px
+
+    .table-view-menu
+      min-width fit-content
 
   .table-state-container
     display flex
@@ -56,18 +58,6 @@
           position relative
           height 0.8em
           width 0.8em
-
-  .table-top-container-body
-    display flex
-    justify-content flex-start
-    padding 2px 8px
-    padding-right 96px
-    align-items center
-    min-width fit-content
-
-    .table-view-menu
-      margin-right 8px
-      min-width fit-content
 
   &.noselect
     -webkit-touch-callout none
@@ -225,10 +215,16 @@
     width fit-content
     cursor pointer
 
+.table-search-and-controls-container
+  display flex
+  align-items center
+  justify-content center
+  width fit-content
+
 .table-controls-container
   position relative
   height 40px
-  width 40px
+  width 280px
 
 .table-state-change-controls
   position absolute
@@ -301,3 +297,20 @@
 @media (min-width: 769px)
   .table
     padding-top 48px
+
+@media (max-width: 600px)
+  .table
+    .table-top-container
+      left 8px
+      width calc(100vw - 16px)
+      flex-direction column
+
+    .table-view-menu
+      width 100%
+      .MuiTextField-root
+        width 100%
+
+@media (min-width 601px)
+  .table
+    .table-top-container
+      align-items center

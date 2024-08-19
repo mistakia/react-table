@@ -593,21 +593,21 @@ export default function Table({
         })}>
         <TableMenu {...{ data, table_state, all_columns, selected_view }} />
         <div className='table-top-container'>
-          <div className='table-top-container-body'>
-            {Boolean(views.length) && (
-              <TableViewController
-                {...{
-                  select_view,
-                  selected_view,
-                  views,
-                  on_view_change,
-                  delete_view,
-                  disable_create_view,
-                  disable_edit_view,
-                  new_view_prefix_columns
-                }}
-              />
-            )}
+          {Boolean(views.length) && (
+            <TableViewController
+              {...{
+                select_view,
+                selected_view,
+                views,
+                on_view_change,
+                delete_view,
+                disable_create_view,
+                disable_edit_view,
+                new_view_prefix_columns
+              }}
+            />
+          )}
+          <div className='table-search-and-controls-container'>
             {selected_view.view_search_column_id && (
               <TableSearch
                 {...{ selected_view, table_state, on_table_state_change }}

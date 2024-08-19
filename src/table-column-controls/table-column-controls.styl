@@ -1,21 +1,22 @@
 .table-column-controls
-  left 50px
   width 100px
 
   .column-drag-handle
     display flex
+    align-items center
+    justify-content center
     cursor ns-resize
 
 .selected-columns-container
   padding 8px
+  display flex
+  gap 4px
+  flex-direction column
 
 .column-controls-body
   overflow-y scroll
   height 100%
   flex 1
-
-.rank-aggregation-controls-visible .table-column-controls
-  left 130px
 
 .table-column-controls-load-all-columns
   margin 8px
@@ -52,3 +53,14 @@
   border-top 1px solid #e0e0e0
   overflow-y auto
   flex-grow 1
+
+@media (max-width 600px)
+  .rank-aggregation-controls-visible .table-column-controls
+    left 80px
+
+@media (min-width 601px)
+  .table-column-controls
+    left 50px
+
+  .rank-aggregation-controls-visible .table-column-controls
+    left 130px
