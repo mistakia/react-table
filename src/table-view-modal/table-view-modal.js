@@ -31,11 +31,17 @@ export default function TableViewModal({
   }, [])
 
   const handle_save_click = useCallback(() => {
-    on_view_change({
-      ...view,
-      view_name,
-      view_description
-    })
+    on_view_change(
+      {
+        ...view,
+        view_name,
+        view_description
+      },
+      {
+        view_state_changed: false,
+        view_metadata_changed: true
+      }
+    )
     set_edit_view_modal_open(false)
   }, [
     view,

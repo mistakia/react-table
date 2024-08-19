@@ -107,7 +107,8 @@ export default function Table({
   percentiles = {},
   enable_duplicate_column_ids = false,
   new_view_prefix_columns = [],
-  shorten_url
+  shorten_url,
+  is_selected_view_editable = false
 }) {
   is_fetching_more = is_fetching
 
@@ -123,7 +124,6 @@ export default function Table({
   const [filter_controls_open, set_filter_controls_open] = useState(false)
   const table_container_ref = useRef()
   const [column_controls_open, set_column_controls_open] = useState(false)
-  const is_view_editable = Boolean(selected_view.editable)
   const [filters_local_table_state, set_filters_local_table_state] =
     useState(table_state)
 
@@ -198,7 +198,7 @@ export default function Table({
 
   const is_table_state_changed = useMemo(
     () =>
-      saved_table_state &&
+      !saved_table_state ||
       JSON.stringify(table_state) !== JSON.stringify(saved_table_state),
     [table_state, saved_table_state]
   )
@@ -654,12 +654,14 @@ export default function Table({
               />
               {is_table_state_changed && (
                 <div className='table-state-change-controls'>
-                  <div
-                    className='table-state-change-control-button discard'
-                    onClick={discard_table_state_changes}>
-                    Reset
-                  </div>
-                  {is_view_editable && (
+                  {Boolean(saved_table_state) && (
+                    <div
+                      className='table-state-change-control-button discard'
+                      onClick={discard_table_state_changes}>
+                      Reset
+                    </div>
+                  )}
+                  {is_selected_view_editable && (
                     <div
                       className='table-state-change-control-button save'
                       onClick={save_table_state_change}>
@@ -748,5 +750,6 @@ Table.propTypes = {
   saved_table_state: PropTypes.object,
   enable_duplicate_column_ids: PropTypes.bool,
   new_view_prefix_columns: PropTypes.array,
-  shorten_url: PropTypes.func
+  shorten_url: PropTypes.func,
+  is_selected_view_editable: PropTypes.bool
 }

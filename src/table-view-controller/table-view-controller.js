@@ -67,7 +67,8 @@ function ViewItem({
         table_state: view.table_state
       },
       {
-        view_state_changed: true
+        view_state_changed: true,
+        is_new_view: true
       }
     )
     set_misc_menu_open(false)
@@ -97,18 +98,26 @@ function ViewItem({
                 anchorEl={anchor_el.current}
                 placement='bottom-start'>
                 <div>
-                  <div className='misc-menu-item' onClick={handle_edit_click}>
-                    <div className='misc-menu-item-icon'>
-                      <EditIcon size='small' />
-                    </div>
-                    <div className='misc-menu-item-text'>Edit</div>
-                  </div>
-                  <div className='misc-menu-item' onClick={handle_remove_click}>
-                    <div className='misc-menu-item-icon'>
-                      <DeleteIcon size='small' />
-                    </div>
-                    <div className='misc-menu-item-text'>Remove</div>
-                  </div>
+                  {Boolean(view.is_editable) && (
+                    <>
+                      <div
+                        className='misc-menu-item'
+                        onClick={handle_edit_click}>
+                        <div className='misc-menu-item-icon'>
+                          <EditIcon size='small' />
+                        </div>
+                        <div className='misc-menu-item-text'>Edit</div>
+                      </div>
+                      <div
+                        className='misc-menu-item'
+                        onClick={handle_remove_click}>
+                        <div className='misc-menu-item-icon'>
+                          <DeleteIcon size='small' />
+                        </div>
+                        <div className='misc-menu-item-text'>Remove</div>
+                      </div>
+                    </>
+                  )}
                   <div
                     className='misc-menu-item'
                     onClick={handle_duplicate_click}>
@@ -178,7 +187,6 @@ const TableViewController = ({
   const handle_click_away = () => {
     set_input_value(selected_view.view_name)
     set_views_popper_open(false)
-    set_input_value('')
   }
 
   const handle_add_click = () => {
@@ -197,7 +205,8 @@ const TableViewController = ({
         }
       },
       {
-        view_state_changed: true
+        view_state_changed: true,
+        is_new_view: true
       }
     )
     set_views_popper_open(false)
