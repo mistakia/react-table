@@ -57,7 +57,7 @@ export default function TableViewModal({
         <div className='table-view-item-content-name'>
           <TextField
             label='View name'
-            variant='filled'
+            variant='outlined'
             value={view_name}
             size='small'
             onChange={handle_view_name_change}
@@ -66,9 +66,10 @@ export default function TableViewModal({
         <div className='table-view-item-content-description'>
           <TextField
             label='View description'
-            variant='filled'
+            variant='outlined'
             value={view_description}
             multiline
+            rows={4}
             size='small'
             onChange={handle_view_description_change}
           />

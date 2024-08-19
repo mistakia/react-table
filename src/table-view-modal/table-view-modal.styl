@@ -1,5 +1,5 @@
 .table-view-modal.MuiModal-root
-  z-index 4
+  z-index 10000
 
 .table-view-modal-content
   overflow hidden
@@ -8,13 +8,13 @@
   top 50%
   left 50%
   transform translate(-50%, -50%)
-  width 66%
+  width 90vw
   max-width 600px
-  height 90%
-  max-height 200px
+  height fit-content
+  max-height 90%
   background white
   border-radius 4px
-  padding 8px
+  padding 16px
 
 .table-view-item-content-name
   font-size 14px
@@ -23,7 +23,7 @@
 .table-view-item-content-description
   flex 1
   display flex
-  padding-top 10px
+  padding-top 24px
 
   .MuiTextField-root 
     width 100%
@@ -31,7 +31,7 @@
 .table-view-modal-actions
   display flex
   justify-content flex-end
-  padding 8px
+  padding-top 16px
 
 .table-view-add-button
   flex 1
