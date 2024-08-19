@@ -13,22 +13,9 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import EditIcon from '@mui/icons-material/Edit'
 
 import TableViewModal from '../table-view-modal'
-import { fuzzy_match } from '../utils'
+import { fuzzy_match, generate_view_id } from '../utils'
 
 import './table-view-controller.styl'
-
-function generate_view_id() {
-  let timestamp = Date.now()
-  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(
-    /[xy]/g,
-    function (c) {
-      const r = (timestamp + Math.random() * 16) % 16 | 0
-      timestamp = Math.floor(timestamp / 16)
-      return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
-    }
-  )
-  return uuid
-}
 
 function ViewItem({
   view,
