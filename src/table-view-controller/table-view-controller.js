@@ -49,6 +49,7 @@ function ViewItem({
   const handle_duplicate_click = () => {
     on_view_change(
       {
+        view_id: generate_view_id(),
         view_name: `${view.view_name} (copy)`,
         view_description: view.view_description,
         table_state: view.table_state
