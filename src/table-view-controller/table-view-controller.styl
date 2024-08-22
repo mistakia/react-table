@@ -1,20 +1,79 @@
+$unopened_height = 80px
+
 .table-view-popper.base-Popper-root
   width 300px
 
+.table-view-controller-container
+  min-width 60vw
+  max-width 90vw
+  height $unopened_height
+
+  .table-expanding-control-button
+    height $unopened_height
+    margin-bottom 0
+    flex 0 0 $unopened_height
+    position relative
+    padding-top 16px
+    overflow hidden
+
+    .table-expanding-control-label
+      position absolute
+      top 4px
+      left 12px
+      font-size 8px
+      color rgba(0, 0, 0, 0.6)
+
+.table-expanding-control-container.table-view-controller
+  height $unopened_height
+  min-width 250px
+  width 30vw
+
+.table-view-controller:not(.-open)
+  border 1px solid $borderColor
+
+.table-view-controls
+  display flex
+  flex-direction column
+  overflow hidden
+  flex 1
+
 .table-view-list
+  display flex
+  flex-direction column
   padding 8px
+  gap 2px
   height 100%
   overflow hidden
   overflow-y scroll
 
+.table-view-header
+  border-bottom 1px solid $borderColor
+  display flex
+  flex-direction column
+  width 100%
+  padding 8px
+
+.table-view-footer
+  border-top 1px solid $borderColor
+
 .table-view-item
   display flex
   cursor pointer
-  padding 2px 8px
-  border-radius 4px
+  padding 4px 16px
+  border-left 2px solid transparent
 
   &:hover
     background-color rgba(0, 0, 0, 0.04)
+
+  &.-selected
+    border-color red
+
+.table-view-item-info-container
+  display flex
+  flex-direction column
+  gap 4px
+  flex 1
+  overflow hidden
 
 .table-view-item-name
   font-size 14px
@@ -33,6 +92,60 @@
 .table-view-item-left
   flex 1
   max-width calc(100% - 40px)
+  display flex
+  gap 16px
+
+.table-view-item-username
+  font-size 12px
+  color white
+  font-weight bold
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
+  background-color rgba(0, 0, 0, 0.8)
+  padding 6px 8px
+  border-radius 4px
+  display flex
+  align-items center
+  justify-content center
+  height 30px
+  margin-top 4px
+  flex 0 0 80px
+
+@media (max-width: 400px)
+  .table-view-item-username
+    flex 0 0 60px
 
 .table-view-item-right
   flex 0 0 40px
+
+.current-view-username
+  position absolute
+  top 6px
+  right 8px
+  font-size 12px
+  color rgba(0, 0, 0, 0.54)
+  background-color rgba(0, 0, 0, 0.04)
+  padding 4px 8px
+  border-radius 4px
+
+.table-expanding-control-button
+  display flex
+  align-items center
+
+  .current-view-info
+    display flex
+    gap 8px
+    flex-direction column
+    padding 8px
+    text-align left
+    overflow hidden
+
+    .current-view-title
+      font-weight bold
+
+    .current-view-description
+      font-size 0.8em
+      color rgba(0, 0, 0, 0.6)
+      overflow hidden
+      text-overflow ellipsis

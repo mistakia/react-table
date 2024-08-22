@@ -108,7 +108,8 @@ export default function Table({
   enable_duplicate_column_ids = false,
   new_view_prefix_columns = [],
   shorten_url,
-  is_selected_view_editable = false
+  is_selected_view_editable = false,
+  table_username = 'system'
 }) {
   is_fetching_more = is_fetching
 
@@ -141,7 +142,8 @@ export default function Table({
 
   const on_table_state_change = useCallback(
     ({ sort, prefix_columns, columns, where, rank_aggregation, splits }) => {
-      const { view_id, view_name, view_description } = selected_view
+      const { view_id, view_name, view_username, view_description } =
+        selected_view
 
       // cleanup state
 
@@ -178,6 +180,7 @@ export default function Table({
         {
           view_id,
           view_name,
+          view_username,
           view_description,
           table_state: {
             sort,
@@ -216,7 +219,8 @@ export default function Table({
   }, [table_state, selected_view, on_save_view, is_table_state_changed])
 
   const discard_table_state_changes = useCallback(() => {
-    const { view_id, view_name, view_description } = selected_view
+    const { view_id, view_name, view_description, view_username } =
+      selected_view
     const { sort, prefix_columns, columns, where, rank_aggregation, splits } =
       saved_table_state
     on_view_change(
@@ -224,6 +228,7 @@ export default function Table({
         view_id,
         view_name,
         view_description,
+        view_username,
         table_state: {
           sort,
           prefix_columns,
@@ -582,7 +587,8 @@ export default function Table({
         shorten_url,
         filters_local_table_state,
         set_filters_local_table_state,
-        all_columns
+        all_columns,
+        table_username
       }}>
       <div
         ref={table_container_ref}
@@ -751,5 +757,6 @@ Table.propTypes = {
   enable_duplicate_column_ids: PropTypes.bool,
   new_view_prefix_columns: PropTypes.array,
   shorten_url: PropTypes.func,
-  is_selected_view_editable: PropTypes.bool
+  is_selected_view_editable: PropTypes.bool,
+  table_username: PropTypes.string
 }
