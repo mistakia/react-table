@@ -280,7 +280,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
   return (
     <ClickAwayListener onClickAway={handle_close}>
-      <div>
+      <div className='table-menu-container'>
         <div
           className='table-menu-button'
           aria-controls='simple-menu'
