@@ -3,6 +3,7 @@
 
 .filter-controls-container
   width 90px
+  left 104px
 
   .filter-item
     display flex
@@ -157,20 +158,10 @@
     .filter-item-right-action
       display block
 
+.rank-aggregation-controls-visible .filter-controls-container
+  left 184px
+
 @media (max-width 600px)
-  .filter-controls-container
-    left 104px
-
-  .rank-aggregation-controls-visible .filter-controls-container
-    left 184px
-
   .filter-item-left
   .filter-item-right
     flex-direction column
-
-@media (min-width 601px)
-  .filter-controls-container
-    left 153px
-
-  .rank-aggregation-controls-visible .filter-controls-container
-    left 233px

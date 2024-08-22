@@ -39,7 +39,7 @@ import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
 import './table-column-controls.styl'
 
 const COLUMN_CONTROLS_INITIAL_VISIBLE_COLUMNS = 13
-const COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD = 33
+const COLUMN_CONTROLS_VISIBLE_COLUMNS_THRESHOLD = 20
 
 const ColumnControlsTableColumnItem = React.memo(
   React.forwardRef(
