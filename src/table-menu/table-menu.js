@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
@@ -280,13 +280,13 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
 
   return (
     <ClickAwayListener onClickAway={handle_close}>
-      <div className='table-menu-container'>
+      <div>
         <div
           className='table-menu-button'
           aria-controls='simple-menu'
           aria-haspopup='true'
           onClick={handle_click}>
-          <MoreHorizIcon />
+          <MoreVertIcon />
         </div>
         <div
           className={get_string_from_object({

@@ -597,7 +597,6 @@ export default function Table({
           table: true,
           noselect: is_table_resizing()
         })}>
-        <TableMenu {...{ data, table_state, all_columns, selected_view }} />
         <div className='table-top-container'>
           {Boolean(views.length) && (
             <TableViewController
@@ -614,6 +613,15 @@ export default function Table({
             />
           )}
           <div className='table-search-and-controls-container'>
+            <TableMenu
+              {...{
+                data,
+                table_state,
+                all_columns,
+                selected_view,
+                table_username
+              }}
+            />
             {selected_view.view_search_column_id && (
               <TableSearch
                 {...{ selected_view, table_state, on_table_state_change }}
