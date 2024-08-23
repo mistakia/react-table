@@ -22,7 +22,6 @@ function ViewItem({
   handle_select_view,
   set_selected_edit_view,
   set_edit_view_modal_open,
-  set_views_popper_open,
   delete_view,
   on_view_change,
   disable_edit_view,
@@ -34,7 +33,6 @@ function ViewItem({
 
   const handle_edit_click = () => {
     set_selected_edit_view(view)
-    set_views_popper_open(false)
     set_edit_view_modal_open(true)
   }
 
@@ -138,7 +136,6 @@ ViewItem.propTypes = {
   handle_select_view: PropTypes.func.isRequired,
   set_selected_edit_view: PropTypes.func.isRequired,
   set_edit_view_modal_open: PropTypes.func.isRequired,
-  set_views_popper_open: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
   on_view_change: PropTypes.func.isRequired,
   disable_edit_view: PropTypes.bool,
