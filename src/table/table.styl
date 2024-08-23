@@ -254,20 +254,19 @@
   display flex
   align-items center
   justify-content center
-  box-shadow rgba(31, 35, 40, 0.04) 0px 1px 0px 0px
-  border 1px solid rgb(208, 215, 224)
   border-radius 6px
   transition box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
 
   &.discard
     background-color rgb(246, 248, 250)
+    border 1px solid rgb(208, 215, 224)
+
   &.save
     color white
     background-color rgb(31, 136, 61)
-    border-color rgba(31, 35, 40, 0.15)
 
   &:hover
-    box-shadow #D0D0D0 4px 4px 0px 0px
+    box-shadow $box_shadow
 
 .column-param-filter-body
   padding 16px
