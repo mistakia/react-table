@@ -229,7 +229,10 @@ export default function ColumnControlsSelectedColumnsParameters({
           ref={anchor_ref}>
           Set {total_params_count} Parameters
         </div>
-        <Popper open={visible} anchorEl={anchor_ref.current}>
+        <Popper
+          className='table-popper'
+          open={visible}
+          anchorEl={anchor_ref.current}>
           <div className='selected-columns-parameters'>
             <div className='selected-columns-parameters-header'>
               <div>

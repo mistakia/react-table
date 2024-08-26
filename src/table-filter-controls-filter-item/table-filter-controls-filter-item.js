@@ -358,7 +358,7 @@ export default function FilterItem({
               <MoreHorizIcon />
             </Button>
             <Popper
-              className='misc-menu'
+              className='misc-menu table-popper'
               open={misc_menu_open}
               anchorEl={anchor_el.current}
               placement={MISC_MENU_DEFAULT_PLACEMENT}>

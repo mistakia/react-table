@@ -289,6 +289,7 @@ const TableHeader = ({ header, column, table }) => {
         </div>
       </ClickAwayListener>
       <Popper
+        className='table-popper'
         anchorEl={anchor_el.current}
         open={popper_open}
         placement='bottom'

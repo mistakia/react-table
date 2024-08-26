@@ -199,6 +199,7 @@ const ColumnControlsSelectedColumn = React.memo(
             {column.column_title || column.column_id}
           </div>
           <Popper
+            className='table-popper'
             open={column_select_open}
             anchorEl={column_select_button_ref.current}
             placement='bottom-start'>
@@ -256,6 +257,7 @@ const ColumnControlsSelectedColumn = React.memo(
               <MoreVertIcon />
             </IconButton>
             <Popper
+              className='table-popper'
               open={more_menu_open}
               anchorEl={more_button_ref.current}
               placement='bottom-start'>

@@ -90,7 +90,7 @@ function ViewItem({
                 <MoreHorizIcon />
               </IconButton>
               <Popper
-                className='misc-menu'
+                className='misc-menu table-popper'
                 open={misc_menu_open}
                 anchorEl={anchor_el.current}
                 placement='bottom-start'>

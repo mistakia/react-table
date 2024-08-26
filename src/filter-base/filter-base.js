@@ -39,7 +39,7 @@ export default function FilterBase({
           open={visible}
           anchorEl={button_ref.current}
           placement='bottom-start'
-          className='table-filter-item-dropdown'
+          className='table-filter-item-dropdown table-popper'
           ref={dropdown_ref}>
           {body}
         </Popper>
