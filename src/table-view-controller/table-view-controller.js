@@ -25,7 +25,8 @@ function ViewItem({
   delete_view,
   on_view_change,
   disable_edit_view,
-  selected_view
+  selected_view,
+  handle_menu_toggle
 }) {
   const { table_username } = useContext(table_context)
   const anchor_el = React.useRef()
@@ -44,6 +45,7 @@ function ViewItem({
   const handle_select_click = () => {
     handle_select_view(view)
     set_misc_menu_open(false)
+    handle_menu_toggle()
   }
 
   const handle_duplicate_click = () => {
@@ -139,7 +141,8 @@ ViewItem.propTypes = {
   delete_view: PropTypes.func.isRequired,
   on_view_change: PropTypes.func.isRequired,
   disable_edit_view: PropTypes.bool,
-  selected_view: PropTypes.object.isRequired
+  selected_view: PropTypes.object.isRequired,
+  handle_menu_toggle: PropTypes.func.isRequired
 }
 
 const TableViewController = ({
@@ -162,6 +165,19 @@ const TableViewController = ({
   const container_ref = React.useRef(null)
   const input_ref = React.useRef(null)
   const [transform, set_transform] = React.useState('')
+
+  const handle_menu_toggle = useCallback(() => {
+    if (view_controls_open) {
+      set_closing(true)
+      set_view_controls_open(false)
+
+      setTimeout(() => {
+        set_closing(false)
+      }, MENU_CLOSE_TIMEOUT)
+    } else {
+      set_view_controls_open(true)
+    }
+  }, [view_controls_open])
 
   const handle_input_change = (event) => {
     const { value } = event.target
@@ -194,6 +210,7 @@ const TableViewController = ({
         is_new_view: true
       }
     )
+    handle_menu_toggle()
   }
 
   const filtered_views = input_value
@@ -212,23 +229,11 @@ const TableViewController = ({
         index,
         on_view_change,
         disable_edit_view,
-        selected_view
+        selected_view,
+        handle_menu_toggle
       }}
     />
   ))
-
-  const handle_menu_toggle = useCallback(() => {
-    if (view_controls_open) {
-      set_closing(true)
-      set_view_controls_open(false)
-
-      setTimeout(() => {
-        set_closing(false)
-      }, MENU_CLOSE_TIMEOUT)
-    } else {
-      set_view_controls_open(true)
-    }
-  }, [view_controls_open])
 
   const handle_click_away = useCallback(
     (event) => {
