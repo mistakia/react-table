@@ -623,9 +623,7 @@ const TableColumnControls = ({
               <div
                 className='table-selected-filters-container'
                 style={{
-                  maxHeight: all_columns_expanded
-                    ? '0'
-                    : '100%'
+                  maxHeight: all_columns_expanded ? '0' : '100%'
                 }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>

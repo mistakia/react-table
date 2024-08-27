@@ -38,6 +38,9 @@
   flex-direction column
   overflow-y auto
 
+  .column-category
+    cursor pointer
+
 .column-select-menu
   display flex
   flex-direction column
@@ -56,3 +59,9 @@
 
 .rank-aggregation-controls-visible .table-column-controls
   left 80px
+
+@media (pointer: fine)
+  .column-category-container
+    .column-category
+      &:hover
+        background rgba(0, 0, 0, 0.05)

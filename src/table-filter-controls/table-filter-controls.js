@@ -16,7 +16,6 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import TextField from '@mui/material/TextField'
-import { useVirtualizer } from '@tanstack/react-virtual'
 import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import { distance } from 'fastest-levenshtein'
@@ -318,10 +317,7 @@ const TableFilterControls = ({
       }
     }
 
-    set_filters_local_table_state({
-      ...filters_local_table_state,
-      where: [...(filters_local_table_state.where || []), ...new_where]
-    })
+    return new_where
   }
 
   const handle_menu_toggle = useCallback(() => {
@@ -330,13 +326,21 @@ const TableFilterControls = ({
       set_filter_controls_open(false)
       setTimeout(() => {
         set_menu_closing(false)
-      }, 300) // Assuming 300ms is the duration of the CSS transition
+      }, 300)
     } else {
-      add_where_params_from_columns()
-      set_all_columns_expanded(!local_table_state_where_columns.length)
+      const new_where = add_where_params_from_columns()
+      const updated_filters_local_table_state = {
+        ...filters_local_table_state,
+        where: [...(filters_local_table_state.where || []), ...new_where]
+      }
+      set_filters_local_table_state(updated_filters_local_table_state)
+
+      const total_filters = (updated_filters_local_table_state.where || [])
+        .length
+      set_all_columns_expanded(total_filters === 0)
       set_filter_controls_open(true)
     }
-  }, [filter_controls_open])
+  }, [filter_controls_open, filters_local_table_state, table_state.columns])
 
   const handle_click_away = useCallback(
     (event) => {
@@ -441,15 +445,6 @@ const TableFilterControls = ({
     ]
   )
 
-  const parent_ref = useRef()
-
-  const row_virtualizer = useVirtualizer({
-    count: filtered_and_sorted_columns.length,
-    getScrollElement: () => parent_ref.current,
-    estimateSize: () => 35,
-    overscan: 5
-  })
-
   const handle_apply_click = useCallback(() => {
     on_table_state_change(filters_local_table_state)
   }, [filters_local_table_state, on_table_state_change])
@@ -544,9 +539,7 @@ const TableFilterControls = ({
               <div
                 className='table-selected-filters-container'
                 style={{
-                  maxHeight: all_columns_expanded
-                    ? '0'
-                    : '100%'
+                  maxHeight: all_columns_expanded ? '0' : '100%'
                 }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }} />
@@ -651,62 +644,39 @@ const TableFilterControls = ({
                     inputRef={filter_input_ref}
                   />
                 </div>
-                <div
-                  ref={parent_ref}
-                  style={{ height: '100%', overflow: 'auto', flex: 1 }}>
-                  <div
-                    className='column-category-container'
-                    style={{
-                      height: `${row_virtualizer.getTotalSize()}px`,
-                      width: '100%',
-                      position: 'relative'
-                    }}>
-                    {row_virtualizer.getVirtualItems().map((virtual_row) => {
-                      const item =
-                        filtered_and_sorted_columns[virtual_row.index]
-                      return (
-                        <div
-                          key={virtual_row.key}
-                          data-index={virtual_row.index}
-                          ref={row_virtualizer.measureElement}
-                          style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 8,
-                            right: 8,
-                            width: 'calc(100% - 16px)',
-                            transform: `translateY(${virtual_row.start}px)`
-                          }}>
-                          {filter_text_input ? (
-                            <FilterControlItem
-                              key={item.column_id}
-                              column_item={item}
-                              is_visible={Boolean(
-                                shown_column_index[item.column_id]
-                              )}
-                              table_state={filters_local_table_state}
-                              on_table_state_change={(new_table_state) => {
-                                set_filters_local_table_state(new_table_state)
-                              }}
-                            />
-                          ) : item.columns ? (
-                            render_category(item)
-                          ) : (
-                            <FilterControlItem
-                              key={item.column_id}
-                              column_item={item}
-                              is_visible={Boolean(
-                                shown_column_index[item.column_id]
-                              )}
-                              table_state={filters_local_table_state}
-                              on_table_state_change={(new_table_state) => {
-                                set_filters_local_table_state(new_table_state)
-                              }}
-                            />
-                          )}
-                        </div>
-                      )
-                    })}
+                <div style={{ height: '100%', overflow: 'auto', flex: 1 }}>
+                  <div className='column-category-container'>
+                    {filtered_and_sorted_columns.map((item, index) => (
+                      <div key={index}>
+                        {filter_text_input ? (
+                          <FilterControlItem
+                            key={item.column_id}
+                            column_item={item}
+                            is_visible={Boolean(
+                              shown_column_index[item.column_id]
+                            )}
+                            table_state={filters_local_table_state}
+                            on_table_state_change={(new_table_state) => {
+                              set_filters_local_table_state(new_table_state)
+                            }}
+                          />
+                        ) : item.columns ? (
+                          render_category(item)
+                        ) : (
+                          <FilterControlItem
+                            key={item.column_id}
+                            column_item={item}
+                            is_visible={Boolean(
+                              shown_column_index[item.column_id]
+                            )}
+                            table_state={filters_local_table_state}
+                            on_table_state_change={(new_table_state) => {
+                              set_filters_local_table_state(new_table_state)
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </>
