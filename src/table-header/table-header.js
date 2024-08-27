@@ -245,6 +245,8 @@ const TableHeader = ({ header, column, table }) => {
     )
   }
 
+  const description = header.column.columnDef.description
+
   return (
     <>
       <ClickAwayListener
@@ -320,7 +322,7 @@ const TableHeader = ({ header, column, table }) => {
         </div>
       </ClickAwayListener>
       <Popper
-        className='table-popper'
+        className='table-popper header-popper'
         anchorEl={anchor_el.current}
         open={popper_open}
         placement='bottom'
@@ -335,6 +337,7 @@ const TableHeader = ({ header, column, table }) => {
         ]}
         onMouseEnter={handle_mouse_enter}
         onMouseLeave={handle_mouse_leave}>
+        {description && <div className='header-description'>{description}</div>}
         <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
           <div className='header-menu-item'>
             <div
