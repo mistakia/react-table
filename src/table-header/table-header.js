@@ -51,7 +51,8 @@ const TableHeader = ({ header, column, table }) => {
     set_filter_controls_open,
     set_table_sort,
     set_column_hidden_by_index,
-    set_filters_local_table_state
+    set_filters_local_table_state,
+    sticky_left
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -204,24 +205,7 @@ const TableHeader = ({ header, column, table }) => {
     !is_grouped
   const width = header.getSize()
 
-  const sticky_left = useMemo(() => {
-    if (!column.columnDef.sticky) return 0
-    const leaf_columns = table.getAllLeafColumns()
-    const previous_leaf_columns = []
-    let cursor = 0
-    while (leaf_columns[cursor].id !== column.id) {
-      previous_leaf_columns.push(leaf_columns[cursor])
-      cursor++
-    }
-    const sticky_previous_leaf_columns = previous_leaf_columns.filter(
-      (column) => column.columnDef.sticky
-    )
-
-    return sticky_previous_leaf_columns.reduce(
-      (acc, column) => acc + column.getSize(),
-      0
-    )
-  }, [column, table])
+  const sticky_left_value = sticky_left(column)
 
   if (header.column.columnDef.id === 'add_column_action') {
     if (header.depth > 1) {
@@ -287,7 +271,7 @@ const TableHeader = ({ header, column, table }) => {
                   onMouseEnter: handle_mouse_enter,
                   onMouseLeave: handle_mouse_leave
                 }),
-            style: { width, left: sticky_left }
+            style: { width, left: sticky_left_value }
           }}>
           <div className='cell-content'>
             <div

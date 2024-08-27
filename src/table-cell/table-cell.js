@@ -6,6 +6,8 @@ import { get_string_from_object } from '../utils'
 import { table_context } from '../table-context'
 
 const TableCell = ({ getValue, column, row, table }) => {
+  const { sticky_left } = useContext(table_context)
+
   if (column.columnDef.id === 'add_column_action') {
     return null
   }
@@ -33,25 +35,7 @@ const TableCell = ({ getValue, column, row, table }) => {
     )
   }, [column, table])
 
-  const sticky_left = useMemo(() => {
-    if (!column.columnDef.sticky) return 0
-
-    const leaf_columns = table.getAllLeafColumns()
-    const previous_leaf_columns = []
-    let cursor = 0
-    while (leaf_columns[cursor].id !== column.id) {
-      previous_leaf_columns.push(leaf_columns[cursor])
-      cursor++
-    }
-    const sticky_previous_leaf_columns = previous_leaf_columns.filter(
-      (col) => col.columnDef.sticky
-    )
-
-    return sticky_previous_leaf_columns.reduce(
-      (acc, col) => acc + col.getSize(),
-      0
-    )
-  }, [column, table])
+  const sticky_left_value = sticky_left(column)
 
   const { sort } = table.getState()
   const is_sorted = Boolean(
@@ -74,7 +58,7 @@ const TableCell = ({ getValue, column, row, table }) => {
           }),
           style: {
             width: column.getSize(),
-            left: sticky_left
+            left: sticky_left_value
           }
         }}>
         <Component {...{ row, column }} />
@@ -150,7 +134,7 @@ const TableCell = ({ getValue, column, row, table }) => {
         }),
         style: {
           width: column.getSize(),
-          left: sticky_left,
+          left: sticky_left_value,
           backgroundColor: color
         },
         onClick: handle_click

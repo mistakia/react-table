@@ -573,6 +573,30 @@ export default function Table({
     })
   }, [virtual_rows, rows])
 
+  const sticky_columns = useMemo(
+    () => table.getAllLeafColumns().filter((col) => col.columnDef.sticky),
+    [table]
+  )
+
+  const sticky_column_sizes = useMemo(() => {
+    return sticky_columns.map((col) => col.getSize())
+  }, [sticky_columns, table.getState().columnSizingInfo])
+
+  const sticky_left = useCallback(
+    (column) => {
+      if (!column.columnDef.sticky) return 0
+
+      let total_width = 0
+      for (const col of sticky_columns) {
+        if (col.id === column.id) break
+        total_width += col.getSize()
+      }
+
+      return total_width
+    },
+    [sticky_columns, sticky_column_sizes]
+  )
+
   return (
     <table_context.Provider
       value={{
@@ -588,7 +612,10 @@ export default function Table({
         filters_local_table_state,
         set_filters_local_table_state,
         all_columns,
-        table_username
+        table_username,
+        sticky_left,
+        sticky_columns,
+        sticky_column_sizes
       }}>
       <div
         ref={table_container_ref}
