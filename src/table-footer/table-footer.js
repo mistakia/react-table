@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-const TableFooter = ({ column, header }) => {
+const TableFooter = ({ column, header, width }) => {
   const is_group_header = header.column.columns.length
 
   if (is_group_header) {
@@ -24,9 +24,8 @@ const TableFooter = ({ column, header }) => {
     <div
       {...{
         className: 'cell',
-        colSpan: header.colSpan,
         style: {
-          width: header.getSize()
+          width
         }
       }}>
       <div className='cell-content'>
@@ -40,7 +39,8 @@ const TableFooter = ({ column, header }) => {
 
 TableFooter.propTypes = {
   column: PropTypes.object,
-  header: PropTypes.object
+  header: PropTypes.object,
+  width: PropTypes.number
 }
 
 export default React.memo(TableFooter)

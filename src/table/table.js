@@ -728,7 +728,8 @@ export default function Table({
                     ? null
                     : flexRender(footer.column.columnDef.footer, {
                         key: index,
-                        ...footer.getContext()
+                        ...footer.getContext(),
+                        width: footer.column.getSize()
                       })
                 )}
               </div>
