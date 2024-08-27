@@ -328,16 +328,6 @@ const TableColumnControls = ({
 
   useEffect(() => {
     if (column_controls_open && !was_menu_open.current) {
-      setTimeout(() => {
-        if (window.innerWidth < 768) {
-          setTimeout(() => {
-            if (filter_input_ref.current) filter_input_ref.current.focus()
-          }, 400)
-        } else if (filter_input_ref.current) {
-          filter_input_ref.current.focus()
-        }
-      }, 300)
-
       set_visible_tree_view_columns(
         filtered_and_sorted_columns.slice(
           0,
@@ -367,6 +357,20 @@ const TableColumnControls = ({
 
     was_menu_open.current = column_controls_open
   }, [column_controls_open, filtered_and_sorted_columns])
+
+  useEffect(() => {
+    if (all_columns_expanded) {
+      setTimeout(() => {
+        if (window.innerWidth < 768) {
+          setTimeout(() => {
+            if (filter_input_ref.current) filter_input_ref.current.focus()
+          }, 400)
+        } else if (filter_input_ref.current) {
+          filter_input_ref.current.focus()
+        }
+      }, 300)
+    }
+  }, [all_columns_expanded])
 
   useEffect(() => {
     if (column_controls_open) {
@@ -620,7 +624,7 @@ const TableColumnControls = ({
                 className='table-selected-filters-container'
                 style={{
                   maxHeight: all_columns_expanded
-                    ? 'calc((80vh - 32px - 89px) / 2)'
+                    ? '0'
                     : '100%'
                 }}>
                 <div className='section-header'>

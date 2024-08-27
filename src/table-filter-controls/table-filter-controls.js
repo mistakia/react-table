@@ -216,16 +216,6 @@ const TableFilterControls = ({
 
         set_transform(`translateX(${translate_x}px)`)
       }
-
-      setTimeout(() => {
-        if (window.innerWidth < 768) {
-          setTimeout(() => {
-            if (filter_input_ref.current) filter_input_ref.current.focus()
-          }, 400)
-        } else if (filter_input_ref.current) {
-          filter_input_ref.current.focus()
-        }
-      }, 300)
     } else {
       set_transform('')
 
@@ -235,6 +225,20 @@ const TableFilterControls = ({
       set_filter_text_input('')
     }
   }, [filter_controls_open])
+
+  useEffect(() => {
+    if (all_columns_expanded) {
+      setTimeout(() => {
+        if (window.innerWidth < 768) {
+          setTimeout(() => {
+            if (filter_input_ref.current) filter_input_ref.current.focus()
+          }, 400)
+        } else if (filter_input_ref.current) {
+          filter_input_ref.current.focus()
+        }
+      }, 300)
+    }
+  }, [all_columns_expanded])
 
   const remove_where_params_from_columns = () => {
     // remove any where items with a null, undefined, or empty string value that match a column in table_state.columns (column_id and params)
@@ -328,6 +332,8 @@ const TableFilterControls = ({
         set_menu_closing(false)
       }, 300) // Assuming 300ms is the duration of the CSS transition
     } else {
+      add_where_params_from_columns()
+      set_all_columns_expanded(!local_table_state_where_columns.length)
       set_filter_controls_open(true)
     }
   }, [filter_controls_open])
@@ -363,9 +369,6 @@ const TableFilterControls = ({
   useEffect(() => {
     if (filter_controls_open) {
       document.addEventListener('keydown', handle_key_down)
-      setTimeout(() => {
-        add_where_params_from_columns()
-      }, 400)
     } else {
       document.removeEventListener('keydown', handle_key_down)
       setTimeout(() => {
@@ -542,13 +545,11 @@ const TableFilterControls = ({
                 className='table-selected-filters-container'
                 style={{
                   maxHeight: all_columns_expanded
-                    ? 'calc((80vh - 32px - 89px) / 2)'
+                    ? '0'
                     : '100%'
                 }}>
                 <div className='section-header'>
-                  <div style={{ display: 'flex', alignSelf: 'center' }}>
-                    Applied Filters
-                  </div>
+                  <div style={{ display: 'flex', alignSelf: 'center' }} />
                   <div style={{ display: 'flex' }}>
                     {selected_where_indexes.length > 0 && (
                       <>
@@ -623,7 +624,7 @@ const TableFilterControls = ({
                 </div>
               </div>
             )}
-            <div className='section-header'>
+            <div className='section-header available-columns'>
               <div style={{ display: 'flex', alignSelf: 'center' }}>
                 {all_columns.length} Available Filters
               </div>

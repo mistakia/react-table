@@ -3,7 +3,8 @@ import React, {
   useState,
   useCallback,
   useMemo,
-  useContext
+  useContext,
+  useEffect
 } from 'react'
 import PropTypes from 'prop-types'
 import AddIcon from '@mui/icons-material/Add'
@@ -54,6 +55,41 @@ const TableHeader = ({ header, column, table }) => {
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
+  const [opened_by_hover, set_opened_by_hover] = useState(false)
+  const close_timer_ref = useRef(null)
+  const is_hovering_ref = useRef(false)
+
+  const handle_mouse_enter = useCallback(() => {
+    if (window.matchMedia('(pointer: fine)').matches) {
+      clearTimeout(close_timer_ref.current)
+      is_hovering_ref.current = true
+      set_popper_open(true)
+      set_opened_by_hover(true)
+    }
+  }, [])
+
+  const handle_mouse_leave = useCallback(() => {
+    if (opened_by_hover) {
+      is_hovering_ref.current = false
+      if (!is_hovering_ref.current) {
+        set_popper_open(false)
+        set_opened_by_hover(false)
+      }
+    }
+  }, [opened_by_hover])
+
+  const handle_click = useCallback(() => {
+    clearTimeout(close_timer_ref.current)
+    set_popper_open((prev) => !prev)
+    set_opened_by_hover(false)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(close_timer_ref.current)
+    }
+  }, [])
+
   const column_index = useMemo(() => {
     const columns_with_same_id = table
       .getAllLeafColumns()
@@ -227,7 +263,12 @@ const TableHeader = ({ header, column, table }) => {
 
   return (
     <>
-      <ClickAwayListener onClickAway={() => set_popper_open(false)}>
+      <ClickAwayListener
+        onClickAway={() => {
+          clearTimeout(close_timer_ref.current)
+          set_popper_open(false)
+          set_opened_by_hover(false)
+        }}>
         <div
           {...{
             className: get_string_from_object({
@@ -239,7 +280,13 @@ const TableHeader = ({ header, column, table }) => {
             }),
             colSpan: header.colSpan,
             ref: anchor_el,
-            onClick: () => set_popper_open(!popper_open),
+            onClick: handle_click,
+            ...(header.isPlaceholder
+              ? {}
+              : {
+                  onMouseEnter: handle_mouse_enter,
+                  onMouseLeave: handle_mouse_leave
+                }),
             style: { width, left: sticky_left }
           }}>
           <div className='cell-content'>
@@ -298,10 +345,12 @@ const TableHeader = ({ header, column, table }) => {
           {
             name: 'offset',
             options: {
-              offset: [0, 8]
+              offset: [0, 0]
             }
           }
-        ]}>
+        ]}
+        onMouseEnter={handle_mouse_enter}
+        onMouseLeave={handle_mouse_leave}>
         <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
           <div className='header-menu-item'>
             <div
