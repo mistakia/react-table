@@ -400,9 +400,10 @@ const TableColumnControls = ({
         set_closing(false)
       }, MENU_CLOSE_TIMEOUT)
     } else {
+      set_all_columns_expanded(!local_table_state_columns.length)
       set_column_controls_open(true)
     }
-  }, [column_controls_open])
+  }, [column_controls_open, local_table_state_columns])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -435,6 +436,8 @@ const TableColumnControls = ({
   const handle_drag_end = useCallback(
     (event) => {
       const { active, over } = event
+      if (!over) return
+
       if (active.id !== over.id) {
         const old_index = shown_column_items.findIndex(
           (column) => column.id === active.id
@@ -707,7 +710,7 @@ const TableColumnControls = ({
                 </div>
               </div>
             )}
-            <div className='section-header'>
+            <div className='section-header available-columns'>
               <div style={{ display: 'flex', alignSelf: 'center' }}>
                 {all_columns.length} Available Columns
               </div>

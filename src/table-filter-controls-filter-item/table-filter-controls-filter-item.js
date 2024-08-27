@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import InputLabel from '@mui/material/InputLabel'
 import FormControl from '@mui/material/FormControl'
 import { Popper } from '@mui/base/Popper'
@@ -355,7 +355,7 @@ export default function FilterItem({
             <Button
               ref={anchor_el}
               onClick={() => set_misc_menu_open(!misc_menu_open)}>
-              <MoreHorizIcon />
+              <MoreVertIcon />
             </Button>
             <Popper
               className='misc-menu table-popper'
