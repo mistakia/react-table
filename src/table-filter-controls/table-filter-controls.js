@@ -305,6 +305,9 @@ const TableFilterControls = ({
         const column_definition = all_columns.find(
           (c) => c.column_id === column_id
         )
+        if (!column_definition) {
+          continue
+        }
         const operator = column_definition.operators
           ? column_definition.operators[0]
           : OPERATOR_MENU_DEFAULT_VALUE
