@@ -249,9 +249,14 @@ const TableFilterControls = ({
       return
     }
 
+    const visible_table_columns = [
+      ...(table_state.columns || []),
+      ...(table_state.prefix_columns || [])
+    ]
+
     const updated_where = (filters_local_table_state.where || []).filter(
       (where_item) => {
-        const matching_column = table_state.columns.find((column) => {
+        const matching_column = visible_table_columns.find((column) => {
           const column_id =
             typeof column === 'string' ? column : column.column_id
           const column_params =
@@ -285,7 +290,11 @@ const TableFilterControls = ({
     // populate local_table_state where filters with filters from table_state.columns that do not exist
     // compare columnn_id and params (json.stringify)
     const new_where = []
-    for (const column of table_state.columns || []) {
+    const visible_table_columns = [
+      ...(table_state.columns || []),
+      ...(table_state.prefix_columns || [])
+    ]
+    for (const column of visible_table_columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_params =
         typeof column === 'string' ? {} : column.column_params
