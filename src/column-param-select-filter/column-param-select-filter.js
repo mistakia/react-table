@@ -410,13 +410,15 @@ function create_dynamic_item({
       onClick={() => handle_select(index)}>
       <Checkbox checked={is_selected} size='small' />
       <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
-      <TextField
-        size='small'
-        value={dynamic_values[v.value] ?? ''}
-        onChange={(e) => handle_dynamic_value_change(v.value, e.target.value)}
-        onClick={(e) => e.stopPropagation()}
-        placeholder={v.default_value.toString()}
-      />
+      {v.has_value_field && (
+        <TextField
+          size='small'
+          value={dynamic_values[v.value] ?? ''}
+          onChange={(e) => handle_dynamic_value_change(v.value, e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          placeholder={v.default_value?.toString() || ''}
+        />
+      )}
     </div>
   )
 }
