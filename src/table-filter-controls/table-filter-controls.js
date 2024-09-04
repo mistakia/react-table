@@ -274,6 +274,8 @@ const TableFilterControls = ({
         })
         return (
           !matching_column ||
+          where_item.operator === 'IS NULL' ||
+          where_item.operator === 'IS NOT NULL' ||
           (where_item.value !== null &&
             where_item.value !== undefined &&
             where_item.value !== '')

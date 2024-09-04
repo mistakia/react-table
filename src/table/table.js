@@ -168,11 +168,15 @@ export default function Table({
         where && where.forEach(remove_disabled_params)
       }
 
-      // remove any where items with a null, undefined, or empty string value
+      // remove any where items where the operator is not IS NULL or IS NOT NULL and has a null, undefined, or empty string value
       if (where) {
         where = where.filter(
           (item) =>
-            item.value !== null && item.value !== undefined && item.value !== ''
+            item.operator === 'IS NULL' ||
+            item.operator === 'IS NOT NULL' ||
+            (item.value !== null &&
+              item.value !== undefined &&
+              item.value !== '')
         )
       }
 
