@@ -71,10 +71,6 @@ export default function ColumnParamSelectFilter({
       })
     }
 
-    if (single) {
-      return handle_change([all_filter_values[index].value])
-    }
-
     if (all_filter_values[index].is_dynamic) {
       return handle_dynamic_select({
         index,
@@ -83,6 +79,10 @@ export default function ColumnParamSelectFilter({
         dynamic_values,
         handle_change
       })
+    }
+
+    if (single) {
+      return handle_change([all_filter_values[index].value])
     }
 
     if (all_filter_values[index].is_preset) {
