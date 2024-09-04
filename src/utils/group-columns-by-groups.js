@@ -299,7 +299,10 @@ function handle_array_param_value(param_value, param_key, column, param_label) {
   } else {
     const column_param_labels = param_value.map((param_v) => {
       if (typeof param_v === 'object' && param_v.dynamic_type) {
-        return `${param_v.dynamic_type} (${param_v.value})`
+        return (
+          `${param_v.dynamic_type}` +
+          (param_v.value ? ` (${param_v.value})` : '')
+        )
       } else if (typeof param_v === 'object') {
         return param_v.label || param_v.value
       } else {
@@ -329,7 +332,10 @@ function handle_range_param_value(param_value, param_key, column, param_label) {
 }
 
 function handle_dynamic_param_value(param_value, param_label) {
-  return `${param_label}: ${param_value.dynamic_type} (${param_value.value})`
+  return (
+    `${param_label}: ${param_value.dynamic_type}` +
+    (param_value.value ? ` (${param_value.value})` : '')
+  )
 }
 
 function handle_single_param_value(
