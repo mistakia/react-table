@@ -205,6 +205,7 @@ function create_dynamic_values({
       value: dynamic_value.dynamic_type,
       is_dynamic: true,
       default_value: dynamic_value.default_value,
+      has_value_field: dynamic_value.has_value_field,
       selected:
         !mixed_state &&
         selected_param_values?.some(
