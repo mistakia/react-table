@@ -158,13 +158,39 @@ const TableColumnControls = ({
 
   const set_column_visible = useCallback(
     (column_id) => {
+      const column_definition = all_columns.find(
+        (col) => col.column_id === column_id
+      )
+      let new_column = column_id
+
+      if (column_definition && column_definition.column_params) {
+        const default_params = {}
+        for (const [param_key, param_value] of Object.entries(
+          column_definition.column_params
+        )) {
+          if (
+            param_value.default_value !== undefined &&
+            param_value.default_value !== null
+          ) {
+            default_params[param_key] = [param_value.default_value]
+          }
+        }
+
+        if (Object.keys(default_params).length > 0) {
+          new_column = {
+            column_id,
+            params: default_params
+          }
+        }
+      }
+
       set_local_table_state((prev) => ({
         ...prev,
-        columns: [...(prev.columns || []), column_id],
+        columns: [...(prev.columns || []), new_column],
         sort: (prev.sort || []).length ? prev.sort : [{ column_id, desc: true }]
       }))
     },
-    [table_state]
+    [all_columns, table_state]
   )
 
   const set_column_hidden_by_index = useCallback(
