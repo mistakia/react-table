@@ -34,7 +34,7 @@ import {
   use_count_children
 } from '../utils'
 import { table_context } from '../table-context'
-import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
+import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '../constants.mjs'
 
 import './table-column-controls.styl'
 
@@ -172,7 +172,13 @@ const TableColumnControls = ({
             param_value.default_value !== undefined &&
             param_value.default_value !== null
           ) {
-            default_params[param_key] = [param_value.default_value]
+            switch (param_value.data_type) {
+              case TABLE_DATA_TYPES.SELECT:
+                default_params[param_key] = [param_value.default_value]
+                break
+              default:
+                default_params[param_key] = param_value.default_value
+            }
           }
         }
 
