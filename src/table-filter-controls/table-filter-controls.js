@@ -298,8 +298,7 @@ const TableFilterControls = ({
     ]
     for (const column of visible_table_columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
-      const column_params =
-        typeof column === 'string' ? {} : column.column_params
+      const column_params = typeof column === 'string' ? {} : column.params
       if (
         !(filters_local_table_state.where || []).some(
           (filter) =>
