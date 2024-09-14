@@ -77,7 +77,8 @@ export default function ColumnParamSelectFilter({
         all_filter_values,
         selected_param_values,
         dynamic_values,
-        handle_change
+        handle_change,
+        single
       })
     }
 
@@ -258,7 +259,8 @@ function handle_dynamic_select({
   all_filter_values,
   selected_param_values,
   dynamic_values,
-  handle_change
+  handle_change,
+  single
 }) {
   const dynamic_type = all_filter_values[index].value
   const is_currently_selected = selected_param_values?.some(
@@ -266,17 +268,23 @@ function handle_dynamic_select({
   )
 
   let new_values
-  if (is_currently_selected) {
-    new_values = selected_param_values.filter(
-      (v) => typeof v !== 'object' || v.dynamic_type !== dynamic_type
-    )
-  } else {
+  if (single) {
     const dynamic_value =
       dynamic_values[dynamic_type] || all_filter_values[index].default_value
-    new_values = [
-      ...(selected_param_values || []),
-      { dynamic_type, value: dynamic_value }
-    ]
+    new_values = [{ dynamic_type, value: dynamic_value }]
+  } else {
+    if (is_currently_selected) {
+      new_values = selected_param_values.filter(
+        (v) => typeof v !== 'object' || v.dynamic_type !== dynamic_type
+      )
+    } else {
+      const dynamic_value =
+        dynamic_values[dynamic_type] || all_filter_values[index].default_value
+      new_values = [
+        ...(selected_param_values || []),
+        { dynamic_type, value: dynamic_value }
+      ]
+    }
   }
   return handle_change(new_values)
 }
