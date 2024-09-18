@@ -128,6 +128,7 @@ export default function group_columns_by_groups(
               param_label
             )
           } else if (
+            param_value &&
             typeof param_value === 'object' &&
             param_value.dynamic_type
           ) {
@@ -298,12 +299,12 @@ function handle_array_param_value(param_value, param_key, column, param_label) {
     return handle_range_param_value(param_value, param_key, column, param_label)
   } else {
     const column_param_labels = param_value.map((param_v) => {
-      if (typeof param_v === 'object' && param_v.dynamic_type) {
+      if (param_v && typeof param_v === 'object' && param_v.dynamic_type) {
         return (
           `${param_v.dynamic_type}` +
           (param_v.value ? ` (${param_v.value})` : '')
         )
-      } else if (typeof param_v === 'object') {
+      } else if (param_v && typeof param_v === 'object') {
         return param_v.label || param_v.value
       } else {
         return (

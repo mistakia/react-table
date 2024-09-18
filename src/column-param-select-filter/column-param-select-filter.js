@@ -174,7 +174,7 @@ function is_single_select({ column_param_definition, splits }) {
 function update_dynamic_values({ selected_param_values, set_dynamic_values }) {
   const new_dynamic_values = {}
   selected_param_values?.forEach((value) => {
-    if (typeof value === 'object' && value.dynamic_type) {
+    if (value && typeof value === 'object' && value.dynamic_type) {
       new_dynamic_values[value.dynamic_type] = value.value
     }
   })
@@ -186,13 +186,25 @@ function create_static_values({
   selected_param_values,
   mixed_state
 }) {
-  return (column_param_definition?.values || []).map((param_value) => ({
-    label: param_value.label || param_value,
-    value: param_value.value || param_value,
-    selected:
-      !mixed_state &&
-      (selected_param_values || []).includes(param_value.value || param_value)
-  }))
+  return (column_param_definition?.values || []).map((param_value) => {
+    const value =
+      param_value.value !== undefined
+        ? param_value.value
+        : param_value !== null
+        ? param_value
+        : null
+    return {
+      label: param_value.label || param_value,
+      value,
+      selected:
+        !mixed_state &&
+        ((Array.isArray(selected_param_values) &&
+          selected_param_values.length === 0 &&
+          value === null) ||
+          (Array.isArray(selected_param_values) &&
+            selected_param_values.includes(value)))
+    }
+  })
 }
 
 function create_dynamic_values({
@@ -264,7 +276,7 @@ function handle_dynamic_select({
 }) {
   const dynamic_type = all_filter_values[index].value
   const is_currently_selected = selected_param_values?.some(
-    (v) => typeof v === 'object' && v.dynamic_type === dynamic_type
+    (v) => v && typeof v === 'object' && v.dynamic_type === dynamic_type
   )
 
   let new_values
@@ -331,7 +343,7 @@ function handle_static_select({
     .map((v) => v.value)
 
   const existing_dynamic_values =
-    selected_param_values?.filter((v) => typeof v === 'object') || []
+    selected_param_values?.filter((v) => v && typeof v === 'object') || []
 
   const filtered_values = [...new_static_values, ...existing_dynamic_values]
 

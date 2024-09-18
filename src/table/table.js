@@ -150,7 +150,7 @@ export default function Table({
       // check if any params are set to disable on splits and remove them
       if (splits && splits.length > 0) {
         const remove_disabled_params = (item) => {
-          if (typeof item === 'object' && item.params) {
+          if (item && typeof item === 'object' && item.params) {
             const column_definition = all_columns[item.column_id]
             if (column_definition && column_definition.column_params) {
               Object.keys(item.params).forEach((param_name) => {
