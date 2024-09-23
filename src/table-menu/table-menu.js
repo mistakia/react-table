@@ -75,7 +75,8 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       headers.push({
         row_key: column_label,
         accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey
+        accessorKey: column_def.accessorKey,
+        column_index: 0
       })
     }
 
@@ -109,17 +110,24 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       const row_data = {}
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
+        let value
         if (header.accessorFn) {
-          row_data[header.row_key] = header.accessorFn({
+          value = header.accessorFn({
             row,
             column_index: header.column_index
           })
         } else {
-          row_data[header.row_key] =
+          value =
             row[`${header.accessorKey}_${header.column_index}`] ||
             row[header.accessorKey] ||
             ''
         }
+
+        if (Array.isArray(value)) {
+          value = value.join('|')
+        }
+
+        row_data[header.row_key] = value
       }
       download_data.push(row_data)
     }
@@ -145,7 +153,8 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
       headers.push({
         row_key: column_label,
         accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey
+        accessorKey: column_def.accessorKey,
+        column_index: 0
       })
     }
 
@@ -242,8 +251,10 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
         const column_def = all_columns[column_id]
         row_data.push(
           column_def.accessorFn
-            ? column_def.accessorFn({ row })
-            : row[column_def.accessorKey] || ''
+            ? column_def.accessorFn({ row, column_index: 0 })
+            : row[`${column_def.accessorKey}_0`] ||
+                row[column_def.accessorKey] ||
+                ''
         )
       }
 
