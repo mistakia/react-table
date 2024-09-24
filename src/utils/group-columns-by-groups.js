@@ -314,7 +314,7 @@ function handle_array_param_value(param_value, param_key, column, param_label) {
         )
       }
     })
-    return `${param_label}: ${column_param_labels.join(', ')}`
+    return column_param_labels.join(', ')
   }
 }
 
