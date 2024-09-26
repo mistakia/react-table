@@ -4,6 +4,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import copy from 'copy-text-to-clipboard'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
@@ -12,8 +13,8 @@ import { table_context } from '../table-context'
 
 import './table-menu.styl'
 
-const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
-  const { shorten_url } = useContext(table_context)
+const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache }) => {
+  const { shorten_url, disable_edit_view } = useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
 
@@ -289,6 +290,11 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
     handle_close()
   }
 
+  const handle_reset_cache = () => {
+    reset_cache()
+    handle_close()
+  }
+
   return (
     <ClickAwayListener onClickAway={handle_close}>
       <div className='table-menu-container'>
@@ -341,6 +347,17 @@ const TableMenu = ({ data, table_state, all_columns, selected_view }) => {
             </div>
             <div className='table-menu-item-text'>Copy To Clipboard</div>
           </div>
+          {!disable_edit_view && (
+            <div
+              className='table-menu-item'
+              onClick={handle_reset_cache}
+              role='menuitem'>
+              <div className='table-menu-item-icon'>
+                <RestartAltIcon fontSize='small' />
+              </div>
+              <div className='table-menu-item-text'>Reset Cache</div>
+            </div>
+          )}
         </div>
       </div>
     </ClickAwayListener>

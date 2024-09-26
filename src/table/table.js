@@ -109,7 +109,8 @@ export default function Table({
   new_view_prefix_columns = [],
   shorten_url,
   is_selected_view_editable = false,
-  table_username = 'system'
+  table_username = 'system',
+  reset_cache = null
 }) {
   is_fetching_more = is_fetching
 
@@ -619,7 +620,8 @@ export default function Table({
         table_username,
         sticky_left,
         sticky_columns,
-        sticky_column_sizes
+        sticky_column_sizes,
+        disable_edit_view
       }}>
       <div
         ref={table_container_ref}
@@ -650,7 +652,8 @@ export default function Table({
                 table_state,
                 all_columns,
                 selected_view,
-                table_username
+                table_username,
+                reset_cache
               }}
             />
             {selected_view.view_search_column_id && (
