@@ -110,7 +110,8 @@ export default function Table({
   shorten_url,
   is_selected_view_editable = false,
   table_username = 'system',
-  reset_cache = null
+  reset_cache = null,
+  get_export_api_url = () => {}
 }) {
   is_fetching_more = is_fetching
 
@@ -626,7 +627,8 @@ export default function Table({
         sticky_left,
         sticky_columns,
         sticky_column_sizes,
-        disable_edit_view
+        disable_edit_view,
+        get_export_api_url
       }}>
       <div
         ref={table_container_ref}
@@ -807,5 +809,6 @@ Table.propTypes = {
   shorten_url: PropTypes.func,
   is_selected_view_editable: PropTypes.bool,
   table_username: PropTypes.string,
-  reset_cache: PropTypes.func
+  reset_cache: PropTypes.func,
+  get_export_api_url: PropTypes.func
 }

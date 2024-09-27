@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback, useContext } from 'react'
 import PropTypes from 'prop-types'
-import copy from 'copy-text-to-clipboard'
 
 import { get_string_from_object } from '../utils'
 import { table_context } from '../table-context'
@@ -92,8 +91,14 @@ const TableCell = ({ getValue, column, row, table }) => {
 
   const handle_click = useCallback(() => {
     if (value !== undefined && value !== null) {
-      copy(`${value}`)
-      console.log('copied to clipboard:', value)
+      navigator.clipboard
+        .writeText(`${value}`)
+        .then(() => {
+          console.log('copied to clipboard:', value)
+        })
+        .catch((err) => {
+          console.error('Failed to copy text: ', err)
+        })
     }
   }, [value])
 

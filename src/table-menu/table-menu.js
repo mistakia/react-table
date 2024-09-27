@@ -5,7 +5,6 @@ import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
-import copy from 'copy-text-to-clipboard'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import Switch from '@mui/material/Switch'
 import InfoIcon from '@mui/icons-material/Info'
@@ -23,10 +22,16 @@ const TableMenu = ({
   selected_view,
   reset_cache
 }) => {
-  const { shorten_url, disable_edit_view } = useContext(table_context)
+  const { shorten_url, disable_edit_view, get_export_api_url } =
+    useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
   const [use_zero_values, set_use_zero_values] = useState(false)
+  const is_saved_table = Boolean(
+    selected_view.view_id &&
+      selected_view.saved_table_state &&
+      selected_view.user_id
+  )
 
   const handle_click = () => {
     set_is_open(!is_open)
@@ -34,6 +39,14 @@ const TableMenu = ({
 
   const handle_close = () => {
     set_is_open(false)
+  }
+
+  const copy_to_clipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+    }
   }
 
   const handle_shareable_link = async () => {
@@ -63,9 +76,9 @@ const TableMenu = ({
       set_link_state('Generating Link')
       const response = await shorten_url(shareable_link)
       const shortened_url = `${window.location.origin}${response.short_url}`
-      copy(shortened_url)
+      await copy_to_clipboard(shortened_url)
     } else {
-      copy(shareable_link)
+      await copy_to_clipboard(shareable_link)
     }
     set_link_state('Copied Link')
 
@@ -236,7 +249,7 @@ const TableMenu = ({
     handle_close()
   }
 
-  const handle_copy_to_clipboard = () => {
+  const handle_copy_to_clipboard = async () => {
     const headers = []
     const tsv_rows = []
 
@@ -301,13 +314,31 @@ const TableMenu = ({
     }
 
     const tsv_content = tsv_rows.join('\n')
-    copy(tsv_content)
+    await copy_to_clipboard(tsv_content)
 
     handle_close()
   }
 
   const handle_reset_cache = () => {
     reset_cache()
+    handle_close()
+  }
+
+  const handle_copy_export_csv_api_url = async () => {
+    const url = get_export_api_url({
+      view_id: selected_view.view_id,
+      export_format: 'csv'
+    })
+    await copy_to_clipboard(url)
+    handle_close()
+  }
+
+  const handle_copy_export_json_api_url = async () => {
+    const url = get_export_api_url({
+      view_id: selected_view.view_id,
+      export_format: 'json'
+    })
+    await copy_to_clipboard(url)
     handle_close()
   }
 
@@ -391,6 +422,29 @@ const TableMenu = ({
               color='primary'
             />
           </div>
+          {Boolean(is_saved_table) && (
+            <>
+              <div className='table-menu-divider' />
+              <div
+                className='table-menu-item'
+                onClick={handle_copy_export_csv_api_url}
+                role='menuitem'>
+                <div className='table-menu-item-icon'>
+                  <CodeIcon fontSize='small' />
+                </div>
+                <div className='table-menu-item-text'>Copy CSV API URL</div>
+              </div>
+              <div
+                className='table-menu-item'
+                onClick={handle_copy_export_json_api_url}
+                role='menuitem'>
+                <div className='table-menu-item-icon'>
+                  <CodeIcon fontSize='small' />
+                </div>
+                <div className='table-menu-item-text'>Copy JSON API URL</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </ClickAwayListener>
