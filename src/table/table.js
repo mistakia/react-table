@@ -801,5 +801,6 @@ Table.propTypes = {
   new_view_prefix_columns: PropTypes.array,
   shorten_url: PropTypes.func,
   is_selected_view_editable: PropTypes.bool,
-  table_username: PropTypes.string
+  table_username: PropTypes.string,
+  reset_cache: PropTypes.func
 }

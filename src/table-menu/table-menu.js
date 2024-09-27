@@ -4,19 +4,29 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import CodeIcon from '@mui/icons-material/Code'
 import LinkIcon from '@mui/icons-material/Link'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
-import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import copy from 'copy-text-to-clipboard'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
+import Switch from '@mui/material/Switch'
+import InfoIcon from '@mui/icons-material/Info'
+import Tooltip from '@mui/material/Tooltip'
 
 import { get_string_from_object, export_csv, export_json } from '../utils'
 import { table_context } from '../table-context'
 
 import './table-menu.styl'
 
-const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache }) => {
+const TableMenu = ({
+  data,
+  table_state,
+  all_columns,
+  selected_view,
+  reset_cache
+}) => {
   const { shorten_url, disable_edit_view } = useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
+  const [use_zero_values, set_use_zero_values] = useState(false)
 
   const handle_click = () => {
     set_is_open(!is_open)
@@ -62,6 +72,33 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
     setTimeout(() => {
       set_link_state('Copy Link')
     }, 2000)
+  }
+
+  const handle_zero_values_change = (event) => {
+    set_use_zero_values(event.target.checked)
+  }
+
+  const get_cell_value = (row, header) => {
+    let value
+    if (header.accessorFn) {
+      value = header.accessorFn({
+        row,
+        column_index: header.column_index
+      })
+    } else {
+      value =
+        row[`${header.accessorKey}_${header.column_index}`] ||
+        row[header.accessorKey] ||
+        ''
+    }
+    if (
+      (value === null || value === undefined || value === '') &&
+      use_zero_values
+    ) {
+      return 0
+    }
+
+    return value
   }
 
   const handle_export_csv = () => {
@@ -111,18 +148,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
       const row_data = {}
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
-        let value
-        if (header.accessorFn) {
-          value = header.accessorFn({
-            row,
-            column_index: header.column_index
-          })
-        } else {
-          value =
-            row[`${header.accessorKey}_${header.column_index}`] ||
-            row[header.accessorKey] ||
-            ''
-        }
+        let value = get_cell_value(row, header)
 
         if (Array.isArray(value)) {
           value = value.join('|')
@@ -192,17 +218,7 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
 
       for (let i = 0; i < headers.length; i++) {
         const header = headers[i]
-        if (header.accessorFn) {
-          row_data[header.row_key] = header.accessorFn({
-            row,
-            column_index: header.column_index
-          })
-        } else {
-          row_data[header.row_key] =
-            row[`${header.accessorKey}_${header.column_index}`] ||
-            row[header.accessorKey] ||
-            null
-        }
+        row_data[header.row_key] = get_cell_value(row, header)
       }
 
       download_data.push(row_data)
@@ -251,11 +267,11 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
         const column_id = typeof column === 'string' ? column : column.column_id
         const column_def = all_columns[column_id]
         row_data.push(
-          column_def.accessorFn
-            ? column_def.accessorFn({ row, column_index: 0 })
-            : row[`${column_def.accessorKey}_0`] ||
-                row[column_def.accessorKey] ||
-                ''
+          get_cell_value(row, {
+            accessorFn: column_def.accessorFn,
+            accessorKey: column_def.accessorKey,
+            column_index: 0
+          })
         )
       }
 
@@ -271,11 +287,11 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
         const column_def = all_columns[column_id]
         const column_index = column_indices[column_id]
         row_data.push(
-          column_def.accessorFn
-            ? column_def.accessorFn({ row, column_index })
-            : row[`${column_def.accessorKey}_${column_index}`] ||
-                row[column_def.accessorKey] ||
-                ''
+          get_cell_value(row, {
+            accessorFn: column_def.accessorFn,
+            accessorKey: column_def.accessorKey,
+            column_index
+          })
         )
 
         column_indices[column_id]++
@@ -320,6 +336,18 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
             </div>
             <div className='table-menu-item-text'>{link_state}</div>
           </div>
+          {!disable_edit_view && (
+            <div
+              className='table-menu-item'
+              onClick={handle_reset_cache}
+              role='menuitem'>
+              <div className='table-menu-item-icon'>
+                <RestartAltIcon fontSize='small' />
+              </div>
+              <div className='table-menu-item-text'>Reset Cache</div>
+            </div>
+          )}
+          <div className='table-menu-divider' />
           <div
             className='table-menu-item'
             onClick={handle_export_csv}
@@ -347,17 +375,22 @@ const TableMenu = ({ data, table_state, all_columns, selected_view, reset_cache 
             </div>
             <div className='table-menu-item-text'>Copy To Clipboard</div>
           </div>
-          {!disable_edit_view && (
-            <div
-              className='table-menu-item'
-              onClick={handle_reset_cache}
-              role='menuitem'>
-              <div className='table-menu-item-icon'>
-                <RestartAltIcon fontSize='small' />
-              </div>
-              <div className='table-menu-item-text'>Reset Cache</div>
+          <div className='table-menu-item'>
+            <div className='table-menu-item-text small description'>
+              <Tooltip title='When enabled, null values in the data will be replaced with zero during export and copy operations.'>
+                <InfoIcon
+                  fontSize='small'
+                  style={{ marginRight: '8px', verticalAlign: 'middle' }}
+                />
+              </Tooltip>
+              Use Zero for missing values
             </div>
-          )}
+            <Switch
+              checked={use_zero_values}
+              onChange={handle_zero_values_change}
+              color='primary'
+            />
+          </div>
         </div>
       </div>
     </ClickAwayListener>
@@ -368,7 +401,8 @@ TableMenu.propTypes = {
   data: PropTypes.array.isRequired,
   table_state: PropTypes.object.isRequired,
   all_columns: PropTypes.object.isRequired,
-  selected_view: PropTypes.object.isRequired
+  selected_view: PropTypes.object.isRequired,
+  reset_cache: PropTypes.func.isRequired
 }
 
 export default React.memo(TableMenu)
