@@ -134,6 +134,11 @@ export default function Table({
     [all_columns]
   )
 
+  const memoized_visible_columns = useMemo(
+    () => memoized_all_columns.filter((column) => !column.hidden),
+    [memoized_all_columns]
+  )
+
   const throttled_set_slice_size = useCallback(
     throttle_leading_edge(() => {
       set_slice_size(slice_size + ROWS_ADDED_ON_SCROLL)
@@ -671,14 +676,14 @@ export default function Table({
                   {...{
                     table_state,
                     on_table_state_change,
-                    all_columns: memoized_all_columns // TODO
+                    all_columns: memoized_visible_columns // TODO
                   }}
                 />
               )}
               <TableColumnControls
                 {...{
                   table_state,
-                  all_columns: memoized_all_columns, // TODO
+                  all_columns: memoized_visible_columns, // TODO
                   on_table_state_change,
                   prefix_columns,
                   column_controls_open
@@ -690,7 +695,7 @@ export default function Table({
                   set_filter_controls_open,
                   table_state,
                   on_table_state_change,
-                  all_columns: memoized_all_columns // TODO
+                  all_columns: memoized_visible_columns // TODO
                 }}
               />
               <TableSplitsControls

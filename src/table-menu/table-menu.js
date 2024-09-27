@@ -108,12 +108,12 @@ const TableMenu = ({
     for (const column of table_state.prefix_columns || []) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_def = all_columns[column_id]
-      const column_label = column_def.column_title || column_id
+      const column_label = column_def?.column_title || column_id
 
       headers.push({
         row_key: column_label,
-        accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
         column_index: 0
       })
     }
@@ -124,13 +124,13 @@ const TableMenu = ({
       column_indices[column_id] = column_indices[column_id] || 0
 
       const column_def = all_columns[column_id]
-      const column_label = column_def.column_title || column_id
+      const column_label = column_def?.column_title || column_id
       const column_index = column_indices[column_id]
 
       headers.push({
         row_key: `${column_label}_${column_index}`,
-        accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
         column_index
       })
 
@@ -175,12 +175,12 @@ const TableMenu = ({
     for (const column of table_state.prefix_columns || []) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_def = all_columns[column_id]
-      const column_label = column_def.column_title || column_id
+      const column_label = column_def?.column_title || column_id
 
       headers.push({
         row_key: column_label,
-        accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
         column_index: 0
       })
     }
@@ -193,13 +193,13 @@ const TableMenu = ({
       column_indices[column_id] = column_indices[column_id] || 0
 
       const column_def = all_columns[column_id]
-      const column_label = column_def.column_title || column_id
+      const column_label = column_def?.column_title || column_id
       const column_index = column_indices[column_id]
 
       headers.push({
         row_key: `${column_label}_${column_index}`,
-        accessorFn: column_def.accessorFn,
-        accessorKey: column_def.accessorKey,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
         column_index
       })
 
@@ -244,7 +244,7 @@ const TableMenu = ({
     for (const column of table_state.prefix_columns || []) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_def = all_columns[column_id]
-      headers.push(column_def.column_title || column_id)
+      headers.push(column_def?.column_title || column_id)
     }
 
     for (const split of table_state.splits || []) {
@@ -254,7 +254,7 @@ const TableMenu = ({
     for (const column of table_state.columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_def = all_columns[column_id]
-      headers.push(column_def.column_title || column_id)
+      headers.push(column_def?.column_title || column_id)
     }
 
     tsv_rows.push(headers.join('\t'))
@@ -268,8 +268,8 @@ const TableMenu = ({
         const column_def = all_columns[column_id]
         row_data.push(
           get_cell_value(row, {
-            accessorFn: column_def.accessorFn,
-            accessorKey: column_def.accessorKey,
+            accessorFn: column_def?.accessorFn,
+            accessorKey: column_def?.accessorKey,
             column_index: 0
           })
         )
@@ -288,8 +288,8 @@ const TableMenu = ({
         const column_index = column_indices[column_id]
         row_data.push(
           get_cell_value(row, {
-            accessorFn: column_def.accessorFn,
-            accessorKey: column_def.accessorKey,
+            accessorFn: column_def?.accessorFn,
+            accessorKey: column_def?.accessorKey,
             column_index
           })
         )
