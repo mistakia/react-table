@@ -11,12 +11,19 @@
   max-width 160px
   border 1px solid $borderColor
 
-.header-description
+.header-text
   padding 4px 6px
   font-size 13px
   line-height 1.4
-  border-bottom 1px solid $borderColor
+  &.small
+    font-size 11px
+  &.header-description
+    border-bottom 1px solid $borderColor
 
+.header-menu-divider
+  height 1px
+  background-color $borderColor
+  margin 8px 0
 
 .header-menu-item
   display flex
@@ -46,11 +53,11 @@
       border-radius 3px
 
   .header-menu-item-icon
-    display: flex
-    align-items: center
-    justify-content: center
-    margin-left: 10px
-    margin-right: 4px
+    display flex
+    align-items center
+    justify-content center
+    margin-left 10px
+    margin-right 4px
 
   svg
     position relative

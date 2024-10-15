@@ -32,6 +32,7 @@ import {
   group_columns_by_groups
 } from '../utils'
 import { table_context } from '../table-context'
+import ScatterPlotOverlay from '../scatter-plot-overlay/scatter-plot-overlay'
 
 import '../styles/mui-unstyled-popper.styl'
 import '../styles/table-expanding-control-container.styl'
@@ -111,7 +112,8 @@ export default function Table({
   is_selected_view_editable = false,
   table_username = 'system',
   reset_cache = null,
-  get_export_api_url = () => {}
+  get_export_api_url = () => {},
+  get_scatter_point_label = (row) => ''
 }) {
   is_fetching_more = is_fetching
 
@@ -129,6 +131,13 @@ export default function Table({
   const [column_controls_open, set_column_controls_open] = useState(false)
   const [filters_local_table_state, set_filters_local_table_state] =
     useState(table_state)
+  const [selected_scatter_columns, set_selected_scatter_columns] = useState({
+    x: null,
+    y: null,
+    x_column_id: null,
+    y_column_id: null
+  })
+  const [show_scatter_plot, set_show_scatter_plot] = useState(false)
 
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
@@ -608,6 +617,38 @@ export default function Table({
     [sticky_columns, sticky_column_sizes]
   )
 
+  const set_selected_scatter_column = useCallback(
+    ({ axis, composite_column_id, column_id, accessor_path }) => {
+      set_selected_scatter_columns((prev) => {
+        if (prev[axis] === composite_column_id) {
+          return {
+            ...prev,
+            [axis]: null,
+            [`${axis}_column_id`]: null,
+            [`${axis}_accessor_path`]: null
+          }
+        }
+        return {
+          ...prev,
+          [axis]: composite_column_id,
+          [`${axis}_column_id`]: column_id,
+          [`${axis}_accessor_path`]: accessor_path
+        }
+      })
+    },
+    [all_columns]
+  )
+
+  const open_scatter_plot = useCallback(() => {
+    if (selected_scatter_columns.x && selected_scatter_columns.y) {
+      set_show_scatter_plot(true)
+    }
+  }, [selected_scatter_columns])
+
+  const close_scatter_plot = useCallback(() => {
+    set_show_scatter_plot(false)
+  }, [])
+
   return (
     <table_context.Provider
       value={{
@@ -628,7 +669,10 @@ export default function Table({
         sticky_columns,
         sticky_column_sizes,
         disable_edit_view,
-        get_export_api_url
+        get_export_api_url,
+        selected_scatter_columns,
+        set_selected_scatter_column,
+        open_scatter_plot
       }}>
       <div
         ref={table_container_ref}
@@ -707,24 +751,33 @@ export default function Table({
                   table_state_columns
                 }}
               />
-              {is_table_state_changed && (
-                <div className='table-state-change-controls'>
-                  {Boolean(saved_table_state) && (
-                    <div
-                      className='table-state-change-control-button discard'
-                      onClick={discard_table_state_changes}>
-                      Reset
-                    </div>
-                  )}
-                  {is_selected_view_editable && (
-                    <div
-                      className='table-state-change-control-button save'
-                      onClick={save_table_state_change}>
-                      Save
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className='table-top-lead-buttons-container'>
+                {is_table_state_changed && (
+                  <>
+                    {Boolean(saved_table_state) && (
+                      <div
+                        className='table-top-lead-button discard'
+                        onClick={discard_table_state_changes}>
+                        Reset
+                      </div>
+                    )}
+                    {is_selected_view_editable && (
+                      <div
+                        className='table-top-lead-button save'
+                        onClick={save_table_state_change}>
+                        Save
+                      </div>
+                    )}
+                  </>
+                )}
+                {selected_scatter_columns.x && selected_scatter_columns.y && (
+                  <div
+                    className='table-top-lead-button show-plot'
+                    onClick={open_scatter_plot}>
+                    Show Plot
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           {/* <div className='table-state-container'>{state_items}</div> */}
@@ -778,6 +831,17 @@ export default function Table({
           </div>
         )}
       </div>
+      {show_scatter_plot && (
+        <ScatterPlotOverlay
+          data={data}
+          x_column={all_columns[selected_scatter_columns.x_column_id]}
+          x_accessor_path={selected_scatter_columns.x_accessor_path}
+          y_column={all_columns[selected_scatter_columns.y_column_id]}
+          y_accessor_path={selected_scatter_columns.y_accessor_path}
+          get_point_label={get_scatter_point_label}
+          on_close={close_scatter_plot}
+        />
+      )}
     </table_context.Provider>
   )
 }
@@ -810,5 +874,6 @@ Table.propTypes = {
   is_selected_view_editable: PropTypes.bool,
   table_username: PropTypes.string,
   reset_cache: PropTypes.func,
-  get_export_api_url: PropTypes.func
+  get_export_api_url: PropTypes.func,
+  get_scatter_point_label: PropTypes.func
 }

@@ -16,6 +16,8 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
+import CheckBoxIcon from '@mui/icons-material/CheckBox'
+import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
 import { get_string_from_object } from '../utils'
 import { TABLE_DATA_TYPES, OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
@@ -52,7 +54,10 @@ const TableHeader = ({ header, column, table }) => {
     set_table_sort,
     set_column_hidden_by_index,
     set_filters_local_table_state,
-    sticky_left
+    sticky_left,
+    selected_scatter_columns,
+    set_selected_scatter_column,
+    enable_duplicate_column_ids
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -127,6 +132,12 @@ const TableHeader = ({ header, column, table }) => {
   const { data_type } = header.column.columnDef
   const is_sortable = data_type !== TABLE_DATA_TYPES.JSON
 
+  const column_id = column.columnDef.column_id
+  const composite_column_id = `${column_id}-${column_index}`
+  const accessor_path = enable_duplicate_column_ids
+    ? `${column.columnDef.accessorKey}_${column_index}`
+    : column.columnDef.id
+
   const handle_sort_ascending = useCallback(
     () =>
       set_table_sort({
@@ -196,6 +207,39 @@ const TableHeader = ({ header, column, table }) => {
     set_filter_controls_open,
     set_filters_local_table_state
   ])
+
+  const handle_select_for_scatter_x = useCallback(() => {
+    set_selected_scatter_column({
+      axis: 'x',
+      composite_column_id,
+      column_id,
+      accessor_path
+    })
+  }, [
+    composite_column_id,
+    column_id,
+    accessor_path,
+    set_selected_scatter_column
+  ])
+
+  const handle_select_for_scatter_y = useCallback(() => {
+    set_selected_scatter_column({
+      axis: 'y',
+      composite_column_id,
+      column_id,
+      accessor_path
+    })
+  }, [
+    composite_column_id,
+    column_id,
+    accessor_path,
+    set_selected_scatter_column
+  ])
+
+  const is_selected_for_scatter_x =
+    selected_scatter_columns.x === composite_column_id
+  const is_selected_for_scatter_y =
+    selected_scatter_columns.y === composite_column_id
 
   const is_grouped = Boolean(column.parent?.columns.length)
   const is_group_end =
@@ -339,7 +383,9 @@ const TableHeader = ({ header, column, table }) => {
         ]}
         onMouseEnter={handle_mouse_enter}
         onMouseLeave={handle_mouse_leave}>
-        {description && <div className='header-description'>{description}</div>}
+        {description && (
+          <div className='header-text header-description'>{description}</div>
+        )}
         <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
           <div className='header-menu-item'>
             <div
@@ -451,6 +497,57 @@ const TableHeader = ({ header, column, table }) => {
               <div>Filter</div>
             </div>
           </div>
+          {data_type === TABLE_DATA_TYPES.NUMBER && (
+            <>
+              <div className='header-menu-divider'></div>
+              <div className='header-menu-item'>
+                <div
+                  className={get_string_from_object({
+                    'header-menu-item-button': true,
+                    selected: is_selected_for_scatter_x
+                  })}
+                  onClick={handle_select_for_scatter_x}>
+                  <div className='header-menu-item-icon'>
+                    {is_selected_for_scatter_x ? (
+                      <CheckBoxIcon />
+                    ) : (
+                      <CheckBoxOutlineBlankIcon />
+                    )}
+                  </div>
+                  <div>
+                    {is_selected_for_scatter_x
+                      ? 'Unselect for scatter plot X'
+                      : 'Select for scatter plot X'}
+                  </div>
+                </div>
+              </div>
+              <div className='header-menu-item'>
+                <div
+                  className={get_string_from_object({
+                    'header-menu-item-button': true,
+                    selected: is_selected_for_scatter_y
+                  })}
+                  onClick={handle_select_for_scatter_y}>
+                  <div className='header-menu-item-icon'>
+                    {is_selected_for_scatter_y ? (
+                      <CheckBoxIcon />
+                    ) : (
+                      <CheckBoxOutlineBlankIcon />
+                    )}
+                  </div>
+                  <div>
+                    {is_selected_for_scatter_y
+                      ? 'Unselect for scatter plot Y'
+                      : 'Select for scatter plot Y'}
+                  </div>
+                </div>
+              </div>
+              <div className='header-text small'>
+                Select an X and Y column to generate a scatter plot. Once both
+                are selected, you can show the scatter plot.
+              </div>
+            </>
+          )}
         </div>
       </Popper>
     </>
