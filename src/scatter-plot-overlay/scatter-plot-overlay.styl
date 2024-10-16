@@ -7,8 +7,10 @@
   background-color rgba(0, 0, 0, 0.5)
   display flex
   justify-content center
-  align-items center
+  align-items flex-start
+  padding 20px 0
   z-index 2000
+  overflow-y auto
 
   .scatter-plot-container
     background-color white
@@ -25,7 +27,7 @@
       z-index 2
 
     .close-button
-      position absolute
+      position sticky
       top 10px
       right 10px
       z-index 1

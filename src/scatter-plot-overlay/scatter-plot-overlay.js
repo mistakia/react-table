@@ -14,17 +14,18 @@ const ScatterPlotOverlay = ({
   x_accessor_path,
   y_accessor_path,
   get_point_label,
-  on_close
+  on_close,
+  get_point_image = null,
+  is_scatter_plot_point_label_enabled = () => true
 }) => {
   const x_label = x_column.header_label || 'X Axis'
   const y_label = y_column.header_label || 'Y Axis'
 
-  // Calculate average values for x and y
   const x_values = data
-    .map((row) => parseFloat(row[x_accessor_path] || 0))
+    .map((row) => Number(row[x_accessor_path] || 0))
     .filter((x) => !isNaN(x))
   const y_values = data
-    .map((row) => parseFloat(row[y_accessor_path] || 0))
+    .map((row) => Number(row[y_accessor_path] || 0))
     .filter((y) => !isNaN(y))
   const x_average = x_values.reduce((sum, x) => sum + x, 0) / x_values.length
   const y_average = y_values.reduce((sum, y) => sum + y, 0) / y_values.length
@@ -104,7 +105,8 @@ const ScatterPlotOverlay = ({
   const options = {
     chart: {
       type: 'scatter',
-      zoomType: 'xy'
+      zoomType: 'xy',
+      height: 600
     },
     title: {
       text: `${x_label} vs ${y_label}`
@@ -157,7 +159,7 @@ const ScatterPlotOverlay = ({
     plotOptions: {
       scatter: {
         dataLabels: {
-          enabled: true,
+          enabled: is_scatter_plot_point_label_enabled({ rows: data }),
           formatter: function () {
             return this.point.label
           },
@@ -176,6 +178,22 @@ const ScatterPlotOverlay = ({
             pointerEvents: 'none',
             textOutline: 'none'
           }
+        },
+        marker: {
+          radius: 5,
+          states: {
+            hover: {
+              enabled: true,
+              lineColor: 'rgb(100,100,100)'
+            }
+          }
+        },
+        states: {
+          hover: {
+            marker: {
+              enabled: false
+            }
+          }
         }
       }
     },
@@ -183,12 +201,33 @@ const ScatterPlotOverlay = ({
       {
         data: adjust_label_positions(
           data
-            .map((row) => ({
-              x: parseFloat(row[x_accessor_path] || 0),
-              y: parseFloat(row[y_accessor_path] || 0),
-              label: get_point_label(row),
-              original_data: row
-            }))
+            .map((row) => {
+              const x = Number(row[x_accessor_path] || 0)
+              const y = Number(row[y_accessor_path] || 0)
+              const point = {
+                x,
+                y,
+                label: get_point_label(row),
+                original_data: row
+              }
+
+              // Add image if get_point_image function is provided
+              if (get_point_image) {
+                const image_data = get_point_image({
+                  row,
+                  total_rows: data.length
+                })
+                if (image_data) {
+                  point.marker = {
+                    symbol: `url(${image_data.url})`,
+                    width: image_data.width || 32,
+                    height: image_data.height || 32
+                  }
+                }
+              }
+
+              return point
+            })
             .filter((point) => !isNaN(point.x) && !isNaN(point.y))
         )
       }
@@ -223,7 +262,9 @@ ScatterPlotOverlay.propTypes = {
   x_accessor_path: PropTypes.string,
   y_accessor_path: PropTypes.string,
   get_point_label: PropTypes.func,
-  on_close: PropTypes.func.isRequired
+  on_close: PropTypes.func.isRequired,
+  get_point_image: PropTypes.func,
+  is_scatter_plot_point_label_enabled: PropTypes.func
 }
 
 export default ScatterPlotOverlay

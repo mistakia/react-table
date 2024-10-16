@@ -113,7 +113,9 @@ export default function Table({
   table_username = 'system',
   reset_cache = null,
   get_export_api_url = () => {},
-  get_scatter_point_label = (row) => ''
+  get_scatter_point_label = (row) => '',
+  get_scatter_point_image = null,
+  is_scatter_plot_point_label_enabled = () => true
 }) {
   is_fetching_more = is_fetching
 
@@ -839,6 +841,10 @@ export default function Table({
           y_column={all_columns[selected_scatter_columns.y_column_id]}
           y_accessor_path={selected_scatter_columns.y_accessor_path}
           get_point_label={get_scatter_point_label}
+          get_point_image={get_scatter_point_image}
+          is_scatter_plot_point_label_enabled={
+            is_scatter_plot_point_label_enabled
+          }
           on_close={close_scatter_plot}
         />
       )}
@@ -875,5 +881,7 @@ Table.propTypes = {
   table_username: PropTypes.string,
   reset_cache: PropTypes.func,
   get_export_api_url: PropTypes.func,
-  get_scatter_point_label: PropTypes.func
+  get_scatter_point_label: PropTypes.func,
+  get_scatter_point_image: PropTypes.func,
+  is_scatter_plot_point_label_enabled: PropTypes.func
 }
