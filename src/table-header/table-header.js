@@ -108,12 +108,19 @@ const TableHeader = ({ header, column, table }) => {
       (col) => col.columnDef.index === column.columnDef.index
     )
   }, [column, table])
-  const table_state_columns_index = (table_state.columns || []).findIndex(
-    (c) =>
-      (typeof c === 'string' ? c : c.column_id) ===
-        column.columnDef.column_id &&
-      (typeof c === 'string' ? 0 : c.column_index || 0) === column_index
-  )
+  const table_state_columns_index = useMemo(() => {
+    let count = 0
+    return (table_state.columns || []).findIndex((c) => {
+      const current_column_id = typeof c === 'string' ? c : c.column_id
+      if (current_column_id === column.columnDef.column_id) {
+        if (count === column_index) {
+          return true
+        }
+        count++
+      }
+      return false
+    })
+  }, [table_state.columns, column.columnDef.column_id, column_index])
 
   const table_sort = table_state.sort || []
   const column_sort = table_sort?.find(
@@ -213,13 +220,16 @@ const TableHeader = ({ header, column, table }) => {
       axis: 'x',
       composite_column_id,
       column_id,
-      accessor_path
+      accessor_path,
+      column_params: table_state.columns[table_state_columns_index]?.params
     })
   }, [
     composite_column_id,
     column_id,
     accessor_path,
-    set_selected_scatter_column
+    set_selected_scatter_column,
+    table_state_columns_index,
+    table_state
   ])
 
   const handle_select_for_scatter_y = useCallback(() => {
@@ -227,13 +237,16 @@ const TableHeader = ({ header, column, table }) => {
       axis: 'y',
       composite_column_id,
       column_id,
-      accessor_path
+      accessor_path,
+      column_params: table_state.columns[table_state_columns_index]?.params
     })
   }, [
     composite_column_id,
     column_id,
     accessor_path,
-    set_selected_scatter_column
+    set_selected_scatter_column,
+    table_state_columns_index,
+    table_state
   ])
 
   const is_selected_for_scatter_x =

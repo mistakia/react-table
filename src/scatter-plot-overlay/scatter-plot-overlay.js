@@ -12,7 +12,9 @@ const ScatterPlotOverlay = ({
   x_column,
   y_column,
   x_accessor_path,
+  x_column_params,
   y_accessor_path,
+  y_column_params,
   get_point_label,
   on_close,
   get_point_image = null,
@@ -102,6 +104,16 @@ const ScatterPlotOverlay = ({
     )
   }
 
+  const get_column_subtitle = (column, column_params) => {
+    if (!column_params) return ''
+    return Object.entries(column_params)
+      .map(([key, value]) => `${key}(${value})`)
+      .join(' ')
+  }
+
+  const x_subtitle = get_column_subtitle(x_column, x_column_params)
+  const y_subtitle = get_column_subtitle(y_column, y_column_params)
+
   const options = {
     chart: {
       type: 'scatter',
@@ -110,6 +122,13 @@ const ScatterPlotOverlay = ({
     },
     title: {
       text: `${x_label} vs ${y_label}`
+    },
+    subtitle: {
+      text: `X: ${x_subtitle}<br/>Y: ${y_subtitle}`,
+      style: {
+        fontSize: '10px',
+        fontWeight: 'normal'
+      }
     },
     xAxis: {
       title: {
@@ -123,7 +142,11 @@ const ScatterPlotOverlay = ({
           value: x_average,
           width: 2,
           label: {
-            align: 'left'
+            text: `${x_average.toFixed(2)}`,
+            align: 'left',
+            style: {
+              color: 'red'
+            }
           }
         }
       ]
@@ -139,7 +162,11 @@ const ScatterPlotOverlay = ({
           value: y_average,
           width: 2,
           label: {
-            align: 'left'
+            text: `${y_average.toFixed(2)}`,
+            align: 'left',
+            style: {
+              color: 'red'
+            }
           }
         }
       ]

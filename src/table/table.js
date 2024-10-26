@@ -620,21 +620,29 @@ export default function Table({
   )
 
   const set_selected_scatter_column = useCallback(
-    ({ axis, composite_column_id, column_id, accessor_path }) => {
+    ({
+      axis,
+      composite_column_id,
+      column_id,
+      accessor_path,
+      column_params
+    }) => {
       set_selected_scatter_columns((prev) => {
         if (prev[axis] === composite_column_id) {
           return {
             ...prev,
             [axis]: null,
             [`${axis}_column_id`]: null,
-            [`${axis}_accessor_path`]: null
+            [`${axis}_accessor_path`]: null,
+            [`${axis}_column_params`]: null
           }
         }
         return {
           ...prev,
           [axis]: composite_column_id,
           [`${axis}_column_id`]: column_id,
-          [`${axis}_accessor_path`]: accessor_path
+          [`${axis}_accessor_path`]: accessor_path,
+          [`${axis}_column_params`]: column_params
         }
       })
     },
@@ -838,8 +846,10 @@ export default function Table({
           data={data}
           x_column={all_columns[selected_scatter_columns.x_column_id]}
           x_accessor_path={selected_scatter_columns.x_accessor_path}
+          x_column_params={selected_scatter_columns.x_column_params}
           y_column={all_columns[selected_scatter_columns.y_column_id]}
           y_accessor_path={selected_scatter_columns.y_accessor_path}
+          y_column_params={selected_scatter_columns.y_column_params}
           get_point_label={get_scatter_point_label}
           get_point_image={get_scatter_point_image}
           is_scatter_plot_point_label_enabled={
