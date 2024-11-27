@@ -286,6 +286,8 @@ ScatterPlotOverlay.propTypes = {
   data: PropTypes.array.isRequired,
   x_column: PropTypes.object,
   y_column: PropTypes.object,
+  x_column_params: PropTypes.object,
+  y_column_params: PropTypes.object,
   x_accessor_path: PropTypes.string,
   y_accessor_path: PropTypes.string,
   get_point_label: PropTypes.func,

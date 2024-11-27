@@ -24,6 +24,7 @@ import TableFilterControls from '../table-filter-controls'
 import TableQuickFilter from '../table-quick-filter'
 import TableSearch from '../table-search'
 import TableMenu from '../table-menu'
+import TableMetadata from '../table-metadata'
 import TableRankAggregationControls from '../table-rank-aggregation-controls'
 import {
   get_string_from_object,
@@ -115,7 +116,8 @@ export default function Table({
   get_export_api_url = () => {},
   get_scatter_point_label = (row) => '',
   get_scatter_point_image = null,
-  is_scatter_plot_point_label_enabled = () => true
+  is_scatter_plot_point_label_enabled = () => true,
+  metadata = {}
 }) {
   is_fetching_more = is_fetching
 
@@ -791,6 +793,11 @@ export default function Table({
             </div>
           </div>
           {/* <div className='table-state-container'>{state_items}</div> */}
+          <TableMetadata
+            {...{
+              ...metadata
+            }}
+          />
         </div>
         {selected_view.view_filters &&
           selected_view.view_filters.length > 0 && (
@@ -893,5 +900,6 @@ Table.propTypes = {
   get_export_api_url: PropTypes.func,
   get_scatter_point_label: PropTypes.func,
   get_scatter_point_image: PropTypes.func,
-  is_scatter_plot_point_label_enabled: PropTypes.func
+  is_scatter_plot_point_label_enabled: PropTypes.func,
+  metadata: PropTypes.object
 }
