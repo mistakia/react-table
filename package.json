@@ -18,9 +18,9 @@
     "@mui/material": "^5.13.4",
     "@mui/x-date-pickers": "^7.11.0",
     "dayjs": "1.11.11",
-    "prop-types": "^15.8.1",
     "highcharts": "^11.4.1",
     "highcharts-react-official": "3.2.1",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -29,7 +29,8 @@
     "@dnd-kit/modifiers": "^6.0.1",
     "@dnd-kit/sortable": "^7.0.2",
     "@tanstack/react-table": "^8.8.5",
-    "@tanstack/react-virtual": "3.0.0-beta.54"
+    "@tanstack/react-virtual": "3.0.0-beta.54",
+    "timeago.js": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
