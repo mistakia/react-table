@@ -22,7 +22,7 @@ const TableMenu = ({
   selected_view,
   reset_cache
 }) => {
-  const { shorten_url, disable_edit_view, get_export_api_url } =
+  const { shorten_url, get_export_api_url } =
     useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
@@ -367,17 +367,15 @@ const TableMenu = ({
             </div>
             <div className='table-menu-item-text'>{link_state}</div>
           </div>
-          {!disable_edit_view && (
-            <div
-              className='table-menu-item'
-              onClick={handle_reset_cache}
-              role='menuitem'>
-              <div className='table-menu-item-icon'>
-                <RestartAltIcon fontSize='small' />
-              </div>
-              <div className='table-menu-item-text'>Reset Cache</div>
+          <div
+            className='table-menu-item'
+            onClick={handle_reset_cache}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <RestartAltIcon fontSize='small' />
             </div>
-          )}
+            <div className='table-menu-item-text'>Recalculate View</div>
+          </div>
           <div className='table-menu-divider' />
           <div
             className='table-menu-item'
