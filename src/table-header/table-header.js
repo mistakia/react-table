@@ -123,17 +123,17 @@ const TableHeader = ({ header, column, table }) => {
   }, [table_state.columns, column.columnDef.column_id, column_index])
 
   const table_sort = table_state.sort || []
+  const sort_column_id = column.columnDef.column_id || column.id
   const column_sort = table_sort?.find(
     (i) =>
-      i.column_id === column.columnDef.column_id &&
-      (i.column_index || 0) === column_index
+      i.column_id === sort_column_id && (i.column_index || 0) === column_index
   )
   const column_sort_direction = column_sort?.desc ? 'desc' : 'asc'
   const is_sorted = Boolean(column_sort) && !header.isPlaceholder
   const is_multi = Boolean(table_sort?.length > 1)
   const has_other_sort = table_sort?.some(
     (sort) =>
-      sort.column_id !== column.columnDef.column_id ||
+      sort.column_id !== sort_column_id ||
       (sort.column_index || 0) !== column_index
   )
   const { data_type } = header.column.columnDef
@@ -148,7 +148,7 @@ const TableHeader = ({ header, column, table }) => {
   const handle_sort_ascending = useCallback(
     () =>
       set_table_sort({
-        column_id: column.columnDef.column_id,
+        column_id: sort_column_id,
         column_index,
         desc: false,
         multi: false
@@ -157,7 +157,7 @@ const TableHeader = ({ header, column, table }) => {
   )
   const handle_sort_descending = useCallback(() => {
     set_table_sort({
-      column_id: column.columnDef.column_id,
+      column_id: sort_column_id,
       column_index,
       desc: true,
       multi: false
@@ -166,7 +166,7 @@ const TableHeader = ({ header, column, table }) => {
   const handle_sort_ascending_multi = useCallback(
     () =>
       set_table_sort({
-        column_id: column.columnDef.column_id,
+        column_id: sort_column_id,
         column_index,
         desc: false,
         multi: true
@@ -176,7 +176,7 @@ const TableHeader = ({ header, column, table }) => {
   const handle_sort_descending_multi = useCallback(
     () =>
       set_table_sort({
-        column_id: column.columnDef.column_id,
+        column_id: sort_column_id,
         column_index,
         desc: true,
         multi: true
@@ -400,18 +400,21 @@ const TableHeader = ({ header, column, table }) => {
           <div className='header-text header-description'>{description}</div>
         )}
         <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
-          <div className='header-menu-item'>
-            <div
-              className='header-menu-item-button'
-              onClick={() =>
-                set_column_hidden_by_index(table_state_columns_index)
-              }>
-              <div className='header-menu-item-icon'>
-                <VisibilityOffIcon />
+          {/* can not remove split columns from here */}
+          {Boolean(column.columnDef.column_id) && (
+            <div className='header-menu-item'>
+              <div
+                className='header-menu-item-button'
+                onClick={() =>
+                  set_column_hidden_by_index(table_state_columns_index)
+                }>
+                <div className='header-menu-item-icon'>
+                  <VisibilityOffIcon />
+                </div>
+                <div>Remove column</div>
               </div>
-              <div>Remove column</div>
             </div>
-          </div>
+          )}
           {is_sortable && (
             <>
               <div className='header-menu-item'>
@@ -500,16 +503,19 @@ const TableHeader = ({ header, column, table }) => {
               )}
             </>
           )}
-          <div className='header-menu-item'>
-            <div
-              className='header-menu-item-button'
-              onClick={handle_open_filter}>
-              <div className='header-menu-item-icon'>
-                <FilterListIcon />
+          {/* TODO allow filters for split columns */}
+          {Boolean(column.columnDef.column_id) && (
+            <div className='header-menu-item'>
+              <div
+                className='header-menu-item-button'
+                onClick={handle_open_filter}>
+                <div className='header-menu-item-icon'>
+                  <FilterListIcon />
+                </div>
+                <div>Filter</div>
               </div>
-              <div>Filter</div>
             </div>
-          </div>
+          )}
           {data_type === TABLE_DATA_TYPES.NUMBER && (
             <>
               <div className='header-menu-divider'></div>

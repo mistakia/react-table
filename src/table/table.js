@@ -273,10 +273,18 @@ export default function Table({
       const column_definition = memoized_all_columns.find(
         (column) => column.column_id === column_id
       )
-      if (!column_definition) {
+
+      // Check if it's a split column when no column definition is found
+      const is_split_column =
+        !column_definition &&
+        table_state.splits &&
+        table_state.splits.includes(column_id)
+
+      if (!column_definition && !is_split_column) {
         console.error(`Column with id ${column_id} not found`)
         return
       }
+
       const table_sort = table_state.sort || []
       const table_sort_map = new Map(
         table_sort.map((item) => [
@@ -284,6 +292,7 @@ export default function Table({
           item
         ])
       )
+
       const key = `${column_id}-${column_index}`
       if (table_sort_map.has(key)) {
         const existing_sort = table_sort_map.get(key)
@@ -298,6 +307,7 @@ export default function Table({
         }
         table_sort_map.set(key, { column_id, desc, column_index })
       }
+
       on_table_state_change({
         ...table_state,
         sort: Array.from(table_sort_map.values())

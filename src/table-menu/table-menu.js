@@ -22,8 +22,7 @@ const TableMenu = ({
   selected_view,
   reset_cache
 }) => {
-  const { shorten_url, get_export_api_url } =
-    useContext(table_context)
+  const { shorten_url, get_export_api_url } = useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
   const [use_zero_values, set_use_zero_values] = useState(false)
