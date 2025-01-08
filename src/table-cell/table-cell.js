@@ -112,16 +112,35 @@ const TableCell = ({ getValue, column, row, table }) => {
       ? `${column.columnDef.accessorKey}_${column_index}`
       : column.columnDef.accessorKey
     const percentile = percentiles[key]
+    const is_reversed = column.columnDef.reverse_percentiles
+
     if (percentile && !Number.isNaN(value)) {
-      if (value < percentile.p25) {
-        const max_percent =
-          (percentile.p25 - value) / (percentile.p25 - percentile.min) / 1.5 ||
-          0
+      if (is_reversed) {
+        console.log({
+          value,
+          p25: percentile.p25,
+          min: percentile.min,
+          max: percentile.max
+        })
+      }
+
+      if (is_reversed ? value > percentile.p25 : value < percentile.p25) {
+        const max_percent = is_reversed
+          ? (value - percentile.p25) /
+              (percentile.min - percentile.p25) /
+              1.5 || 0
+          : (percentile.p25 - value) /
+              (percentile.p25 - percentile.min) /
+              1.5 || 0
         return `rgba(253, 162, 145, ${max_percent}`
       } else {
-        const max_percent =
-          (value - percentile.p75) / (percentile.max - percentile.p75) / 1.5 ||
-          0
+        const max_percent = is_reversed
+          ? (percentile.p75 - value) /
+              (percentile.p75 - percentile.max) /
+              1.5 || 0
+          : (value - percentile.p75) /
+              (percentile.max - percentile.p75) /
+              1.5 || 0
         return `rgba(46, 163, 221, ${max_percent}`
       }
     }
