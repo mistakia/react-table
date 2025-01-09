@@ -115,15 +115,6 @@ const TableCell = ({ getValue, column, row, table }) => {
     const is_reversed = column.columnDef.reverse_percentiles
 
     if (percentile && !Number.isNaN(value)) {
-      if (is_reversed) {
-        console.log({
-          value,
-          p25: percentile.p25,
-          min: percentile.min,
-          max: percentile.max
-        })
-      }
-
       if (is_reversed ? value > percentile.p25 : value < percentile.p25) {
         const max_percent = is_reversed
           ? (value - percentile.p25) /
