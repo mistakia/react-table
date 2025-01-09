@@ -127,7 +127,7 @@ function initialize_value({
     selected_param_values = is_single ? null : []
   }
   return is_single
-    ? selected_param_values ?? default_value ?? min
+    ? (selected_param_values ?? default_value ?? min)
     : [selected_param_values[0] ?? min, selected_param_values[1] ?? max]
 }
 
@@ -260,7 +260,7 @@ function create_selected_label({
   min
 }) {
   if (mixed_state && is_default) return '-'
-  if (is_default) return is_single ? default_value ?? min : 'All'
+  if (is_default) return is_single ? (default_value ?? min) : 'All'
   return is_single ? value : `${value[0]} to ${value[1]}`
 }
 

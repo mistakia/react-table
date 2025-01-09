@@ -198,8 +198,8 @@ const ScatterPlotOverlay = ({
             return this.point.data_label_position === 'top'
               ? 'bottom'
               : this.point.data_label_position === 'bottom'
-              ? 'top'
-              : 'middle'
+                ? 'top'
+                : 'middle'
           },
           style: {
             pointerEvents: 'none',

@@ -51,9 +51,9 @@ export default function ColumnParamBooleanFilter({
   const selected_label = mixed_state
     ? '-'
     : !is_column_param_defined
-    ? 'ALL'
-    : filter_values.find((v) => v.value === selected_param_values)?.label ||
-      'ALL'
+      ? 'ALL'
+      : filter_values.find((v) => v.value === selected_param_values)?.label ||
+        'ALL'
 
   const body = <div className='table-filter-item-dropdown-body'>{items}</div>
 

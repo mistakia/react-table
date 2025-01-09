@@ -914,5 +914,6 @@ Table.propTypes = {
   get_scatter_point_label: PropTypes.func,
   get_scatter_point_image: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
-  metadata: PropTypes.object
+  metadata: PropTypes.object,
+  disable_splits: PropTypes.bool
 }

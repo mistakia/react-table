@@ -15,5 +15,5 @@ export const get_scroll_parent = (node) =>
   !node || node === document.body
     ? document.body
     : scroll(node)
-    ? node
-    : get_scroll_parent(node.parentNode)
+      ? node
+      : get_scroll_parent(node.parentNode)

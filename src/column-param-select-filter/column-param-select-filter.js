@@ -191,8 +191,8 @@ function create_static_values({
       param_value.value !== undefined
         ? param_value.value
         : param_value !== null
-        ? param_value
-        : null
+          ? param_value
+          : null
     return {
       label: param_value.label || param_value,
       value,
@@ -334,8 +334,8 @@ function handle_static_select({
     index === i
       ? { ...v, selected: all_selected ? false : !v.selected }
       : all_selected
-      ? { ...v, selected: true }
-      : v
+        ? { ...v, selected: true }
+        : v
   )
 
   const new_static_values = static_values

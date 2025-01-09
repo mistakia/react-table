@@ -22,8 +22,8 @@ export default function ColumnParamDateFilter({
     selected_param_values
       ? dayjs(selected_param_values)
       : column_param_definition.default_value
-      ? dayjs(column_param_definition.default_value)
-      : null
+        ? dayjs(column_param_definition.default_value)
+        : null
   )
   const [trigger_close, set_trigger_close] = useState(null)
 
@@ -83,8 +83,8 @@ export default function ColumnParamDateFilter({
   const selected_label = mixed_state
     ? '-'
     : !selected_param_values
-    ? default_label
-    : dayjs(selected_param_values).format('YYYY-MM-DD')
+      ? default_label
+      : dayjs(selected_param_values).format('YYYY-MM-DD')
 
   return <FilterBase {...{ selected_label, body, label, trigger_close }} />
 }

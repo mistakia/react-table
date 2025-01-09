@@ -26,8 +26,8 @@ export default function TableQuickFilter({
   const selected_label = all
     ? 'ALL'
     : Array.isArray(filter_where_param.value)
-    ? filter_where_param.value.join(', ')
-    : filter_where_param.value
+      ? filter_where_param.value.join(', ')
+      : filter_where_param.value
 
   const handleAllClick = () => {
     const new_where_param = [...where_param]
