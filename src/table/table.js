@@ -105,6 +105,7 @@ export default function Table({
   total_row_count,
   delete_view = () => {},
   disable_rank_aggregation = false,
+  disable_splits = false,
   style = {},
   percentiles = {},
   enable_duplicate_column_ids = false,
@@ -766,13 +767,15 @@ export default function Table({
                   all_columns: memoized_visible_columns // TODO
                 }}
               />
-              <TableSplitsControls
-                {...{
-                  table_state,
-                  on_table_state_change,
-                  table_state_columns
-                }}
-              />
+              {!disable_splits && (
+                <TableSplitsControls
+                  {...{
+                    table_state,
+                    on_table_state_change,
+                    table_state_columns
+                  }}
+                />
+              )}
               <div className='table-top-lead-buttons-container'>
                 {is_table_state_changed && (
                   <>
