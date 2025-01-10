@@ -14,8 +14,11 @@ export default function FilterBase({
 }) {
   const [visible, set_visible] = useState(false)
   const button_ref = useRef()
-  const dropdown_ref = useRef()
-  const handle_toggle_click = () => set_visible(!visible)
+  const handle_toggle_click = () => {
+    console.log('handle_toggle_click')
+    console.log({ visible })
+    set_visible(!visible)
+  }
 
   const selection_style = width ? { minWidth: width } : {}
 
@@ -39,8 +42,7 @@ export default function FilterBase({
           open={visible}
           anchorEl={button_ref.current}
           placement='bottom-start'
-          className='table-filter-item-dropdown table-popper'
-          ref={dropdown_ref}>
+          className='table-filter-item-dropdown table-popper'>
           {body}
         </Popper>
       </div>
