@@ -5,7 +5,52 @@ import HighchartsReact from 'highcharts-react-official'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
+import ShowChartIcon from '@mui/icons-material/ShowChart'
 import './scatter-plot-overlay.styl'
+
+const get_trend_line = (x_values, y_values) => {
+  const n = x_values.length
+  const sum_x = x_values.reduce((a, b) => a + b, 0)
+  const sum_y = y_values.reduce((a, b) => a + b, 0)
+  const sum_xy = x_values.reduce((sum, x, i) => sum + x * y_values[i], 0)
+  const sum_xx = x_values.reduce((sum, x) => sum + x * x, 0)
+
+  const slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x)
+  const intercept = (sum_y - slope * sum_x) / n
+
+  const min_x = Math.min(...x_values)
+  const max_x = Math.max(...x_values)
+
+  return [
+    [min_x, min_x * slope + intercept],
+    [max_x, max_x * slope + intercept]
+  ]
+}
+
+const calculate_regression_stats = ({ x_values, y_values }) => {
+  const n = x_values.length
+  const sum_x = x_values.reduce((a, b) => a + b, 0)
+  const sum_y = y_values.reduce((a, b) => a + b, 0)
+  const sum_xy = x_values.reduce((sum, x, i) => sum + x * y_values[i], 0)
+  const sum_xx = x_values.reduce((sum, x) => sum + x * x, 0)
+
+  const slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x)
+  const intercept = (sum_y - slope * sum_x) / n
+
+  const y_mean = sum_y / n
+  const ss_tot = y_values.reduce((sum, y) => sum + Math.pow(y - y_mean, 2), 0)
+  const ss_res = y_values.reduce((sum, y, i) => {
+    const y_pred = slope * x_values[i] + intercept
+    return sum + Math.pow(y - y_pred, 2)
+  }, 0)
+  const r_squared = 1 - ss_res / ss_tot
+
+  return {
+    slope,
+    intercept,
+    r_squared
+  }
+}
 
 const ScatterPlotOverlay = ({
   data,
@@ -113,6 +158,15 @@ const ScatterPlotOverlay = ({
 
   const x_subtitle = get_column_subtitle(x_column, x_column_params)
   const y_subtitle = get_column_subtitle(y_column, y_column_params)
+
+  const [show_regression, set_show_regression] = React.useState(false)
+  const [regression_stats, set_regression_stats] = React.useState(null)
+
+  React.useEffect(() => {
+    if (show_regression) {
+      set_regression_stats(calculate_regression_stats({ x_values, y_values }))
+    }
+  }, [show_regression])
 
   const options = {
     chart: {
@@ -226,6 +280,8 @@ const ScatterPlotOverlay = ({
     },
     series: [
       {
+        id: 'scatter-plot-points',
+        type: 'scatter',
         data: adjust_label_positions(
           data
             .map((row) => {
@@ -238,7 +294,6 @@ const ScatterPlotOverlay = ({
                 original_data: row
               }
 
-              // Add image if get_point_image function is provided
               if (get_point_image) {
                 const image_data = get_point_image({
                   row,
@@ -257,8 +312,24 @@ const ScatterPlotOverlay = ({
             })
             .filter((point) => !isNaN(point.x) && !isNaN(point.y))
         )
+      },
+      show_regression && {
+        type: 'line',
+        name: 'Trend Line',
+        data: get_trend_line(x_values, y_values),
+        marker: {
+          enabled: false
+        },
+        states: {
+          hover: {
+            lineWidth: 0
+          }
+        },
+        enableMouseTracking: false,
+        color: 'rgba(255, 0, 0, 0.5)',
+        lineWidth: 3
       }
-    ],
+    ].filter(Boolean),
     credits: {
       enabled: false
     }
@@ -276,6 +347,22 @@ const ScatterPlotOverlay = ({
             <CloseIcon />
           </IconButton>
           <HighchartsReact highcharts={Highcharts} options={options} />
+          <div className='plot-controls'>
+            <div
+              onClick={() => set_show_regression(!show_regression)}
+              className='regression-toggle'>
+              <ShowChartIcon />
+              {show_regression ? 'Hide' : 'Show'} Regression Line
+            </div>
+          </div>
+          {show_regression && regression_stats && (
+            <div className='regression-stats'>
+              <h4>Regression Statistics</h4>
+              <div>Slope: {regression_stats.slope.toFixed(4)}</div>
+              <div>Y-Intercept: {regression_stats.intercept.toFixed(4)}</div>
+              <div>R²: {regression_stats.r_squared.toFixed(4)}</div>
+            </div>
+          )}
         </div>
       </ClickAwayListener>
     </div>
