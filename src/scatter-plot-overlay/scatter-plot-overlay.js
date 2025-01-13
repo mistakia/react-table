@@ -53,8 +53,7 @@ const calculate_regression_stats = ({ x_values, y_values }) => {
   const t_statistic = regression_slope / standard_error_slope
 
   // Calculate two-tailed p-value
-  let p_value = 2 * (1 - cdf(Math.abs(t_statistic), degrees_of_freedom))
-  p_value = p_value < 1e-10 ? p_value.toExponential(4) : p_value.toFixed(4)
+  const p_value = 2 * (1 - cdf(Math.abs(t_statistic), degrees_of_freedom))
 
   return {
     slope: regression_slope,
@@ -63,6 +62,10 @@ const calculate_regression_stats = ({ x_values, y_values }) => {
     p_value,
     t_stat: t_statistic
   }
+}
+
+const format_stat_value = ({ value, threshold = 0.0001 }) => {
+  return Math.abs(value) < threshold ? value.toExponential(4) : value.toFixed(4)
 }
 
 const ScatterPlotOverlay = ({
@@ -371,10 +374,10 @@ const ScatterPlotOverlay = ({
           {show_regression && regression_stats && (
             <div className='regression-stats'>
               <h4>Regression Statistics</h4>
-              <div>Slope: {regression_stats.slope.toFixed(4)}</div>
-              <div>Y-Intercept: {regression_stats.intercept.toFixed(4)}</div>
-              <div>R²: {regression_stats.r_squared.toFixed(4)}</div>
-              <div>p Value: {regression_stats.p_value}</div>
+              <div>Slope: {format_stat_value({ value: regression_stats.slope })}</div>
+              <div>Y-Intercept: {format_stat_value({ value: regression_stats.intercept })}</div>
+              <div>R²: {format_stat_value({ value: regression_stats.r_squared })}</div>
+              <div>p Value: {format_stat_value({ value: regression_stats.p_value })}</div>
             </div>
           )}
         </div>
