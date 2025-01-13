@@ -28,6 +28,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
+    "@stdlib/stats-base-dists-t-cdf": "^0.2.2",
     "@tanstack/react-table": "^8.20.6",
     "@tanstack/react-virtual": "3.11.2",
     "timeago.js": "^4.0.2"

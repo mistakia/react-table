@@ -7,6 +7,7 @@ import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import './scatter-plot-overlay.styl'
+import cdf from '@stdlib/stats-base-dists-t-cdf'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -28,27 +29,39 @@ const get_trend_line = (x_values, y_values) => {
 }
 
 const calculate_regression_stats = ({ x_values, y_values }) => {
-  const n = x_values.length
-  const sum_x = x_values.reduce((a, b) => a + b, 0)
-  const sum_y = y_values.reduce((a, b) => a + b, 0)
+  const sample_size = x_values.length
+  const sum_x = x_values.reduce((acc, val) => acc + val, 0)
+  const sum_y = y_values.reduce((acc, val) => acc + val, 0)
   const sum_xy = x_values.reduce((sum, x, i) => sum + x * y_values[i], 0)
-  const sum_xx = x_values.reduce((sum, x) => sum + x * x, 0)
+  const sum_x_squared = x_values.reduce((sum, x) => sum + x * x, 0)
 
-  const slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x)
-  const intercept = (sum_y - slope * sum_x) / n
+  const regression_slope = (sample_size * sum_xy - sum_x * sum_y) / (sample_size * sum_x_squared - sum_x * sum_x)
+  const regression_intercept = (sum_y - regression_slope * sum_x) / sample_size
 
-  const y_mean = sum_y / n
-  const ss_tot = y_values.reduce((sum, y) => sum + Math.pow(y - y_mean, 2), 0)
-  const ss_res = y_values.reduce((sum, y, i) => {
-    const y_pred = slope * x_values[i] + intercept
-    return sum + Math.pow(y - y_pred, 2)
+  const y_mean = sum_y / sample_size
+  const total_sum_squares = y_values.reduce((sum, y) => sum + Math.pow(y - y_mean, 2), 0)
+  const residual_sum_squares = y_values.reduce((sum, y, i) => {
+    const predicted_y = regression_slope * x_values[i] + regression_intercept
+    return sum + Math.pow(y - predicted_y, 2)
   }, 0)
-  const r_squared = 1 - ss_res / ss_tot
+  const r_squared = 1 - residual_sum_squares / total_sum_squares
+
+  // Degrees of freedom and error calculations
+  const degrees_of_freedom = sample_size - 2
+  const mean_squared_error = residual_sum_squares / degrees_of_freedom
+  const standard_error_slope = Math.sqrt(mean_squared_error / (sum_x_squared - (sum_x * sum_x) / sample_size))
+  const t_statistic = regression_slope / standard_error_slope
+
+  // Calculate two-tailed p-value
+  let p_value = 2 * (1 - cdf(Math.abs(t_statistic), degrees_of_freedom))
+  p_value = p_value < 1e-10 ? p_value.toExponential(4) : p_value.toFixed(4)
 
   return {
-    slope,
-    intercept,
-    r_squared
+    slope: regression_slope,
+    intercept: regression_intercept,
+    r_squared,
+    p_value,
+    t_stat: t_statistic
   }
 }
 
@@ -361,6 +374,7 @@ const ScatterPlotOverlay = ({
               <div>Slope: {regression_stats.slope.toFixed(4)}</div>
               <div>Y-Intercept: {regression_stats.intercept.toFixed(4)}</div>
               <div>R²: {regression_stats.r_squared.toFixed(4)}</div>
+              <div>p Value: {regression_stats.p_value}</div>
             </div>
           )}
         </div>
