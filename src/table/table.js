@@ -96,6 +96,7 @@ export default function Table({
   views = [],
   select_view = () => {},
   fetch_more = () => {},
+  // use is_fetching_more instead of is_fetching
   is_fetching = false,
   is_fetching_more = false,
   is_loading = false,
@@ -120,7 +121,8 @@ export default function Table({
   is_scatter_plot_point_label_enabled = () => true,
   metadata = {}
 }) {
-  is_fetching_more = is_fetching
+  // Use is_fetching as a fallback only if is_fetching_more wasn't explicitly set to true
+  const effective_is_fetching_more = is_fetching_more || is_fetching
 
   const INITIAL_LOAD_NUMBER = 50
   const OVERSCAN_COUNT = 5
@@ -453,7 +455,10 @@ export default function Table({
             return
           }
 
-          if (!is_fetching_more && total_rows_fetched < total_row_count) {
+          if (
+            !effective_is_fetching_more &&
+            total_rows_fetched < total_row_count
+          ) {
             const { view_id } = selected_view
             fetch_more({ view_id })
           }
@@ -462,7 +467,7 @@ export default function Table({
     },
     [
       fetch_more,
-      is_fetching_more,
+      effective_is_fetching_more,
       total_rows_fetched,
       total_row_count,
       slice_size,
@@ -806,11 +811,7 @@ export default function Table({
             </div>
           </div>
           {/* <div className='table-state-container'>{state_items}</div> */}
-          <TableMetadata
-            {...{
-              ...metadata
-            }}
-          />
+          <TableMetadata created_at={metadata?.created_at} />
         </div>
         {selected_view.view_filters &&
           selected_view.view_filters.length > 0 && (
@@ -834,7 +835,7 @@ export default function Table({
           )}
         <div className='header'>
           {header_items}
-          {(is_fetching_more || is_loading) && (
+          {(effective_is_fetching_more || is_loading) && (
             <div className='table-loading-container'>
               <LinearProgress />
             </div>
@@ -858,6 +859,13 @@ export default function Table({
                 )}
               </div>
             ))}
+            {total_row_count && (
+              <div className='table-footer-metadata'>
+                {data?.length < total_row_count
+                  ? `${data?.length?.toLocaleString()} of ${total_row_count?.toLocaleString()} rows loaded`
+                  : `${total_row_count?.toLocaleString()} total rows`}
+              </div>
+            )}
           </div>
         )}
       </div>

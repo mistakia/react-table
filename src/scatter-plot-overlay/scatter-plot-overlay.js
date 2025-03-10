@@ -35,11 +35,16 @@ const calculate_regression_stats = ({ x_values, y_values }) => {
   const sum_xy = x_values.reduce((sum, x, i) => sum + x * y_values[i], 0)
   const sum_x_squared = x_values.reduce((sum, x) => sum + x * x, 0)
 
-  const regression_slope = (sample_size * sum_xy - sum_x * sum_y) / (sample_size * sum_x_squared - sum_x * sum_x)
+  const regression_slope =
+    (sample_size * sum_xy - sum_x * sum_y) /
+    (sample_size * sum_x_squared - sum_x * sum_x)
   const regression_intercept = (sum_y - regression_slope * sum_x) / sample_size
 
   const y_mean = sum_y / sample_size
-  const total_sum_squares = y_values.reduce((sum, y) => sum + Math.pow(y - y_mean, 2), 0)
+  const total_sum_squares = y_values.reduce(
+    (sum, y) => sum + Math.pow(y - y_mean, 2),
+    0
+  )
   const residual_sum_squares = y_values.reduce((sum, y, i) => {
     const predicted_y = regression_slope * x_values[i] + regression_intercept
     return sum + Math.pow(y - predicted_y, 2)
@@ -49,7 +54,9 @@ const calculate_regression_stats = ({ x_values, y_values }) => {
   // Degrees of freedom and error calculations
   const degrees_of_freedom = sample_size - 2
   const mean_squared_error = residual_sum_squares / degrees_of_freedom
-  const standard_error_slope = Math.sqrt(mean_squared_error / (sum_x_squared - (sum_x * sum_x) / sample_size))
+  const standard_error_slope = Math.sqrt(
+    mean_squared_error / (sum_x_squared - (sum_x * sum_x) / sample_size)
+  )
   const t_statistic = regression_slope / standard_error_slope
 
   // Calculate two-tailed p-value
@@ -374,10 +381,20 @@ const ScatterPlotOverlay = ({
           {show_regression && regression_stats && (
             <div className='regression-stats'>
               <h4>Regression Statistics</h4>
-              <div>Slope: {format_stat_value({ value: regression_stats.slope })}</div>
-              <div>Y-Intercept: {format_stat_value({ value: regression_stats.intercept })}</div>
-              <div>R²: {format_stat_value({ value: regression_stats.r_squared })}</div>
-              <div>p Value: {format_stat_value({ value: regression_stats.p_value })}</div>
+              <div>
+                Slope: {format_stat_value({ value: regression_stats.slope })}
+              </div>
+              <div>
+                Y-Intercept:{' '}
+                {format_stat_value({ value: regression_stats.intercept })}
+              </div>
+              <div>
+                R²: {format_stat_value({ value: regression_stats.r_squared })}
+              </div>
+              <div>
+                p Value:{' '}
+                {format_stat_value({ value: regression_stats.p_value })}
+              </div>
             </div>
           )}
         </div>
