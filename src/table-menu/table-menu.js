@@ -10,7 +10,7 @@ import Switch from '@mui/material/Switch'
 import InfoIcon from '@mui/icons-material/Info'
 import Tooltip from '@mui/material/Tooltip'
 
-import { get_string_from_object, export_csv, export_json } from '../utils'
+import { get_string_from_object, export_csv, export_json, export_markdown } from '../utils'
 import { table_context } from '../table-context'
 
 import './table-menu.styl'
@@ -248,6 +248,76 @@ const TableMenu = ({
     handle_close()
   }
 
+  const handle_export_markdown = () => {
+    const download_data = []
+    const headers = []
+
+    for (const column of table_state.prefix_columns || []) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      const column_def = all_columns[column_id]
+      const column_label = column_def?.column_title || column_id
+
+      headers.push({
+        row_key: column_label,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
+        column_index: 0
+      })
+    }
+
+    const column_id_counts = {}
+    const column_indices = {}
+    for (const column of table_state.columns) {
+      const column_id = typeof column === 'string' ? column : column.column_id
+      column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
+      column_indices[column_id] = column_indices[column_id] || 0
+
+      const column_def = all_columns[column_id]
+      const column_label = column_def?.column_title || column_id
+      const column_index = column_indices[column_id]
+
+      headers.push({
+        row_key: `${column_label}_${column_index}`,
+        accessorFn: column_def?.accessorFn,
+        accessorKey: column_def?.accessorKey,
+        column_index
+      })
+
+      column_indices[column_id]++
+    }
+
+    for (const split of table_state.splits || []) {
+      headers.push({
+        row_key: split,
+        accessorKey: split
+      })
+    }
+
+    const header_row = {}
+    for (const header of headers) {
+      header_row[header.row_key] = header.row_key
+    }
+    download_data.push(header_row)
+
+    for (const row of data) {
+      const row_data = {}
+
+      for (let i = 0; i < headers.length; i++) {
+        const header = headers[i]
+        row_data[header.row_key] = get_cell_value(row, header)
+      }
+
+      download_data.push(row_data)
+    }
+
+    export_markdown({
+      data: download_data,
+      file_name: 'table-export'
+    })
+
+    handle_close()
+  }
+
   const handle_copy_to_clipboard = async () => {
     const headers = []
     const tsv_rows = []
@@ -341,6 +411,15 @@ const TableMenu = ({
     handle_close()
   }
 
+  const handle_copy_export_markdown_api_url = async () => {
+    const url = get_export_api_url({
+      view_id: selected_view.view_id,
+      export_format: 'md'
+    })
+    await copy_to_clipboard(url)
+    handle_close()
+  }
+
   return (
     <ClickAwayListener onClickAway={handle_close}>
       <div className='table-menu-container'>
@@ -396,6 +475,15 @@ const TableMenu = ({
           </div>
           <div
             className='table-menu-item'
+            onClick={handle_export_markdown}
+            role='menuitem'>
+            <div className='table-menu-item-icon'>
+              <CodeIcon fontSize='small' />
+            </div>
+            <div className='table-menu-item-text'>Export Markdown</div>
+          </div>
+          <div
+            className='table-menu-item'
             onClick={handle_copy_to_clipboard}
             role='menuitem'>
             <div className='table-menu-item-icon'>
@@ -439,6 +527,15 @@ const TableMenu = ({
                   <CodeIcon fontSize='small' />
                 </div>
                 <div className='table-menu-item-text'>Copy JSON API URL</div>
+              </div>
+              <div
+                className='table-menu-item'
+                onClick={handle_copy_export_markdown_api_url}
+                role='menuitem'>
+                <div className='table-menu-item-icon'>
+                  <CodeIcon fontSize='small' />
+                </div>
+                <div className='table-menu-item-text'>Copy Markdown API URL</div>
               </div>
             </>
           )}
