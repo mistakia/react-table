@@ -10,7 +10,12 @@ import Switch from '@mui/material/Switch'
 import InfoIcon from '@mui/icons-material/Info'
 import Tooltip from '@mui/material/Tooltip'
 
-import { get_string_from_object, export_csv, export_json, export_markdown } from '../utils'
+import {
+  get_string_from_object,
+  export_csv,
+  export_json,
+  export_markdown
+} from '../utils'
 import { table_context } from '../table-context'
 
 import './table-menu.styl'
@@ -420,6 +425,15 @@ const TableMenu = ({
     handle_close()
   }
 
+  const handle_copy_export_html_api_url = async () => {
+    const url = get_export_api_url({
+      view_id: selected_view.view_id,
+      export_format: 'html'
+    })
+    await copy_to_clipboard(url)
+    handle_close()
+  }
+
   return (
     <ClickAwayListener onClickAway={handle_close}>
       <div className='table-menu-container'>
@@ -535,7 +549,18 @@ const TableMenu = ({
                 <div className='table-menu-item-icon'>
                   <CodeIcon fontSize='small' />
                 </div>
-                <div className='table-menu-item-text'>Copy Markdown API URL</div>
+                <div className='table-menu-item-text'>
+                  Copy Markdown API URL
+                </div>
+              </div>
+              <div
+                className='table-menu-item'
+                onClick={handle_copy_export_html_api_url}
+                role='menuitem'>
+                <div className='table-menu-item-icon'>
+                  <CodeIcon fontSize='small' />
+                </div>
+                <div className='table-menu-item-text'>Copy HTML API URL</div>
               </div>
             </>
           )}
