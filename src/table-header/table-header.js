@@ -330,7 +330,9 @@ const TableHeader = ({ header, column, table }) => {
             }),
             colSpan: header.colSpan,
             ref: anchor_el,
-            ...(table_state?.disable_column_controls ? {} : { onClick: handle_click }),
+            ...(table_state?.disable_column_controls
+              ? {}
+              : { onClick: handle_click }),
             ...(header.isPlaceholder || table_state?.disable_column_controls
               ? {}
               : {
@@ -402,84 +404,154 @@ const TableHeader = ({ header, column, table }) => {
           ]}
           onMouseEnter={handle_mouse_enter}
           onMouseLeave={handle_mouse_leave}>
-        {description && (
-          <div className='header-text header-description'>{description}</div>
-        )}
-        <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
-          {/* can not remove split columns from here */}
-          {Boolean(column.columnDef.column_id) && (
-            <div className='header-menu-item'>
-              <div
-                className='header-menu-item-button'
-                onClick={() =>
-                  set_column_hidden_by_index(table_state_columns_index)
-                }>
-                <div className='header-menu-item-icon'>
-                  <VisibilityOffIcon />
-                </div>
-                <div>Remove column</div>
-              </div>
-            </div>
+          {description && (
+            <div className='header-text header-description'>{description}</div>
           )}
-          {is_sortable && (
-            <>
+          <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
+            {/* can not remove split columns from here */}
+            {Boolean(column.columnDef.column_id) && (
               <div className='header-menu-item'>
                 <div
-                  className={get_string_from_object({
-                    'header-menu-item-button': true,
-                    selected:
-                      is_sorted && !is_multi && column_sort_direction === 'asc'
-                  })}
-                  onClick={handle_sort_ascending}>
+                  className='header-menu-item-button'
+                  onClick={() =>
+                    set_column_hidden_by_index(table_state_columns_index)
+                  }>
                   <div className='header-menu-item-icon'>
-                    <ArrowUpwardIcon />
+                    <VisibilityOffIcon />
                   </div>
-                  <div>
-                    {is_sorted && !is_multi && column_sort_direction === 'asc'
-                      ? 'Remove ascending sort'
-                      : 'Sort ascending'}
-                  </div>
+                  <div>Remove column</div>
                 </div>
               </div>
-              <div className='header-menu-item'>
-                <div
-                  className={get_string_from_object({
-                    'header-menu-item-button': true,
-                    selected:
-                      is_sorted && !is_multi && column_sort_direction === 'desc'
-                  })}
-                  onClick={handle_sort_descending}>
-                  <div className='header-menu-item-icon'>
-                    <ArrowDownwardIcon />
-                  </div>
-                  <div>
-                    {is_sorted && !is_multi && column_sort_direction === 'desc'
-                      ? 'Remove descending sort'
-                      : 'Sort descending'}
+            )}
+            {is_sortable && (
+              <>
+                <div className='header-menu-item'>
+                  <div
+                    className={get_string_from_object({
+                      'header-menu-item-button': true,
+                      selected:
+                        is_sorted &&
+                        !is_multi &&
+                        column_sort_direction === 'asc'
+                    })}
+                    onClick={handle_sort_ascending}>
+                    <div className='header-menu-item-icon'>
+                      <ArrowUpwardIcon />
+                    </div>
+                    <div>
+                      {is_sorted && !is_multi && column_sort_direction === 'asc'
+                        ? 'Remove ascending sort'
+                        : 'Sort ascending'}
+                    </div>
                   </div>
                 </div>
-              </div>
-              {has_other_sort && (
-                <>
-                  <div className='header-menu-item'>
-                    <div
-                      className={get_string_from_object({
-                        'header-menu-item-button': true,
-                        selected:
-                          is_sorted &&
+                <div className='header-menu-item'>
+                  <div
+                    className={get_string_from_object({
+                      'header-menu-item-button': true,
+                      selected:
+                        is_sorted &&
+                        !is_multi &&
+                        column_sort_direction === 'desc'
+                    })}
+                    onClick={handle_sort_descending}>
+                    <div className='header-menu-item-icon'>
+                      <ArrowDownwardIcon />
+                    </div>
+                    <div>
+                      {is_sorted &&
+                      !is_multi &&
+                      column_sort_direction === 'desc'
+                        ? 'Remove descending sort'
+                        : 'Sort descending'}
+                    </div>
+                  </div>
+                </div>
+                {has_other_sort && (
+                  <>
+                    <div className='header-menu-item'>
+                      <div
+                        className={get_string_from_object({
+                          'header-menu-item-button': true,
+                          selected:
+                            is_sorted &&
+                            is_multi &&
+                            column_sort_direction === 'asc'
+                        })}
+                        onClick={handle_sort_ascending_multi}>
+                        <div className='header-menu-item-icon'>
+                          <ArrowUpwardIcon />
+                        </div>
+                        <div>
+                          {is_sorted &&
                           is_multi &&
                           column_sort_direction === 'asc'
+                            ? 'Remove ascending sort (multi)'
+                            : 'Sort ascending (multi)'}
+                        </div>
+                      </div>
+                    </div>
+                    <div className='header-menu-item'>
+                      <div
+                        className={get_string_from_object({
+                          'header-menu-item-button': true,
+                          selected:
+                            is_sorted &&
+                            is_multi &&
+                            column_sort_direction === 'desc'
+                        })}
+                        onClick={handle_sort_descending_multi}>
+                        <div className='header-menu-item-icon'>
+                          <ArrowDownwardIcon />
+                        </div>
+                        <div>
+                          {is_sorted &&
+                          is_multi &&
+                          column_sort_direction === 'desc'
+                            ? 'Remove descending sort (multi)'
+                            : 'Sort descending (multi)'}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+            {/* TODO allow filters for split columns */}
+            {Boolean(column.columnDef.column_id) && (
+              <div className='header-menu-item'>
+                <div
+                  className='header-menu-item-button'
+                  onClick={handle_open_filter}>
+                  <div className='header-menu-item-icon'>
+                    <FilterListIcon />
+                  </div>
+                  <div>Filter</div>
+                </div>
+              </div>
+            )}
+            {data_type === TABLE_DATA_TYPES.NUMBER &&
+              !table_state.disable_scatter_plot && (
+                <>
+                  <div className='header-menu-divider'></div>
+                  <div className='header-menu-item'>
+                    <div
+                      className={get_string_from_object({
+                        'header-menu-item-button': true,
+                        selected: is_selected_for_scatter_x
                       })}
-                      onClick={handle_sort_ascending_multi}>
+                      onClick={handle_select_for_scatter_x}>
                       <div className='header-menu-item-icon'>
-                        <ArrowUpwardIcon />
+                        {is_selected_for_scatter_x ? (
+                          <CheckBoxIcon />
+                        ) : (
+                          <CheckBoxOutlineBlankIcon />
+                        )}
                       </div>
                       <div>
-                        {is_sorted &&
-                        is_multi &&
-                        column_sort_direction === 'asc'
-                          ? 'Remove ascending sort (multi)'
-                          : 'Sort ascending (multi)'}
+                        {is_selected_for_scatter_x
+                          ? 'Unselect for scatter plot X'
+                          : 'Select for scatter plot X'}
                       </div>
                     </div>
                   </div>
@@ -487,93 +559,30 @@ const TableHeader = ({ header, column, table }) => {
                     <div
                       className={get_string_from_object({
                         'header-menu-item-button': true,
-                        selected:
-                          is_sorted &&
-                          is_multi &&
-                          column_sort_direction === 'desc'
+                        selected: is_selected_for_scatter_y
                       })}
-                      onClick={handle_sort_descending_multi}>
+                      onClick={handle_select_for_scatter_y}>
                       <div className='header-menu-item-icon'>
-                        <ArrowDownwardIcon />
+                        {is_selected_for_scatter_y ? (
+                          <CheckBoxIcon />
+                        ) : (
+                          <CheckBoxOutlineBlankIcon />
+                        )}
                       </div>
                       <div>
-                        {is_sorted &&
-                        is_multi &&
-                        column_sort_direction === 'desc'
-                          ? 'Remove descending sort (multi)'
-                          : 'Sort descending (multi)'}
+                        {is_selected_for_scatter_y
+                          ? 'Unselect for scatter plot Y'
+                          : 'Select for scatter plot Y'}
                       </div>
                     </div>
+                  </div>
+                  <div className='header-text small'>
+                    Select an X and Y column to generate a scatter plot. Once
+                    both are selected, you can show the scatter plot.
                   </div>
                 </>
               )}
-            </>
-          )}
-          {/* TODO allow filters for split columns */}
-          {Boolean(column.columnDef.column_id) && (
-            <div className='header-menu-item'>
-              <div
-                className='header-menu-item-button'
-                onClick={handle_open_filter}>
-                <div className='header-menu-item-icon'>
-                  <FilterListIcon />
-                </div>
-                <div>Filter</div>
-              </div>
-            </div>
-          )}
-          {data_type === TABLE_DATA_TYPES.NUMBER && !table_state.disable_scatter_plot && (
-            <>
-              <div className='header-menu-divider'></div>
-              <div className='header-menu-item'>
-                <div
-                  className={get_string_from_object({
-                    'header-menu-item-button': true,
-                    selected: is_selected_for_scatter_x
-                  })}
-                  onClick={handle_select_for_scatter_x}>
-                  <div className='header-menu-item-icon'>
-                    {is_selected_for_scatter_x ? (
-                      <CheckBoxIcon />
-                    ) : (
-                      <CheckBoxOutlineBlankIcon />
-                    )}
-                  </div>
-                  <div>
-                    {is_selected_for_scatter_x
-                      ? 'Unselect for scatter plot X'
-                      : 'Select for scatter plot X'}
-                  </div>
-                </div>
-              </div>
-              <div className='header-menu-item'>
-                <div
-                  className={get_string_from_object({
-                    'header-menu-item-button': true,
-                    selected: is_selected_for_scatter_y
-                  })}
-                  onClick={handle_select_for_scatter_y}>
-                  <div className='header-menu-item-icon'>
-                    {is_selected_for_scatter_y ? (
-                      <CheckBoxIcon />
-                    ) : (
-                      <CheckBoxOutlineBlankIcon />
-                    )}
-                  </div>
-                  <div>
-                    {is_selected_for_scatter_y
-                      ? 'Unselect for scatter plot Y'
-                      : 'Select for scatter plot Y'}
-                  </div>
-                </div>
-              </div>
-              <div className='header-text small'>
-                Select an X and Y column to generate a scatter plot. Once both
-                are selected, you can show the scatter plot.
-              </div>
-            </>
-          )}
-        </div>
+          </div>
         </Popper>
       )}
     </>

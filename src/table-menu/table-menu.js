@@ -31,6 +31,7 @@ const TableMenu = ({
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
   const [use_zero_values, set_use_zero_values] = useState(false)
+  const has_reset_cache = typeof reset_cache === 'function'
   const is_saved_table = Boolean(
     selected_view.view_id &&
       selected_view.saved_table_state &&
@@ -394,6 +395,7 @@ const TableMenu = ({
   }
 
   const handle_reset_cache = () => {
+    if (!has_reset_cache) return
     reset_cache()
     handle_close()
   }
@@ -459,15 +461,17 @@ const TableMenu = ({
             </div>
             <div className='table-menu-item-text'>{link_state}</div>
           </div>
-          <div
-            className='table-menu-item'
-            onClick={handle_reset_cache}
-            role='menuitem'>
-            <div className='table-menu-item-icon'>
-              <RestartAltIcon fontSize='small' />
+          {has_reset_cache && (
+            <div
+              className='table-menu-item'
+              onClick={handle_reset_cache}
+              role='menuitem'>
+              <div className='table-menu-item-icon'>
+                <RestartAltIcon fontSize='small' />
+              </div>
+              <div className='table-menu-item-text'>Recalculate View</div>
             </div>
-            <div className='table-menu-item-text'>Recalculate View</div>
-          </div>
+          )}
           <div className='table-menu-divider' />
           <div
             className='table-menu-item'
@@ -575,7 +579,7 @@ TableMenu.propTypes = {
   table_state: PropTypes.object.isRequired,
   all_columns: PropTypes.object.isRequired,
   selected_view: PropTypes.object.isRequired,
-  reset_cache: PropTypes.func.isRequired
+  reset_cache: PropTypes.func
 }
 
 export default React.memo(TableMenu)
