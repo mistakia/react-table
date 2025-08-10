@@ -1,0 +1,239 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/index.json",
+  "title": "React Table Component Schema",
+  "description": "JSON Schema specification for the react-table component props and column definitions",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": { "$ref": "./models/row-data.json" },
+      "description": "Array of row data objects",
+      "default": []
+    },
+    "table_state": {
+      "$ref": "./state/table-state.json",
+      "description": "Current table state configuration",
+      "default": {}
+    },
+    "saved_table_state": {
+      "oneOf": [{ "$ref": "./state/table-state.json" }, { "type": "null" }],
+      "description": "Saved table state for comparison",
+      "default": null
+    },
+    "all_columns": {
+      "type": "object",
+      "patternProperties": {
+        ".*": { "$ref": "./columns/column-definition.json" }
+      },
+      "description": "Object containing all available column definitions keyed by column_id",
+      "default": {}
+    },
+    "selected_view": {
+      "$ref": "./view/view.json",
+      "description": "Currently selected view configuration",
+      "default": {}
+    },
+    "views": {
+      "type": "array",
+      "items": { "$ref": "./view/view.json" },
+      "description": "Array of available views",
+      "default": []
+    },
+    "percentiles": {
+      "$ref": "./models/percentiles.json",
+      "description": "Percentile data for columns (used for cell coloring)",
+      "default": {}
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Creation timestamp"
+        }
+      },
+      "description": "Additional metadata for the table",
+      "default": {}
+    },
+    "style": {
+      "type": "object",
+      "description": "CSS style object for the table container",
+      "default": {}
+    },
+    "total_row_count": {
+      "type": "integer",
+      "description": "Total number of rows available (for pagination)"
+    },
+    "total_rows_fetched": {
+      "type": "integer",
+      "description": "Number of rows currently fetched"
+    },
+    "is_loading": {
+      "type": "boolean",
+      "description": "Whether the table is in loading state",
+      "default": false
+    },
+    "is_fetching": {
+      "type": "boolean",
+      "description": "Whether data is being fetched",
+      "default": false
+    },
+    "is_fetching_more": {
+      "type": "boolean",
+      "description": "Whether more data is being fetched for infinite scroll",
+      "default": false
+    },
+    "disable_create_view": {
+      "type": "boolean",
+      "description": "Whether to disable view creation",
+      "default": false
+    },
+    "disable_edit_view": {
+      "type": "boolean",
+      "description": "Whether to disable view editing",
+      "default": false
+    },
+    "disable_rank_aggregation": {
+      "type": "boolean",
+      "description": "Whether to disable rank aggregation controls",
+      "default": false
+    },
+    "disable_splits": {
+      "type": "boolean",
+      "description": "Whether to disable splits functionality",
+      "default": false
+    },
+    "enable_duplicate_column_ids": {
+      "type": "boolean",
+      "description": "Whether to allow duplicate column IDs with different parameters",
+      "default": false
+    },
+    "is_selected_view_editable": {
+      "type": "boolean",
+      "description": "Whether the currently selected view can be edited",
+      "default": false
+    },
+    "table_username": {
+      "type": "string",
+      "description": "Username for table operations",
+      "default": "system"
+    },
+    "new_view_prefix_columns": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Default prefix columns for new views",
+      "default": []
+    },
+    "on_view_change": {
+      "description": "Callback function when view changes",
+      "default": "function() {}"
+    },
+    "on_save_view": {
+      "description": "Callback function when saving a view",
+      "default": "function() {}"
+    },
+    "select_view": {
+      "description": "Callback function to select a view",
+      "default": "function() {}"
+    },
+    "delete_view": {
+      "description": "Callback function to delete a view",
+      "default": "function() {}"
+    },
+    "fetch_more": {
+      "description": "Callback function to fetch more data",
+      "default": "function() {}"
+    },
+    "shorten_url": {
+      "description": "Function to shorten URLs"
+    },
+    "reset_cache": {
+      "description": "Function to reset cache"
+    },
+    "get_export_api_url": {
+      "description": "Function to get export API URL",
+      "default": "function() {}"
+    },
+    "get_scatter_point_label": {
+      "description": "Function to get scatter plot point labels",
+      "default": "function(row) { return '' }"
+    },
+    "get_scatter_point_image": {
+      "description": "Function to get scatter plot point images"
+    },
+    "is_scatter_plot_point_label_enabled": {
+      "description": "Function to determine if scatter plot point labels are enabled",
+      "default": "function() { return true }"
+    },
+    "export_options": {
+      "$ref": "./export/export-options.json",
+      "description": "Configuration options for data export functionality"
+    },
+    "table_context": {
+      "$ref": "./context/table-context-properties.json",
+      "description": "Additional context properties available to table components"
+    },
+    "cell_click_behavior": {
+      "type": "string",
+      "enum": ["clipboard", "none"],
+      "default": "clipboard",
+      "description": "Behavior when clicking on cells"
+    }
+  },
+  "examples": [
+    {
+      "data": [
+        {
+          "id": 1,
+          "name": "John Doe",
+          "age": 30,
+          "email": "john@example.com",
+          "className": "highlighted-row"
+        }
+      ],
+      "all_columns": {
+        "name": {
+          "column_id": "name",
+          "header_label": "Full Name",
+          "description": "The person's full name",
+          "data_type": 2,
+          "accessorKey": "name",
+          "width": 200,
+          "operators": ["=", "LIKE", "IS NULL"]
+        },
+        "age": {
+          "column_id": "age",
+          "header_label": "Age",
+          "data_type": 1,
+          "accessorKey": "age",
+          "width": 80,
+          "fixed": 0,
+          "operators": ["=", ">", "<", ">=", "<="]
+        }
+      },
+      "table_state": {
+        "columns": ["name", "age"],
+        "sort": [
+          {
+            "column_id": "name",
+            "desc": false
+          }
+        ],
+        "where": [
+          {
+            "column_id": "age",
+            "operator": ">=",
+            "value": 18
+          }
+        ]
+      },
+      "selected_view": {
+        "view_id": "default",
+        "view_name": "Default View",
+        "view_filters": ["name"]
+      }
+    }
+  ]
+}

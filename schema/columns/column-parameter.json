@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/columns/column-parameter.json",
+  "title": "ColumnParameter",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Human-readable label for the parameter"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what this parameter does"
+    },
+    "data_type": {
+      "$ref": "../base/table-data-types.json",
+      "description": "Data type of the parameter value"
+    },
+    "default_value": {
+      "description": "Default value for the parameter"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {},
+          "label": { "type": "string" }
+        },
+        "required": ["value", "label"]
+      },
+      "description": "Available options for select-type parameters"
+    },
+    "min": {
+      "type": "number",
+      "description": "Minimum value for numeric parameters"
+    },
+    "max": {
+      "type": "number",
+      "description": "Maximum value for numeric parameters"
+    },
+    "disable_on_splits": {
+      "type": "boolean",
+      "description": "Whether this parameter should be disabled when splits are applied"
+    },
+    "enable_on_splits": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Split column IDs that enable this parameter"
+    },
+    "groups": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Parameter groups for UI organization",
+      "default": ["Ungrouped"]
+    }
+  },
+  "required": ["label", "data_type"]
+}

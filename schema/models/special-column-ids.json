@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/models/special-column-ids.json",
+  "title": "SpecialColumnIds",
+  "type": "string",
+  "enum": ["add_column_action", "column_index"],
+  "description": "Special column IDs with built-in behaviors"
+}

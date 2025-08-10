@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/where-item.json",
+  "title": "WhereItem",
+  "type": "object",
+  "properties": {
+    "column_id": {
+      "type": "string",
+      "description": "ID of the column to filter"
+    },
+    "column_name": {
+      "type": "string",
+      "description": "Alternative name of the column to filter"
+    },
+    "operator": {
+      "$ref": "../base/table-operators.json",
+      "description": "Filter operator to apply"
+    },
+    "value": { "description": "Value to filter by" },
+    "params": {
+      "type": "object",
+      "description": "Additional parameters for the filter"
+    },
+    "id": {
+      "type": "string",
+      "description": "Alternative identifier for the filter"
+    },
+    "column_index": {
+      "type": "integer",
+      "description": "Index for duplicate column ID filters",
+      "default": 0
+    }
+  },
+  "required": ["column_id", "operator"]
+}

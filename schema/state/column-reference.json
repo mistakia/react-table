@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/column-reference.json",
+  "title": "ColumnReference",
+  "oneOf": [
+    { "type": "string" },
+    {
+      "type": "object",
+      "properties": {
+        "column_id": { "type": "string" },
+        "params": {
+          "type": "object",
+          "description": "Parameters for this column instance"
+        }
+      },
+      "required": ["column_id"]
+    }
+  ]
+}

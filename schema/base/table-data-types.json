@@ -1,0 +1,8 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/base/table-data-types.json",
+  "title": "TableDataTypes",
+  "type": "integer",
+  "enum": [1, 2, 3, 4, 5, 6, 7, 8],
+  "description": "Table data types: 1=NUMBER, 2=TEXT, 3=JSON, 4=BOOLEAN, 5=DATE, 6=BINARY_UUID, 7=SELECT, 8=RANGE"
+}

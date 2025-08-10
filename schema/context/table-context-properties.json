@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/context/table-context-properties.json",
+  "title": "TableContextProperties",
+  "type": "object",
+  "properties": {
+    "sticky_left": {
+      "description": "Function to calculate sticky positioning for columns"
+    },
+    "set_column_controls_open": {
+      "description": "Function to control column configuration dialog"
+    },
+    "set_filter_controls_open": {
+      "description": "Function to control filter dialog"
+    },
+    "set_table_sort": {
+      "description": "Function to handle sorting operations"
+    },
+    "set_column_hidden_by_index": {
+      "description": "Function to hide columns by index"
+    },
+    "set_filters_local_table_state": {
+      "description": "Function to manage local filter state"
+    },
+    "set_selected_scatter_column": {
+      "description": "Function for scatter plot column selection"
+    },
+    "selected_scatter_columns": {
+      "type": "object",
+      "properties": {
+        "x": { "type": ["string", "null"] },
+        "y": { "type": ["string", "null"] },
+        "x_column_id": { "type": ["string", "null"] },
+        "y_column_id": { "type": ["string", "null"] },
+        "x_accessor_path": { "type": ["string", "null"] },
+        "y_accessor_path": { "type": ["string", "null"] },
+        "x_column_params": { "type": ["object", "null"] },
+        "y_column_params": { "type": ["object", "null"] }
+      },
+      "description": "Current scatter plot column selections"
+    }
+  }
+}

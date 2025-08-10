@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/view/view.json",
+  "title": "View",
+  "type": "object",
+  "properties": {
+    "view_id": {
+      "type": "string",
+      "description": "Unique identifier for the view"
+    },
+    "view_name": {
+      "type": "string",
+      "description": "Display name of the view"
+    },
+    "view_description": {
+      "type": "string",
+      "description": "Description of the view"
+    },
+    "view_username": {
+      "type": "string",
+      "description": "Username of the view creator"
+    },
+    "view_search_column_id": {
+      "type": "string",
+      "description": "Column ID to use for search functionality"
+    },
+    "view_filters": {
+      "type": "array",
+      "items": { "$ref": "../state/column-reference.json" },
+      "description": "Quick filter columns for this view"
+    },
+    "table_state": {
+      "$ref": "../state/table-state.json",
+      "description": "Table state configuration for this view"
+    },
+    "user_id": { "type": "string", "description": "Owner user ID of the view" },
+    "saved_table_state": {
+      "$ref": "../state/table-state.json",
+      "description": "Persisted table state for comparison"
+    }
+  }
+}

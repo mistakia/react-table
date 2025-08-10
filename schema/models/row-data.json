@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/models/row-data.json",
+  "title": "RowData",
+  "type": "object",
+  "properties": {
+    "className": {
+      "type": "string",
+      "description": "CSS class name for the row"
+    },
+    "index": { "type": "integer", "description": "Row index for numbering" }
+  },
+  "patternProperties": {
+    ".*": { "description": "Row data values keyed by column accessor" }
+  }
+}

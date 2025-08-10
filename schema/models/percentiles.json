@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/models/percentiles.json",
+  "title": "Percentiles",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "type": "object",
+      "properties": {
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "p25": { "type": "number" },
+        "p75": { "type": "number" }
+      },
+      "required": ["min", "max", "p25", "p75"]
+    }
+  },
+  "description": "Percentile data for columns (used for cell coloring)",
+  "default": {}
+}

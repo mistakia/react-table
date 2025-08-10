@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/table-state.json",
+  "title": "TableState",
+  "type": "object",
+  "properties": {
+    "sort": {
+      "type": "array",
+      "items": { "$ref": "./sort-item.json" },
+      "description": "Array of sort configurations"
+    },
+    "columns": {
+      "type": "array",
+      "items": { "$ref": "./column-reference.json" },
+      "description": "Array of columns to display"
+    },
+    "prefix_columns": {
+      "type": "array",
+      "items": { "$ref": "./column-reference.json" },
+      "description": "Array of columns to display as prefixes"
+    },
+    "where": {
+      "type": "array",
+      "items": { "$ref": "./where-item.json" },
+      "description": "Array of filter conditions"
+    },
+    "splits": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Array of column IDs to use for splitting/grouping"
+    },
+    "rank_aggregation": {
+      "type": "object",
+      "description": "Rank aggregation configuration"
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/columns/column-definition.json",
+  "title": "ColumnDefinition",
+  "type": "object",
+  "properties": {
+    "column_id": {
+      "type": "string",
+      "description": "Unique identifier for the column"
+    },
+    "column_name": {
+      "type": "string",
+      "description": "Alternative name for the column"
+    },
+    "id": { "type": "string", "description": "Alternative identifier" },
+    "accessorKey": {
+      "type": "string",
+      "description": "Key to access data in the row object"
+    },
+    "accessorFn": { "description": "Function to access data from the row" },
+    "header": {
+      "type": "string",
+      "description": "Header text displayed in the column header"
+    },
+    "header_label": {
+      "type": "string",
+      "description": "Label displayed in the header"
+    },
+    "column_title": {
+      "type": "string",
+      "description": "Display title for the column in UI and exports"
+    },
+    "description": {
+      "type": "string",
+      "description": "Tooltip description for the column header"
+    },
+    "data_type": {
+      "$ref": "../base/table-data-types.json",
+      "description": "Data type of the column values"
+    },
+    "size": {
+      "type": "number",
+      "description": "Default size/width of the column in pixels"
+    },
+    "minWidth": {
+      "type": "number",
+      "description": "Minimum width of the column",
+      "default": 50
+    },
+    "width": {
+      "type": "number",
+      "description": "Default width of the column",
+      "default": 150
+    },
+    "maxWidth": {
+      "type": "number",
+      "description": "Maximum width of the column",
+      "default": 400
+    },
+    "hidden": {
+      "type": "boolean",
+      "description": "Whether the column is hidden by default"
+    },
+    "sticky": {
+      "type": "boolean",
+      "description": "Whether the column should stick to the left side when scrolling horizontally"
+    },
+    "sortType": {
+      "type": "string",
+      "description": "Sorting algorithm to use for this column",
+      "default": "alphanumericFalsyLast"
+    },
+    "fixed": {
+      "type": "integer",
+      "description": "Number of decimal places to display for numeric values"
+    },
+    "reverse_percentiles": {
+      "type": "boolean",
+      "description": "Whether to reverse the percentile coloring (lower values = better)"
+    },
+    "operators": {
+      "type": "array",
+      "items": { "$ref": "../base/table-operators.json" },
+      "description": "Available filter operators for this column"
+    },
+    "column_params": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": { "$ref": "./column-parameter.json" }
+      },
+      "description": "Parameters that can be configured for this column"
+    },
+    "column_values": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Available values for SELECT type columns and filter dropdowns"
+    },
+    "component": {
+      "description": "React component to render for cells in this column"
+    },
+    "cell": { "description": "Cell renderer component or function" },
+    "header_renderer": {
+      "description": "Header renderer component or function"
+    },
+    "footer": { "description": "Footer renderer component or function" },
+    "is_split": {
+      "type": "boolean",
+      "description": "Whether this is a split column"
+    },
+    "prefix": {
+      "type": "boolean",
+      "description": "Whether this is a prefix column"
+    },
+    "index": {
+      "type": "integer",
+      "description": "Index position of the column"
+    },
+    "group": {
+      "type": "string",
+      "description": "Group name for column grouping"
+    },
+    "column_index": {
+      "type": "integer",
+      "description": "Index position for duplicate column IDs"
+    },
+    "is_sortable": {
+      "type": "boolean",
+      "description": "Whether this column can be sorted"
+    }
+  },
+  "required": ["column_id"]
+}
