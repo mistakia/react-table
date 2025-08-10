@@ -26,7 +26,11 @@ import { table_context } from '../table-context'
 
 import './table-header.styl'
 
-export function AddColumnAction({ set_column_controls_open }) {
+export function AddColumnAction({ set_column_controls_open, table_state }) {
+  if (table_state?.disable_column_controls) {
+    return null
+  }
+
   return (
     <div className='cell add-column-action'>
       <div className='cell-content'>
@@ -43,7 +47,8 @@ export function AddColumnAction({ set_column_controls_open }) {
 }
 
 AddColumnAction.propTypes = {
-  set_column_controls_open: PropTypes.func.isRequired
+  set_column_controls_open: PropTypes.func.isRequired,
+  table_state: PropTypes.object
 }
 
 const TableHeader = ({ header, column, table }) => {
@@ -268,7 +273,7 @@ const TableHeader = ({ header, column, table }) => {
     if (header.depth > 1) {
       return null
     }
-    return <AddColumnAction {...{ set_column_controls_open }} />
+    return <AddColumnAction {...{ set_column_controls_open, table_state }} />
   }
 
   if (header.column.columnDef.id === 'column_index') {
@@ -325,8 +330,8 @@ const TableHeader = ({ header, column, table }) => {
             }),
             colSpan: header.colSpan,
             ref: anchor_el,
-            onClick: handle_click,
-            ...(header.isPlaceholder
+            ...(table_state?.disable_column_controls ? {} : { onClick: handle_click }),
+            ...(header.isPlaceholder || table_state?.disable_column_controls
               ? {}
               : {
                   onMouseEnter: handle_mouse_enter,
@@ -380,22 +385,23 @@ const TableHeader = ({ header, column, table }) => {
           />
         </div>
       </ClickAwayListener>
-      <Popper
-        className='table-popper header-popper'
-        anchorEl={anchor_el.current}
-        open={popper_open}
-        placement='bottom'
-        style={{ zIndex: 1000 }}
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 0]
+      {!table_state?.disable_column_controls && (
+        <Popper
+          className='table-popper header-popper'
+          anchorEl={anchor_el.current}
+          open={popper_open}
+          placement='bottom'
+          style={{ zIndex: 1000 }}
+          modifiers={[
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 0]
+              }
             }
-          }
-        ]}
-        onMouseEnter={handle_mouse_enter}
-        onMouseLeave={handle_mouse_leave}>
+          ]}
+          onMouseEnter={handle_mouse_enter}
+          onMouseLeave={handle_mouse_leave}>
         {description && (
           <div className='header-text header-description'>{description}</div>
         )}
@@ -516,7 +522,7 @@ const TableHeader = ({ header, column, table }) => {
               </div>
             </div>
           )}
-          {data_type === TABLE_DATA_TYPES.NUMBER && (
+          {data_type === TABLE_DATA_TYPES.NUMBER && !table_state.disable_scatter_plot && (
             <>
               <div className='header-menu-divider'></div>
               <div className='header-menu-item'>
@@ -568,7 +574,8 @@ const TableHeader = ({ header, column, table }) => {
             </>
           )}
         </div>
-      </Popper>
+        </Popper>
+      )}
     </>
   )
 }

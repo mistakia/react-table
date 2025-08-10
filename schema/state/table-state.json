@@ -32,6 +32,14 @@
     "rank_aggregation": {
       "type": "object",
       "description": "Rank aggregation configuration"
+    },
+    "disable_scatter_plot": {
+      "type": "boolean",
+      "description": "When true, disables scatter plot menu options in column headers"
+    },
+    "disable_column_controls": {
+      "type": "boolean",
+      "description": "When true, disables column controls including add column button and column header interactions"
     }
   }
 }

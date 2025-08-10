@@ -754,15 +754,17 @@ export default function Table({
                   }}
                 />
               )}
-              <TableColumnControls
-                {...{
-                  table_state,
-                  all_columns: memoized_visible_columns, // TODO
-                  on_table_state_change,
-                  prefix_columns,
-                  column_controls_open
-                }}
-              />
+              {!table_state?.disable_column_controls && (
+                <TableColumnControls
+                  {...{
+                    table_state,
+                    all_columns: memoized_visible_columns, // TODO
+                    on_table_state_change,
+                    prefix_columns,
+                    column_controls_open
+                  }}
+                />
+              )}
               <TableFilterControls
                 {...{
                   filter_controls_open,
