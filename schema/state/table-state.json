@@ -40,6 +40,10 @@
     "disable_column_controls": {
       "type": "boolean",
       "description": "When true, disables column controls including add column button and column header interactions"
+    },
+    "disable_multi_sort": {
+      "type": "boolean",
+      "description": "When true, disables multi-column sorting and only allows single column sort"
     }
   }
 }

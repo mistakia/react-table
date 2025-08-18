@@ -467,7 +467,7 @@ const TableHeader = ({ header, column, table }) => {
                     </div>
                   </div>
                 </div>
-                {has_other_sort && (
+                {has_other_sort && !table_state?.disable_multi_sort && (
                   <>
                     <div className='header-menu-item'>
                       <div

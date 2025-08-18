@@ -288,6 +288,9 @@ export default function Table({
         return
       }
 
+      // Force single-column sort when disable_multi_sort is enabled
+      const effective_multi = multi && !table_state?.disable_multi_sort
+
       const table_sort = table_state.sort || []
       const table_sort_map = new Map(
         table_sort.map((item) => [
@@ -305,7 +308,7 @@ export default function Table({
           table_sort_map.set(key, { column_id, desc, column_index })
         }
       } else {
-        if (!multi) {
+        if (!effective_multi) {
           table_sort_map.clear()
         }
         table_sort_map.set(key, { column_id, desc, column_index })
