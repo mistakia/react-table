@@ -127,45 +127,363 @@
       "default": []
     },
     "on_view_change": {
-      "description": "Callback function when view changes",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Callback function invoked when the view configuration changes",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (view: View) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "view": {
+              "$ref": "./view/view.json",
+              "description": "The new view object that was selected or changed"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value expected"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "function(view) { console.log('View changed to:', view.view_name); }",
+        "(view) => { updateUrlWithView(view.view_id); }"
+      ]
     },
     "on_save_view": {
-      "description": "Callback function when saving a view",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Callback function invoked when a view is saved (created or updated)",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (view: View, isNew: boolean) => Promise<void> | void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "view": {
+              "$ref": "./view/view.json",
+              "description": "The view object being saved with all current configurations"
+            },
+            "isNew": {
+              "type": "boolean",
+              "description": "True if this is a new view creation, false if updating existing view"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void | Promise<void> - Can be async for server operations"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "function(view, isNew) { saveViewToServer(view, isNew); }",
+        "async (view, isNew) => { await api.saveView(view); refreshViews(); }"
+      ]
     },
     "select_view": {
-      "description": "Callback function to select a view",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Callback function to programmatically select and load a specific view",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (viewId: string) => Promise<void> | void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "viewId": {
+              "type": "string",
+              "description": "The unique identifier of the view to select and activate"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void | Promise<void> - Can be async for loading view data"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "function(viewId) { loadView(viewId); updateActiveView(viewId); }",
+        "async (viewId) => { const view = await api.getView(viewId); setSelectedView(view); }"
+      ]
     },
     "delete_view": {
-      "description": "Callback function to delete a view",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Callback function to delete a view and handle cleanup operations",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (viewId: string) => Promise<boolean> | boolean"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "viewId": {
+              "type": "string",
+              "description": "The unique identifier of the view to delete"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "boolean | Promise<boolean> - True if deletion successful, false otherwise"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "function(viewId) { return confirmDelete() && removeView(viewId); }",
+        "async (viewId) => { const confirmed = await showDeleteDialog(); if (confirmed) { await api.deleteView(viewId); return true; } return false; }"
+      ]
     },
     "fetch_more": {
-      "description": "Callback function to fetch more data",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Callback function to fetch additional data for infinite scrolling or pagination",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (offset: number, limit: number, currentData: Array<any>) => Promise<Array<any>>"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "offset": {
+              "type": "number",
+              "description": "The starting index for the next batch of data to fetch"
+            },
+            "limit": {
+              "type": "number",
+              "description": "The maximum number of records to fetch in this batch"
+            },
+            "currentData": {
+              "type": "array",
+              "items": { "$ref": "./models/row-data.json" },
+              "description": "The currently loaded data array for context"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "Promise<Array<RowData>> - Array of new row data objects to append"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "async function(offset, limit, currentData) { return await api.fetchRows(offset, limit); }",
+        "(offset, limit) => fetch(`/api/data?offset=${offset}&limit=${limit}`).then(r => r.json())"
+      ]
     },
     "shorten_url": {
-      "description": "Function to shorten URLs"
+      "type": "object",
+      "description": "Function to convert long URLs into shortened versions for sharing table views",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (longUrl: string) => Promise<string> | string"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "longUrl": {
+              "type": "string",
+              "description": "The full URL containing table state and view parameters to be shortened"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string | Promise<string> - The shortened URL"
+        }
+      },
+      "examples": [
+        "function(longUrl) { return bitly.shorten(longUrl); }",
+        "async (longUrl) => { const response = await fetch('/api/shorten', { method: 'POST', body: JSON.stringify({ url: longUrl }) }); return response.text(); }"
+      ]
     },
     "reset_cache": {
-      "description": "Function to reset cache"
+      "type": "object",
+      "description": "Function to clear cached data and force fresh data loading",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (cacheKeys?: Array<string>) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "cacheKeys": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Optional array of specific cache keys to clear. If not provided, clears all table-related cache"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(cacheKeys) { cacheKeys ? clearSpecificCache(cacheKeys) : clearAllCache(); }",
+        "() => { localStorage.removeItem('tableCache'); sessionStorage.clear(); }"
+      ]
     },
     "get_export_api_url": {
-      "description": "Function to get export API URL",
-      "default": "function() {}"
+      "type": "object",
+      "description": "Function to generate the API endpoint URL for data export operations",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (format: string, tableState: TableState, options: ExportOptions) => string"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "format": {
+              "type": "string",
+              "enum": ["csv", "json", "markdown", "html", "tsv"],
+              "description": "The desired export format"
+            },
+            "tableState": {
+              "$ref": "./state/table-state.json",
+              "description": "Current table state including filters, sorts, and column selection"
+            },
+            "options": {
+              "$ref": "./export/export-options.json",
+              "description": "Export configuration options"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string - The complete API URL for the export request"
+        }
+      },
+      "default": "function() {}",
+      "examples": [
+        "function(format, tableState, options) { return `/api/export/${format}?state=${encodeURIComponent(JSON.stringify(tableState))}`; }",
+        "(format, tableState, options) => buildExportUrl({ format, filters: tableState.where, columns: tableState.columns, ...options })"
+      ]
     },
     "get_scatter_point_label": {
-      "description": "Function to get scatter plot point labels",
-      "default": "function(row) { return '' }"
+      "type": "object",
+      "description": "Function to generate labels for data points in scatter plot visualizations",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData, xColumn: ColumnDefinition, yColumn: ColumnDefinition) => string"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object containing all column values for this point"
+            },
+            "xColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the X-axis data"
+            },
+            "yColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the Y-axis data"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string - The label text to display for this scatter plot point"
+        }
+      },
+      "default": "function(row) { return '' }",
+      "examples": [
+        "function(row, xColumn, yColumn) { return row.name || row.id || 'Point'; }",
+        "(row, xColumn, yColumn) => `${row[xColumn.accessorKey]}, ${row[yColumn.accessorKey]}`",
+        "(row) => `${row.player_name} (${row.team})`"
+      ]
     },
     "get_scatter_point_image": {
-      "description": "Function to get scatter plot point images"
+      "type": "object",
+      "description": "Function to generate image URLs or image elements for scatter plot data points",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData, xColumn: ColumnDefinition, yColumn: ColumnDefinition) => string | HTMLImageElement | null"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object containing all column values for this point"
+            },
+            "xColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the X-axis data"
+            },
+            "yColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the Y-axis data"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string | HTMLImageElement | null - Image URL, image element, or null for no image"
+        }
+      },
+      "examples": [
+        "function(row, xColumn, yColumn) { return row.avatar_url || row.image_url; }",
+        "(row) => row.team_logo ? `/images/teams/${row.team_logo}` : null",
+        "(row) => { const img = new Image(); img.src = row.photo_url; return img; }"
+      ]
     },
     "is_scatter_plot_point_label_enabled": {
-      "description": "Function to determine if scatter plot point labels are enabled",
-      "default": "function() { return true }"
+      "type": "object",
+      "description": "Function to conditionally enable or disable labels for scatter plot points",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData, xColumn: ColumnDefinition, yColumn: ColumnDefinition, plotConfig: object) => boolean"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object for this scatter plot point"
+            },
+            "xColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the X-axis data"
+            },
+            "yColumn": {
+              "$ref": "./columns/column-definition.json",
+              "description": "The column definition for the Y-axis data"
+            },
+            "plotConfig": {
+              "type": "object",
+              "description": "Current scatter plot configuration and display settings"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "boolean - True to show labels for this point, false to hide"
+        }
+      },
+      "default": "function() { return true }",
+      "examples": [
+        "function(row, xColumn, yColumn, plotConfig) { return plotConfig.showLabels && row.highlight; }",
+        "(row) => row.is_featured || row.rank <= 10",
+        "(row, xColumn, yColumn, plotConfig) => plotConfig.labelThreshold ? row[yColumn.accessorKey] > plotConfig.labelThreshold : true"
+      ]
     },
     "export_options": {
       "$ref": "./export/export-options.json",

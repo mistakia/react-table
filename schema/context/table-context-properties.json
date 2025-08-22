@@ -5,25 +5,234 @@
   "type": "object",
   "properties": {
     "sticky_left": {
-      "description": "Function to calculate sticky positioning for columns"
+      "type": "object",
+      "description": "Function to calculate sticky left positioning for columns in horizontal scrolling",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (columnIndex: number, columns: Array<ColumnDefinition>) => number"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "columnIndex": {
+              "type": "number",
+              "description": "The zero-based index of the column to position"
+            },
+            "columns": {
+              "type": "array",
+              "items": { "$ref": "../columns/column-definition.json" },
+              "description": "Array of all visible column definitions in their current order"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "number - The left offset in pixels for sticky positioning"
+        }
+      },
+      "examples": [
+        "function(columnIndex, columns) { return columns.slice(0, columnIndex).reduce((sum, col) => sum + col.width, 0); }",
+        "(columnIndex, columns) => columnIndex === 0 ? 0 : getStickyOffset(columnIndex, columns)"
+      ]
     },
     "set_column_controls_open": {
-      "description": "Function to control column configuration dialog"
+      "type": "object",
+      "description": "Function to open or close the column configuration dialog",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (isOpen: boolean, columnId?: string) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "isOpen": {
+              "type": "boolean",
+              "description": "True to open the dialog, false to close it"
+            },
+            "columnId": {
+              "type": "string",
+              "description": "Optional column ID to focus on when opening the dialog"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(isOpen, columnId) { setDialogState({ open: isOpen, focusColumn: columnId }); }",
+        "(isOpen, columnId) => dispatch({ type: 'TOGGLE_COLUMN_CONTROLS', payload: { isOpen, columnId } })"
+      ]
     },
     "set_filter_controls_open": {
-      "description": "Function to control filter dialog"
+      "type": "object",
+      "description": "Function to open or close the filter configuration dialog",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (isOpen: boolean, filterContext?: object) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "isOpen": {
+              "type": "boolean",
+              "description": "True to open the filter dialog, false to close it"
+            },
+            "filterContext": {
+              "type": "object",
+              "description": "Optional context object with filter presets or column focus",
+              "properties": {
+                "columnId": {
+                  "type": "string",
+                  "description": "Column to focus filter on"
+                },
+                "operator": {
+                  "type": "string",
+                  "description": "Default operator to select"
+                },
+                "value": { "description": "Default filter value" }
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(isOpen, filterContext) { setFilterDialog({ open: isOpen, ...filterContext }); }",
+        "(isOpen, context) => toggleFilterDialog(isOpen, context)"
+      ]
     },
     "set_table_sort": {
-      "description": "Function to handle sorting operations"
+      "type": "object",
+      "description": "Function to update table sorting configuration",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (sortConfig: Array<SortItem>) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "sortConfig": {
+              "type": "array",
+              "items": { "$ref": "../state/sort-item.json" },
+              "description": "Array of sort configurations to apply to the table"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(sortConfig) { updateTableState({ sort: sortConfig }); }",
+        "(sortConfig) => dispatch({ type: 'SET_SORT', payload: sortConfig })",
+        "(sortConfig) => setSortState(sortConfig)"
+      ]
     },
     "set_column_hidden_by_index": {
-      "description": "Function to hide columns by index"
+      "type": "object",
+      "description": "Function to show or hide columns by their display index",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (columnIndex: number, isHidden: boolean) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "columnIndex": {
+              "type": "number",
+              "description": "The zero-based index of the column in the current column order"
+            },
+            "isHidden": {
+              "type": "boolean",
+              "description": "True to hide the column, false to show it"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(columnIndex, isHidden) { const newColumns = [...visibleColumns]; newColumns[columnIndex].hidden = isHidden; setVisibleColumns(newColumns); }",
+        "(columnIndex, isHidden) => toggleColumnVisibility(columnIndex, !isHidden)"
+      ]
     },
     "set_filters_local_table_state": {
-      "description": "Function to manage local filter state"
+      "type": "object",
+      "description": "Function to update local filter state without triggering server requests",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (filters: Array<WhereItem>) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "filters": {
+              "type": "array",
+              "items": { "$ref": "../state/where-item.json" },
+              "description": "Array of filter conditions to apply locally"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(filters) { setLocalFilters(filters); }",
+        "(filters) => updateLocalTableState({ where: filters })",
+        "(filters) => setTempFilters(filters)"
+      ]
     },
     "set_selected_scatter_column": {
-      "description": "Function for scatter plot column selection"
+      "type": "object",
+      "description": "Function to select columns for scatter plot visualization",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (axis: 'x' | 'y', columnId: string, columnParams?: object) => void"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "axis": {
+              "type": "string",
+              "enum": ["x", "y"],
+              "description": "Which axis to assign the column to (x or y)"
+            },
+            "columnId": {
+              "type": "string",
+              "description": "The ID of the column to use for this axis"
+            },
+            "columnParams": {
+              "type": "object",
+              "description": "Optional column parameters to apply for this scatter plot"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "void - No return value"
+        }
+      },
+      "examples": [
+        "function(axis, columnId, columnParams) { setScatterColumns(prev => ({ ...prev, [axis]: columnId, [axis + '_params']: columnParams })); }",
+        "(axis, columnId, params) => updateScatterPlot({ axis, columnId, params })"
+      ]
     },
     "selected_scatter_columns": {
       "type": "object",

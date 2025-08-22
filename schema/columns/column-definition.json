@@ -17,7 +17,38 @@
       "type": "string",
       "description": "Key to access data in the row object"
     },
-    "accessorFn": { "description": "Function to access data from the row" },
+    "accessorFn": {
+      "type": "object",
+      "description": "Function to extract and transform data from the row object for this column",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData, index: number) => any"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "../models/row-data.json",
+              "description": "The complete row data object containing all column values"
+            },
+            "index": {
+              "type": "number",
+              "description": "The zero-based index of this row in the current data array"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "any - The processed value to display in this column cell"
+        }
+      },
+      "examples": [
+        "function(row, index) { return row.firstName + ' ' + row.lastName; }",
+        "(row) => row.stats?.points || 0",
+        "(row, index) => ({ value: row.score, rank: index + 1 })"
+      ]
+    },
     "header": {
       "type": "string",
       "description": "Header text displayed in the column header"
@@ -96,13 +127,175 @@
       "description": "Available values for SELECT type columns and filter dropdowns"
     },
     "component": {
-      "description": "React component to render for cells in this column"
+      "type": "object",
+      "description": "React component to render custom cell content for this column",
+      "properties": {
+        "component": {
+          "type": "string",
+          "description": "React component signature: React.ComponentType<CellComponentProps>"
+        },
+        "props": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "The processed cell value (result of accessorFn or accessorKey)"
+            },
+            "row": {
+              "$ref": "../models/row-data.json",
+              "description": "The complete row data object"
+            },
+            "column": {
+              "$ref": "./column-definition.json",
+              "description": "The full column definition object"
+            },
+            "table": {
+              "type": "object",
+              "description": "Reference to the table instance with methods and state"
+            },
+            "index": {
+              "type": "number",
+              "description": "Row index in the current data array"
+            }
+          }
+        }
+      },
+      "examples": [
+        "function CellComponent({ value, row, column }) { return <span className='custom-cell'>{value}</span>; }",
+        "({ value, row }) => <img src={row.avatar} alt={value} />",
+        "(props) => <CustomChart data={props.row.chartData} />"
+      ]
     },
-    "cell": { "description": "Cell renderer component or function" },
+    "cell": {
+      "type": "object",
+      "description": "Cell renderer function or component for custom cell content display",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (cellProps: CellProps) => React.ReactNode"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "cellProps": {
+              "type": "object",
+              "properties": {
+                "getValue": {
+                  "type": "function",
+                  "description": "Function to get the cell value: () => any"
+                },
+                "row": {
+                  "type": "object",
+                  "description": "Row object with original data and metadata"
+                },
+                "column": {
+                  "type": "object",
+                  "description": "Column object with definition and methods"
+                },
+                "table": {
+                  "type": "object",
+                  "description": "Table instance with state and methods"
+                },
+                "cell": {
+                  "type": "object",
+                  "description": "Cell instance with metadata and methods"
+                }
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "React.ReactNode - JSX element, string, number, or null"
+        }
+      },
+      "examples": [
+        "function({ getValue, row }) { return <strong>{getValue()}</strong>; }",
+        "({ getValue, row, column }) => getValue() > 100 ? <span className='high'>{getValue()}</span> : getValue()",
+        "(props) => <CustomComponent value={props.getValue()} rowData={props.row.original} />"
+      ]
+    },
     "header_renderer": {
-      "description": "Header renderer component or function"
+      "type": "object",
+      "description": "Custom header renderer function or component for column headers",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (headerProps: HeaderProps) => React.ReactNode"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "headerProps": {
+              "type": "object",
+              "properties": {
+                "column": {
+                  "$ref": "./column-definition.json",
+                  "description": "The complete column definition object"
+                },
+                "header": {
+                  "type": "object",
+                  "description": "Header instance with sorting and filtering methods"
+                },
+                "table": {
+                  "type": "object",
+                  "description": "Table instance with global state and methods"
+                }
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "React.ReactNode - Custom header content"
+        }
+      },
+      "examples": [
+        "function({ column }) { return <div><Icon /> {column.header_label}</div>; }",
+        "({ column, header }) => <CustomHeaderWidget column={column} sortable={header.column.getCanSort()} />",
+        "(props) => <Tooltip content={props.column.description}>{props.column.header_label}</Tooltip>"
+      ]
     },
-    "footer": { "description": "Footer renderer component or function" },
+    "footer": {
+      "type": "object",
+      "description": "Footer renderer function or component for column footers with aggregations",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (footerProps: FooterProps) => React.ReactNode"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "footerProps": {
+              "type": "object",
+              "properties": {
+                "column": {
+                  "$ref": "./column-definition.json",
+                  "description": "The complete column definition object"
+                },
+                "header": {
+                  "type": "object",
+                  "description": "Header instance with column methods"
+                },
+                "table": {
+                  "type": "object",
+                  "description": "Table instance with access to all data"
+                }
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "React.ReactNode - Footer content (typically aggregated values)"
+        }
+      },
+      "examples": [
+        "function({ table, column }) { const total = table.getRowModel().rows.reduce((sum, row) => sum + row.getValue(column.id), 0); return <strong>Total: {total}</strong>; }",
+        "({ table, column }) => `Avg: ${calculateAverage(table.getRowModel().rows, column.id)}`",
+        "(props) => <AggregationWidget data={props.table.getRowModel().rows} column={props.column} />"
+      ]
+    },
     "is_split": {
       "type": "boolean",
       "description": "Whether this is a split column"
