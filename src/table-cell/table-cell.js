@@ -61,6 +61,7 @@ const TableCell = ({ getValue, column, row, table }) => {
     return (
       <div
         {...{
+          key: column.columnDef.id,
           className: get_string_from_object({
             cell: true,
             sorted: is_sorted,

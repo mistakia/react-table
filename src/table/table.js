@@ -55,16 +55,16 @@ const defaultColumn = {
 
 const MemoizedRow = React.memo(
   ({ row }) => (
-    <div className={`row ${row.original.className}`}>
-      {row.getAllCells().map((cell, index) =>
+    <div className={`row ${row.original.className || ''}`}>
+      {row.getAllCells().map((cell) =>
         flexRender(cell.column.columnDef.cell, {
-          key: index,
+          key: cell.column.id,
           ...cell.getContext()
         })
       )}
     </div>
   ),
-  (prevProps, nextProps) => prevProps.row.id === nextProps.row.id
+  (prevProps, nextProps) => prevProps.row.original === nextProps.row.original
 )
 
 MemoizedRow.displayName = 'MemoizedRow'
