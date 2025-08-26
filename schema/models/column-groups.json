@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/models/column-groups.json",
+  "title": "ColumnGroups",
+  "description": "Collection of column groups for organizing table columns under common headers",
+  "type": "object",
+  "patternProperties": {
+    ".*": {
+      "$ref": "../columns/column-group.json"
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "player_stats": {
+        "column_group_id": "player_stats",
+        "priority": 1,
+        "label": "Player Statistics"
+      },
+      "team_info": {
+        "column_group_id": "team_info", 
+        "priority": 2,
+        "label": "Team Information",
+        "collapsible": true,
+        "defaultExpanded": false
+      }
+    }
+  ]
+}

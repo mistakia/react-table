@@ -29,6 +29,11 @@
       "description": "Object containing all available column definitions keyed by column_id",
       "default": {}
     },
+    "column_groups": {
+      "$ref": "./models/column-groups.json",
+      "description": "Object containing column group definitions for organizing columns under common headers",
+      "default": {}
+    },
     "selected_view": {
       "$ref": "./view/view.json",
       "description": "Currently selected view configuration",
@@ -519,7 +524,13 @@
           "data_type": 2,
           "accessorKey": "name",
           "width": 200,
-          "operators": ["=", "LIKE", "IS NULL"]
+          "operators": ["=", "LIKE", "IS NULL"],
+          "column_groups": [
+            {
+              "column_group_id": "personal_info",
+              "priority": 1
+            }
+          ]
         },
         "age": {
           "column_id": "age",
@@ -528,7 +539,21 @@
           "accessorKey": "age",
           "width": 80,
           "fixed": 0,
-          "operators": ["=", ">", "<", ">=", "<="]
+          "operators": ["=", ">", "<", ">=", "<="],
+          "column_groups": [
+            {
+              "column_group_id": "personal_info",
+              "priority": 1
+            }
+          ]
+        }
+      },
+      "column_groups": {
+        "personal_info": {
+          "column_group_id": "personal_info",
+          "priority": 1,
+          "label": "Personal Information",
+          "description": "Basic personal information fields"
         }
       },
       "table_state": {
