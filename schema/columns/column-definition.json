@@ -319,6 +319,31 @@
     "is_sortable": {
       "type": "boolean",
       "description": "Whether this column can be sorted"
+    },
+    "column_groups": {
+      "type": "array",
+      "items": {
+        "$ref": "./column-group.json"
+      },
+      "description": "Array of column groups this column belongs to. Columns can belong to multiple groups for hierarchical organization.",
+      "examples": [
+        [
+          {
+            "column_group_id": "stats",
+            "priority": 1
+          }
+        ],
+        [
+          {
+            "column_group_id": "performance",
+            "priority": 1
+          },
+          {
+            "column_group_id": "advanced_metrics",
+            "priority": 2
+          }
+        ]
+      ]
     }
   },
   "required": ["column_id"]

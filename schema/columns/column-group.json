@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/columns/column-group.json",
+  "title": "ColumnGroup",
+  "description": "Definition for grouping columns together under a common header",
+  "type": "object",
+  "properties": {
+    "column_group_id": {
+      "type": "string",
+      "description": "Unique identifier for the column group",
+      "examples": ["stats", "basic_info", "performance_metrics"]
+    },
+    "priority": {
+      "type": "integer",
+      "description": "Sort priority for the column group (lower values appear first)",
+      "default": 0,
+      "examples": [1, 2, 3]
+    },
+    "label": {
+      "type": "string",
+      "description": "Display label for the column group header",
+      "examples": ["Statistics", "Basic Information", "Performance Metrics"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Optional description or tooltip text for the column group"
+    },
+    "collapsible": {
+      "type": "boolean",
+      "description": "Whether the column group can be collapsed/expanded",
+      "default": false
+    },
+    "defaultExpanded": {
+      "type": "boolean",
+      "description": "Whether the column group is expanded by default (if collapsible)",
+      "default": true
+    }
+  },
+  "required": ["column_group_id"],
+  "examples": [
+    {
+      "column_group_id": "player_stats",
+      "priority": 1,
+      "label": "Player Statistics"
+    },
+    {
+      "column_group_id": "team_info",
+      "priority": 2,
+      "label": "Team Information",
+      "description": "Team-related data and metrics",
+      "collapsible": true,
+      "defaultExpanded": false
+    }
+  ]
+}
