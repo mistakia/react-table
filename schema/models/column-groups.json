@@ -18,7 +18,7 @@
         "label": "Player Statistics"
       },
       "team_info": {
-        "column_group_id": "team_info", 
+        "column_group_id": "team_info",
         "priority": 2,
         "label": "Team Information",
         "collapsible": true,

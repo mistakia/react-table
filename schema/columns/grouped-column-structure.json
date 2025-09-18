@@ -11,10 +11,7 @@
       "examples": ["Player Stats", "Team: Lakers", "Year: 2024", null]
     },
     "column_group": {
-      "oneOf": [
-        { "$ref": "./column-group.json" },
-        { "type": "null" }
-      ],
+      "oneOf": [{ "$ref": "./column-group.json" }, { "type": "null" }],
       "description": "Column group definition if this is a column_group type grouping"
     },
     "params": {
@@ -34,10 +31,7 @@
     "columns": {
       "type": "array",
       "items": {
-        "oneOf": [
-          { "$ref": "./column-definition.json" },
-          { "$ref": "#" }
-        ]
+        "oneOf": [{ "$ref": "./column-definition.json" }, { "$ref": "#" }]
       },
       "description": "Array of columns or nested groups within this group"
     },
@@ -71,7 +65,7 @@
           "id": "points-0"
         },
         {
-          "column_id": "assists", 
+          "column_id": "assists",
           "header_label": "Assists",
           "id": "assists-1"
         }
