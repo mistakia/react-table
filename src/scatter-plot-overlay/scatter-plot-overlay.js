@@ -191,6 +191,21 @@ const ScatterPlotOverlay = ({
     }
   }, [show_regression])
 
+  // Add ESC key handler to close the overlay
+  React.useEffect(() => {
+    const handle_key_down = (event) => {
+      if (event.key === 'Escape') {
+        on_close()
+      }
+    }
+
+    document.addEventListener('keydown', handle_key_down)
+
+    return () => {
+      document.removeEventListener('keydown', handle_key_down)
+    }
+  }, [on_close])
+
   const options = {
     chart: {
       type: 'scatter',
