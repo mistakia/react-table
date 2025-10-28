@@ -40,6 +40,16 @@ const SharedColumnParamItem = ({
   const { data_type } = column_param_definition
 
   const handle_change = (values) => {
+    // Sanitize: Flatten any nested arrays and filter out invalid values
+    const sanitized_values =
+      values === null || values === undefined
+        ? values
+        : Array.isArray(values)
+          ? values
+              .flat(Infinity)
+              .filter((v) => v !== undefined && v !== null && v !== '')
+          : values
+
     const columns = local_table_state.columns.map((column, index) => {
       if (selected_column_indexes.includes(index)) {
         // check if this column supports this parameter
@@ -51,7 +61,7 @@ const SharedColumnParamItem = ({
             column_id: typeof column === 'string' ? column : column.column_id,
             params: {
               ...existing_params,
-              [column_param_name]: values
+              [column_param_name]: sanitized_values
             }
           }
         }

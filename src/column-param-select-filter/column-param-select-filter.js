@@ -53,7 +53,7 @@ export default function ColumnParamSelectFilter({
 
   // TODO should probably always set it to null
   const handle_all_click = () => {
-    const values = all_filter_values.map((i) => i.value)
+    const values = all_filter_values.map((i) => i.value).flat(Infinity)
     handle_change(set_null_on_all_click ? null : values)
   }
 
@@ -236,14 +236,21 @@ function create_preset_values({
   selected_param_values,
   mixed_state
 }) {
-  return (column_param_definition?.preset_values || []).map((preset) => ({
-    label: preset.label,
-    value: preset.values,
-    is_preset: true,
-    selected:
-      !mixed_state &&
-      preset.values.every((v) => selected_param_values?.includes(v))
-  }))
+  return (column_param_definition?.preset_values || []).map((preset) => {
+    // Flatten preset.values to prevent nested arrays
+    const flat_values = Array.isArray(preset.values)
+      ? preset.values.flat(Infinity)
+      : [preset.values]
+
+    return {
+      label: preset.label,
+      value: flat_values,
+      is_preset: true,
+      selected:
+        !mixed_state &&
+        flat_values.every((v) => selected_param_values?.includes(v))
+    }
+  })
 }
 
 function handle_mixed_state_select({
