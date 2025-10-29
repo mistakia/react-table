@@ -59,6 +59,7 @@ export default function group_columns_by_groups(
 
   function create_group({ identifier }) {
     return {
+      id: identifier.id,
       header: identifier.label,
       column_group:
         identifier.type === 'column_group' ? identifier.value : null,
