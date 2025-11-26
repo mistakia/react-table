@@ -120,6 +120,11 @@
       "description": "Whether the currently selected view can be edited",
       "default": false
     },
+    "enable_validation_warnings": {
+      "type": "boolean",
+      "description": "Whether to enable table state validation warnings in console",
+      "default": false
+    },
     "table_username": {
       "type": "string",
       "description": "Username for table operations",
