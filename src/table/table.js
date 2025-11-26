@@ -30,7 +30,9 @@ import {
   get_string_from_object,
   get_scroll_parent,
   throttle_leading_edge,
-  group_columns_by_groups
+  group_columns_by_groups,
+  validate_table_state,
+  is_valid_table_state_structure
 } from '../utils'
 import { table_context } from '../table-context'
 import ScatterPlotOverlay from '../scatter-plot-overlay/scatter-plot-overlay'
@@ -119,8 +121,26 @@ export default function Table({
   get_scatter_point_label = (row) => '',
   get_scatter_point_image = null,
   is_scatter_plot_point_label_enabled = () => true,
-  metadata = {}
+  metadata = {},
+  enable_validation_warnings = false
 }) {
+  useEffect(() => {
+    if (!enable_validation_warnings || !table_state) return
+
+    if (!is_valid_table_state_structure(table_state)) {
+      console.warn('Table: Invalid table_state structure detected', table_state)
+      return
+    }
+
+    const result = validate_table_state(table_state)
+    if (!result.valid) {
+      console.group('Table: table_state validation errors')
+      console.warn('Table state:', table_state)
+      console.warn('Validation errors:', result.errors)
+      console.groupEnd()
+    }
+  }, [table_state, enable_validation_warnings])
+
   // Use is_fetching as a fallback only if is_fetching_more wasn't explicitly set to true
   const effective_is_fetching_more = is_fetching_more || is_fetching
 
@@ -928,5 +948,6 @@ Table.propTypes = {
   get_scatter_point_image: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   metadata: PropTypes.object,
-  disable_splits: PropTypes.bool
+  disable_splits: PropTypes.bool,
+  enable_validation_warnings: PropTypes.bool
 }
