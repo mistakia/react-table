@@ -165,6 +165,8 @@ const TableColumnControls = ({
 
       if (column_definition && column_definition.column_params) {
         const default_params = {}
+
+        // First pass: collect static defaults
         for (const [param_key, param_value] of Object.entries(
           column_definition.column_params
         )) {
@@ -178,6 +180,26 @@ const TableColumnControls = ({
                 break
               default:
                 default_params[param_key] = param_value.default_value
+            }
+          }
+        }
+
+        // Second pass: apply dynamic defaults (get_default_value)
+        // These can override static defaults based on other param values
+        for (const [param_key, param_value] of Object.entries(
+          column_definition.column_params
+        )) {
+          if (typeof param_value.get_default_value === 'function') {
+            const dynamic_default =
+              param_value.get_default_value(default_params)
+            if (dynamic_default !== undefined && dynamic_default !== null) {
+              switch (param_value.data_type) {
+                case TABLE_DATA_TYPES.SELECT:
+                  default_params[param_key] = [dynamic_default]
+                  break
+                default:
+                  default_params[param_key] = dynamic_default
+              }
             }
           }
         }
