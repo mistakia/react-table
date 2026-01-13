@@ -118,7 +118,7 @@ export default function group_columns_by_groups(
           )
         ) {
           const param_label =
-            column.column_params[param_key]?.label || param_key
+            column.column_params?.[param_key]?.label || param_key
 
           let label
           if (Array.isArray(param_value)) {
@@ -294,7 +294,7 @@ export default function group_columns_by_groups(
 
 function handle_array_param_value(param_value, param_key, column, param_label) {
   const is_range =
-    column.column_params[param_key]?.data_type === TABLE_DATA_TYPES.RANGE
+    column.column_params?.[param_key]?.data_type === TABLE_DATA_TYPES.RANGE
 
   if (is_range) {
     return handle_range_param_value(param_value, param_key, column, param_label)
@@ -323,10 +323,10 @@ function handle_range_param_value(param_value, param_key, column, param_label) {
   const low_value = Math.min(param_value[0], param_value[1])
   const high_value = Math.max(param_value[0], param_value[1])
 
-  const column_def = column.column_params[param_key]
-  if (high_value === column_def.max) {
+  const column_def = column.column_params?.[param_key]
+  if (column_def && high_value === column_def.max) {
     return `${param_label}: ${low_value}+`
-  } else if (low_value === column_def.min) {
+  } else if (column_def && low_value === column_def.min) {
     return `${param_label}: <${high_value}`
   } else {
     return `${param_label}: ${low_value}-${high_value}`
@@ -347,7 +347,7 @@ function handle_single_param_value(
   param_label
 ) {
   const is_boolean =
-    column.column_params[param_key]?.data_type === TABLE_DATA_TYPES.BOOLEAN
+    column.column_params?.[param_key]?.data_type === TABLE_DATA_TYPES.BOOLEAN
 
   if (is_boolean) {
     return `${param_label}: ${param_value ? 'YES' : 'NO'}`
