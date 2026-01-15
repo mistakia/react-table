@@ -18,6 +18,23 @@ export default function TableQuickFilter({
   })
   const filter_where_param = where_param[where_param_index]
 
+  // Helpers to extract value and label from column_value
+  // Supports both primitive values and objects with { label, value }
+  const get_value = (column_value) =>
+    typeof column_value === 'object' && column_value !== null
+      ? column_value.value
+      : column_value
+  const get_label = (column_value) =>
+    typeof column_value === 'object' && column_value !== null
+      ? column_value.label
+      : column_value
+
+  // Helper to get display label for a stored value
+  const get_display_label = (val) => {
+    const cv = column_values.find((c) => get_value(c) === val)
+    return cv ? get_label(cv) : val
+  }
+
   const count =
     where_param_index > -1
       ? filter_where_param.value.length
@@ -26,8 +43,8 @@ export default function TableQuickFilter({
   const selected_label = all
     ? 'ALL'
     : Array.isArray(filter_where_param.value)
-      ? filter_where_param.value.join(', ')
-      : filter_where_param.value
+      ? filter_where_param.value.map(get_display_label).join(', ')
+      : get_display_label(filter_where_param.value)
 
   const handleAllClick = () => {
     const new_where_param = [...where_param]
@@ -43,7 +60,10 @@ export default function TableQuickFilter({
   const handleClearClick = () => {
     const new_where_param = [...where_param]
     if (where_param_index > -1) {
-      filter_where_param.value = []
+      new_where_param[where_param_index] = {
+        ...filter_where_param,
+        value: []
+      }
     } else {
       new_where_param.push({
         column_id: column.column_id,
@@ -59,14 +79,18 @@ export default function TableQuickFilter({
   }
 
   const handleSelect = (event, index) => {
-    const value = column_values[index]
+    const column_value = column_values[index]
+    const value = get_value(column_value)
     if (column.single_select) {
       const new_where_param = [...where_param]
       if (where_param_index > -1) {
         if (filter_where_param.value === value) {
           new_where_param.splice(where_param_index, 1)
         } else {
-          filter_where_param.value = value
+          new_where_param[where_param_index] = {
+            ...filter_where_param,
+            value
+          }
         }
       } else {
         new_where_param.push({
@@ -83,24 +107,33 @@ export default function TableQuickFilter({
       const new_where_param = [...where_param]
       if (where_param_index > -1) {
         if (filter_where_param.value.includes(value)) {
-          filter_where_param.value = filter_where_param.value.filter(
+          const new_value = filter_where_param.value.filter(
             (item) => item !== value
           )
-          if (filter_where_param.value.length === 0) {
+          if (new_value.length === 0) {
             new_where_param.splice(where_param_index, 1)
+          } else {
+            new_where_param[where_param_index] = {
+              ...filter_where_param,
+              value: new_value
+            }
           }
         } else {
-          filter_where_param.value.push(value)
-
-          if (filter_where_param.value.length === column_values.length) {
+          const new_value = [...filter_where_param.value, value]
+          if (new_value.length === column_values.length) {
             new_where_param.splice(where_param_index, 1)
+          } else {
+            new_where_param[where_param_index] = {
+              ...filter_where_param,
+              value: new_value
+            }
           }
         }
       } else {
         new_where_param.push({
           column_id: column.column_id,
           operator: 'IN',
-          value: column_values.filter((item) => item !== value)
+          value: column_values.map(get_value).filter((item) => item !== value)
         })
       }
       on_table_state_change({
@@ -112,7 +145,9 @@ export default function TableQuickFilter({
 
   const items = column_values.map((column_value, index) => {
     const class_object = { 'table-filter-item-dropdown-item': true }
-    const is_selected = all || filter_where_param?.value?.includes(column_value)
+    const actual_value = get_value(column_value)
+    const display_label = get_label(column_value)
+    const is_selected = all || filter_where_param?.value?.includes(actual_value)
     if (is_selected) class_object.selected = true
     return (
       <div
@@ -120,7 +155,7 @@ export default function TableQuickFilter({
         className={get_string_from_object(class_object)}
         onClick={(e) => handleSelect(e, index)}>
         <Checkbox checked={is_selected} size='small' />
-        {column_value}
+        {display_label}
       </div>
     )
   })

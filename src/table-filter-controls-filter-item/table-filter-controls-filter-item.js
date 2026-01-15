@@ -62,6 +62,17 @@ FilterItemOperator.propTypes = {
   data_type: PropTypes.number.isRequired
 }
 
+// Helpers to extract value and label from column_value
+// Supports both primitive values and objects with { label, value }
+const get_column_value = (column_value) =>
+  typeof column_value === 'object' && column_value !== null
+    ? column_value.value
+    : column_value
+const get_column_label = (column_value) =>
+  typeof column_value === 'object' && column_value !== null
+    ? column_value.label
+    : column_value
+
 const FilterItemValue = ({
   where_item,
   filter_value,
@@ -88,11 +99,15 @@ const FilterItemValue = ({
             labelId='select-label'
             variant='outlined'
             style={{ maxWidth: '100px', minWidth: '70px' }}>
-            {column_values.map((value) => (
-              <MenuItem key={value} value={value}>
-                {value}
-              </MenuItem>
-            ))}
+            {column_values.map((column_value) => {
+              const actual_value = get_column_value(column_value)
+              const display_label = get_column_label(column_value)
+              return (
+                <MenuItem key={actual_value} value={actual_value}>
+                  {display_label}
+                </MenuItem>
+              )
+            })}
           </Select>
         </FormControl>
       ) : (
