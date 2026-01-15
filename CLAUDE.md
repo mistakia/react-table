@@ -19,6 +19,7 @@ This is a React table component library built on TanStack/react-table and Materi
 ### Entry Point
 
 `index.js` exports:
+
 - Default: Main Table component
 - Named: Validation functions (`validate_table_state`, `validate_where_clause`, etc.)
 
@@ -46,6 +47,7 @@ src/
 ### Key Patterns
 
 **Table State Structure:**
+
 ```javascript
 {
   sort: [{ column_id: string, desc: boolean }],
@@ -68,6 +70,7 @@ src/
 Located in `src/validators/`. Uses AJV with custom security patterns to prevent SQL injection in where clauses.
 
 **Security constraints:**
+
 - Blocked keywords: DELETE, DROP, TRUNCATE, ALTER, UPDATE, INSERT, MERGE, EXEC
 - String length max: 200 characters
 - Array size max: 100 items
@@ -76,11 +79,13 @@ Located in `src/validators/`. Uses AJV with custom security patterns to prevent 
 ### Data Types
 
 Defined in `src/constants.mjs`:
+
 - NUMBER (1), TEXT (2), JSON (3), BOOLEAN (4), DATE (5), BINARY_UUID (6), SELECT (7), RANGE (8)
 
 ### Column Definition
 
 Columns are defined via `all_columns` prop as an object mapping column IDs to column configuration:
+
 ```javascript
 {
   column_id: {
