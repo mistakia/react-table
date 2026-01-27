@@ -2,6 +2,60 @@
 
 React table component using TanStack/react-table and Material-UI.
 
+## Installation
+
+```bash
+npm install @mistakia/react-table
+```
+
+## Basic Usage
+
+```javascript
+import Table from '@mistakia/react-table'
+
+const all_columns = {
+  name: {
+    column_id: 'name',
+    header_label: 'Name',
+    accessorKey: 'name',
+    data_type: 2 // TEXT
+  },
+  age: {
+    column_id: 'age',
+    header_label: 'Age',
+    accessorKey: 'age',
+    data_type: 1 // NUMBER
+  }
+}
+
+const table_state = {
+  columns: ['name', 'age'],
+  sort: [{ column_id: 'name', desc: false }],
+  where: []
+}
+
+const data = [
+  { name: 'Alice', age: 30 },
+  { name: 'Bob', age: 25 }
+]
+
+function MyTable() {
+  return (
+    <Table data={data} all_columns={all_columns} table_state={table_state} />
+  )
+}
+```
+
+## Schema Documentation
+
+Complete JSON Schema documentation is available in the [`schema/`](./schema/) directory:
+
+- [`schema/index.json`](./schema/index.json) - Component props schema with examples
+- [`schema/state/table-state.json`](./schema/state/table-state.json) - Table state configuration
+- [`schema/columns/column-definition.json`](./schema/columns/column-definition.json) - Column definition schema
+- [`schema/base/table-data-types.json`](./schema/base/table-data-types.json) - Data type constants
+- [`schema/base/table-operators.json`](./schema/base/table-operators.json) - Filter operators
+
 ## Validation
 
 Runtime validation for table state objects using AJV JSON Schema validation with security patterns.
