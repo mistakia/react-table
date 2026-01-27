@@ -170,9 +170,13 @@ const TableFilterControls = ({
   }, [all_columns, filter_text_input])
 
   // update filters_local_table_state on table_state change
+  // Only sync when the filter panel is closed to avoid overwriting pending local changes
+  // (e.g., default filters added when opening the panel, or user edits in progress)
   useEffect(() => {
-    set_filters_local_table_state(table_state)
-  }, [table_state])
+    if (!filter_controls_open) {
+      set_filters_local_table_state(table_state)
+    }
+  }, [table_state, filter_controls_open])
 
   useEffect(() => {
     if (filter_text_input.length && !previous_filter_text.current.length) {
