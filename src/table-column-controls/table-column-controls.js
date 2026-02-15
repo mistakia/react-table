@@ -19,6 +19,9 @@ import Collapse from '@mui/material/Collapse'
 import Badge from '@mui/material/Badge'
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
+import Popper from '@mui/material/Popper'
+import MenuList from '@mui/material/MenuList'
+import MenuItem from '@mui/material/MenuItem'
 import DehazeIcon from '@mui/icons-material/Dehaze'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
@@ -31,7 +34,9 @@ import {
   fuzzy_match,
   group_columns_into_tree_view,
   get_string_from_object,
-  use_count_children
+  use_count_children,
+  levenstein_distance,
+  debounce
 } from '../utils'
 import { table_context } from '../table-context'
 import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '../constants.mjs'
@@ -127,6 +132,12 @@ const TableColumnControls = ({
 
   const container_ref = useRef(null)
   const [transform, set_transform] = useState('')
+
+  const [replace_column_open, set_replace_column_open] = useState(false)
+  const replace_column_anchor_ref = useRef(null)
+  const [replace_column_filter, set_replace_column_filter] = useState('')
+  const [replace_column_filtered_columns, set_replace_column_filtered_columns] =
+    useState(all_columns)
 
   const local_table_state_columns = useMemo(() => {
     const columns = []
@@ -526,6 +537,10 @@ const TableColumnControls = ({
         return
       }
 
+      if (event.target?.closest('.table-popper')) {
+        return
+      }
+
       if (column_controls_open) {
         set_closing(true)
         set_column_controls_open(false)
@@ -603,10 +618,7 @@ const TableColumnControls = ({
   }, [local_table_state, table_state])
 
   const has_selectable_columns = useMemo(() => {
-    return local_table_state_columns.some(
-      (column) =>
-        column.column_params && Object.keys(column.column_params).length
-    )
+    return local_table_state_columns.length > 0
   }, [local_table_state_columns])
 
   const handle_duplicate_columns = () => {
@@ -638,6 +650,67 @@ const TableColumnControls = ({
     })
     set_selected_column_indexes([])
   }
+
+  const debounced_replace_column_filter = useCallback(
+    debounce((filter) => {
+      if (filter) {
+        const filtered = all_columns
+          .filter((col) =>
+            fuzzy_match(filter, col.column_title || col.column_id)
+          )
+          .sort((a, b) => {
+            const distance_a = levenstein_distance(
+              filter,
+              a.column_title || a.column_id
+            )
+            const distance_b = levenstein_distance(
+              filter,
+              b.column_title || b.column_id
+            )
+            return distance_a - distance_b
+          })
+        set_replace_column_filtered_columns(filtered)
+      } else {
+        set_replace_column_filtered_columns(all_columns)
+      }
+    }, 100),
+    [all_columns]
+  )
+
+  useEffect(() => {
+    debounced_replace_column_filter(replace_column_filter)
+  }, [replace_column_filter, debounced_replace_column_filter])
+
+  const handle_replace_selected_columns = useCallback(
+    (new_column) => {
+      set_local_table_state((prev) => ({
+        ...prev,
+        columns: prev.columns.map((col, index) => {
+          if (!selected_column_indexes.includes(index)) {
+            return col
+          }
+          if (typeof col === 'string') {
+            return new_column.column_id
+          }
+          return {
+            ...col,
+            column_id: new_column.column_id,
+            params: new_column.column_params
+              ? Object.fromEntries(
+                  Object.entries(col.params || {}).filter(
+                    ([key]) => new_column.column_params[key]
+                  )
+                )
+              : {}
+          }
+        })
+      }))
+      set_selected_column_indexes([])
+      set_replace_column_open(false)
+      set_replace_column_filter('')
+    },
+    [selected_column_indexes]
+  )
 
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
@@ -692,6 +765,60 @@ const TableColumnControls = ({
                           local_table_state_columns={local_table_state_columns}
                           set_local_table_state={set_local_table_state}
                         />
+                        <ClickAwayListener
+                          onClickAway={() => {
+                            set_replace_column_open(false)
+                            set_replace_column_filter('')
+                          }}>
+                          <div>
+                            <div
+                              className='action'
+                              ref={replace_column_anchor_ref}
+                              onClick={() =>
+                                set_replace_column_open(!replace_column_open)
+                              }>
+                              Replace Column
+                            </div>
+                            <Popper
+                              className='table-popper'
+                              open={replace_column_open}
+                              anchorEl={replace_column_anchor_ref.current}
+                              placement='bottom-start'>
+                              <div className='column-select-menu'>
+                                <div className='column-select-filter-container'>
+                                  <TextField
+                                    variant='outlined'
+                                    margin='none'
+                                    fullWidth
+                                    label='Search columns'
+                                    size='small'
+                                    autoComplete='off'
+                                    autoFocus
+                                    value={replace_column_filter}
+                                    onChange={(e) =>
+                                      set_replace_column_filter(e.target.value)
+                                    }
+                                  />
+                                </div>
+                                <div className='column-select-list'>
+                                  <MenuList>
+                                    {replace_column_filtered_columns.map(
+                                      (col) => (
+                                        <MenuItem
+                                          key={col.column_id}
+                                          onClick={() =>
+                                            handle_replace_selected_columns(col)
+                                          }>
+                                          {col.column_title || col.column_id}
+                                        </MenuItem>
+                                      )
+                                    )}
+                                  </MenuList>
+                                </div>
+                              </div>
+                            </Popper>
+                          </div>
+                        </ClickAwayListener>
                         <div
                           className='action'
                           onClick={handle_duplicate_columns}>
@@ -717,14 +844,9 @@ const TableColumnControls = ({
                           className='action'
                           onClick={() =>
                             set_selected_column_indexes(
-                              local_table_state_columns
-                                .map((column, index) => ({ column, index }))
-                                .filter(
-                                  ({ column }) =>
-                                    column.column_params &&
-                                    Object.keys(column.column_params).length
-                                )
-                                .map(({ index }) => index)
+                              local_table_state_columns.map(
+                                (_, index) => index
+                              )
                             )
                           }>
                           Select All

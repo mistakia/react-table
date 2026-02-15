@@ -278,20 +278,18 @@ const ColumnControlsSelectedColumn = React.memo(
                 </MenuList>
               </ClickAwayListener>
             </Popper>
-            {has_column_params && (
-              <Checkbox
-                checked={selected_column_indexes.includes(column_index)}
-                onChange={(event) => {
-                  set_selected_column_indexes(
-                    event.target.checked
-                      ? [...selected_column_indexes, column_index]
-                      : selected_column_indexes.filter(
-                          (index) => index !== column_index
-                        )
-                  )
-                }}
-              />
-            )}
+            <Checkbox
+              checked={selected_column_indexes.includes(column_index)}
+              onChange={(event) => {
+                set_selected_column_indexes(
+                  event.target.checked
+                    ? [...selected_column_indexes, column_index]
+                    : selected_column_indexes.filter(
+                        (index) => index !== column_index
+                      )
+                )
+              }}
+            />
             <div className='column-drag-handle' {...listeners}>
               <DragIndicatorIcon />
             </div>
