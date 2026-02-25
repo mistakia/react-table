@@ -75,6 +75,11 @@ const format_stat_value = ({ value, threshold = 0.0001 }) => {
   return Math.abs(value) < threshold ? value.toExponential(4) : value.toFixed(4)
 }
 
+const calculate_std_dev = (values, mean) => {
+  const sum_sq = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0)
+  return Math.sqrt(sum_sq / values.length)
+}
+
 const ScatterPlotOverlay = ({
   data,
   x_column,
@@ -99,6 +104,17 @@ const ScatterPlotOverlay = ({
     .filter((y) => !isNaN(y))
   const x_average = x_values.reduce((sum, x) => sum + x, 0) / x_values.length
   const y_average = y_values.reduce((sum, y) => sum + y, 0) / y_values.length
+  const x_std_dev = calculate_std_dev(x_values, x_average)
+  const y_std_dev = calculate_std_dev(y_values, y_average)
+
+  const is_outlier = (x, y) => {
+    const x_distance = Math.abs(x - x_average) / (x_std_dev || 1)
+    const y_distance = Math.abs(y - y_average) / (y_std_dev || 1)
+    const combined_distance = Math.sqrt(
+      x_distance * x_distance + y_distance * y_distance
+    )
+    return combined_distance > 1.0
+  }
 
   const adjust_label_positions = (points) => {
     const label_padding = 5
@@ -181,6 +197,7 @@ const ScatterPlotOverlay = ({
 
   const x_subtitle = get_column_subtitle(x_column, x_column_params)
   const y_subtitle = get_column_subtitle(y_column, y_column_params)
+  const has_subtitle = Boolean(x_subtitle || y_subtitle)
 
   const [show_regression, set_show_regression] = React.useState(false)
   const [regression_stats, set_regression_stats] = React.useState(null)
@@ -206,6 +223,8 @@ const ScatterPlotOverlay = ({
     }
   }, [on_close])
 
+  const labels_enabled = is_scatter_plot_point_label_enabled({ rows: data })
+
   const options = {
     chart: {
       type: 'scatter',
@@ -215,13 +234,15 @@ const ScatterPlotOverlay = ({
     title: {
       text: `${x_label} vs ${y_label}`
     },
-    subtitle: {
-      text: `X: ${x_subtitle}<br/>Y: ${y_subtitle}`,
-      style: {
-        fontSize: '10px',
-        fontWeight: 'normal'
-      }
-    },
+    subtitle: has_subtitle
+      ? {
+          text: `X: ${x_subtitle}<br/>Y: ${y_subtitle}`,
+          style: {
+            fontSize: '10px',
+            fontWeight: 'normal'
+          }
+        }
+      : undefined,
     xAxis: {
       title: {
         text: x_label
@@ -229,15 +250,17 @@ const ScatterPlotOverlay = ({
       gridLineWidth: 1,
       plotLines: [
         {
-          color: 'red',
+          color: 'rgba(180, 60, 60, 0.8)',
           dashStyle: 'dash',
           value: x_average,
-          width: 2,
+          width: 1,
           label: {
-            text: `${x_average.toFixed(2)}`,
+            text: `avg ${x_average.toFixed(2)}`,
             align: 'left',
             style: {
-              color: 'red'
+              color: 'rgba(180, 60, 60, 0.9)',
+              fontSize: '11px',
+              fontWeight: 'bold'
             }
           }
         }
@@ -249,15 +272,17 @@ const ScatterPlotOverlay = ({
       },
       plotLines: [
         {
-          color: 'red',
+          color: 'rgba(180, 60, 60, 0.8)',
           dashStyle: 'dash',
           value: y_average,
-          width: 2,
+          width: 1,
           label: {
-            text: `${y_average.toFixed(2)}`,
+            text: `avg ${y_average.toFixed(2)}`,
             align: 'left',
             style: {
-              color: 'red'
+              color: 'rgba(180, 60, 60, 0.9)',
+              fontSize: '11px',
+              fontWeight: 'bold'
             }
           }
         }
@@ -278,8 +303,9 @@ const ScatterPlotOverlay = ({
     plotOptions: {
       scatter: {
         dataLabels: {
-          enabled: is_scatter_plot_point_label_enabled({ rows: data }),
+          enabled: labels_enabled,
           formatter: function () {
+            if (!this.point.is_outlier) return null
             return this.point.label
           },
           allowOverlap: false,
@@ -295,11 +321,15 @@ const ScatterPlotOverlay = ({
           },
           style: {
             pointerEvents: 'none',
-            textOutline: 'none'
+            textOutline: '2px white',
+            color: '#1a1a2e',
+            fontWeight: 'normal',
+            fontSize: '11px'
           }
         },
         marker: {
           radius: 5,
+          fillOpacity: 0.6,
           states: {
             hover: {
               enabled: true,
@@ -320,6 +350,7 @@ const ScatterPlotOverlay = ({
       {
         id: 'scatter-plot-points',
         type: 'scatter',
+        color: 'rgba(37, 99, 235, 0.5)',
         data: adjust_label_positions(
           data
             .map((row) => {
@@ -329,7 +360,8 @@ const ScatterPlotOverlay = ({
                 x,
                 y,
                 label: get_point_label(row),
-                original_data: row
+                original_data: row,
+                is_outlier: is_outlier(x, y)
               }
 
               if (get_point_image) {
@@ -342,6 +374,14 @@ const ScatterPlotOverlay = ({
                     symbol: `url(${image_data.url})`,
                     width: image_data.width || 32,
                     height: image_data.height || 32
+                  }
+                } else {
+                  point.marker = {
+                    symbol: 'circle',
+                    radius: 1,
+                    fillColor: '#2563eb',
+                    lineWidth: 1,
+                    lineColor: '#1e40af'
                   }
                 }
               }

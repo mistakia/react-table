@@ -844,9 +844,7 @@ const TableColumnControls = ({
                           className='action'
                           onClick={() =>
                             set_selected_column_indexes(
-                              local_table_state_columns.map(
-                                (_, index) => index
-                              )
+                              local_table_state_columns.map((_, index) => index)
                             )
                           }>
                           Select All
