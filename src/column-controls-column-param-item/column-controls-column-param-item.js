@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import ColumnParamSelectFilter from '../column-param-select-filter'
+import ColumnParamSelectFilterWithOverrides from '../column-param-select-filter-with-overrides'
 import ColumnParamRangeFilter from '../column-param-range-filter'
 import ColumnParamBooleanFilter from '../column-param-boolean-filter'
 import ColumnParamDateFilter from '../column-param-date-filter'
@@ -60,6 +61,16 @@ const ColumnControlsColumnParamItem = ({
 
   switch (data_type) {
     case TABLE_DATA_TYPES.SELECT:
+      if (column_param_definition.param_override_config) {
+        return (
+          <ColumnParamSelectFilterWithOverrides
+            {...param_props}
+            column={column}
+            column_index={column_index}
+            set_local_table_state={set_local_table_state}
+          />
+        )
+      }
       return <ColumnParamSelectFilter {...param_props} />
     case TABLE_DATA_TYPES.BOOLEAN:
       return <ColumnParamBooleanFilter {...param_props} />

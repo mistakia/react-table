@@ -1,0 +1,46 @@
+@import '../styles/variables.styl'
+
+.select-filter-with-overrides-panel
+  background white
+  min-width 200px
+  display flex
+  flex-direction column
+  border-radius 6px
+
+  &.overrides-active
+    min-width 340px
+
+  .select-options-section
+    display flex
+    flex-direction column
+    max-height 250px
+    overflow-y auto
+
+  .override-section
+    width 100%
+    border-top 1px solid rgba(0, 0, 0, 0.12)
+
+    .override-header
+      display flex
+      align-items center
+      justify-content space-between
+      padding 8px
+
+      .override-label
+        font-size 12px
+        font-weight 500
+        text-transform uppercase
+        color rgba(0, 0, 0, 0.54)
+        flex 1
+
+    .override-params-grid
+      display grid
+      grid-template-columns repeat(auto-fill, minmax(250px, 1fr))
+      gap 4px
+      max-height 300px
+      overflow-y auto
+      padding 0 4px 8px
+
+    @media (max-width 540px)
+      .override-params-grid
+        grid-template-columns 1fr
