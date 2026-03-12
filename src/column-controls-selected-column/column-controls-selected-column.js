@@ -28,6 +28,7 @@ import {
 } from '../utils'
 import DataTypeIcon from '../data-type-icon'
 import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
+import ColumnControlsRateTypeDenominatorParams from '../column-controls-rate-type-denominator-params'
 
 const ColumnControlsSelectedColumn = React.memo(
   ({
@@ -84,12 +85,11 @@ const ColumnControlsSelectedColumn = React.memo(
     }
 
     const filtered_params = useMemo(() => {
-      if (param_filter_text) {
-        return Object.entries(column.column_params || {}).filter(
-          ([param_name]) => fuzzy_match(param_filter_text, param_name)
-        )
-      }
-      return Object.entries(column.column_params || {})
+      return Object.entries(column.column_params || {}).filter(
+        ([param_name, param_def]) =>
+          !param_def.hidden &&
+          (!param_filter_text || fuzzy_match(param_filter_text, param_name))
+      )
     }, [param_filter_text, column.column_params])
 
     const debounced_filter_columns = useCallback(
@@ -330,6 +330,14 @@ const ColumnControlsSelectedColumn = React.memo(
                 </div>
               ))}
             </div>
+          )}
+          {show_column_params && (
+            <ColumnControlsRateTypeDenominatorParams
+              column={column}
+              set_local_table_state={set_local_table_state}
+              column_index={column_index}
+              splits={splits}
+            />
           )}
         </div>
       </div>
