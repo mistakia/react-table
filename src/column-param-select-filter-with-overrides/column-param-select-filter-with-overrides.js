@@ -259,8 +259,8 @@ export default function ColumnParamSelectFilterWithOverrides({
                 />
               </div>
               {is_toggle_on && (
-                <>
-                  <div style={{ padding: '0 8px' }}>
+                <div className='override-params-body'>
+                  <div style={{ padding: '0 8px 8px' }}>
                     <TextField
                       variant='outlined'
                       margin='none'
@@ -272,7 +272,7 @@ export default function ColumnParamSelectFilterWithOverrides({
                       onChange={(e) => set_filter_text(e.target.value)}
                     />
                   </div>
-                  <div className='override-params-grid'>
+                  <div className='override-params-container'>
                     {Object.entries(grouped_override_params).map(
                       ([group_name, params]) => (
                         <div key={group_name} className='column-param-group'>
@@ -302,7 +302,7 @@ export default function ColumnParamSelectFilterWithOverrides({
                       )
                     )}
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>

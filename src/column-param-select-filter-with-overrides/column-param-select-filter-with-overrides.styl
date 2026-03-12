@@ -8,16 +8,29 @@
   border-radius 6px
 
   &.overrides-active
-    min-width 340px
+    flex-direction row
+    width calc(100vw - 32px)
+    max-width 800px
+    height 400px
 
   .select-options-section
     display flex
     flex-direction column
-    max-height 250px
+    max-height 350px
+    overflow-y auto
+    flex-shrink 0
+
+  &.overrides-active .select-options-section
+    border-right 1px solid rgba(0, 0, 0, 0.12)
+    min-width 200px
+    max-height none
     overflow-y auto
 
   .override-section
-    width 100%
+    flex 1
+    min-width 0
+    display flex
+    flex-direction column
     border-top 1px solid rgba(0, 0, 0, 0.12)
 
     .override-header
@@ -25,6 +38,8 @@
       align-items center
       justify-content space-between
       padding 8px
+      flex-shrink 0
+      border-bottom 1px solid rgba(0, 0, 0, 0.12)
 
       .override-label
         font-size 12px
@@ -33,14 +48,25 @@
         color rgba(0, 0, 0, 0.54)
         flex 1
 
-    .override-params-grid
-      display grid
-      grid-template-columns repeat(auto-fill, minmax(250px, 1fr))
-      gap 4px
-      max-height 300px
+    .override-params-body
+      flex 1
+      min-height 0
       overflow-y auto
-      padding 0 4px 8px
+      padding 8px 8px
+      background darken(white, 4%)
 
-    @media (max-width 540px)
-      .override-params-grid
-        grid-template-columns 1fr
+    .override-params-container
+      display flex
+      flex-wrap wrap
+
+  &.overrides-active .override-section
+    border-top none
+
+  @media (max-width 540px)
+    &.overrides-active
+      flex-direction column
+      min-width 200px
+
+    &.overrides-active .select-options-section
+      border-right none
+      border-bottom 1px solid rgba(0, 0, 0, 0.12)
