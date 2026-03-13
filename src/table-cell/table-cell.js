@@ -81,6 +81,10 @@ const TableCell = ({ getValue, column, row, table }) => {
     value = 'invalid value'
   }
 
+  if (typeof value === 'boolean') {
+    value = value ? 'true' : 'false'
+  }
+
   if (
     typeof value === 'number' &&
     !Number.isInteger(value) &&
