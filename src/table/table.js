@@ -797,15 +797,18 @@ export default function Table({
                   all_columns: memoized_visible_columns // TODO
                 }}
               />
-              {!disable_splits && (
-                <TableSplitsControls
-                  {...{
-                    table_state,
-                    on_table_state_change,
-                    table_state_columns
-                  }}
-                />
-              )}
+              {!disable_splits &&
+                table_state_columns.some(
+                  (col) => col.splits && col.splits.length > 0
+                ) && (
+                  <TableSplitsControls
+                    {...{
+                      table_state,
+                      on_table_state_change,
+                      table_state_columns
+                    }}
+                  />
+                )}
               <div className='table-top-lead-buttons-container'>
                 {is_table_state_changed && (
                   <>
