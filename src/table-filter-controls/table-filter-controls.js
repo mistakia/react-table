@@ -243,55 +243,6 @@ const TableFilterControls = ({
     }
   }, [all_columns_expanded])
 
-  const remove_where_params_from_columns = () => {
-    // remove any where items with a null, undefined, or empty string value that match a column in table_state.columns (column_id and params)
-
-    if (
-      !filters_local_table_state.where ||
-      !filters_local_table_state.where.length
-    ) {
-      return
-    }
-
-    const visible_table_columns = [
-      ...(table_state.columns || []),
-      ...(table_state.prefix_columns || [])
-    ]
-
-    const updated_where = (filters_local_table_state.where || []).filter(
-      (where_item) => {
-        const matching_column = visible_table_columns.find((column) => {
-          const column_id =
-            typeof column === 'string' ? column : column.column_id
-          const column_params =
-            typeof column === 'string' ? {} : column.column_params
-          return (
-            (where_item.column_id === column_id &&
-              (where_item.params === null ||
-                where_item.params === undefined ||
-                Object.keys(where_item.params).length === 0) &&
-              (column_params === null ||
-                column_params === undefined ||
-                Object.keys(column_params).length === 0)) ||
-            JSON.stringify(where_item.params) === JSON.stringify(column_params)
-          )
-        })
-        return (
-          !matching_column ||
-          where_item.operator === 'IS NULL' ||
-          where_item.operator === 'IS NOT NULL' ||
-          (where_item.value !== null &&
-            where_item.value !== undefined &&
-            where_item.value !== '')
-        )
-      }
-    )
-    set_filters_local_table_state({
-      ...filters_local_table_state,
-      where: updated_where
-    })
-  }
-
   const add_where_params_from_columns = () => {
     // populate local_table_state where filters with filters from table_state.columns that do not exist
     // compare columnn_id and params (json.stringify)
@@ -392,9 +343,6 @@ const TableFilterControls = ({
       document.addEventListener('keydown', handle_key_down)
     } else {
       document.removeEventListener('keydown', handle_key_down)
-      setTimeout(() => {
-        remove_where_params_from_columns()
-      }, 400)
       set_selected_where_indexes([])
     }
 
