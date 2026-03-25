@@ -371,10 +371,18 @@ export default function Table({
         typeof column === 'string'
           ? column
           : column.column_id || column.id || column.column_name
-      if (column_id && all_columns[column_id]) {
+      const column_def = column_id && all_columns[column_id]
+      if (column_def) {
+        const column_params =
+          typeof column === 'string' ? {} : column.params || {}
+        const reverse_percentiles =
+          typeof column_def.reverse_percentiles === 'function'
+            ? column_def.reverse_percentiles(column_params)
+            : column_def.reverse_percentiles
         columns.push({
-          ...all_columns[column_id],
-          index: starting_index
+          ...column_def,
+          index: starting_index,
+          reverse_percentiles
         })
         starting_index += 1
       }
