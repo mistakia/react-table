@@ -59,6 +59,11 @@ const ColumnControlsColumnParamItem = ({
     splits
   }
 
+  if (typeof column_param_definition.component === 'function') {
+    const CustomComponent = column_param_definition.component
+    return <CustomComponent {...param_props} />
+  }
+
   switch (data_type) {
     case TABLE_DATA_TYPES.SELECT:
       if (column_param_definition.param_override_config) {

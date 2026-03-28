@@ -78,6 +78,11 @@ const SharedWhereParamItem = ({
     mixed_state: !is_equal
   }
 
+  if (typeof column_param_definition.component === 'function') {
+    const CustomComponent = column_param_definition.component
+    return <CustomComponent {...param_props} />
+  }
+
   switch (data_type) {
     case TABLE_DATA_TYPES.SELECT:
       return <ColumnParamSelectFilter {...param_props} />
