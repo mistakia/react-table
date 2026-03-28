@@ -8,7 +8,7 @@ const TableCell = ({ getValue, column, row, table }) => {
   const { sticky_left } = useContext(table_context)
 
   if (column.columnDef.id === 'add_column_action') {
-    return null
+    return <div className='cell add-column-action' />
   }
 
   if (column.columnDef.id === 'column_index') {
@@ -121,28 +121,30 @@ const TableCell = ({ getValue, column, row, table }) => {
 
     if (percentile && !Number.isNaN(value)) {
       if (is_reversed ? value > percentile.p25 : value < percentile.p25) {
-        const max_percent = Math.max(
-          0,
-          is_reversed
-            ? (value - percentile.p25) /
-              (percentile.min - percentile.p25) /
-              1.5
-            : (percentile.p25 - value) /
-              (percentile.p25 - percentile.min) /
-              1.5
-        ) || 0
+        const max_percent =
+          Math.max(
+            0,
+            is_reversed
+              ? (value - percentile.p25) /
+                  (percentile.min - percentile.p25) /
+                  1.5
+              : (percentile.p25 - value) /
+                  (percentile.p25 - percentile.min) /
+                  1.5
+          ) || 0
         return `rgba(253, 162, 145, ${max_percent}`
       } else {
-        const max_percent = Math.max(
-          0,
-          is_reversed
-            ? (percentile.p75 - value) /
-              (percentile.p75 - percentile.max) /
-              1.5
-            : (value - percentile.p75) /
-              (percentile.max - percentile.p75) /
-              1.5
-        ) || 0
+        const max_percent =
+          Math.max(
+            0,
+            is_reversed
+              ? (percentile.p75 - value) /
+                  (percentile.p75 - percentile.max) /
+                  1.5
+              : (value - percentile.p75) /
+                  (percentile.max - percentile.p75) /
+                  1.5
+          ) || 0
         return `rgba(46, 163, 221, ${max_percent}`
       }
     }

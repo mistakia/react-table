@@ -442,7 +442,8 @@ export default function Table({
     () =>
       [
         column_helper.display({
-          id: 'column_index'
+          id: 'column_index',
+          size: 30
         }),
         ...prefix_columns,
         splits_columns,
