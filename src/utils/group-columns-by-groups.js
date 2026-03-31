@@ -133,7 +133,7 @@ export default function group_columns_by_groups(
             typeof param_value === 'object' &&
             param_value.dynamic_type
           ) {
-            label = handle_dynamic_param_value(param_value, param_label)
+            label = handle_dynamic_param_value(param_value, param_key, column, param_label)
           } else {
             label = handle_single_param_value(
               param_value,
@@ -298,25 +298,30 @@ function handle_array_param_value(param_value, param_key, column, param_label) {
 
   if (is_range) {
     return handle_range_param_value(param_value, param_key, column, param_label)
-  } else {
-    const column_param_labels = param_value.map((param_v) => {
-      if (param_v && typeof param_v === 'object' && param_v.dynamic_type) {
-        return (
-          `${param_v.dynamic_type}` +
-          (param_v.value ? ` (${param_v.value})` : '')
-        )
-      } else if (param_v && typeof param_v === 'object') {
-        return param_v.label || param_v.value
-      } else {
-        return (
-          column.column_params?.[param_key]?.values?.find(
-            (def_v) => def_v?.value === param_v
-          )?.label || param_v
-        )
-      }
-    })
-    return column_param_labels.join(', ')
   }
+
+  const param_def = column.column_params?.[param_key]
+  if (param_def?.format_param_values) {
+    return param_def.format_param_values(param_value, param_def)
+  }
+
+  const column_param_labels = param_value.map((param_v) => {
+    if (param_v && typeof param_v === 'object' && param_v.dynamic_type) {
+      return (
+        `${param_v.dynamic_type}` +
+        (param_v.value ? ` (${param_v.value})` : '')
+      )
+    } else if (param_v && typeof param_v === 'object') {
+      return param_v.label || param_v.value
+    } else {
+      return (
+        column.column_params?.[param_key]?.values?.find(
+          (def_v) => def_v?.value === param_v
+        )?.label || param_v
+      )
+    }
+  })
+  return column_param_labels.join(', ')
 }
 
 function handle_range_param_value(param_value, param_key, column, param_label) {
@@ -333,9 +338,13 @@ function handle_range_param_value(param_value, param_key, column, param_label) {
   }
 }
 
-function handle_dynamic_param_value(param_value, param_label) {
+function handle_dynamic_param_value(param_value, param_key, column, param_label) {
+  const dynamic_def = column.column_params?.[param_key]?.dynamic_values?.find(
+    (dv) => dv.dynamic_type === param_value.dynamic_type
+  )
+  const type_label = dynamic_def?.label || param_value.dynamic_type
   return (
-    `${param_label}: ${param_value.dynamic_type}` +
+    `${param_label}: ${type_label}` +
     (param_value.value ? ` (${param_value.value})` : '')
   )
 }
