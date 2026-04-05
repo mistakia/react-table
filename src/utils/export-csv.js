@@ -1,5 +1,13 @@
 /* global Blob */
 
+function escape_csv_value(value) {
+  const str = String(value ?? '')
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
 function convert_to_csv(objArray) {
   const array = typeof objArray !== 'object' ? JSON.parse(objArray) : objArray
   let str = ''
@@ -8,7 +16,7 @@ function convert_to_csv(objArray) {
     let line = ''
     for (const index in array[i]) {
       if (line !== '') line += ','
-      line += array[i][index]
+      line += escape_csv_value(array[i][index])
     }
     str += line + '\r\n'
   }
