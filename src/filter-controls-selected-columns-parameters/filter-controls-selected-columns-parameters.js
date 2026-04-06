@@ -4,11 +4,11 @@ import Popper from '@mui/material/Popper'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import TextField from '@mui/material/TextField'
 
-import ColumnParamSelectFilter from '../column-param-select-filter'
-import ColumnParamRangeFilter from '../column-param-range-filter'
-import ColumnParamBooleanFilter from '../column-param-boolean-filter'
-import { TABLE_DATA_TYPES } from '../constants.mjs'
-import { fuzzy_match, group_parameters } from '../utils'
+import ColumnParamSelectFilter from '#src/column-param-select-filter'
+import ColumnParamRangeFilter from '#src/column-param-range-filter'
+import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
+import { fuzzy_match, group_parameters } from '#src/utils'
 
 const SharedWhereParamItem = ({
   column_param_name,

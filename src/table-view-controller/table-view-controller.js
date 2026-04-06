@@ -10,10 +10,14 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import EditIcon from '@mui/icons-material/Edit'
 
-import TableViewModal from '../table-view-modal'
-import { fuzzy_match, generate_view_id, get_string_from_object } from '../utils'
-import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
-import { table_context } from '../table-context'
+import TableViewModal from '#src/table-view-modal'
+import {
+  fuzzy_match,
+  generate_view_id,
+  get_string_from_object
+} from '#src/utils'
+import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
+import { table_context } from '#src/table-context'
 
 import './table-view-controller.styl'
 

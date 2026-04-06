@@ -20,17 +20,17 @@ import AddIcon from '@mui/icons-material/Add'
 import CloseIcon from '@mui/icons-material/Close'
 import { distance } from 'fastest-levenshtein'
 
-import DataTypeIcon from '../data-type-icon'
+import DataTypeIcon from '#src/data-type-icon'
 import {
   group_columns_into_tree_view,
   fuzzy_match,
   get_string_from_object,
   use_count_children
-} from '../utils'
-import { OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
-import { table_context } from '../table-context'
-import FilterItem from '../table-filter-controls-filter-item'
-import FilterControlsSelectedColumnsParameters from '../filter-controls-selected-columns-parameters'
+} from '#src/utils'
+import { OPERATOR_MENU_DEFAULT_VALUE } from '#src/constants.mjs'
+import { table_context } from '#src/table-context'
+import FilterItem from '#src/table-filter-controls-filter-item'
+import FilterControlsSelectedColumnsParameters from '#src/filter-controls-selected-columns-parameters'
 
 import './table-filter-controls.styl'
 

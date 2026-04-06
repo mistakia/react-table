@@ -15,8 +15,8 @@ import {
   export_csv,
   export_json,
   export_markdown
-} from '../utils'
-import { table_context } from '../table-context'
+} from '#src/utils'
+import { table_context } from '#src/table-context'
 
 import './table-menu.styl'
 
@@ -158,7 +158,9 @@ const TableMenu = ({
       const is_duplicate = column_id_counts[column_id] > 1
 
       headers.push({
-        row_key: is_duplicate ? `${column_label}_${column_index}` : column_label,
+        row_key: is_duplicate
+          ? `${column_label}_${column_index}`
+          : column_label,
         export_value: column_def?.export_value,
         accessorFn: column_def?.accessorFn,
         accessorKey: column_def?.accessorKey,
@@ -233,7 +235,9 @@ const TableMenu = ({
       const is_duplicate = column_id_counts[column_id] > 1
 
       headers.push({
-        row_key: is_duplicate ? `${column_label}_${column_index}` : column_label,
+        row_key: is_duplicate
+          ? `${column_label}_${column_index}`
+          : column_label,
         export_value: column_def?.export_value,
         accessorFn: column_def?.accessorFn,
         accessorKey: column_def?.accessorKey,
@@ -307,7 +311,9 @@ const TableMenu = ({
       const is_duplicate = column_id_counts[column_id] > 1
 
       headers.push({
-        row_key: is_duplicate ? `${column_label}_${column_index}` : column_label,
+        row_key: is_duplicate
+          ? `${column_label}_${column_index}`
+          : column_label,
         export_value: column_def?.export_value,
         accessorFn: column_def?.accessorFn,
         accessorKey: column_def?.accessorKey,

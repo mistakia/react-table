@@ -14,18 +14,18 @@ import LinearProgress from '@mui/material/LinearProgress'
 // import IconButton from '@mui/material/IconButton'
 // import CloseIcon from '@mui/icons-material/Close'
 
-import TableCell from '../table-cell'
-import TableHeader from '../table-header'
-import TableFooter from '../table-footer'
-import TableColumnControls from '../table-column-controls'
-import TableSplitsControls from '../table-splits-controls'
-import TableViewController from '../table-view-controller'
-import TableFilterControls from '../table-filter-controls'
-import TableQuickFilter from '../table-quick-filter'
-import TableSearch from '../table-search'
-import TableMenu from '../table-menu'
-import TableMetadata from '../table-metadata'
-import TableRankAggregationControls from '../table-rank-aggregation-controls'
+import TableCell from '#src/table-cell'
+import TableHeader from '#src/table-header'
+import TableFooter from '#src/table-footer'
+import TableColumnControls from '#src/table-column-controls'
+import TableSplitsControls from '#src/table-splits-controls'
+import TableViewController from '#src/table-view-controller'
+import TableFilterControls from '#src/table-filter-controls'
+import TableQuickFilter from '#src/table-quick-filter'
+import TableSearch from '#src/table-search'
+import TableMenu from '#src/table-menu'
+import TableMetadata from '#src/table-metadata'
+import TableRankAggregationControls from '#src/table-rank-aggregation-controls'
 import {
   get_string_from_object,
   get_scroll_parent,
@@ -33,9 +33,9 @@ import {
   group_columns_by_groups,
   validate_table_state,
   is_valid_table_state_structure
-} from '../utils'
-import { table_context } from '../table-context'
-import ScatterPlotOverlay from '../scatter-plot-overlay/scatter-plot-overlay'
+} from '#src/utils'
+import { table_context } from '#src/table-context'
+import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
 
 import '../styles/mui-unstyled-popper.styl'
 import '../styles/table-expanding-control-container.styl'

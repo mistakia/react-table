@@ -9,8 +9,8 @@ import IconButton from '@mui/material/IconButton'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 
 import './table-rank-aggregation-controls.styl'
-import { get_string_from_object } from '../utils'
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { get_string_from_object } from '#src/utils'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const RankItem = React.memo(function RankItem({
   table_state,

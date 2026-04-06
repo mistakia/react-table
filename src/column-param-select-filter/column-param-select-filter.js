@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
-import FilterBase from '../filter-base'
+import FilterBase from '#src/filter-base'
 
 export default function ColumnParamSelectFilter({
   column_param_name,

@@ -1,12 +1,12 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import ColumnParamSelectFilter from '../column-param-select-filter'
-import ColumnParamSelectFilterWithOverrides from '../column-param-select-filter-with-overrides'
-import ColumnParamRangeFilter from '../column-param-range-filter'
-import ColumnParamBooleanFilter from '../column-param-boolean-filter'
-import ColumnParamDateFilter from '../column-param-date-filter'
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import ColumnParamSelectFilter from '#src/column-param-select-filter'
+import ColumnParamSelectFilterWithOverrides from '#src/column-param-select-filter-with-overrides'
+import ColumnParamRangeFilter from '#src/column-param-range-filter'
+import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
+import ColumnParamDateFilter from '#src/column-param-date-filter'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const ColumnControlsColumnParamItem = ({
   column_param_name,

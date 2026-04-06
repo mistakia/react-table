@@ -5,7 +5,7 @@
 //   columns: array of objects // just like this one or a column definition
 // }
 
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 export default function group_columns_by_groups(
   table_columns = [],
@@ -133,7 +133,12 @@ export default function group_columns_by_groups(
             typeof param_value === 'object' &&
             param_value.dynamic_type
           ) {
-            label = handle_dynamic_param_value(param_value, param_key, column, param_label)
+            label = handle_dynamic_param_value(
+              param_value,
+              param_key,
+              column,
+              param_label
+            )
           } else {
             label = handle_single_param_value(
               param_value,
@@ -308,8 +313,7 @@ function handle_array_param_value(param_value, param_key, column, param_label) {
   const column_param_labels = param_value.map((param_v) => {
     if (param_v && typeof param_v === 'object' && param_v.dynamic_type) {
       return (
-        `${param_v.dynamic_type}` +
-        (param_v.value ? ` (${param_v.value})` : '')
+        `${param_v.dynamic_type}` + (param_v.value ? ` (${param_v.value})` : '')
       )
     } else if (param_v && typeof param_v === 'object') {
       return param_v.label || param_v.value
@@ -338,7 +342,12 @@ function handle_range_param_value(param_value, param_key, column, param_label) {
   }
 }
 
-function handle_dynamic_param_value(param_value, param_key, column, param_label) {
+function handle_dynamic_param_value(
+  param_value,
+  param_key,
+  column,
+  param_label
+) {
   const dynamic_def = column.column_params?.[param_key]?.dynamic_values?.find(
     (dv) => dv.dynamic_type === param_value.dynamic_type
   )

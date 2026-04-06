@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 
-import FilterBase from '../filter-base'
+import FilterBase from '#src/filter-base'
 
 export default function ColumnParamBooleanFilter({
   column_param_name,

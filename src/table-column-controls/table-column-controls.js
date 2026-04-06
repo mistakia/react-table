@@ -27,9 +27,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
 import { distance } from 'fastest-levenshtein'
 
-import ColumnControlsSelectedColumnsParameters from '../column-controls-selected-columns-parameters'
-import ColumnControlsSelectedColumn from '../column-controls-selected-column'
-import DataTypeIcon from '../data-type-icon'
+import ColumnControlsSelectedColumnsParameters from '#src/column-controls-selected-columns-parameters'
+import ColumnControlsSelectedColumn from '#src/column-controls-selected-column'
+import DataTypeIcon from '#src/data-type-icon'
 import {
   fuzzy_match,
   group_columns_into_tree_view,
@@ -37,9 +37,9 @@ import {
   use_count_children,
   levenstein_distance,
   debounce
-} from '../utils'
-import { table_context } from '../table-context'
-import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '../constants.mjs'
+} from '#src/utils'
+import { table_context } from '#src/table-context'
+import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 import './table-column-controls.styl'
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { ClickAwayListener } from '@mui/material'
-import { get_string_from_object } from '../utils'
+import { get_string_from_object } from '#src/utils'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -10,7 +10,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CallSplitIcon from '@mui/icons-material/CallSplit'
 import Alert from '@mui/material/Alert'
 
-import { MENU_CLOSE_TIMEOUT } from '../constants.mjs'
+import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
 import './table-splits-controls.styl'
 

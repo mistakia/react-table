@@ -4,7 +4,7 @@ import ClearIcon from '@mui/icons-material/Clear'
 import SearchIcon from '@mui/icons-material/Search'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 
-import { debounce, get_string_from_object } from '../utils'
+import { debounce, get_string_from_object } from '#src/utils'
 
 import './table-search.styl'
 

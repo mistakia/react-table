@@ -19,10 +19,13 @@ import IconButton from '@mui/material/IconButton'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
-import { get_string_from_object } from '../utils'
-import { TABLE_DATA_TYPES, OPERATOR_MENU_DEFAULT_VALUE } from '../constants.mjs'
-import DataTypeIcon from '../data-type-icon'
-import { table_context } from '../table-context'
+import { get_string_from_object } from '#src/utils'
+import {
+  TABLE_DATA_TYPES,
+  OPERATOR_MENU_DEFAULT_VALUE
+} from '#src/constants.mjs'
+import DataTypeIcon from '#src/data-type-icon'
+import { table_context } from '#src/table-context'
 
 import './table-header.styl'
 

@@ -6,7 +6,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import Button from '@mui/material/Button'
 import dayjs from 'dayjs'
 
-import FilterBase from '../filter-base'
+import FilterBase from '#src/filter-base'
 
 export default function ColumnParamDateFilter({
   column_param_name,

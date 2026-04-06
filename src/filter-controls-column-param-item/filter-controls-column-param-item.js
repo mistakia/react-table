@@ -1,11 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import ColumnParamSelectFilter from '../column-param-select-filter'
-import ColumnParamRangeFilter from '../column-param-range-filter'
-import ColumnParamBooleanFilter from '../column-param-boolean-filter'
+import ColumnParamSelectFilter from '#src/column-param-select-filter'
+import ColumnParamRangeFilter from '#src/column-param-range-filter'
+import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
 
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const FilterControlsColumnParamItem = ({
   column_param_name,

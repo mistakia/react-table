@@ -6,8 +6,12 @@ import Switch from '@mui/material/Switch'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
-import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
-import { fuzzy_match, group_parameters, get_string_from_object } from '../utils'
+import ColumnControlsColumnParamItem from '#src/column-controls-column-param-item'
+import {
+  fuzzy_match,
+  group_parameters,
+  get_string_from_object
+} from '#src/utils'
 
 import './column-param-select-filter-with-overrides.styl'
 

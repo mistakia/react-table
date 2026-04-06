@@ -4,7 +4,7 @@ import Slider from '@mui/material/Slider'
 import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 
-import FilterBase from '../filter-base'
+import FilterBase from '#src/filter-base'
 
 export default function ColumnParamRangeFilter({
   column_param_name,

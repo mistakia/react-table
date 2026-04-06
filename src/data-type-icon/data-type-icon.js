@@ -8,7 +8,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import FingerprintIcon from '@mui/icons-material/Fingerprint'
 import ArrowDropDownCircleIcon from '@mui/icons-material/ArrowDropDownCircle'
 
-import { TABLE_DATA_TYPES } from '../constants.mjs'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 export default function DataTypeIcon({ data_type }) {
   switch (data_type) {

@@ -2,8 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 
-import { get_string_from_object } from '../utils'
-import FilterBase from '../filter-base'
+import { get_string_from_object } from '#src/utils'
+import FilterBase from '#src/filter-base'
 
 export default function TableQuickFilter({
   column,

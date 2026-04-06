@@ -1,8 +1,8 @@
 import React, { useMemo, useCallback, useContext } from 'react'
 import PropTypes from 'prop-types'
 
-import { get_string_from_object } from '../utils'
-import { table_context } from '../table-context'
+import { get_string_from_object } from '#src/utils'
+import { table_context } from '#src/table-context'
 
 const TableCell = ({ getValue, column, row, table }) => {
   const { sticky_left } = useContext(table_context)

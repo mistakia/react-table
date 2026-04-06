@@ -24,4 +24,4 @@ export {
   validate_where_item_security,
   is_valid_table_state_structure,
   create_safe_table_state
-} from '../validators/index.mjs'
+} from '#src/validators/index.mjs'

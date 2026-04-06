@@ -19,9 +19,13 @@ import {
   DATA_TYPE_OPERATORS,
   OPERATOR_MENU_DEFAULT_VALUE,
   OPERATOR_MENU_OPTIONS
-} from '../constants.mjs'
-import FilterControlsColumnParamItem from '../filter-controls-column-param-item'
-import { fuzzy_match, get_string_from_object, group_parameters } from '../utils'
+} from '#src/constants.mjs'
+import FilterControlsColumnParamItem from '#src/filter-controls-column-param-item'
+import {
+  fuzzy_match,
+  get_string_from_object,
+  group_parameters
+} from '#src/utils'
 import { Checkbox } from '@mui/material'
 
 const MISC_MENU_DEFAULT_PLACEMENT = 'bottom-start'

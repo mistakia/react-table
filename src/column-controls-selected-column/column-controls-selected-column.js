@@ -25,9 +25,9 @@ import {
   levenstein_distance,
   debounce,
   group_parameters
-} from '../utils'
-import DataTypeIcon from '../data-type-icon'
-import ColumnControlsColumnParamItem from '../column-controls-column-param-item'
+} from '#src/utils'
+import DataTypeIcon from '#src/data-type-icon'
+import ColumnControlsColumnParamItem from '#src/column-controls-column-param-item'
 
 const ColumnControlsSelectedColumn = React.memo(
   ({
