@@ -93,6 +93,7 @@ export default function Table({
   on_save_view = () => {},
   table_state = {},
   saved_table_state = null,
+  on_revert_view,
   all_columns = {},
   selected_view = {},
   views = [],
@@ -266,6 +267,11 @@ export default function Table({
   }, [table_state, selected_view, on_save_view, is_table_state_changed])
 
   const discard_table_state_changes = useCallback(() => {
+    if (saved_table_state == null) return
+    if (on_revert_view) {
+      on_revert_view({ view_id: selected_view.view_id })
+      return
+    }
     const { view_id, view_name, view_description, view_username } =
       selected_view
     const { sort, prefix_columns, columns, where, rank_aggregation, splits } =
@@ -289,7 +295,7 @@ export default function Table({
         view_state_changed: true
       }
     )
-  }, [table_state, selected_view, on_view_change])
+  }, [table_state, selected_view, on_view_change, on_revert_view, saved_table_state])
 
   const set_table_sort = useCallback(
     ({ column_id, desc, multi, column_index = 0 }) => {
@@ -949,6 +955,7 @@ Table.propTypes = {
   disable_edit_view: PropTypes.bool,
   on_save_view: PropTypes.func,
   saved_table_state: PropTypes.object,
+  on_revert_view: PropTypes.func,
   enable_duplicate_column_ids: PropTypes.bool,
   new_view_prefix_columns: PropTypes.array,
   shorten_url: PropTypes.func,

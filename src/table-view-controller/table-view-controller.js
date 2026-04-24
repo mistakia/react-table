@@ -78,7 +78,15 @@ function ViewItem({
       <div className='table-view-item-left' onClick={handle_select_click}>
         <div className='table-view-item-username'>{view.view_username}</div>
         <div className='table-view-item-info-container'>
-          <div className='table-view-item-name'>{view.view_name}</div>
+          <div className='table-view-item-name'>
+            {view.view_name}
+            {Boolean(view.has_unsaved_local_edits) && (
+              <span
+                className='table-view-item-unsaved-dot'
+                title='Unsaved local edits'
+              />
+            )}
+          </div>
           <div className='table-view-item-description'>
             {view.view_description}
           </div>
