@@ -11,6 +11,7 @@ import PropTypes from 'prop-types'
 // import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import LinearProgress from '@mui/material/LinearProgress'
+import Tooltip from '@mui/material/Tooltip'
 // import IconButton from '@mui/material/IconButton'
 // import CloseIcon from '@mui/icons-material/Close'
 
@@ -295,7 +296,13 @@ export default function Table({
         view_state_changed: true
       }
     )
-  }, [table_state, selected_view, on_view_change, on_revert_view, saved_table_state])
+  }, [
+    table_state,
+    selected_view,
+    on_view_change,
+    on_revert_view,
+    saved_table_state
+  ])
 
   const set_table_sort = useCallback(
     ({ column_id, desc, multi, column_index = 0 }) => {
@@ -834,12 +841,20 @@ export default function Table({
                         Reset
                       </div>
                     )}
-                    {is_selected_view_editable && (
+                    {is_selected_view_editable ? (
                       <div
                         className='table-top-lead-button save'
                         onClick={save_table_state_change}>
                         Save
                       </div>
+                    ) : (
+                      <Tooltip title='Duplicate this view to save your changes'>
+                        <span>
+                          <div className='table-top-lead-button save -disabled'>
+                            Save
+                          </div>
+                        </span>
+                      </Tooltip>
                     )}
                   </>
                 )}
