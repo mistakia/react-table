@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import ColumnParamSelectFilter from '#src/column-param-select-filter'
 import ColumnParamRangeFilter from '#src/column-param-range-filter'
 import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
+import ColumnParamPersonnelGroupFilter from '#src/column-param-personnel-group-filter'
 
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
@@ -65,6 +66,8 @@ const FilterControlsColumnParamItem = ({
       return <ColumnParamBooleanFilter {...param_props} />
     case TABLE_DATA_TYPES.RANGE:
       return <ColumnParamRangeFilter {...param_props} />
+    case TABLE_DATA_TYPES.PERSONNEL_GROUP:
+      return <ColumnParamPersonnelGroupFilter {...param_props} />
     default:
       return null
   }
