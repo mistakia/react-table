@@ -1,0 +1,49 @@
+.column-param-personnel-group-filter
+  display flex
+  flex-direction column
+  min-width 280px
+
+  .personnel-preset-section
+    display flex
+    flex-wrap wrap
+    gap 4px
+    padding 8px 12px
+
+  .personnel-preset-chip
+    display inline-flex
+    align-items center
+    padding 4px 8px
+    border 1px solid #d0d7de
+    border-radius 12px
+    cursor pointer
+    font-size 12px
+    user-select none
+
+    &.selected
+      background #2563eb
+      color #ffffff
+      border-color #2563eb
+
+    .chip-count
+      margin-left 4px
+      opacity 0.7
+      font-size 11px
+
+  .personnel-position-grid
+    display grid
+    grid-template-columns repeat(3, minmax(0, 1fr))
+    gap 8px
+    padding 8px 12px
+
+    &.has-advanced
+      grid-template-columns repeat(2, minmax(0, 1fr))
+
+  .personnel-position-input
+    display flex
+    flex-direction column
+    gap 2px
+    font-size 12px
+
+    label
+      font-weight 600
+      color #4b5563

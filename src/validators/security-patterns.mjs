@@ -11,6 +11,29 @@ const SECURITY_LIMITS = {
   MAX_ARRAY_ITEMS: 100
 }
 
+const PERSONNEL_GROUP_KEYS = ['rb', 'te', 'wr', 'qb', 'ol', 'dl', 'lb', 'db']
+const PERSONNEL_GROUP_VALUE_MAX = 9
+
+const validate_personnel_group_item = (item) => {
+  const errors = []
+  const keys = Object.keys(item)
+  if (keys.length === 0) {
+    errors.push('empty personnel group object')
+    return errors
+  }
+  for (const key of keys) {
+    if (!PERSONNEL_GROUP_KEYS.includes(key)) {
+      errors.push(`disallowed key '${key}'`)
+      continue
+    }
+    const v = item[key]
+    if (!Number.isInteger(v) || v < 0 || v > PERSONNEL_GROUP_VALUE_MAX) {
+      errors.push(`integer '${key}' out of range`)
+    }
+  }
+  return errors
+}
+
 const VALID_OPERATORS = [
   '=',
   '!=',
@@ -174,6 +197,23 @@ export const SECURE_WHERE_VALUE_SCHEMA = {
           { type: 'number' }
         ]
       }
+    },
+    {
+      type: 'array',
+      maxItems: SECURITY_LIMITS.MAX_ARRAY_ITEMS,
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        minProperties: 1,
+        properties: PERSONNEL_GROUP_KEYS.reduce((acc, key) => {
+          acc[key] = {
+            type: 'integer',
+            minimum: 0,
+            maximum: PERSONNEL_GROUP_VALUE_MAX
+          }
+          return acc
+        }, {})
+      }
     }
   ]
 }
@@ -184,27 +224,7 @@ export const SECURE_OPERATOR_SCHEMA = {
 }
 
 export function validate_where_clause_value_security(value) {
-  if (typeof value === 'string') {
-    if (SQL_INJECTION_PATTERN.test(value)) {
-      return false
-    }
-    if (value.length > SECURITY_LIMITS.MAX_STRING_LENGTH) {
-      return false
-    }
-  } else if (Array.isArray(value)) {
-    if (value.length > SECURITY_LIMITS.MAX_ARRAY_ITEMS) {
-      return false
-    }
-    for (const item of value) {
-      if (!validate_where_clause_value_security(item)) {
-        return false
-      }
-    }
-  } else if (typeof value !== 'number') {
-    return false
-  }
-
-  return true
+  return get_where_clause_security_errors(value).length === 0
 }
 
 export function get_where_clause_security_errors(value) {
@@ -228,7 +248,11 @@ export function get_where_clause_security_errors(value) {
       )
     }
     value.forEach((item, index) => {
-      const item_errors = get_where_clause_security_errors(item)
+      const is_object =
+        item !== null && typeof item === 'object' && !Array.isArray(item)
+      const item_errors = is_object
+        ? validate_personnel_group_item(item)
+        : get_where_clause_security_errors(item)
       item_errors.forEach((error) => {
         errors.push(`Array item ${index}: ${error}`)
       })
