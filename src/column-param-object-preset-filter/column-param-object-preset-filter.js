@@ -7,9 +7,15 @@ import Button from '@mui/material/Button'
 
 import FilterBase from '#src/filter-base'
 
-import './column-param-personnel-group-filter.styl'
+import './column-param-object-preset-filter.styl'
 
 const ANY_VALUE = '__any__'
+
+const serialize_preset_signature = (value_object) => {
+  if (!value_object || typeof value_object !== 'object') return ''
+  const sorted_keys = Object.keys(value_object).sort()
+  return sorted_keys.map((k) => `${k}:${value_object[k]}`).join(',')
+}
 
 const value_object_matches_preset = (value_object, preset_value) => {
   const preset_keys = Object.keys(preset_value)
@@ -36,11 +42,12 @@ const format_value_label = ({ value, column_specs }) => {
   return parts.length ? parts.join(', ') : 'Any'
 }
 
-const ColumnParamPersonnelGroupFilter = ({
+const ColumnParamObjectPresetFilter = ({
   column_param_name,
   column_param_definition,
   selected_param_values,
-  handle_change = () => {}
+  handle_change = () => {},
+  counts = null
 }) => {
   const column_specs = column_param_definition.column_specs || []
   const preset_values = column_param_definition.preset_values || []
@@ -127,24 +134,35 @@ const ColumnParamPersonnelGroupFilter = ({
     emit([])
   }
 
+  const resolve_count = (preset) => {
+    if (counts) {
+      const live = counts[serialize_preset_signature(preset.value)]
+      if (typeof live === 'number') return live
+    }
+    return typeof preset.n === 'number' ? preset.n : null
+  }
+
   const preset_section = preset_values.length > 0 && (
-    <div className='personnel-preset-section'>
+    <div className='object-preset-preset-section'>
       {preset_values.map((preset) => {
         const selected = active_values.some((v) =>
           value_object_matches_preset(v, preset.value)
         )
-        const class_names = ['personnel-preset-chip']
+        const class_names = ['object-preset-preset-chip']
         if (selected) class_names.push('selected')
+        const count = resolve_count(preset)
         return (
           <Tooltip
             key={preset.label}
-            title={preset.n ? `${preset.label} (n=${preset.n})` : preset.label}>
+            title={
+              count !== null ? `${preset.label} (n=${count})` : preset.label
+            }>
             <div
               className={class_names.join(' ')}
               onClick={() => toggle_preset(preset)}>
               <span>{preset.label}</span>
-              {preset.n ? (
-                <span className='chip-count'>{preset.n.toLocaleString()}</span>
+              {count !== null ? (
+                <span className='chip-count'>{count.toLocaleString()}</span>
               ) : null}
             </div>
           </Tooltip>
@@ -159,13 +177,13 @@ const ColumnParamPersonnelGroupFilter = ({
   const position_inputs = (
     <div
       className={
-        'personnel-position-grid' + (has_advanced ? ' has-advanced' : '')
+        'object-preset-position-grid' + (has_advanced ? ' has-advanced' : '')
       }>
       {column_specs.map((spec) => {
         const current = custom_source[spec.key]
         const value = current === undefined ? ANY_VALUE : String(current)
         return (
-          <div className='personnel-position-input' key={spec.key}>
+          <div className='object-preset-position-input' key={spec.key}>
             <label>{spec.label}</label>
             <Select
               size='small'
@@ -187,7 +205,7 @@ const ColumnParamPersonnelGroupFilter = ({
   )
 
   const body = (
-    <div className='column-param-personnel-group-filter'>
+    <div className='column-param-object-preset-filter'>
       <div className='column-param-filter-header'>
         <div>{column_param_definition?.label || column_param_name}</div>
         <div
@@ -224,11 +242,15 @@ const ColumnParamPersonnelGroupFilter = ({
   )
 }
 
-ColumnParamPersonnelGroupFilter.propTypes = {
+ColumnParamObjectPresetFilter.propTypes = {
   column_param_name: PropTypes.string.isRequired,
   column_param_definition: PropTypes.object.isRequired,
   handle_change: PropTypes.func.isRequired,
-  selected_param_values: PropTypes.oneOfType([PropTypes.array, PropTypes.object])
+  selected_param_values: PropTypes.oneOfType([
+    PropTypes.array,
+    PropTypes.object
+  ]),
+  counts: PropTypes.object
 }
 
-export default ColumnParamPersonnelGroupFilter
+export default ColumnParamObjectPresetFilter

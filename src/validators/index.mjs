@@ -2,6 +2,7 @@ import table_state_validator_instance from './table-state-validator.mjs'
 import {
   validate_where_clause_value_security,
   get_where_clause_security_errors,
+  create_object_preset_validator,
   SECURITY_LIMITS
 } from './security-patterns.mjs'
 
@@ -122,4 +123,4 @@ export function create_safe_table_state(partial_state = {}) {
   return safe_state
 }
 
-export { SECURITY_LIMITS }
+export { SECURITY_LIMITS, create_object_preset_validator }
