@@ -10,5 +10,6 @@ export {
   validate_where_item_security,
   is_valid_table_state_structure,
   create_safe_table_state,
+  create_object_preset_validator,
   SECURITY_LIMITS
 } from './src/validators/index.mjs'

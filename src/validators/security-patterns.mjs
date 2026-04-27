@@ -8,30 +8,52 @@ const SQL_INJECTION_PATTERN =
 const SECURITY_LIMITS = {
   MAX_STRING_LENGTH: 200,
   MIN_STRING_LENGTH: 0,
-  MAX_ARRAY_ITEMS: 100
+  MAX_ARRAY_ITEMS: 100,
+  OBJECT_PRESET_VALUE_MAX: 99,
+  OBJECT_PRESET_KEY_MAX_LENGTH: 32
 }
 
-const PERSONNEL_GROUP_KEYS = ['rb', 'te', 'wr', 'qb', 'ol', 'dl', 'lb', 'db']
-const PERSONNEL_GROUP_VALUE_MAX = 9
-
-const validate_personnel_group_item = (item) => {
+// Structural-only checks; integer/range bounds are enforced by the AJV
+// SECURE_WHERE_VALUE_SCHEMA branch via additionalProperties.
+const validate_object_preset_item_structural = (item) => {
   const errors = []
   const keys = Object.keys(item)
   if (keys.length === 0) {
-    errors.push('empty personnel group object')
+    errors.push('empty object preset')
     return errors
   }
   for (const key of keys) {
-    if (!PERSONNEL_GROUP_KEYS.includes(key)) {
-      errors.push(`disallowed key '${key}'`)
-      continue
-    }
-    const v = item[key]
-    if (!Number.isInteger(v) || v < 0 || v > PERSONNEL_GROUP_VALUE_MAX) {
-      errors.push(`integer '${key}' out of range`)
+    if (
+      typeof key !== 'string' ||
+      key.length === 0 ||
+      key.length > SECURITY_LIMITS.OBJECT_PRESET_KEY_MAX_LENGTH
+    ) {
+      errors.push(`invalid key '${key}'`)
     }
   }
   return errors
+}
+
+export function create_object_preset_validator({ allowed_keys, value_max }) {
+  return function validate_object_preset_item(item) {
+    const errors = []
+    const keys = Object.keys(item)
+    if (keys.length === 0) {
+      errors.push('empty object preset')
+      return errors
+    }
+    for (const key of keys) {
+      if (!allowed_keys.includes(key)) {
+        errors.push(`disallowed key '${key}'`)
+        continue
+      }
+      const v = item[key]
+      if (!Number.isInteger(v) || v < 0 || v > value_max) {
+        errors.push(`integer '${key}' out of range`)
+      }
+    }
+    return errors
+  }
 }
 
 const VALID_OPERATORS = [
@@ -203,16 +225,12 @@ export const SECURE_WHERE_VALUE_SCHEMA = {
       maxItems: SECURITY_LIMITS.MAX_ARRAY_ITEMS,
       items: {
         type: 'object',
-        additionalProperties: false,
-        minProperties: 1,
-        properties: PERSONNEL_GROUP_KEYS.reduce((acc, key) => {
-          acc[key] = {
-            type: 'integer',
-            minimum: 0,
-            maximum: PERSONNEL_GROUP_VALUE_MAX
-          }
-          return acc
-        }, {})
+        additionalProperties: {
+          type: 'integer',
+          minimum: 0,
+          maximum: SECURITY_LIMITS.OBJECT_PRESET_VALUE_MAX
+        },
+        minProperties: 1
       }
     }
   ]
@@ -251,7 +269,7 @@ export function get_where_clause_security_errors(value) {
       const is_object =
         item !== null && typeof item === 'object' && !Array.isArray(item)
       const item_errors = is_object
-        ? validate_personnel_group_item(item)
+        ? validate_object_preset_item_structural(item)
         : get_where_clause_security_errors(item)
       item_errors.forEach((error) => {
         errors.push(`Array item ${index}: ${error}`)
