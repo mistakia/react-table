@@ -8,6 +8,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
+import { resolve_point_color } from './scatter-plot-point-color-utils.js'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -80,6 +81,8 @@ const calculate_std_dev = (values, mean) => {
   return Math.sqrt(sum_sq / values.length)
 }
 
+export { resolve_point_color } from './scatter-plot-point-color-utils.js'
+
 export const build_scatter_data_labels = ({ labels_enabled }) => ({
   enabled: labels_enabled,
   formatter: function () {
@@ -110,10 +113,12 @@ const ScatterPlotOverlay = ({
   get_point_label,
   on_close,
   get_point_image = null,
+  get_point_color = null,
   is_scatter_plot_point_label_enabled = () => true,
   scatter_plot_options = {},
   on_scatter_plot_options_change = null
 }) => {
+  const point_color_mode = scatter_plot_options.point_color_mode
   const x_label = x_column.header_label || 'X Axis'
   const y_label = y_column.header_label || 'Y Axis'
 
@@ -311,6 +316,20 @@ const ScatterPlotOverlay = ({
               is_outlier: is_outlier(x, y)
             }
 
+            const resolved_color = resolve_point_color({
+              row,
+              point_color_mode,
+              get_point_color
+            })
+            if (resolved_color) {
+              point.color = resolved_color
+              point.dataLabels = {
+                style: {
+                  color: resolved_color
+                }
+              }
+            }
+
             if (get_point_image) {
               const image_data = get_point_image({
                 row,
@@ -414,6 +433,7 @@ ScatterPlotOverlay.propTypes = {
   get_point_label: PropTypes.func,
   on_close: PropTypes.func.isRequired,
   get_point_image: PropTypes.func,
+  get_point_color: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   scatter_plot_options: PropTypes.object,
   on_scatter_plot_options_change: PropTypes.func
