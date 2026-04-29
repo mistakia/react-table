@@ -24,6 +24,10 @@
       "items": { "$ref": "./where-item.json" },
       "description": "Array of filter conditions"
     },
+    "q": {
+      "type": ["string", "null"],
+      "description": "Quick-search query string consumed by the 'server_q' adapter"
+    },
     "splits": {
       "type": "array",
       "items": { "type": "string" },

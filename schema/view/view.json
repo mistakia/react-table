@@ -20,9 +20,38 @@
       "type": "string",
       "description": "Username of the view creator"
     },
-    "view_search_column_id": {
-      "type": "string",
-      "description": "Column ID to use for search functionality"
+    "search": {
+      "type": "object",
+      "description": "Search adapter configuration. The 'type' field selects the registered adapter; remaining fields are adapter-specific (e.g. column_id for 'where', fields for 'client', entity_type for 'server_q').",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Registered adapter id"
+        },
+        "column_id": {
+          "type": "string",
+          "description": "Target column for the 'where' adapter"
+        },
+        "operator": {
+          "type": "string",
+          "description": "Optional override operator for the 'where' adapter (defaults to ILIKE)"
+        },
+        "fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Fields to scan for the 'client' adapter"
+        },
+        "key_field": {
+          "type": "string",
+          "description": "Row primary-key field for highlight maps produced by the 'client' adapter"
+        },
+        "entity_type": {
+          "type": "string",
+          "description": "Entity type for the 'server_q' adapter"
+        }
+      },
+      "required": ["type"],
+      "additionalProperties": true
     },
     "view_filters": {
       "type": "array",
