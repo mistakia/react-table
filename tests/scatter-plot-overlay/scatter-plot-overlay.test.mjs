@@ -293,3 +293,45 @@ describe('scatter-plot-overlay logo size derivation (S5)', () => {
     expect(opts.style.fontSize).toBe(`${SCATTER_LABEL_FONT_SIZE}px`)
   })
 })
+
+describe('scatter-plot-overlay custom title/subtitle override (S11)', () => {
+  // Pure logic mirrors the ternary in scatter-plot-overlay.js options.title.text
+  const resolve_title = (custom_title, x_title_base, y_title_base) =>
+    custom_title || `${x_title_base} vs ${y_title_base}`
+
+  const resolve_subtitle = (custom_subtitle, has_subtitle, x_sub, y_sub) => {
+    if (custom_subtitle) return custom_subtitle
+    if (has_subtitle) return `X: ${x_sub}<br/>Y: ${y_sub}`
+    return undefined
+  }
+
+  test('custom_title overrides computed title', () => {
+    const title = resolve_title('My Custom Title', 'Pass Yds', 'Rush Yds')
+    expect(title).toBe('My Custom Title')
+  })
+
+  test('when custom_title is null, computed title is used', () => {
+    const title = resolve_title(null, 'Pass Yds', 'Rush Yds')
+    expect(title).toBe('Pass Yds vs Rush Yds')
+  })
+
+  test('custom_subtitle overrides computed subtitle', () => {
+    const subtitle = resolve_subtitle(
+      'My Subtitle',
+      true,
+      'Year: 2022',
+      'Year: 2022'
+    )
+    expect(subtitle).toBe('My Subtitle')
+  })
+
+  test('when custom_subtitle is null, computed subtitle is used when params present', () => {
+    const subtitle = resolve_subtitle(null, true, 'Year: 2022', 'Year: 2022')
+    expect(subtitle).toBe('X: Year: 2022<br/>Y: Year: 2022')
+  })
+
+  test('when custom_subtitle is null and no params, subtitle is undefined', () => {
+    const subtitle = resolve_subtitle(null, false, '', '')
+    expect(subtitle).toBeUndefined()
+  })
+})

@@ -241,10 +241,34 @@ const ScatterPlotSettingsModal = ({
       _key: next_ref_line_key()
     }))
   )
+  const [custom_title, set_custom_title] = React.useState(
+    scatter_plot_options.custom_title || ''
+  )
+  const [custom_subtitle, set_custom_subtitle] = React.useState(
+    scatter_plot_options.custom_subtitle || ''
+  )
 
   const handle_ref_lines_change = (next_lines) => {
     set_ref_lines(next_lines)
     draft.current = { ...draft.current, reference_lines: next_lines }
+  }
+
+  const handle_custom_title_change = (e) => {
+    const value = e.target.value.slice(0, 200)
+    set_custom_title(value)
+    draft.current = {
+      ...draft.current,
+      custom_title: value.trim() || null
+    }
+  }
+
+  const handle_custom_subtitle_change = (e) => {
+    const value = e.target.value.slice(0, 200)
+    set_custom_subtitle(value)
+    draft.current = {
+      ...draft.current,
+      custom_subtitle: value.trim() || null
+    }
   }
 
   const handle_save = () => {
@@ -259,6 +283,19 @@ const ScatterPlotSettingsModal = ({
       next_draft.reference_lines = normalized_lines
     } else {
       delete next_draft.reference_lines
+    }
+    // Normalize custom_title / custom_subtitle: empty string → null
+    const title_value = custom_title.trim() || null
+    const subtitle_value = custom_subtitle.trim() || null
+    if (title_value !== null) {
+      next_draft.custom_title = title_value
+    } else {
+      delete next_draft.custom_title
+    }
+    if (subtitle_value !== null) {
+      next_draft.custom_subtitle = subtitle_value
+    } else {
+      delete next_draft.custom_subtitle
     }
     if (JSON.stringify(next_draft) !== JSON.stringify(scatter_plot_options)) {
       on_change({ ...next_draft })
@@ -288,18 +325,36 @@ const ScatterPlotSettingsModal = ({
           </button>
         </div>
         <div className='modal-body'>
-          {/* TODO: S11 — custom_title input */}
           <div className='modal-section'>
-            <label className='modal-section-label'>Custom title</label>
-            {/* TODO: S11 */}
-            <p className='modal-placeholder'>Coming in S11</p>
+            <label className='modal-section-label' htmlFor='custom-title-input'>
+              Custom title
+            </label>
+            <input
+              id='custom-title-input'
+              className='modal-text-input'
+              type='text'
+              maxLength={200}
+              value={custom_title}
+              onChange={handle_custom_title_change}
+              placeholder='Leave blank to use computed title'
+            />
           </div>
 
-          {/* TODO: S11 — custom_subtitle textarea */}
           <div className='modal-section'>
-            <label className='modal-section-label'>Custom subtitle</label>
-            {/* TODO: S11 */}
-            <p className='modal-placeholder'>Coming in S11</p>
+            <label
+              className='modal-section-label'
+              htmlFor='custom-subtitle-input'>
+              Custom subtitle
+            </label>
+            <textarea
+              id='custom-subtitle-input'
+              className='modal-textarea'
+              maxLength={200}
+              value={custom_subtitle}
+              onChange={handle_custom_subtitle_change}
+              placeholder='Leave blank to use computed subtitle'
+              rows={3}
+            />
           </div>
 
           <div className='modal-section'>

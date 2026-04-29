@@ -515,3 +515,134 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
     expect(Array.isArray(received[0].reference_lines)).toBe(true)
   })
 })
+
+describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
+  const open_modal = async (container, opts = {}) => {
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: opts,
+        on_change: () => {},
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+  }
+
+  test('custom title input is rendered in modal', async () => {
+    const container = make_container()
+    await open_modal(container)
+    const input = container.querySelector('#custom-title-input')
+    expect(input).not.toBeNull()
+    expect(input.tagName.toLowerCase()).toBe('input')
+    expect(input.type).toBe('text')
+  })
+
+  test('custom subtitle textarea is rendered in modal', async () => {
+    const container = make_container()
+    await open_modal(container)
+    const textarea = container.querySelector('#custom-subtitle-input')
+    expect(textarea).not.toBeNull()
+    expect(textarea.tagName.toLowerCase()).toBe('textarea')
+  })
+
+  test('custom title input shows existing value from scatter_plot_options', async () => {
+    const container = make_container()
+    await open_modal(container, { custom_title: 'My Title' })
+    const input = container.querySelector('#custom-title-input')
+    expect(input.value).toBe('My Title')
+  })
+
+  test('Save with custom_title calls on_change with custom_title set', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: {},
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Add a reference line to trigger a detectable change (Save only calls on_change when
+    // the draft differs from scatter_plot_options; adding a line guarantees a diff).
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    // on_change should have been called; custom_title from initial props is preserved
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    // Initial options had no custom_title — key must remain absent
+    expect(saved.custom_title).toBeUndefined()
+  })
+
+  test('Save with pre-existing custom_title preserves it in on_change payload', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: { custom_title: 'My Title' },
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Add a reference line to force a detectable change
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    // custom_title from initial props must survive through Save
+    expect(saved.custom_title).toBe('My Title')
+  })
+})

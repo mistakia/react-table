@@ -214,17 +214,25 @@ const ScatterPlotOverlay = ({
       height: 600
     },
     title: {
-      text: `${x_title_base} vs ${y_title_base}`
+      text:
+        local_scatter_plot_options.custom_title ||
+        `${x_title_base} vs ${y_title_base}`
     },
-    subtitle: has_subtitle
-      ? {
-          text: `X: ${x_subtitle}<br/>Y: ${y_subtitle}`,
-          style: {
-            fontSize: '10px',
-            fontWeight: 'normal'
-          }
+    subtitle: (() => {
+      if (local_scatter_plot_options.custom_subtitle) {
+        return {
+          text: local_scatter_plot_options.custom_subtitle,
+          style: { fontSize: '10px', fontWeight: 'normal' }
         }
-      : undefined,
+      }
+      if (has_subtitle) {
+        return {
+          text: `X: ${x_subtitle}<br/>Y: ${y_subtitle}`,
+          style: { fontSize: '10px', fontWeight: 'normal' }
+        }
+      }
+      return undefined
+    })(),
     xAxis: {
       title: {
         text: x_label
