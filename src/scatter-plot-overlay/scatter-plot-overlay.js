@@ -80,6 +80,25 @@ const calculate_std_dev = (values, mean) => {
   return Math.sqrt(sum_sq / values.length)
 }
 
+export const build_scatter_data_labels = ({ labels_enabled }) => ({
+  enabled: labels_enabled,
+  formatter: function () {
+    if (!this.point.is_outlier) return null
+    return this.point.label
+  },
+  // Highcharts hides overlapping labels silently; outlier-only filter keeps density low. See task S7.
+  allowOverlap: false,
+  align: 'right',
+  verticalAlign: 'middle',
+  style: {
+    pointerEvents: 'none',
+    textOutline: '2px white',
+    color: '#1a1a2e',
+    fontWeight: 'normal',
+    fontSize: '11px'
+  }
+})
+
 const ScatterPlotOverlay = ({
   data,
   x_column,
@@ -116,78 +135,6 @@ const ScatterPlotOverlay = ({
       x_distance * x_distance + y_distance * y_distance
     )
     return combined_distance > 1.0
-  }
-
-  const adjust_label_positions = (points) => {
-    const label_padding = 5
-    const max_attempts = 5
-    const positions = ['right', 'left', 'top', 'bottom']
-
-    points.forEach((point) => {
-      point.data_label_position = 'right' // Default position
-    })
-
-    for (let attempt = 0; attempt < max_attempts; attempt++) {
-      let collisions = false
-
-      for (let i = 0; i < points.length; i++) {
-        for (let j = i + 1; j < points.length; j++) {
-          if (check_collision(points[i], points[j], label_padding)) {
-            collisions = true
-            points[j].data_label_position =
-              positions[
-                (positions.indexOf(points[j].data_label_position) + 1) %
-                  positions.length
-              ]
-          }
-        }
-      }
-
-      if (!collisions) break
-    }
-
-    return points
-  }
-
-  const check_collision = (point1, point2, padding) => {
-    const get_label_bounds = (point) => {
-      const label_width = 50 // Estimate label width
-      const label_height = 20 // Estimate label height
-      let x = point.x
-      let y = point.y
-
-      switch (point.data_label_position) {
-        case 'right':
-          x += padding
-          break
-        case 'left':
-          x -= label_width + padding
-          break
-        case 'top':
-          y += padding
-          break
-        case 'bottom':
-          y -= label_height + padding
-          break
-      }
-
-      return {
-        left: x,
-        right: x + label_width,
-        top: y,
-        bottom: y + label_height
-      }
-    }
-
-    const bounds1 = get_label_bounds(point1)
-    const bounds2 = get_label_bounds(point2)
-
-    return !(
-      bounds1.right < bounds2.left ||
-      bounds1.left > bounds2.right ||
-      bounds1.bottom < bounds2.top ||
-      bounds1.top > bounds2.bottom
-    )
   }
 
   const get_column_subtitle = (column, column_params) => {
@@ -327,31 +274,7 @@ const ScatterPlotOverlay = ({
     },
     plotOptions: {
       scatter: {
-        dataLabels: {
-          enabled: labels_enabled,
-          formatter: function () {
-            if (!this.point.is_outlier) return null
-            return this.point.label
-          },
-          allowOverlap: false,
-          align: function () {
-            return this.point.data_label_position
-          },
-          verticalAlign: function () {
-            return this.point.data_label_position === 'top'
-              ? 'bottom'
-              : this.point.data_label_position === 'bottom'
-                ? 'top'
-                : 'middle'
-          },
-          style: {
-            pointerEvents: 'none',
-            textOutline: '2px white',
-            color: '#1a1a2e',
-            fontWeight: 'normal',
-            fontSize: '11px'
-          }
-        },
+        dataLabels: build_scatter_data_labels({ labels_enabled }),
         marker: {
           radius: 5,
           fillOpacity: 0.6,
@@ -376,45 +299,43 @@ const ScatterPlotOverlay = ({
         id: 'scatter-plot-points',
         type: 'scatter',
         color: 'rgba(37, 99, 235, 0.5)',
-        data: adjust_label_positions(
-          data
-            .map((row) => {
-              const x = Number(row[x_accessor_path] || 0)
-              const y = Number(row[y_accessor_path] || 0)
-              const point = {
-                x,
-                y,
-                label: get_point_label(row),
-                original_data: row,
-                is_outlier: is_outlier(x, y)
-              }
+        data: data
+          .map((row) => {
+            const x = Number(row[x_accessor_path] || 0)
+            const y = Number(row[y_accessor_path] || 0)
+            const point = {
+              x,
+              y,
+              label: get_point_label(row),
+              original_data: row,
+              is_outlier: is_outlier(x, y)
+            }
 
-              if (get_point_image) {
-                const image_data = get_point_image({
-                  row,
-                  total_rows: data.length
-                })
-                if (image_data) {
-                  point.marker = {
-                    symbol: `url(${image_data.url})`,
-                    width: image_data.width || 32,
-                    height: image_data.height || 32
-                  }
-                } else {
-                  point.marker = {
-                    symbol: 'circle',
-                    radius: 1,
-                    fillColor: '#2563eb',
-                    lineWidth: 1,
-                    lineColor: '#1e40af'
-                  }
+            if (get_point_image) {
+              const image_data = get_point_image({
+                row,
+                total_rows: data.length
+              })
+              if (image_data) {
+                point.marker = {
+                  symbol: `url(${image_data.url})`,
+                  width: image_data.width || 32,
+                  height: image_data.height || 32
+                }
+              } else {
+                point.marker = {
+                  symbol: 'circle',
+                  radius: 1,
+                  fillColor: '#2563eb',
+                  lineWidth: 1,
+                  lineColor: '#1e40af'
                 }
               }
+            }
 
-              return point
-            })
-            .filter((point) => !isNaN(point.x) && !isNaN(point.y))
-        )
+            return point
+          })
+          .filter((point) => !isNaN(point.x) && !isNaN(point.y))
       },
       show_regression && {
         type: 'line',
