@@ -8,7 +8,8 @@
   "scripts": {
     "lint": "eslint .",
     "prettier": "prettier --write .",
-    "build": "cross-env NODE_ENV=production webpack --config ./webpack/webpack.prod.babel.mjs"
+    "build": "cross-env NODE_ENV=production webpack --config ./webpack/webpack.prod.babel.mjs",
+    "test": "bun test tests/"
   },
   "peerDependencies": {
     "@emotion/react": "^11.14.0",

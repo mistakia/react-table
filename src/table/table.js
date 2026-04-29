@@ -23,7 +23,7 @@ import TableSplitsControls from '#src/table-splits-controls'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
 import TableQuickFilter from '#src/table-quick-filter'
-import TableSearch from '#src/table-search'
+import TableSearchInput from '#src/search/table-search-input.js'
 import TableMenu from '#src/table-menu'
 import TableMetadata from '#src/table-metadata'
 import TableRankAggregationControls from '#src/table-rank-aggregation-controls'
@@ -46,6 +46,7 @@ import './table.styl'
 
 const is_mobile = window.innerWidth < 500
 const column_helper = createColumnHelper()
+const EMPTY_HIGHLIGHTS = Object.freeze({})
 const defaultColumn = {
   minWidth: 50,
   width: 150,
@@ -124,7 +125,8 @@ export default function Table({
   get_scatter_point_image = null,
   is_scatter_plot_point_label_enabled = () => true,
   metadata = {},
-  enable_validation_warnings = false
+  enable_validation_warnings = false,
+  row_highlights = null
 }) {
   useEffect(() => {
     if (!enable_validation_warnings || !table_state) return
@@ -167,6 +169,8 @@ export default function Table({
     y_column_id: null
   })
   const [show_scatter_plot, set_show_scatter_plot] = useState(false)
+  const [client_filter, set_client_filter] = useState(null)
+  const [local_highlights, set_local_highlights] = useState(null)
 
   const memoized_all_columns = useMemo(
     () => Object.values(all_columns),
@@ -186,7 +190,15 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    ({ sort, prefix_columns, columns, where, rank_aggregation, splits }) => {
+    ({
+      sort,
+      prefix_columns,
+      columns,
+      where,
+      rank_aggregation,
+      splits,
+      q
+    }) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
 
@@ -237,7 +249,8 @@ export default function Table({
             columns,
             where,
             rank_aggregation,
-            splits
+            splits,
+            q
           }
         },
         {
@@ -468,16 +481,32 @@ export default function Table({
     [prefix_columns, splits_columns, grouped_columns]
   )
 
+  const effective_row_highlights = useMemo(
+    () => row_highlights || local_highlights || EMPTY_HIGHLIGHTS,
+    [row_highlights, local_highlights]
+  )
+
+  const table_meta = useMemo(
+    () => ({ row_highlights: effective_row_highlights }),
+    [effective_row_highlights]
+  )
+
+  const filtered_data = useMemo(() => {
+    if (typeof client_filter !== 'function') return data
+    return client_filter(data)
+  }, [data, client_filter])
+
   const table = useReactTable({
     columns: table_columns,
-    data,
+    data: filtered_data,
     defaultColumn,
     state: table_state,
     getCoreRowModel: getCoreRowModel(),
-    columnResizeMode: 'onChange'
+    columnResizeMode: 'onChange',
+    meta: table_meta
   })
 
-  const rows = useMemo(() => table.getRowModel().rows, [data])
+  const rows = useMemo(() => table.getRowModel().rows, [filtered_data])
 
   const fetch_more_on_bottom_reached = useCallback(
     (container_ref) => {
@@ -780,9 +809,14 @@ export default function Table({
                 reset_cache
               }}
             />
-            {selected_view.view_search_column_id && (
-              <TableSearch
-                {...{ selected_view, table_state, on_table_state_change }}
+            {selected_view.search && (
+              <TableSearchInput
+                view_search_config={selected_view.search}
+                table_state={table_state}
+                current_rows={data}
+                on_table_state_change={on_table_state_change}
+                on_client_filter_change={set_client_filter}
+                on_highlights_change={set_local_highlights}
               />
             )}
             <div
@@ -983,5 +1017,6 @@ Table.propTypes = {
   is_scatter_plot_point_label_enabled: PropTypes.func,
   metadata: PropTypes.object,
   disable_splits: PropTypes.bool,
-  enable_validation_warnings: PropTypes.bool
+  enable_validation_warnings: PropTypes.bool,
+  row_highlights: PropTypes.object
 }

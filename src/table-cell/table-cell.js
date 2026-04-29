@@ -72,7 +72,7 @@ const TableCell = ({ getValue, column, row, table }) => {
             left: sticky_left_value
           }
         }}>
-        <Component {...{ row, column, column_index, value }} />
+        <Component {...{ row, column, column_index, value, table }} />
       </div>
     )
   }

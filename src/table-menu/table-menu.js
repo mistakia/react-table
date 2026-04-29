@@ -57,20 +57,19 @@ const TableMenu = ({
   const handle_shareable_link = async () => {
     const params = new URLSearchParams()
 
-    const { columns, prefix_columns, sort, where, splits } = table_state
+    const { columns, prefix_columns, sort, where, splits, q } = table_state
     if (columns) params.append('columns', JSON.stringify(columns))
     if (prefix_columns)
       params.append('prefix_columns', JSON.stringify(prefix_columns))
     if (sort) params.append('sort', JSON.stringify(sort))
     if (where) params.append('where', JSON.stringify(where))
     if (splits) params.append('splits', JSON.stringify(splits))
+    if (q) params.append('q', q)
 
-    const { view_id, view_name, view_search_column_id, view_description } =
-      selected_view
+    const { view_id, view_name, search, view_description } = selected_view
     if (view_id) params.append('view_id', view_id)
     if (view_name) params.append('view_name', view_name)
-    if (view_search_column_id)
-      params.append('view_search_column_id', view_search_column_id)
+    if (search) params.append('search', JSON.stringify(search))
     if (view_description) params.append('view_description', view_description)
 
     const shareable_link = `${window.location.origin}${
