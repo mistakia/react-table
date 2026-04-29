@@ -9,6 +9,7 @@ import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
 import { resolve_point_color } from './scatter-plot-point-color-utils.js'
+import { build_scatter_data_labels } from './scatter-plot-data-labels.js'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -82,25 +83,7 @@ const calculate_std_dev = (values, mean) => {
 }
 
 export { resolve_point_color } from './scatter-plot-point-color-utils.js'
-
-export const build_scatter_data_labels = ({ labels_enabled }) => ({
-  enabled: labels_enabled,
-  formatter: function () {
-    if (!this.point.is_outlier) return null
-    return this.point.label
-  },
-  // Highcharts hides overlapping labels silently; outlier-only filter keeps density low. See task S7.
-  allowOverlap: false,
-  align: 'right',
-  verticalAlign: 'middle',
-  style: {
-    pointerEvents: 'none',
-    textOutline: '2px white',
-    color: '#1a1a2e',
-    fontWeight: 'normal',
-    fontSize: '11px'
-  }
-})
+export { build_scatter_data_labels } from './scatter-plot-data-labels.js'
 
 const ScatterPlotOverlay = ({
   data,
@@ -118,7 +101,6 @@ const ScatterPlotOverlay = ({
   scatter_plot_options = {},
   on_scatter_plot_options_change = null
 }) => {
-  const point_color_mode = scatter_plot_options.point_color_mode
   const x_label = x_column.header_label || 'X Axis'
   const y_label = y_column.header_label || 'Y Axis'
 
@@ -157,6 +139,9 @@ const ScatterPlotOverlay = ({
   const [regression_stats, set_regression_stats] = React.useState(null)
   const [local_scatter_plot_options, set_local_scatter_plot_options] =
     React.useState(() => scatter_plot_options || {})
+
+  // Read from local state so settings-panel changes take effect immediately without a prop change.
+  const point_color_mode = local_scatter_plot_options?.point_color_mode
 
   React.useEffect(() => {
     set_local_scatter_plot_options(scatter_plot_options || {})
@@ -322,12 +307,10 @@ const ScatterPlotOverlay = ({
               get_point_color
             })
             if (resolved_color) {
+              // Set marker fill color only. Data label color is handled via the series-level
+              // dataLabels.color callback in build_scatter_data_labels, which reads this.point.color.
+              // Per-point dataLabels objects would overwrite the series formatter and allowOverlap config.
               point.color = resolved_color
-              point.dataLabels = {
-                style: {
-                  color: resolved_color
-                }
-              }
             }
 
             if (get_point_image) {

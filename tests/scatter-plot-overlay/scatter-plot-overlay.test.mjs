@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { build_scatter_data_labels } from '../../src/scatter-plot-overlay/scatter-plot-overlay.js'
+// Import from the pure helper module (no Highcharts dependency) so tests run in isolation.
+import { build_scatter_data_labels } from '../../src/scatter-plot-overlay/scatter-plot-data-labels.js'
 
 // Pure helper functions mirroring the implementation in scatter-plot-overlay.js.
 // These are tested in isolation to verify outlier detection and label configuration.
@@ -58,6 +59,37 @@ describe('scatter-plot-overlay label collision config', () => {
   test('enabled reflects labels_enabled param', () => {
     expect(build_scatter_data_labels({ labels_enabled: true }).enabled).toBe(true)
     expect(build_scatter_data_labels({ labels_enabled: false }).enabled).toBe(false)
+  })
+})
+
+describe('scatter-plot-overlay dataLabels color callback (S6 fix)', () => {
+  test('dataLabels.color is a function (not a static string)', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    expect(typeof opts.color).toBe('function')
+  })
+
+  test('dataLabels.color callback returns point.color when set', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    const result = opts.color.call({ point: { color: '#e31837' } })
+    expect(result).toBe('#e31837')
+  })
+
+  test('dataLabels.color callback returns undefined when point.color is not set (uniform mode)', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    const result = opts.color.call({ point: {} })
+    expect(result).toBeUndefined()
+  })
+
+  test('dataLabels.style does not contain a static color (color moved to top-level callback)', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    // style.color should not be set — color is handled by the top-level color callback
+    expect(opts.style.color).toBeUndefined()
+  })
+
+  test('formatter and allowOverlap are preserved alongside color callback', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    expect(typeof opts.formatter).toBe('function')
+    expect(opts.allowOverlap).toBe(false)
   })
 })
 
