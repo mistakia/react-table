@@ -9,7 +9,10 @@ import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
 import { resolve_point_color } from './scatter-plot-point-color-utils.js'
-import { build_scatter_data_labels } from './scatter-plot-data-labels.js'
+import {
+  build_scatter_data_labels,
+  SCATTER_LABEL_FONT_SIZE
+} from './scatter-plot-data-labels.js'
 import { build_tier_series } from './scatter-plot-tier-overlay.js'
 
 const get_trend_line = (x_values, y_values) => {
@@ -101,8 +104,10 @@ const ScatterPlotOverlay = ({
   get_scatter_point_label_suffix = null,
   is_scatter_plot_point_label_enabled = () => true,
   scatter_plot_options = {},
-  on_scatter_plot_options_change = null
+  on_scatter_plot_options_change = null,
+  logo_size_ratio = 3
 }) => {
+  const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
   const x_label = x_column.header_label || 'X Axis'
   const y_label = y_column.header_label || 'Y Axis'
 
@@ -354,7 +359,7 @@ const ScatterPlotOverlay = ({
             if (get_point_image) {
               const image_data = get_point_image({
                 row,
-                total_rows: data.length
+                logo_size
               })
               if (image_data) {
                 point.marker = {
@@ -458,7 +463,8 @@ ScatterPlotOverlay.propTypes = {
   get_scatter_point_label_suffix: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   scatter_plot_options: PropTypes.object,
-  on_scatter_plot_options_change: PropTypes.func
+  on_scatter_plot_options_change: PropTypes.func,
+  logo_size_ratio: PropTypes.number
 }
 
 export default ScatterPlotOverlay

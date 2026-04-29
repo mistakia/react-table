@@ -112,8 +112,7 @@ export function format_column_params({ column, column_params, format } = {}) {
       continue
     }
 
-    const param_label =
-      column?.column_params?.[param_key]?.label || param_key
+    const param_label = column?.column_params?.[param_key]?.label || param_key
 
     let value_label
     if (Array.isArray(param_value)) {

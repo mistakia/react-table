@@ -26,7 +26,12 @@ describe('handle_single_param_value', () => {
         rush_only: { label: 'Rush Only', data_type: TABLE_DATA_TYPES.BOOLEAN }
       }
     }
-    const result = handle_single_param_value(true, 'rush_only', column, 'Rush Only')
+    const result = handle_single_param_value(
+      true,
+      'rush_only',
+      column,
+      'Rush Only'
+    )
     expect(result).toBe('Rush Only: YES')
   })
 
@@ -36,7 +41,12 @@ describe('handle_single_param_value', () => {
         rush_only: { label: 'Rush Only', data_type: TABLE_DATA_TYPES.BOOLEAN }
       }
     }
-    const result = handle_single_param_value(false, 'rush_only', column, 'Rush Only')
+    const result = handle_single_param_value(
+      false,
+      'rush_only',
+      column,
+      'Rush Only'
+    )
     expect(result).toBe('Rush Only: NO')
   })
 
@@ -52,7 +62,12 @@ describe('handle_single_param_value', () => {
         }
       }
     }
-    const result = handle_single_param_value('QB', 'position', column, 'Position')
+    const result = handle_single_param_value(
+      'QB',
+      'position',
+      column,
+      'Position'
+    )
     expect(result).toBe('Position: Quarterback')
   })
 
@@ -65,7 +80,12 @@ describe('handle_single_param_value', () => {
         }
       }
     }
-    const result = handle_single_param_value('WR', 'position', column, 'Position')
+    const result = handle_single_param_value(
+      'WR',
+      'position',
+      column,
+      'Position'
+    )
     expect(result).toBe('Position: WR')
   })
 })
@@ -95,7 +115,10 @@ describe('handle_array_param_value', () => {
   test('array of object items with label property', () => {
     const column = { column_params: { items: { label: 'Items' } } }
     const result = handle_array_param_value(
-      [{ label: 'Alpha', value: 1 }, { label: 'Beta', value: 2 }],
+      [
+        { label: 'Alpha', value: 1 },
+        { label: 'Beta', value: 2 }
+      ],
       'items',
       column,
       'Items'
@@ -187,7 +210,9 @@ describe('handle_dynamic_param_value', () => {
   })
 
   test('falls back to dynamic_type when no dynamic_values match', () => {
-    const column = { column_params: { week: { label: 'Week', dynamic_values: [] } } }
+    const column = {
+      column_params: { week: { label: 'Week', dynamic_values: [] } }
+    }
     const result = handle_dynamic_param_value(
       { dynamic_type: 'absolute', value: '' },
       'week',
@@ -278,7 +303,14 @@ describe('format_column_params', () => {
 
   test('range param with min/max boundaries', () => {
     const column = {
-      column_params: { age: { label: 'Age', min: 0, max: 40, data_type: TABLE_DATA_TYPES.RANGE } }
+      column_params: {
+        age: {
+          label: 'Age',
+          min: 0,
+          max: 40,
+          data_type: TABLE_DATA_TYPES.RANGE
+        }
+      }
     }
     const result = format_column_params({
       column,

@@ -5,9 +5,7 @@ export const register_search_adapter = (adapter) => {
     throw new Error('register_search_adapter: adapter.id is required')
   }
   if (adapters.has(adapter.id)) {
-    throw new Error(
-      `register_search_adapter: duplicate id "${adapter.id}"`
-    )
+    throw new Error(`register_search_adapter: duplicate id "${adapter.id}"`)
   }
   adapters.set(adapter.id, adapter)
 }

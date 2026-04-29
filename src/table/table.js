@@ -192,15 +192,7 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    ({
-      sort,
-      prefix_columns,
-      columns,
-      where,
-      rank_aggregation,
-      splits,
-      q
-    }) => {
+    ({ sort, prefix_columns, columns, where, rank_aggregation, splits, q }) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
 

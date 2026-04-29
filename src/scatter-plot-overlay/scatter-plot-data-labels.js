@@ -1,6 +1,14 @@
 // Pure helper — no Highcharts import so this file can be unit-tested in isolation.
 
 /**
+ * Base font size (px) for scatter data labels.
+ *
+ * Exported so logo sizing can be derived from the same constant:
+ * logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio (default ratio = 3).
+ */
+export const SCATTER_LABEL_FONT_SIZE = 11
+
+/**
  * Build the series-level dataLabels config for scatter plots.
  *
  * Highcharts applies this config to every point in the series. Per-point dataLabels

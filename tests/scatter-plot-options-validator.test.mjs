@@ -25,15 +25,15 @@ describe('is_valid_table_state_structure with scatter_plot_options', () => {
   })
 
   test('rejects scatter_plot_options as null', () => {
-    expect(
-      is_valid_table_state_structure({ scatter_plot_options: null })
-    ).toBe(false)
+    expect(is_valid_table_state_structure({ scatter_plot_options: null })).toBe(
+      false
+    )
   })
 
   test('rejects scatter_plot_options as an array', () => {
-    expect(
-      is_valid_table_state_structure({ scatter_plot_options: [] })
-    ).toBe(false)
+    expect(is_valid_table_state_structure({ scatter_plot_options: [] })).toBe(
+      false
+    )
   })
 })
 
@@ -76,7 +76,9 @@ describe('validate_table_state with scatter_plot_options schema', () => {
         show_x_mean_line: true,
         show_y_mean_line: true,
         point_color_mode: 'team',
-        reference_lines: [{ axis: 'x', value: 42, label: 'benchmark', color: '#ff0000' }],
+        reference_lines: [
+          { axis: 'x', value: 42, label: 'benchmark', color: '#ff0000' }
+        ],
         custom_title: 'My chart',
         custom_subtitle: null,
         font_family: null

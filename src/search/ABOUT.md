@@ -13,10 +13,10 @@ The library's pluggable search adapter system. Tables that opt in via `view.sear
 
 ## Built-in adapters
 
-| id | Where the work happens | Returns |
-| --- | --- | --- |
-| `client` | In-memory in the browser | `client_filter` predicate + `highlights` |
-| `where` | Server-side via existing `where` clause | `state_patch.where` |
+| id       | Where the work happens                  | Returns                                  |
+| -------- | --------------------------------------- | ---------------------------------------- |
+| `client` | In-memory in the browser                | `client_filter` predicate + `highlights` |
+| `where`  | Server-side via existing `where` clause | `state_patch.where`                      |
 
 Custom adapters are registered by consuming projects at startup; see the README "Search Adapters" section. Base contributes `server_q` (drives `table_state.q`).
 

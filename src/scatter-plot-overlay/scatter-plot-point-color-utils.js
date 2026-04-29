@@ -13,7 +13,11 @@
  * @param {Function|null} params.get_point_color - Consumer-supplied resolver
  * @returns {string|undefined} hex color string, or undefined if not applicable
  */
-export const resolve_point_color = ({ row, point_color_mode, get_point_color }) => {
+export const resolve_point_color = ({
+  row,
+  point_color_mode,
+  get_point_color
+}) => {
   if (!point_color_mode || !get_point_color) return undefined
   return get_point_color(row) || undefined
 }

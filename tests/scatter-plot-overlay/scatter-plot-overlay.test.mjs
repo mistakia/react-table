@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 // Import from the pure helper module (no Highcharts dependency) so tests run in isolation.
-import { build_scatter_data_labels } from '../../src/scatter-plot-overlay/scatter-plot-data-labels.js'
+import {
+  build_scatter_data_labels,
+  SCATTER_LABEL_FONT_SIZE
+} from '../../src/scatter-plot-overlay/scatter-plot-data-labels.js'
 
 // Pure helper functions mirroring the implementation in scatter-plot-overlay.js.
 // These are tested in isolation to verify outlier detection and label configuration.
@@ -267,4 +270,26 @@ describe('scatter-plot-overlay outlier detection', () => {
   })
 
   // Real collision behavior requires browser/integration test; unit tests assert config shape only.
+})
+
+describe('scatter-plot-overlay logo size derivation (S5)', () => {
+  test('SCATTER_LABEL_FONT_SIZE is 11', () => {
+    expect(SCATTER_LABEL_FONT_SIZE).toBe(11)
+  })
+
+  test('default ratio 3 yields logo_size 33', () => {
+    const logo_size_ratio = 3
+    const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
+    expect(logo_size).toBe(33)
+  })
+
+  test('custom ratio yields proportional logo_size', () => {
+    const logo_size = SCATTER_LABEL_FONT_SIZE * 4
+    expect(logo_size).toBe(44)
+  })
+
+  test('dataLabels style fontSize matches SCATTER_LABEL_FONT_SIZE', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    expect(opts.style.fontSize).toBe(`${SCATTER_LABEL_FONT_SIZE}px`)
+  })
 })

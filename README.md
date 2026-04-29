@@ -94,7 +94,7 @@ The Table renders a debounced search input when `selected_view.search` is set. T
 ```javascript
 selected_view = {
   // ... standard view fields
-  search: { type: 'where', column_id: 'title' }      // single-column ILIKE
+  search: { type: 'where', column_id: 'title' } // single-column ILIKE
   // search: { type: 'client', fields: ['title', 'description'], key_field: 'id' }
   // search: { type: 'server_q', entity_type: 'thread' }
 }
@@ -104,10 +104,10 @@ If `search` is absent, no input renders. If `search.type` is unknown, the input 
 
 ### Built-in adapters
 
-| id | Where filtering happens | Returns |
-| --- | --- | --- |
-| `client` | In-memory in the browser | `client_filter` predicate (and inline highlights) |
-| `where` | Server-side via the existing `where` clause | `state_patch.where` |
+| id       | Where filtering happens                     | Returns                                           |
+| -------- | ------------------------------------------- | ------------------------------------------------- |
+| `client` | In-memory in the browser                    | `client_filter` predicate (and inline highlights) |
+| `where`  | Server-side via the existing `where` clause | `state_patch.where`                               |
 
 Both self-register on module load via `register_search_adapter`.
 
@@ -154,7 +154,8 @@ Side-effect import the registration site at app startup so the adapter is regist
 import HighlightedText from 'react-table/src/search/highlighted-text.js'
 
 const TitleCell = ({ row, table }) => {
-  const highlights = table?.options?.meta?.row_highlights?.[row.original.base_uri]
+  const highlights =
+    table?.options?.meta?.row_highlights?.[row.original.base_uri]
   const ranges = highlights?.cell_ranges?.title || []
   return <HighlightedText text={row.original.title} ranges={ranges} />
 }
