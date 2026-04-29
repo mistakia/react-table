@@ -10,6 +10,7 @@ import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
 import { resolve_point_color } from './scatter-plot-point-color-utils.js'
 import { build_scatter_data_labels } from './scatter-plot-data-labels.js'
+import { build_tier_series } from './scatter-plot-tier-overlay.js'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -159,8 +160,14 @@ const ScatterPlotOverlay = ({
     // TODO: S13 — implement PNG download via Highcharts exporting module
   }
 
+  const tier_series = local_scatter_plot_options.show_tier_grid
+    ? build_tier_series({ x_values, y_values })
+    : []
+
   React.useEffect(() => {
     if (show_regression) {
+      // x_values / y_values are derived from the scatter data series only,
+      // so tier series are already excluded from the regression computation.
       set_regression_stats(calculate_regression_stats({ x_values, y_values }))
     }
   }, [show_regression])
@@ -289,6 +296,7 @@ const ScatterPlotOverlay = ({
       }
     },
     series: [
+      ...tier_series,
       {
         id: 'scatter-plot-points',
         type: 'scatter',
