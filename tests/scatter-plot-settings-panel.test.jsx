@@ -277,6 +277,68 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
     expect(on_change).not.toHaveBeenCalled()
   })
 
+  test('Save preserves toolbar fields updated while modal is open (no stale-draft regression)', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: { point_color_mode: 'team' },
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    // Open modal
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Simulate a parent-driven prop update arriving while the modal is open.
+    // (Reproduces the case where a toolbar toggle outside the modal updates
+    // scatter_plot_options between mount and Save.)
+    await act(async () => {
+      container._react_root.render(
+        React.createElement(ScatterPlotSettingsPanel, {
+          scatter_plot_options: {
+            point_color_mode: 'team',
+            show_tier_grid: true
+          },
+          on_change,
+          show_regression: false,
+          on_toggle_regression: () => {},
+          on_download_png: () => {}
+        })
+      )
+    })
+
+    // Make a modal-level change so handle_save's no-op short-circuit doesn't skip the call.
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalled()
+    const saved = on_change.mock.calls[on_change.mock.calls.length - 1][0]
+    // Toolbar field set after modal mount must survive Save
+    expect(saved.show_tier_grid).toBe(true)
+    expect(saved.point_color_mode).toBe('team')
+  })
+
   test('prop updates after mount propagate into the rendered toolbar state', async () => {
     const container = make_container()
     const initial = { show_tier_grid: false }

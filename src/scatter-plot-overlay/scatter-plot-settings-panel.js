@@ -234,7 +234,6 @@ const ScatterPlotSettingsModal = ({
   on_change,
   on_close
 }) => {
-  const draft = React.useRef({ ...scatter_plot_options })
   const [ref_lines, set_ref_lines] = React.useState(() =>
     (scatter_plot_options.reference_lines || []).map((l) => ({
       ...l,
@@ -251,36 +250,20 @@ const ScatterPlotSettingsModal = ({
     scatter_plot_options.font_family || ''
   )
 
-  const handle_ref_lines_change = (next_lines) => {
-    set_ref_lines(next_lines)
-    draft.current = { ...draft.current, reference_lines: next_lines }
+  const handle_custom_title_change = (e) => {
+    set_custom_title(e.target.value.slice(0, 200))
   }
 
-  const handle_custom_title_change = (e) => {
-    const value = e.target.value.slice(0, 200)
-    set_custom_title(value)
-    draft.current = {
-      ...draft.current,
-      custom_title: value.trim() || null
-    }
+  const handle_ref_lines_change = (next_lines) => {
+    set_ref_lines(next_lines)
   }
 
   const handle_custom_subtitle_change = (e) => {
-    const value = e.target.value.slice(0, 200)
-    set_custom_subtitle(value)
-    draft.current = {
-      ...draft.current,
-      custom_subtitle: value.trim() || null
-    }
+    set_custom_subtitle(e.target.value.slice(0, 200))
   }
 
   const handle_font_family_change = (e) => {
-    const value = e.target.value
-    set_font_family(value)
-    draft.current = {
-      ...draft.current,
-      font_family: value || null
-    }
+    set_font_family(e.target.value)
   }
 
   const handle_save = () => {
@@ -290,7 +273,9 @@ const ScatterPlotSettingsModal = ({
       ...line,
       label: line.label.trim().slice(0, 200)
     }))
-    const next_draft = { ...draft.current }
+    // Start from the live prop so toolbar-controlled fields (point_color_mode,
+    // show_tier_grid, show_*_mean_line) made while the modal was open are preserved.
+    const next_draft = { ...scatter_plot_options }
     if (normalized_lines.length > 0) {
       next_draft.reference_lines = normalized_lines
     } else {

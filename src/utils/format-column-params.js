@@ -97,10 +97,9 @@ export function handle_single_param_value(
  * @param {object} options
  * @param {object} options.column       - Column definition (carries column_params)
  * @param {object} options.column_params - Runtime param values keyed by param_key
- * @param {'short'|'long'|'multiline'|undefined} options.format - Which form to return
  * @returns {{ parts: Array<{key, label, value, value_label}>, short: string, long: string, multiline: string }}
  */
-export function format_column_params({ column, column_params, format } = {}) {
+export function format_column_params({ column, column_params } = {}) {
   const parts = []
 
   if (!column_params || typeof column_params !== 'object') {

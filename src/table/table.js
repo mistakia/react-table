@@ -192,7 +192,16 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    ({ sort, prefix_columns, columns, where, rank_aggregation, splits, q }) => {
+    ({
+      sort,
+      prefix_columns,
+      columns,
+      where,
+      rank_aggregation,
+      splits,
+      q,
+      scatter_plot_options
+    }) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
 
@@ -244,7 +253,8 @@ export default function Table({
             where,
             rank_aggregation,
             splits,
-            q
+            q,
+            scatter_plot_options
           }
         },
         {
@@ -969,6 +979,12 @@ export default function Table({
           get_point_color={get_scatter_point_color}
           get_scatter_point_label_suffix={get_scatter_point_label_suffix}
           scatter_plot_options={table_state.scatter_plot_options || {}}
+          on_scatter_plot_options_change={(next_options) =>
+            on_table_state_change({
+              ...table_state,
+              scatter_plot_options: next_options
+            })
+          }
           is_scatter_plot_point_label_enabled={
             is_scatter_plot_point_label_enabled
           }
