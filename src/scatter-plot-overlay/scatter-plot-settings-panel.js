@@ -87,6 +87,9 @@ const DEFAULT_REFERENCE_LINE = {
   color: '#888888'
 }
 
+let _ref_line_counter = 0
+const next_ref_line_key = () => ++_ref_line_counter
+
 const ReferenceLineRow = ({ line, index, on_update, on_delete }) => {
   const handle_axis = (e) => on_update(index, { ...line, axis: e.target.value })
   const handle_value = (e) => {
@@ -175,7 +178,10 @@ const ReferenceLinesEditor = ({ lines, on_lines_change }) => {
   }
 
   const handle_add = () => {
-    on_lines_change([...lines, { ...DEFAULT_REFERENCE_LINE }])
+    on_lines_change([
+      ...lines,
+      { ...DEFAULT_REFERENCE_LINE, _key: next_ref_line_key() }
+    ])
   }
 
   return (
@@ -194,7 +200,7 @@ const ReferenceLinesEditor = ({ lines, on_lines_change }) => {
           <tbody>
             {lines.map((line, idx) => (
               <ReferenceLineRow
-                key={idx}
+                key={line._key}
                 line={line}
                 index={idx}
                 on_update={handle_update}
@@ -229,8 +235,11 @@ const ScatterPlotSettingsModal = ({
   on_close
 }) => {
   const draft = React.useRef({ ...scatter_plot_options })
-  const [ref_lines, set_ref_lines] = React.useState(
-    () => scatter_plot_options.reference_lines || []
+  const [ref_lines, set_ref_lines] = React.useState(() =>
+    (scatter_plot_options.reference_lines || []).map((l) => ({
+      ...l,
+      _key: next_ref_line_key()
+    }))
   )
 
   const handle_ref_lines_change = (next_lines) => {
@@ -240,7 +249,8 @@ const ScatterPlotSettingsModal = ({
 
   const handle_save = () => {
     const valid_lines = ref_lines.filter((line) => isFinite(line.value))
-    const normalized_lines = valid_lines.map((line) => ({
+    // Strip internal _key field before persisting
+    const normalized_lines = valid_lines.map(({ _key: _dropped, ...line }) => ({
       ...line,
       label: line.label.trim().slice(0, 200)
     }))

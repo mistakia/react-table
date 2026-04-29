@@ -11,9 +11,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react'
-import ScatterPlotSettingsPanel, {
-  ScatterPlotSettingsModal
-} from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
+import ScatterPlotSettingsPanel from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
 
 beforeAll(() => {
   GlobalRegistrator.register()
