@@ -212,8 +212,8 @@ const ScatterPlotOverlay = ({
         text: x_label
       },
       gridLineWidth: 1,
-      plotLines:
-        local_scatter_plot_options.show_x_mean_line !== false
+      plotLines: [
+        ...(local_scatter_plot_options.show_x_mean_line !== false
           ? [
               {
                 color: 'rgba(180, 60, 60, 0.8)',
@@ -231,14 +231,27 @@ const ScatterPlotOverlay = ({
                 }
               }
             ]
-          : []
+          : []),
+        ...(local_scatter_plot_options.reference_lines || [])
+          .filter((line) => line.axis === 'x' && isFinite(line.value))
+          .map((line) => ({
+            value: line.value,
+            color: line.color,
+            width: 1,
+            dashStyle: 'Dash',
+            label: {
+              text: line.label,
+              style: { color: line.color }
+            }
+          }))
+      ]
     },
     yAxis: {
       title: {
         text: y_label
       },
-      plotLines:
-        local_scatter_plot_options.show_y_mean_line !== false
+      plotLines: [
+        ...(local_scatter_plot_options.show_y_mean_line !== false
           ? [
               {
                 color: 'rgba(180, 60, 60, 0.8)',
@@ -256,7 +269,20 @@ const ScatterPlotOverlay = ({
                 }
               }
             ]
-          : []
+          : []),
+        ...(local_scatter_plot_options.reference_lines || [])
+          .filter((line) => line.axis === 'y' && isFinite(line.value))
+          .map((line) => ({
+            value: line.value,
+            color: line.color,
+            width: 1,
+            dashStyle: 'Dash',
+            label: {
+              text: line.label,
+              style: { color: line.color }
+            }
+          }))
+      ]
     },
     tooltip: {
       formatter: function () {

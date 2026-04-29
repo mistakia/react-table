@@ -46,19 +46,27 @@ describe('scatter-plot-overlay label collision config', () => {
 
   test('formatter returns null for non-outlier points', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    const result = opts.formatter.call({ point: { is_outlier: false, label: 'Player A' } })
+    const result = opts.formatter.call({
+      point: { is_outlier: false, label: 'Player A' }
+    })
     expect(result).toBeNull()
   })
 
   test('formatter returns label for outlier points', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    const result = opts.formatter.call({ point: { is_outlier: true, label: 'Player A' } })
+    const result = opts.formatter.call({
+      point: { is_outlier: true, label: 'Player A' }
+    })
     expect(result).toBe('Player A')
   })
 
   test('enabled reflects labels_enabled param', () => {
-    expect(build_scatter_data_labels({ labels_enabled: true }).enabled).toBe(true)
-    expect(build_scatter_data_labels({ labels_enabled: false }).enabled).toBe(false)
+    expect(build_scatter_data_labels({ labels_enabled: true }).enabled).toBe(
+      true
+    )
+    expect(build_scatter_data_labels({ labels_enabled: false }).enabled).toBe(
+      false
+    )
   })
 })
 
@@ -93,6 +101,146 @@ describe('scatter-plot-overlay dataLabels color callback (S6 fix)', () => {
   })
 })
 
+// Pure helper that mirrors the plotLines construction logic in scatter-plot-overlay.js
+const build_plot_lines = ({ axis, scatter_plot_options, mean_value }) => {
+  const show_mean_key = axis === 'x' ? 'show_x_mean_line' : 'show_y_mean_line'
+  const mean_lines =
+    scatter_plot_options[show_mean_key] !== false
+      ? [
+          {
+            color: 'rgba(180, 60, 60, 0.8)',
+            dashStyle: 'dash',
+            value: mean_value,
+            width: 1
+          }
+        ]
+      : []
+  const ref_lines = (scatter_plot_options.reference_lines || [])
+    .filter((line) => line.axis === axis && isFinite(line.value))
+    .map((line) => ({
+      value: line.value,
+      color: line.color,
+      width: 1,
+      dashStyle: 'Dash',
+      label: {
+        text: line.label,
+        style: { color: line.color }
+      }
+    }))
+  return [...mean_lines, ...ref_lines]
+}
+
+describe('scatter-plot-overlay reference lines (S8)', () => {
+  test('x-axis reference line appears in xAxis plotLines', () => {
+    const options = {
+      reference_lines: [
+        { axis: 'x', value: 50, label: 'avg', color: '#ff0000' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'x',
+      scatter_plot_options: options,
+      mean_value: 25
+    })
+    const ref = lines.find((l) => l.value === 50)
+    expect(ref).toBeDefined()
+    expect(ref.color).toBe('#ff0000')
+    expect(ref.dashStyle).toBe('Dash')
+    expect(ref.label.text).toBe('avg')
+    expect(ref.label.style.color).toBe('#ff0000')
+  })
+
+  test('y-axis reference line appears in yAxis plotLines', () => {
+    const options = {
+      reference_lines: [
+        { axis: 'y', value: 75, label: 'target', color: '#0000ff' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'y',
+      scatter_plot_options: options,
+      mean_value: 50
+    })
+    const ref = lines.find((l) => l.value === 75)
+    expect(ref).toBeDefined()
+    expect(ref.color).toBe('#0000ff')
+  })
+
+  test('x-axis reference line does NOT appear in yAxis plotLines', () => {
+    const options = {
+      reference_lines: [
+        { axis: 'x', value: 50, label: 'avg', color: '#ff0000' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'y',
+      scatter_plot_options: options,
+      mean_value: 25
+    })
+    const ref = lines.find((l) => l.value === 50 && l.color === '#ff0000')
+    expect(ref).toBeUndefined()
+  })
+
+  test('non-finite value is skipped (defensive)', () => {
+    const options = {
+      reference_lines: [
+        { axis: 'x', value: NaN, label: 'bad', color: '#888888' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'x',
+      scatter_plot_options: options,
+      mean_value: 10
+    })
+    // Only the mean line should be present
+    expect(lines.length).toBe(1)
+  })
+
+  test('mean line and reference lines coexist on the same axis', () => {
+    const options = {
+      show_x_mean_line: true,
+      reference_lines: [
+        { axis: 'x', value: 50, label: 'ref', color: '#aabbcc' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'x',
+      scatter_plot_options: options,
+      mean_value: 30
+    })
+    // Mean line + 1 reference line
+    expect(lines.length).toBe(2)
+    expect(lines[0].value).toBe(30)
+    expect(lines[1].value).toBe(50)
+  })
+
+  test('when show_x_mean_line is false, mean line absent but reference line present', () => {
+    const options = {
+      show_x_mean_line: false,
+      reference_lines: [
+        { axis: 'x', value: 50, label: 'ref', color: '#aabbcc' }
+      ]
+    }
+    const lines = build_plot_lines({
+      axis: 'x',
+      scatter_plot_options: options,
+      mean_value: 30
+    })
+    expect(lines.length).toBe(1)
+    expect(lines[0].value).toBe(50)
+  })
+
+  test('empty reference_lines produces no extra plotLines', () => {
+    const options = { reference_lines: [] }
+    const lines = build_plot_lines({
+      axis: 'x',
+      scatter_plot_options: options,
+      mean_value: 20
+    })
+    expect(lines.length).toBe(1) // only mean line
+  })
+})
+
 describe('scatter-plot-overlay outlier detection', () => {
   // 50 points clustered around (10, 10) with a few outliers spread out
   const base_x = Array.from({ length: 45 }, (_, i) => 9.5 + (i % 5) * 0.2)
@@ -106,7 +254,9 @@ describe('scatter-plot-overlay outlier detection', () => {
 
   test('clustered points near mean are not outliers', () => {
     // Points at the cluster center should not be flagged
-    const non_outlier_count = base_x.filter((x, i) => !is_outlier(x, base_y[i])).length
+    const non_outlier_count = base_x.filter(
+      (x, i) => !is_outlier(x, base_y[i])
+    ).length
     // Expect the majority of clustered points to not be outliers
     expect(non_outlier_count).toBeGreaterThan(base_x.length * 0.5)
   })

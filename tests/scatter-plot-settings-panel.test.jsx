@@ -1,9 +1,19 @@
-import { describe, expect, test, mock, beforeAll, afterAll, afterEach } from 'bun:test'
+import {
+  describe,
+  expect,
+  test,
+  mock,
+  beforeAll,
+  afterAll,
+  afterEach
+} from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react'
-import ScatterPlotSettingsPanel from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
+import ScatterPlotSettingsPanel, {
+  ScatterPlotSettingsModal
+} from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
 
 beforeAll(() => {
   GlobalRegistrator.register()
@@ -26,7 +36,9 @@ const make_container = () => {
 afterEach(async () => {
   for (const c of _containers) {
     if (c._react_root) {
-      await act(async () => { c._react_root.unmount() })
+      await act(async () => {
+        c._react_root.unmount()
+      })
     }
     c.remove()
   }
@@ -87,9 +99,9 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
     )
 
     // Modal should not be present initially
-    expect(
-      container.innerHTML.includes('scatter-plot-settings-modal')
-    ).toBe(false)
+    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
+      false
+    )
 
     const buttons = Array.from(container.getElementsByTagName('button'))
     const settings_btn = buttons.find((b) =>
@@ -101,9 +113,9 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       settings_btn.click()
     })
 
-    expect(
-      container.innerHTML.includes('scatter-plot-settings-modal')
-    ).toBe(true)
+    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
+      true
+    )
   })
 
   test('Cancel button closes the modal without calling on_change', async () => {
@@ -136,9 +148,9 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       cancel_btn.click()
     })
 
-    expect(
-      container.innerHTML.includes('scatter-plot-settings-modal')
-    ).toBe(false)
+    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
+      false
+    )
     expect(on_change).not.toHaveBeenCalled()
   })
 
@@ -163,17 +175,17 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       settings_btn.click()
     })
 
-    const save_btn = Array.from(
-      container.getElementsByTagName('button')
-    ).find((b) => b.textContent.toLowerCase() === 'save')
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
 
     await act(async () => {
       save_btn.click()
     })
 
-    expect(
-      container.innerHTML.includes('scatter-plot-settings-modal')
-    ).toBe(false)
+    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
+      false
+    )
   })
 
   test('on_change is called with deep-cloned options when toggling tier grid', async () => {
@@ -192,9 +204,9 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       container
     )
 
-    const tier_btn = Array.from(
-      container.getElementsByTagName('button')
-    ).find((b) => b.textContent.toLowerCase().includes('tier'))
+    const tier_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase().includes('tier')
+    )
 
     await act(async () => {
       tier_btn.click()
@@ -220,9 +232,9 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       container
     )
 
-    const reg_btn = Array.from(
-      container.getElementsByTagName('button')
-    ).find((b) => b.textContent.toLowerCase().includes('regression'))
+    const reg_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase().includes('regression')
+    )
 
     await act(async () => {
       reg_btn.click()
@@ -253,17 +265,17 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       settings_btn.click()
     })
 
-    const save_btn = Array.from(
-      container.getElementsByTagName('button')
-    ).find((b) => b.textContent.toLowerCase() === 'save')
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
 
     await act(async () => {
       save_btn.click()
     })
 
-    expect(
-      container.innerHTML.includes('scatter-plot-settings-modal')
-    ).toBe(false)
+    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
+      false
+    )
     expect(on_change).not.toHaveBeenCalled()
   })
 
@@ -303,5 +315,205 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
     })
 
     expect(get_tier_btn().className.includes('active')).toBe(true)
+  })
+})
+
+describe('ScatterPlotSettingsModal — reference lines editor', () => {
+  const open_modal = async (container, opts = {}) => {
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: opts,
+        on_change: () => {},
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+  }
+
+  test('shows Add reference line button in modal', async () => {
+    const container = make_container()
+    await open_modal(container)
+    const btns = Array.from(container.getElementsByTagName('button'))
+    expect(btns.some((b) => b.textContent.includes('Add reference line'))).toBe(
+      true
+    )
+  })
+
+  test('clicking Add reference line adds a row', async () => {
+    const container = make_container()
+    await open_modal(container)
+
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const rows = container.querySelectorAll('.ref-line-row')
+    expect(rows.length).toBe(1)
+  })
+
+  test('adding two rows then deleting one leaves one row', async () => {
+    const container = make_container()
+    await open_modal(container)
+
+    const get_add_btn = () =>
+      Array.from(container.getElementsByTagName('button')).find((b) =>
+        b.textContent.includes('Add reference line')
+      )
+
+    await act(async () => {
+      get_add_btn().click()
+    })
+    await act(async () => {
+      get_add_btn().click()
+    })
+
+    expect(container.querySelectorAll('.ref-line-row').length).toBe(2)
+
+    const delete_btns = container.querySelectorAll('.ref-line-delete')
+    await act(async () => {
+      delete_btns[0].click()
+    })
+
+    expect(container.querySelectorAll('.ref-line-row').length).toBe(1)
+  })
+
+  test('Save calls on_change with reference_lines array when a line is added', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: {},
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    expect(Array.isArray(saved.reference_lines)).toBe(true)
+    expect(saved.reference_lines.length).toBe(1)
+    expect(saved.reference_lines[0].axis).toBe('x')
+    expect(saved.reference_lines[0].value).toBe(0)
+    expect(saved.reference_lines[0].color).toBe('#888888')
+  })
+
+  test('Save with existing reference_lines prop preserves them in on_change', async () => {
+    const on_change = mock(() => {})
+    const existing_lines = [
+      { axis: 'x', value: 50, label: 'midpoint', color: '#ff0000' }
+    ]
+    const container = make_container()
+
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: { reference_lines: existing_lines },
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Rows should be pre-populated
+    expect(container.querySelectorAll('.ref-line-row').length).toBe(1)
+
+    // Add another line
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    expect(saved.reference_lines.length).toBe(2)
+    expect(saved.reference_lines[0].label).toBe('midpoint')
+  })
+
+  test('mean toggle buttons still work alongside reference_lines', async () => {
+    const received = []
+    const on_change = (opts) => received.push(opts)
+    const container = make_container()
+
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: {
+          reference_lines: [
+            { axis: 'y', value: 100, label: 'target', color: '#00ff00' }
+          ]
+        },
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const x_mean_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('x mean'))
+    await act(async () => {
+      x_mean_btn.click()
+    })
+
+    expect(received.length).toBe(1)
+    // show_x_mean_line was toggled (from absent/undefined to a boolean value)
+    expect(typeof received[0].show_x_mean_line).toBe('boolean')
+    // reference_lines must still be present in on_change payload
+    expect(received[0].reference_lines).toBeDefined()
+    expect(Array.isArray(received[0].reference_lines)).toBe(true)
   })
 })

@@ -154,3 +154,93 @@
 
   &:hover
     background-color #1558b0
+
+// Reference lines editor
+.ref-lines-editor
+  display flex
+  flex-direction column
+  gap 10px
+
+.ref-lines-table
+  width 100%
+  border-collapse collapse
+  font-size 13px
+
+  th
+    text-align left
+    font-weight 600
+    color #555
+    padding 4px 6px
+    border-bottom 1px solid #e0e0e0
+    font-size 12px
+
+  td
+    padding 4px 6px
+    vertical-align middle
+
+  .ref-line-row:nth-child(even) td
+    background-color #fafafa
+
+.ref-line-select
+  padding 3px 6px
+  border 1px solid rgba(0, 0, 0, 0.23)
+  border-radius 4px
+  font-size 13px
+  background-color white
+  cursor pointer
+
+.ref-line-input
+  border 1px solid rgba(0, 0, 0, 0.23)
+  border-radius 4px
+  padding 3px 6px
+  font-size 13px
+  background-color white
+
+  &:focus
+    outline none
+    border-color #1a73e8
+
+.ref-line-value
+  width 80px
+
+.ref-line-label
+  width 100%
+  box-sizing border-box
+
+.ref-line-color
+  width 36px
+  height 28px
+  padding 1px
+  border 1px solid rgba(0, 0, 0, 0.23)
+  border-radius 4px
+  cursor pointer
+  background-color white
+
+.ref-line-delete
+  background none
+  border none
+  font-size 16px
+  cursor pointer
+  color #888
+  padding 2px 6px
+  border-radius 4px
+  line-height 1
+
+  &:hover
+    color #c0392b
+    background-color #fdecea
+
+.ref-line-add-btn
+  align-self flex-start
+  padding 5px 12px
+  border 1px dashed rgba(0, 0, 0, 0.3)
+  border-radius 6px
+  background-color transparent
+  font-size 13px
+  cursor pointer
+  color #555
+  transition border-color 150ms ease, color 150ms ease
+
+  &:hover
+    border-color #1a73e8
+    color #1a73e8

@@ -25,10 +25,8 @@ const ScatterPlotToolbar = ({
   }
 
   const show_tier_grid = Boolean(scatter_plot_options.show_tier_grid)
-  const show_x_mean_line =
-    scatter_plot_options.show_x_mean_line !== false
-  const show_y_mean_line =
-    scatter_plot_options.show_y_mean_line !== false
+  const show_x_mean_line = scatter_plot_options.show_x_mean_line !== false
+  const show_y_mean_line = scatter_plot_options.show_y_mean_line !== false
   const point_color_mode = scatter_plot_options.point_color_mode || ''
 
   return (
@@ -82,12 +80,178 @@ ScatterPlotToolbar.propTypes = {
   on_download_png: PropTypes.func.isRequired
 }
 
-const ScatterPlotSettingsModal = ({ scatter_plot_options, on_change, on_close }) => {
+const DEFAULT_REFERENCE_LINE = {
+  axis: 'x',
+  value: 0,
+  label: '',
+  color: '#888888'
+}
+
+const ReferenceLineRow = ({ line, index, on_update, on_delete }) => {
+  const handle_axis = (e) => on_update(index, { ...line, axis: e.target.value })
+  const handle_value = (e) => {
+    const parsed = parseFloat(e.target.value)
+    on_update(index, { ...line, value: isNaN(parsed) ? line.value : parsed })
+  }
+  const handle_label = (e) =>
+    on_update(index, {
+      ...line,
+      label: e.target.value.slice(0, 200)
+    })
+  const handle_color = (e) =>
+    on_update(index, { ...line, color: e.target.value })
+
+  return (
+    <tr className='ref-line-row'>
+      <td>
+        <select
+          className='ref-line-select'
+          value={line.axis}
+          onChange={handle_axis}>
+          <option value='x'>X</option>
+          <option value='y'>Y</option>
+        </select>
+      </td>
+      <td>
+        <input
+          className='ref-line-input ref-line-value'
+          type='number'
+          step='any'
+          value={line.value}
+          onChange={handle_value}
+        />
+      </td>
+      <td>
+        <input
+          className='ref-line-input ref-line-label'
+          type='text'
+          maxLength={200}
+          value={line.label}
+          onChange={handle_label}
+          placeholder='Label'
+        />
+      </td>
+      <td>
+        <input
+          className='ref-line-color'
+          type='color'
+          value={line.color}
+          onChange={handle_color}
+        />
+      </td>
+      <td>
+        <button
+          className='ref-line-delete'
+          type='button'
+          onClick={() => on_delete(index)}
+          aria-label='Delete reference line'>
+          &times;
+        </button>
+      </td>
+    </tr>
+  )
+}
+
+ReferenceLineRow.propTypes = {
+  line: PropTypes.shape({
+    axis: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired,
+    label: PropTypes.string.isRequired,
+    color: PropTypes.string.isRequired
+  }).isRequired,
+  index: PropTypes.number.isRequired,
+  on_update: PropTypes.func.isRequired,
+  on_delete: PropTypes.func.isRequired
+}
+
+const ReferenceLinesEditor = ({ lines, on_lines_change }) => {
+  const handle_update = (index, updated_line) => {
+    const next = lines.map((l, i) => (i === index ? updated_line : l))
+    on_lines_change(next)
+  }
+
+  const handle_delete = (index) => {
+    on_lines_change(lines.filter((_, i) => i !== index))
+  }
+
+  const handle_add = () => {
+    on_lines_change([...lines, { ...DEFAULT_REFERENCE_LINE }])
+  }
+
+  return (
+    <div className='ref-lines-editor'>
+      {lines.length > 0 && (
+        <table className='ref-lines-table'>
+          <thead>
+            <tr>
+              <th>Axis</th>
+              <th>Value</th>
+              <th>Label</th>
+              <th>Color</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((line, idx) => (
+              <ReferenceLineRow
+                key={idx}
+                line={line}
+                index={idx}
+                on_update={handle_update}
+                on_delete={handle_delete}
+              />
+            ))}
+          </tbody>
+        </table>
+      )}
+      <button className='ref-line-add-btn' type='button' onClick={handle_add}>
+        + Add reference line
+      </button>
+    </div>
+  )
+}
+
+ReferenceLinesEditor.propTypes = {
+  lines: PropTypes.arrayOf(
+    PropTypes.shape({
+      axis: PropTypes.string.isRequired,
+      value: PropTypes.number.isRequired,
+      label: PropTypes.string.isRequired,
+      color: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  on_lines_change: PropTypes.func.isRequired
+}
+
+const ScatterPlotSettingsModal = ({
+  scatter_plot_options,
+  on_change,
+  on_close
+}) => {
   const draft = React.useRef({ ...scatter_plot_options })
+  const [ref_lines, set_ref_lines] = React.useState(
+    () => scatter_plot_options.reference_lines || []
+  )
+
+  const handle_ref_lines_change = (next_lines) => {
+    set_ref_lines(next_lines)
+    draft.current = { ...draft.current, reference_lines: next_lines }
+  }
 
   const handle_save = () => {
-    if (JSON.stringify(draft.current) !== JSON.stringify(scatter_plot_options)) {
-      on_change({ ...draft.current })
+    const valid_lines = ref_lines.filter((line) => isFinite(line.value))
+    const normalized_lines = valid_lines.map((line) => ({
+      ...line,
+      label: line.label.trim().slice(0, 200)
+    }))
+    const next_draft = { ...draft.current }
+    if (normalized_lines.length > 0) {
+      next_draft.reference_lines = normalized_lines
+    } else {
+      delete next_draft.reference_lines
+    }
+    if (JSON.stringify(next_draft) !== JSON.stringify(scatter_plot_options)) {
+      on_change({ ...next_draft })
     }
     on_close()
   }
@@ -97,7 +261,11 @@ const ScatterPlotSettingsModal = ({ scatter_plot_options, on_change, on_close })
   }
 
   return (
-    <div className='scatter-plot-settings-modal-overlay' role='dialog' aria-modal='true' aria-label='Scatter plot settings'>
+    <div
+      className='scatter-plot-settings-modal-overlay'
+      role='dialog'
+      aria-modal='true'
+      aria-label='Scatter plot settings'>
       <div className='scatter-plot-settings-modal'>
         <div className='modal-header'>
           <h3 className='modal-title'>Scatter plot settings</h3>
@@ -124,11 +292,12 @@ const ScatterPlotSettingsModal = ({ scatter_plot_options, on_change, on_close })
             <p className='modal-placeholder'>Coming in S11</p>
           </div>
 
-          {/* TODO: S8 — reference_lines table */}
           <div className='modal-section'>
             <label className='modal-section-label'>Reference lines</label>
-            {/* TODO: S8 */}
-            <p className='modal-placeholder'>Coming in S8</p>
+            <ReferenceLinesEditor
+              lines={ref_lines}
+              on_lines_change={handle_ref_lines_change}
+            />
           </div>
 
           {/* TODO: S12 — font_family dropdown */}
