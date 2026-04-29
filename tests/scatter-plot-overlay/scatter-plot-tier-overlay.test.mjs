@@ -106,12 +106,12 @@ describe('build_tier_series', () => {
     })
   })
 
-  test('is_tier_series flag is set for filtering regression stats', () => {
+  test('series type is line', () => {
     const x_values = [1, 2, 3, 4, 5]
     const y_values = [1, 2, 3, 4, 5]
     const result = build_tier_series({ x_values, y_values })
     result.forEach((series) => {
-      expect(series.is_tier_series).toBe(true)
+      expect(series.type).toBe('line')
     })
   })
 })

@@ -40,8 +40,9 @@ const build_tier_series = ({ x_values, y_values }) => {
     return []
   }
 
-  // Pair-wise filter: both x and y must be valid numbers
+  // Pair-wise filter: both x and y must be valid finite numbers
   const sums = []
+  const valid_x = []
   for (let i = 0; i < Math.min(x_values.length, y_values.length); i++) {
     const x = x_values[i]
     const y = y_values[i]
@@ -56,6 +57,7 @@ const build_tier_series = ({ x_values, y_values }) => {
       continue
     }
     sums.push(x + y)
+    valid_x.push(x)
   }
 
   if (sums.length < 2) return []
@@ -67,30 +69,12 @@ const build_tier_series = ({ x_values, y_values }) => {
   // Deduplicate k_values (degenerate case: all sums identical)
   const unique_k = [...new Set(k_values.map((k) => Math.round(k * 1e9) / 1e9))]
 
-  // Derive axis range from the paired valid inputs
-  const valid_x = []
-  for (let i = 0; i < Math.min(x_values.length, y_values.length); i++) {
-    const x = x_values[i]
-    const y = y_values[i]
-    if (
-      x != null &&
-      y != null &&
-      isFinite(x) &&
-      isFinite(y) &&
-      !isNaN(x) &&
-      !isNaN(y)
-    ) {
-      valid_x.push(x)
-    }
-  }
-
   const x_min = Math.min(...valid_x)
   const x_max = Math.max(...valid_x)
 
   return unique_k.map((k, i) => ({
     type: 'line',
     name: `Tier ${i + 1}`,
-    is_tier_series: true,
     data: [
       [x_min, k - x_min],
       [x_max, k - x_max]
