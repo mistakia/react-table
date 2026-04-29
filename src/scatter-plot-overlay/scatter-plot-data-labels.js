@@ -11,12 +11,22 @@
  * accepts a plain CSS string). The callback reads this.point.color, which is set
  * per-point when point_color_mode is active. In uniform mode point.color is
  * undefined and Highcharts falls back to its theme default.
+ *
+ * get_scatter_point_label_suffix (optional): consumer-provided function called with
+ * the per-point row (this.point.options.original_data). Returns a string suffix to
+ * append to the label (e.g. ' (2022)' or ' (2022 W5)'). Empty string means no suffix.
  */
-export const build_scatter_data_labels = ({ labels_enabled }) => ({
+export const build_scatter_data_labels = ({
+  labels_enabled,
+  get_scatter_point_label_suffix = null
+}) => ({
   enabled: labels_enabled,
   formatter: function () {
     if (!this.point.is_outlier) return null
-    return this.point.label
+    const suffix = get_scatter_point_label_suffix
+      ? get_scatter_point_label_suffix(this.point.options.original_data) || ''
+      : ''
+    return this.point.label + suffix
   },
   // Highcharts hides overlapping labels silently; outlier-only filter keeps density low. See task S7.
   allowOverlap: false,

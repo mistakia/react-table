@@ -97,6 +97,7 @@ const ScatterPlotOverlay = ({
   on_close,
   get_point_image = null,
   get_point_color = null,
+  get_scatter_point_label_suffix = null,
   is_scatter_plot_point_label_enabled = () => true,
   scatter_plot_options = {},
   on_scatter_plot_options_change = null
@@ -264,7 +265,10 @@ const ScatterPlotOverlay = ({
     },
     plotOptions: {
       scatter: {
-        dataLabels: build_scatter_data_labels({ labels_enabled }),
+        dataLabels: build_scatter_data_labels({
+            labels_enabled,
+            get_scatter_point_label_suffix
+          }),
         marker: {
           radius: 5,
           fillOpacity: 0.6,
@@ -417,6 +421,7 @@ ScatterPlotOverlay.propTypes = {
   on_close: PropTypes.func.isRequired,
   get_point_image: PropTypes.func,
   get_point_color: PropTypes.func,
+  get_scatter_point_label_suffix: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   scatter_plot_options: PropTypes.object,
   on_scatter_plot_options_change: PropTypes.func
