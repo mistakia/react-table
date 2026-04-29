@@ -5,9 +5,9 @@ import HighchartsReact from 'highcharts-react-official'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
-import ShowChartIcon from '@mui/icons-material/ShowChart'
 import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
+import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -91,7 +91,9 @@ const ScatterPlotOverlay = ({
   get_point_label,
   on_close,
   get_point_image = null,
-  is_scatter_plot_point_label_enabled = () => true
+  is_scatter_plot_point_label_enabled = () => true,
+  scatter_plot_options = {},
+  on_scatter_plot_options_change = null
 }) => {
   const x_label = x_column.header_label || 'X Axis'
   const y_label = y_column.header_label || 'Y Axis'
@@ -201,6 +203,23 @@ const ScatterPlotOverlay = ({
 
   const [show_regression, set_show_regression] = React.useState(false)
   const [regression_stats, set_regression_stats] = React.useState(null)
+  const [local_scatter_plot_options, set_local_scatter_plot_options] =
+    React.useState(() => scatter_plot_options || {})
+
+  React.useEffect(() => {
+    set_local_scatter_plot_options(scatter_plot_options || {})
+  }, [scatter_plot_options])
+
+  const handle_scatter_plot_options_change = (next_options) => {
+    set_local_scatter_plot_options(next_options)
+    if (on_scatter_plot_options_change) {
+      on_scatter_plot_options_change(next_options)
+    }
+  }
+
+  const handle_download_png = () => {
+    // TODO: S13 — implement PNG download via Highcharts exporting module
+  }
 
   React.useEffect(() => {
     if (show_regression) {
@@ -248,45 +267,51 @@ const ScatterPlotOverlay = ({
         text: x_label
       },
       gridLineWidth: 1,
-      plotLines: [
-        {
-          color: 'rgba(180, 60, 60, 0.8)',
-          dashStyle: 'dash',
-          value: x_average,
-          width: 1,
-          label: {
-            text: `avg ${x_average.toFixed(2)}`,
-            align: 'left',
-            style: {
-              color: 'rgba(180, 60, 60, 0.9)',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }
-          }
-        }
-      ]
+      plotLines:
+        local_scatter_plot_options.show_x_mean_line !== false
+          ? [
+              {
+                color: 'rgba(180, 60, 60, 0.8)',
+                dashStyle: 'dash',
+                value: x_average,
+                width: 1,
+                label: {
+                  text: `avg ${x_average.toFixed(2)}`,
+                  align: 'left',
+                  style: {
+                    color: 'rgba(180, 60, 60, 0.9)',
+                    fontSize: '11px',
+                    fontWeight: 'bold'
+                  }
+                }
+              }
+            ]
+          : []
     },
     yAxis: {
       title: {
         text: y_label
       },
-      plotLines: [
-        {
-          color: 'rgba(180, 60, 60, 0.8)',
-          dashStyle: 'dash',
-          value: y_average,
-          width: 1,
-          label: {
-            text: `avg ${y_average.toFixed(2)}`,
-            align: 'left',
-            style: {
-              color: 'rgba(180, 60, 60, 0.9)',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }
-          }
-        }
-      ]
+      plotLines:
+        local_scatter_plot_options.show_y_mean_line !== false
+          ? [
+              {
+                color: 'rgba(180, 60, 60, 0.8)',
+                dashStyle: 'dash',
+                value: y_average,
+                width: 1,
+                label: {
+                  text: `avg ${y_average.toFixed(2)}`,
+                  align: 'left',
+                  style: {
+                    color: 'rgba(180, 60, 60, 0.9)',
+                    fontSize: '11px',
+                    fontWeight: 'bold'
+                  }
+                }
+              }
+            ]
+          : []
     },
     tooltip: {
       formatter: function () {
@@ -424,15 +449,14 @@ const ScatterPlotOverlay = ({
             aria_label='close'>
             <CloseIcon />
           </IconButton>
+          <ScatterPlotSettingsPanel
+            scatter_plot_options={local_scatter_plot_options}
+            on_change={handle_scatter_plot_options_change}
+            show_regression={show_regression}
+            on_toggle_regression={() => set_show_regression(!show_regression)}
+            on_download_png={handle_download_png}
+          />
           <HighchartsReact highcharts={Highcharts} options={options} />
-          <div className='plot-controls'>
-            <div
-              onClick={() => set_show_regression(!show_regression)}
-              className='regression-toggle'>
-              <ShowChartIcon />
-              {show_regression ? 'Hide' : 'Show'} Regression Line
-            </div>
-          </div>
           {show_regression && regression_stats && (
             <div className='regression-stats'>
               <h4>Regression Statistics</h4>
@@ -469,7 +493,9 @@ ScatterPlotOverlay.propTypes = {
   get_point_label: PropTypes.func,
   on_close: PropTypes.func.isRequired,
   get_point_image: PropTypes.func,
-  is_scatter_plot_point_label_enabled: PropTypes.func
+  is_scatter_plot_point_label_enabled: PropTypes.func,
+  scatter_plot_options: PropTypes.object,
+  on_scatter_plot_options_change: PropTypes.func
 }
 
 export default ScatterPlotOverlay

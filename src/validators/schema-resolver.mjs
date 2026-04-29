@@ -2,7 +2,41 @@ import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 
 // Bundled schemas for browser compatibility
+const SCATTER_PLOT_OPTIONS_SCHEMA_ID =
+  'https://mistakia.github.io/react-table/schema/state/scatter-plot-options.json'
+
 const SCHEMAS = {
+  'scatter-plot-options': {
+    $id: SCATTER_PLOT_OPTIONS_SCHEMA_ID,
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      show_tier_grid: { type: 'boolean', default: false },
+      show_x_mean_line: { type: 'boolean', default: true },
+      show_y_mean_line: { type: 'boolean', default: true },
+      point_color_mode: { type: 'string', enum: ['team', 'position'] },
+      reference_lines: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            axis: { type: 'string', enum: ['x', 'y'] },
+            value: { type: 'number' },
+            label: { type: 'string', maxLength: 200 },
+            color: {
+              type: 'string',
+              pattern: '^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$'
+            }
+          },
+          required: ['axis', 'value']
+        }
+      },
+      custom_title: { type: ['string', 'null'], maxLength: 200 },
+      custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },
+      font_family: { type: ['string', 'null'], maxLength: 100 }
+    }
+  },
   'table-operators': {
     $id: 'https://mistakia.github.io/react-table/schema/base/table-operators.json',
     type: 'string',
@@ -98,7 +132,10 @@ const SCHEMAS = {
       rank_aggregation: { type: 'object' },
       disable_scatter_plot: { type: 'boolean' },
       disable_column_controls: { type: 'boolean' },
-      disable_multi_sort: { type: 'boolean' }
+      disable_multi_sort: { type: 'boolean' },
+      scatter_plot_options: {
+        $ref: SCATTER_PLOT_OPTIONS_SCHEMA_ID
+      }
     }
   }
 }

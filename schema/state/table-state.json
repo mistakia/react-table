@@ -48,6 +48,10 @@
     "disable_multi_sort": {
       "type": "boolean",
       "description": "When true, disables multi-column sorting and only allows single column sort"
+    },
+    "scatter_plot_options": {
+      "$ref": "./scatter-plot-options.json",
+      "description": "Persisted scatter plot display options (colors, reference lines, toggles, custom text)"
     }
   }
 }

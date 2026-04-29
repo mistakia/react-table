@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/scatter-plot-options.json",
+  "title": "ScatterPlotOptions",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "show_tier_grid": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, renders iso-value diagonal tier grid lines"
+    },
+    "show_x_mean_line": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, renders the mean reference line on the X axis"
+    },
+    "show_y_mean_line": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, renders the mean reference line on the Y axis"
+    },
+    "point_color_mode": {
+      "type": "string",
+      "enum": ["team", "position"],
+      "description": "Color mode for scatter plot points; absence means default marker color"
+    },
+    "reference_lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "axis": {
+            "type": "string",
+            "enum": ["x", "y"],
+            "description": "Axis the reference line is drawn on"
+          },
+          "value": {
+            "type": "number",
+            "description": "Position of the reference line along the axis (must be finite)"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Display label for the reference line"
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+            "description": "Hex color string for the reference line"
+          }
+        },
+        "required": ["axis", "value"]
+      },
+      "description": "Custom reference lines to render on the chart axes"
+    },
+    "custom_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom chart title; null means use auto-generated title"
+    },
+    "custom_subtitle": {
+      "type": ["string", "null"],
+      "maxLength": 1000,
+      "description": "Custom chart subtitle; null means use auto-generated subtitle"
+    },
+    "font_family": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "Font family for chart text; null means Highcharts default"
+    }
+  }
+}
