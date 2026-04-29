@@ -371,3 +371,49 @@ describe('format_column_params', () => {
     expect(result.short).toBe('Min Snaps: 0')
   })
 })
+
+describe('axis title derivation from format_column_params (S10)', () => {
+  test('axis title uses formatted params short string when params are present', () => {
+    const column = {
+      column_params: {
+        year: { label: 'Year' }
+      },
+      header_label: 'Passing Yards'
+    }
+    const column_params = { year: 2022 }
+    const result = format_column_params({ column, column_params })
+    // Axis title should be the formatted string, not the raw header_label
+    expect(result.short).toBe('Year: 2022')
+    // Fallback would be header_label
+    const axis_title = result.short || column.header_label || 'X Axis'
+    expect(axis_title).toBe('Year: 2022')
+  })
+
+  test('axis title falls back to header_label when no params', () => {
+    const column = {
+      column_params: {},
+      header_label: 'Passing Yards'
+    }
+    const result = format_column_params({ column, column_params: {} })
+    expect(result.short).toBe('')
+    const axis_title = result.short || column.header_label || 'X Axis'
+    expect(axis_title).toBe('Passing Yards')
+  })
+
+  test('axis title falls back to name when header_label absent', () => {
+    const column = { name: 'pass_yds' }
+    const result = format_column_params({ column, column_params: null })
+    expect(result.short).toBe('')
+    const axis_title =
+      result.short || column.header_label || column.name || 'X Axis'
+    expect(axis_title).toBe('pass_yds')
+  })
+
+  test('axis title falls back to sentinel when column has no label fields', () => {
+    const column = {}
+    const result = format_column_params({ column, column_params: null })
+    const axis_title =
+      result.short || column.header_label || column.name || 'X Axis'
+    expect(axis_title).toBe('X Axis')
+  })
+})

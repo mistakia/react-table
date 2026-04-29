@@ -14,6 +14,7 @@ import {
   SCATTER_LABEL_FONT_SIZE
 } from './scatter-plot-data-labels.js'
 import { build_tier_series } from './scatter-plot-tier-overlay.js'
+import { format_column_params } from '../utils/format-column-params.js'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -108,8 +109,31 @@ const ScatterPlotOverlay = ({
   logo_size_ratio = 3
 }) => {
   const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
-  const x_label = x_column.header_label || 'X Axis'
-  const y_label = y_column.header_label || 'Y Axis'
+
+  const x_params_result = format_column_params({
+    column: x_column,
+    column_params: x_column_params
+  })
+  const y_params_result = format_column_params({
+    column: y_column,
+    column_params: y_column_params
+  })
+
+  // Axis title: use formatted param string when params present; fall back to header_label or name.
+  const x_axis_fallback =
+    x_column.short_label || x_column.header_label || x_column.name || 'X Axis'
+  const y_axis_fallback =
+    y_column.short_label || y_column.header_label || y_column.name || 'Y Axis'
+  const x_label = x_params_result.short || x_axis_fallback
+  const y_label = y_params_result.short || y_axis_fallback
+
+  // Chart main title uses the column name (no params) so it stays concise.
+  const x_title_base = x_axis_fallback
+  const y_title_base = y_axis_fallback
+
+  const x_subtitle = x_params_result.short
+  const y_subtitle = y_params_result.short
+  const has_subtitle = Boolean(x_subtitle || y_subtitle)
 
   const x_values = data
     .map((row) => Number(row[x_accessor_path] || 0))
@@ -130,17 +154,6 @@ const ScatterPlotOverlay = ({
     )
     return combined_distance > 1.0
   }
-
-  const get_column_subtitle = (column, column_params) => {
-    if (!column_params) return ''
-    return Object.entries(column_params)
-      .map(([key, value]) => `${key}(${value})`)
-      .join(' ')
-  }
-
-  const x_subtitle = get_column_subtitle(x_column, x_column_params)
-  const y_subtitle = get_column_subtitle(y_column, y_column_params)
-  const has_subtitle = Boolean(x_subtitle || y_subtitle)
 
   const [show_regression, set_show_regression] = React.useState(false)
   const [regression_stats, set_regression_stats] = React.useState(null)
@@ -201,7 +214,7 @@ const ScatterPlotOverlay = ({
       height: 600
     },
     title: {
-      text: `${x_label} vs ${y_label}`
+      text: `${x_title_base} vs ${y_title_base}`
     },
     subtitle: has_subtitle
       ? {
