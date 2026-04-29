@@ -266,9 +266,9 @@ const ScatterPlotOverlay = ({
     plotOptions: {
       scatter: {
         dataLabels: build_scatter_data_labels({
-            labels_enabled,
-            get_scatter_point_label_suffix
-          }),
+          labels_enabled,
+          get_scatter_point_label_suffix
+        }),
         marker: {
           radius: 5,
           fillOpacity: 0.6,
