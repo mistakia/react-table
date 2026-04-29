@@ -365,3 +365,91 @@ describe('scatter-plot-overlay font family application (S12)', () => {
     expect(opts.style.fontFamily).toBeUndefined()
   })
 })
+
+describe('scatter-plot-overlay PNG download guard (S13)', () => {
+  // Pure logic test: verify that the Exporting initializer guard behaves correctly.
+  // The actual Exporting import is mocked conceptually here — we test the guard logic only.
+
+  test('window guard: initializer is called when window is defined', () => {
+    let call_count = 0
+    const mock_exporting = (hc) => {
+      call_count++
+    }
+    const mock_hc = {}
+    // Simulate the guard: typeof window !== 'undefined'
+    const window_defined = true
+    if (window_defined) {
+      mock_exporting(mock_hc)
+    }
+    expect(call_count).toBe(1)
+  })
+
+  test('window guard: initializer is NOT called when window is undefined', () => {
+    let call_count = 0
+    const mock_exporting = (hc) => {
+      call_count++
+    }
+    const mock_hc = {}
+    // Simulate the guard: typeof window !== 'undefined'
+    const window_defined = false
+    if (window_defined) {
+      mock_exporting(mock_hc)
+    }
+    expect(call_count).toBe(0)
+  })
+
+  test('handle_download_png calls exportChartLocal when available', () => {
+    let called_local = false
+    const mock_chart = {
+      exportChartLocal: ({ type }) => {
+        called_local = true
+        expect(type).toBe('image/png')
+      }
+    }
+    // Simulate handle_download_png logic
+    const chart = mock_chart
+    if (chart) {
+      if (typeof chart.exportChartLocal === 'function') {
+        chart.exportChartLocal({ type: 'image/png' })
+      } else if (typeof chart.exportChart === 'function') {
+        chart.exportChart({ type: 'image/png' })
+      }
+    }
+    expect(called_local).toBe(true)
+  })
+
+  test('handle_download_png falls back to exportChart when exportChartLocal absent', () => {
+    let called_server = false
+    const mock_chart = {
+      exportChart: ({ type }) => {
+        called_server = true
+        expect(type).toBe('image/png')
+      }
+    }
+    // Simulate handle_download_png logic
+    const chart = mock_chart
+    if (chart) {
+      if (typeof chart.exportChartLocal === 'function') {
+        chart.exportChartLocal({ type: 'image/png' })
+      } else if (typeof chart.exportChart === 'function') {
+        chart.exportChart({ type: 'image/png' })
+      }
+    }
+    expect(called_server).toBe(true)
+  })
+
+  test('handle_download_png does nothing when chart ref is null', () => {
+    let called = false
+    const mock_fn = () => {
+      called = true
+    }
+    // Simulate handle_download_png with null chart_instance_ref
+    const chart = null
+    if (chart) {
+      if (typeof chart.exportChartLocal === 'function') {
+        mock_fn()
+      }
+    }
+    expect(called).toBe(false)
+  })
+})

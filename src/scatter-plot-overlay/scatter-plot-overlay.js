@@ -15,6 +15,15 @@ import {
 } from './scatter-plot-data-labels.js'
 import { build_tier_series } from './scatter-plot-tier-overlay.js'
 import { format_column_params } from '../utils/format-column-params.js'
+import Exporting from 'highcharts/modules/exporting'
+import OfflineExporting from 'highcharts/modules/offline-exporting'
+
+// Initialize Highcharts exporting modules once. Guard against SSR / test environments
+// where window is undefined — the exporting modules reference browser APIs at init time.
+if (typeof window !== 'undefined') {
+  Exporting(Highcharts)
+  OfflineExporting(Highcharts)
+}
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length
@@ -160,6 +169,9 @@ const ScatterPlotOverlay = ({
   const [local_scatter_plot_options, set_local_scatter_plot_options] =
     React.useState(() => scatter_plot_options || {})
 
+  // Ref to the live Highcharts chart instance, captured via chart.events.load.
+  const chart_instance_ref = React.useRef(null)
+
   // Read from local state so settings-panel changes take effect immediately without a prop change.
   const point_color_mode = local_scatter_plot_options?.point_color_mode
 
@@ -175,7 +187,13 @@ const ScatterPlotOverlay = ({
   }
 
   const handle_download_png = () => {
-    // TODO: S13 — implement PNG download via Highcharts exporting module
+    const chart = chart_instance_ref.current
+    if (!chart) return
+    if (typeof chart.exportChartLocal === 'function') {
+      chart.exportChartLocal({ type: 'image/png' })
+    } else if (typeof chart.exportChart === 'function') {
+      chart.exportChart({ type: 'image/png' })
+    }
   }
 
   const tier_series = local_scatter_plot_options.show_tier_grid
@@ -214,7 +232,12 @@ const ScatterPlotOverlay = ({
       type: 'scatter',
       zoomType: 'xy',
       height: 600,
-      ...(font_family ? { style: { fontFamily: font_family } } : {})
+      ...(font_family ? { style: { fontFamily: font_family } } : {}),
+      events: {
+        load: function () {
+          chart_instance_ref.current = this
+        }
+      }
     },
     title: {
       text:
