@@ -78,6 +78,15 @@ export function is_valid_table_state_structure(table_state) {
     }
   }
 
+  if (
+    table_state.scatter_plot_options !== undefined &&
+    (typeof table_state.scatter_plot_options !== 'object' ||
+      table_state.scatter_plot_options === null ||
+      Array.isArray(table_state.scatter_plot_options))
+  ) {
+    return false
+  }
+
   return true
 }
 
@@ -118,6 +127,16 @@ export function create_safe_table_state(partial_state = {}) {
     safe_state.rank_aggregation === null
   ) {
     safe_state.rank_aggregation = {}
+  }
+
+  if (safe_state.scatter_plot_options !== undefined) {
+    if (
+      typeof safe_state.scatter_plot_options !== 'object' ||
+      safe_state.scatter_plot_options === null ||
+      Array.isArray(safe_state.scatter_plot_options)
+    ) {
+      delete safe_state.scatter_plot_options
+    }
   }
 
   return safe_state
