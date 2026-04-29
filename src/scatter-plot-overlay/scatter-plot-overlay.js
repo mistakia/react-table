@@ -207,11 +207,14 @@ const ScatterPlotOverlay = ({
 
   const labels_enabled = is_scatter_plot_point_label_enabled({ rows: data })
 
+  const font_family = local_scatter_plot_options.font_family || null
+
   const options = {
     chart: {
       type: 'scatter',
       zoomType: 'xy',
-      height: 600
+      height: 600,
+      ...(font_family ? { style: { fontFamily: font_family } } : {})
     },
     title: {
       text:
@@ -326,7 +329,8 @@ const ScatterPlotOverlay = ({
       scatter: {
         dataLabels: build_scatter_data_labels({
           labels_enabled,
-          get_scatter_point_label_suffix
+          get_scatter_point_label_suffix,
+          font_family
         }),
         marker: {
           radius: 5,

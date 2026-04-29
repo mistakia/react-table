@@ -26,7 +26,8 @@ export const SCATTER_LABEL_FONT_SIZE = 11
  */
 export const build_scatter_data_labels = ({
   labels_enabled,
-  get_scatter_point_label_suffix = null
+  get_scatter_point_label_suffix = null,
+  font_family = null
 }) => ({
   enabled: labels_enabled,
   formatter: function () {
@@ -51,6 +52,7 @@ export const build_scatter_data_labels = ({
     pointerEvents: 'none',
     textOutline: '2px white',
     fontWeight: 'normal',
-    fontSize: '11px'
+    fontSize: '11px',
+    ...(font_family ? { fontFamily: font_family } : {})
   }
 })

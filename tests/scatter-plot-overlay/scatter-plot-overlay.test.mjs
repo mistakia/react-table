@@ -335,3 +335,33 @@ describe('scatter-plot-overlay custom title/subtitle override (S11)', () => {
     expect(subtitle).toBeUndefined()
   })
 })
+
+describe('scatter-plot-overlay font family application (S12)', () => {
+  // Pure helper that mirrors the chart.style merge in scatter-plot-overlay.js
+  const resolve_chart_style = (font_family) =>
+    font_family ? { fontFamily: font_family } : {}
+
+  test('when font_family is set, chart style includes fontFamily', () => {
+    const style = resolve_chart_style('Georgia')
+    expect(style.fontFamily).toBe('Georgia')
+  })
+
+  test('when font_family is null, chart style is empty (no override)', () => {
+    const style = resolve_chart_style(null)
+    expect(style.fontFamily).toBeUndefined()
+    expect(Object.keys(style).length).toBe(0)
+  })
+
+  test('build_scatter_data_labels applies font_family to style when provided', () => {
+    const opts = build_scatter_data_labels({
+      labels_enabled: true,
+      font_family: 'Georgia'
+    })
+    expect(opts.style.fontFamily).toBe('Georgia')
+  })
+
+  test('build_scatter_data_labels omits fontFamily from style when not provided', () => {
+    const opts = build_scatter_data_labels({ labels_enabled: true })
+    expect(opts.style.fontFamily).toBeUndefined()
+  })
+})

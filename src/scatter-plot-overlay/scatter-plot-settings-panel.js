@@ -247,6 +247,9 @@ const ScatterPlotSettingsModal = ({
   const [custom_subtitle, set_custom_subtitle] = React.useState(
     scatter_plot_options.custom_subtitle || ''
   )
+  const [font_family, set_font_family] = React.useState(
+    scatter_plot_options.font_family || ''
+  )
 
   const handle_ref_lines_change = (next_lines) => {
     set_ref_lines(next_lines)
@@ -268,6 +271,15 @@ const ScatterPlotSettingsModal = ({
     draft.current = {
       ...draft.current,
       custom_subtitle: value.trim() || null
+    }
+  }
+
+  const handle_font_family_change = (e) => {
+    const value = e.target.value
+    set_font_family(value)
+    draft.current = {
+      ...draft.current,
+      font_family: value || null
     }
   }
 
@@ -296,6 +308,13 @@ const ScatterPlotSettingsModal = ({
       next_draft.custom_subtitle = subtitle_value
     } else {
       delete next_draft.custom_subtitle
+    }
+    // Normalize font_family: empty string → null → key deleted
+    const font_family_value = font_family || null
+    if (font_family_value !== null) {
+      next_draft.font_family = font_family_value
+    } else {
+      delete next_draft.font_family
     }
     if (JSON.stringify(next_draft) !== JSON.stringify(scatter_plot_options)) {
       on_change({ ...next_draft })
@@ -365,11 +384,23 @@ const ScatterPlotSettingsModal = ({
             />
           </div>
 
-          {/* TODO: S12 — font_family dropdown */}
           <div className='modal-section'>
-            <label className='modal-section-label'>Font family</label>
-            {/* TODO: S12 */}
-            <p className='modal-placeholder'>Coming in S12</p>
+            <label className='modal-section-label' htmlFor='font-family-select'>
+              Font family
+            </label>
+            <select
+              id='font-family-select'
+              className='modal-select'
+              value={font_family}
+              onChange={handle_font_family_change}>
+              <option value=''>Default</option>
+              <option value='sans-serif'>Sans-serif</option>
+              <option value='serif'>Serif</option>
+              <option value='monospace'>Monospace</option>
+              <option value='Helvetica, Arial'>Helvetica, Arial</option>
+              <option value='Georgia'>Georgia</option>
+              <option value='Courier New'>Courier New</option>
+            </select>
           </div>
         </div>
         <div className='modal-footer'>

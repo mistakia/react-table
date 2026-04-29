@@ -646,3 +646,132 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
     expect(saved.custom_title).toBe('My Title')
   })
 })
+
+describe('ScatterPlotSettingsModal — font family (S12)', () => {
+  const open_modal = async (container, opts = {}) => {
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: opts,
+        on_change: () => {},
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+  }
+
+  test('font-family select is rendered in modal', async () => {
+    const container = make_container()
+    await open_modal(container)
+    const select = container.querySelector('#font-family-select')
+    expect(select).not.toBeNull()
+    expect(select.tagName.toLowerCase()).toBe('select')
+  })
+
+  test('font-family select has Default option with empty value', async () => {
+    const container = make_container()
+    await open_modal(container)
+    const select = container.querySelector('#font-family-select')
+    const default_option = Array.from(select.options).find(
+      (o) => o.value === ''
+    )
+    expect(default_option).toBeDefined()
+    expect(default_option.text).toBe('Default')
+  })
+
+  test('font-family select pre-selects existing font_family from options', async () => {
+    const container = make_container()
+    await open_modal(container, { font_family: 'Georgia' })
+    const select = container.querySelector('#font-family-select')
+    expect(select.value).toBe('Georgia')
+  })
+
+  test('Save with pre-existing font_family preserves it in on_change payload', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: { font_family: 'serif' },
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Add a reference line to force a detectable change
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    expect(saved.font_family).toBe('serif')
+  })
+
+  test('Save with no font_family in options does not add font_family key', async () => {
+    const on_change = mock(() => {})
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: {},
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+
+    // Add a reference line to force a detectable change
+    const add_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.includes('Add reference line')
+    )
+    await act(async () => {
+      add_btn.click()
+    })
+
+    const save_btn = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase() === 'save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+
+    expect(on_change).toHaveBeenCalledTimes(1)
+    const saved = on_change.mock.calls[0][0]
+    expect(saved.font_family).toBeUndefined()
+  })
+})
