@@ -123,6 +123,7 @@ export default function Table({
   get_export_api_url = () => {},
   get_scatter_point_label = (row) => '',
   get_scatter_point_image = null,
+  get_scatter_point_color = null,
   is_scatter_plot_point_label_enabled = () => true,
   metadata = {},
   enable_validation_warnings = false,
@@ -972,6 +973,8 @@ export default function Table({
           y_column_params={selected_scatter_columns.y_column_params}
           get_point_label={get_scatter_point_label}
           get_point_image={get_scatter_point_image}
+          get_point_color={get_scatter_point_color}
+          scatter_plot_options={table_state.scatter_plot_options || {}}
           is_scatter_plot_point_label_enabled={
             is_scatter_plot_point_label_enabled
           }
@@ -1014,6 +1017,7 @@ Table.propTypes = {
   get_export_api_url: PropTypes.func,
   get_scatter_point_label: PropTypes.func,
   get_scatter_point_image: PropTypes.func,
+  get_scatter_point_color: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   metadata: PropTypes.object,
   disable_splits: PropTypes.bool,
