@@ -15,15 +15,9 @@ import {
 } from './scatter-plot-data-labels.js'
 import { build_tier_series } from './scatter-plot-tier-overlay.js'
 import { format_column_params } from '../utils/format-column-params.js'
-import Exporting from 'highcharts/modules/exporting'
-import OfflineExporting from 'highcharts/modules/offline-exporting'
-
-// Initialize Highcharts exporting modules once. Guard against SSR / test environments
-// where window is undefined — the exporting modules reference browser APIs at init time.
-if (typeof window !== 'undefined') {
-  Exporting(Highcharts)
-  OfflineExporting(Highcharts)
-}
+// Highcharts 12: exporting modules self-compose at import time; no initializer call.
+import 'highcharts/modules/exporting'
+import 'highcharts/modules/offline-exporting'
 
 const get_trend_line = (x_values, y_values) => {
   const n = x_values.length

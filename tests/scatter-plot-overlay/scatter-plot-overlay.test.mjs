@@ -366,38 +366,7 @@ describe('scatter-plot-overlay font family application (S12)', () => {
   })
 })
 
-describe('scatter-plot-overlay PNG download guard (S13)', () => {
-  // Pure logic test: verify that the Exporting initializer guard behaves correctly.
-  // The actual Exporting import is mocked conceptually here — we test the guard logic only.
-
-  test('window guard: initializer is called when window is defined', () => {
-    let call_count = 0
-    const mock_exporting = (hc) => {
-      call_count++
-    }
-    const mock_hc = {}
-    // Simulate the guard: typeof window !== 'undefined'
-    const window_defined = true
-    if (window_defined) {
-      mock_exporting(mock_hc)
-    }
-    expect(call_count).toBe(1)
-  })
-
-  test('window guard: initializer is NOT called when window is undefined', () => {
-    let call_count = 0
-    const mock_exporting = (hc) => {
-      call_count++
-    }
-    const mock_hc = {}
-    // Simulate the guard: typeof window !== 'undefined'
-    const window_defined = false
-    if (window_defined) {
-      mock_exporting(mock_hc)
-    }
-    expect(call_count).toBe(0)
-  })
-
+describe('scatter-plot-overlay PNG download (S13)', () => {
   test('handle_download_png calls exportChartLocal when available', () => {
     let called_local = false
     const mock_chart = {
