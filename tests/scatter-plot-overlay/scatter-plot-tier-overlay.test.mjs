@@ -70,12 +70,13 @@ describe('build_tier_series', () => {
     })
   })
 
-  test('each series has dashStyle: Dot', () => {
+  test('each series is dashed (visually distinct from solid lines)', () => {
     const x_values = [1, 2, 3, 4, 5]
     const y_values = [1, 2, 3, 4, 5]
     const result = build_tier_series({ x_values, y_values })
     result.forEach((series) => {
-      expect(series.dashStyle).toBe('Dot')
+      expect(typeof series.dashStyle).toBe('string')
+      expect(series.dashStyle).not.toBe('Solid')
     })
   })
 

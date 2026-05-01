@@ -105,8 +105,10 @@ const build_tier_series = ({ x_values, y_values }) => {
         [sx, sy],
         [ex, ey]
       ],
-      dashStyle: 'Dot',
-      color: 'rgba(120,120,120,0.4)',
+      dashStyle: 'ShortDash',
+      color: 'rgba(60,60,60,0.7)',
+      lineWidth: 1.25,
+      zIndex: 5,
       enableMouseTracking: false,
       marker: { enabled: false },
       showInLegend: false,
