@@ -22,38 +22,27 @@
   align-items center
   gap $rt_space_xs + 2
 
-// !important on the reset properties below is intentional: consumer apps
-// frequently ship a global `button:not(...)` rule (e.g. league) whose specificity
-// (0,5,1) beats our class-based selector. Rather than chain a deep parent
-// selector for every property, we !important the handful of resets that conflict.
 .toolbar-btn
-  display inline-flex !important
-  align-items center !important
-  height auto !important
-  padding 6px 12px !important
-  border 1px solid transparent !important
-  border-radius $rt_radius !important
-  background transparent !important
-  color $rt_text !important
-  font-size $rt_font_size !important
-  font-family inherit !important
-  font-weight normal !important
-  text-transform none !important
-  letter-spacing normal !important
+  display inline-flex
+  align-items center
+  padding 6px 12px
+  border 1px solid transparent
+  border-radius $rt_radius
+  background-color transparent
+  color $rt_text
+  font-size $rt_font_size
+  font-family inherit
   cursor pointer
   transition border-color $rt_transition, background-color $rt_transition
   white-space nowrap
 
-  &:hover,
-  &:hover:not(:disabled),
-  &:hover:not([disabled])
-    border-color $rt_border !important
-    background-color $rt_bg_hover !important
+  &:hover
+    border-color $rt_border
+    background-color $rt_bg_hover
 
   &.active
-    color $rt_text !important
-    border-color $rt_border !important
-    background-color $rt_bg_hover !important
+    border-color $rt_border
+    background-color $rt_bg_hover
 
 .toolbar-select
   padding 6px 8px
@@ -104,25 +93,19 @@
     color $rt_text
 
   .modal-close-btn
-    height auto !important
-    background none !important
-    border 1px solid transparent !important
-    border-radius $rt_radius_sm !important
-    font-size 20px !important
-    font-family inherit !important
-    text-transform none !important
-    letter-spacing normal !important
-    color $rt_text_muted !important
-    line-height 1
-    padding 2px 6px !important
+    background none
+    border 1px solid transparent
+    border-radius $rt_radius_sm
+    font-size 20px
     cursor pointer
+    color $rt_text_muted
+    line-height 1
+    padding 2px 6px
     transition border-color $rt_transition, background-color $rt_transition
 
-    &:hover,
-    &:hover:not(:disabled),
-    &:hover:not([disabled])
-      border-color $rt_border !important
-      background-color $rt_bg_hover !important
+    &:hover
+      border-color $rt_border
+      background-color $rt_bg_hover
 
 .modal-body
   padding $rt_space_lg $rt_space_xl
@@ -171,34 +154,24 @@
   border-top 1px solid $rt_border_subtle
 
 .modal-btn
-  display inline-flex !important
-  align-items center !important
-  height auto !important
-  padding 6px 16px !important
-  border 1px solid $rt_border !important
-  border-radius $rt_radius !important
-  font-size $rt_font_size_md !important
-  font-family inherit !important
-  font-weight normal !important
-  text-transform none !important
-  letter-spacing normal !important
-  background $rt_bg !important
-  color $rt_text !important
+  padding 6px 16px
+  border 1px solid $rt_border
+  border-radius $rt_radius
+  font-size $rt_font_size_md
+  font-family inherit
   cursor pointer
+  background-color $rt_bg
+  color $rt_text
   transition background-color $rt_transition, border-color $rt_transition
 
-  &:hover,
-  &:hover:not(:disabled),
-  &:hover:not([disabled])
-    background-color $rt_bg_hover !important
+  &:hover
+    background-color $rt_bg_hover
 
 .modal-btn-save
-  background $rt_bg_subtle !important
+  background-color $rt_bg_subtle
 
-  &:hover,
-  &:hover:not(:disabled),
-  &:hover:not([disabled])
-    background-color $rt_bg_hover_strong !important
+  &:hover
+    background-color $rt_bg_hover_strong
 
 .ref-lines-editor
   display flex
@@ -263,47 +236,33 @@
   background-color $rt_bg
 
 .ref-line-delete
-  height auto !important
-  background none !important
-  border 1px solid transparent !important
-  font-size 16px !important
-  font-family inherit !important
-  text-transform none !important
-  letter-spacing normal !important
-  color $rt_text_muted !important
-  padding 2px 6px !important
-  border-radius $rt_radius_sm !important
-  line-height 1
+  background none
+  border 1px solid transparent
+  font-size 16px
   cursor pointer
+  color $rt_text_muted
+  padding 2px 6px
+  border-radius $rt_radius_sm
+  line-height 1
   transition border-color $rt_transition, background-color $rt_transition
 
-  &:hover,
-  &:hover:not(:disabled),
-  &:hover:not([disabled])
-    border-color $rt_border !important
-    background-color $rt_bg_hover !important
+  &:hover
+    border-color $rt_border
+    background-color $rt_bg_hover
 
 .ref-line-add-btn
   align-self flex-start
-  display inline-flex !important
-  align-items center !important
-  height auto !important
-  padding 5px 12px !important
-  border 1px solid transparent !important
-  border-radius $rt_radius !important
-  background $rt_bg_subtle !important
-  font-size $rt_font_size !important
-  font-family inherit !important
-  font-weight normal !important
-  text-transform none !important
-  letter-spacing normal !important
-  color $rt_text_muted !important
+  padding 5px 12px
+  border 1px solid transparent
+  border-radius $rt_radius
+  background-color $rt_bg_subtle
+  font-size $rt_font_size
+  font-family inherit
   cursor pointer
+  color $rt_text_muted
   transition border-color $rt_transition, background-color $rt_transition
 
-  &:hover,
-  &:hover:not(:disabled),
-  &:hover:not([disabled])
-    border-color $rt_border !important
-    background-color $rt_bg_hover_strong !important
-    color $rt_text !important
+  &:hover
+    border-color $rt_border
+    background-color $rt_bg_hover_strong
+    color $rt_text

@@ -33,30 +33,23 @@
       top $rt_space
       right $rt_space
       z-index 1
-      width 28px !important
-      height 28px !important
-      min-width 0 !important
-      display inline-flex !important
-      align-items center !important
-      justify-content center !important
-      padding 0 !important
-      background none !important
-      border 1px solid transparent !important
-      border-radius $rt_radius_sm !important
-      font-size 18px !important
-      font-family inherit !important
-      text-transform none !important
-      letter-spacing normal !important
-      line-height 1 !important
-      color $rt_text_muted !important
+      width 28px
+      height 28px
+      display inline-flex
+      align-items center
+      justify-content center
+      background none
+      border 1px solid transparent
+      border-radius $rt_radius_sm
+      font-size 18px
+      line-height 1
+      color $rt_text_muted
       cursor pointer
       transition border-color $rt_transition, background-color $rt_transition
 
-      &:hover,
-      &:hover:not(:disabled),
-      &:hover:not([disabled])
-        border-color $rt_border !important
-        background-color $rt_bg_hover !important
+      &:hover
+        border-color $rt_border
+        background-color $rt_bg_hover
 
 .regression-stats
   margin-top $rt_space
