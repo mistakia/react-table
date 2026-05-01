@@ -120,6 +120,34 @@ Existing files that still import MUI for behavioral primitives (e.g. `Modal`,
 `Popper`, `MenuList`) are tolerated until they are individually migrated, but no
 new component may add a MUI import.
 
+## Defending Against Consumer Global Selectors
+
+Consumer apps frequently ship a global rule like
+`button:not(.MuiButton-root):not(.MuiIconButton-root)…` which has specificity
+`(0,5,1)` — high enough to clobber any class-only selector in this lib. When a
+lib component uses a native `<button>`, those consumer rules will override
+`text-transform`, `border-radius`, `border`, `font-family`, `letter-spacing`,
+and even `&.active { color }` (often painting the active state in the
+consumer's brand color).
+
+Treatment in this lib:
+
+1. **`!important` on the reset properties** (text-transform, font-family,
+   letter-spacing, border, border-radius, height, padding, color) on every
+   button surface. This is the only practical way to defeat a (0,5,1)
+   consumer selector without chaining a deep parent selector for every
+   property.
+2. **Match the `&:hover:not(:disabled)` and `&:hover:not([disabled])` shapes**
+   so consumer hover rules don't win on tiebreaker.
+3. **Document the conflict here** rather than spreading workarounds across
+   files. Any new button surface must follow the same `!important` reset
+   pattern (see `scatter-plot-settings-panel.styl`).
+
+This is a pragmatic exception to the usual "no `!important`" guidance.
+Consumer ergonomics still hold: a consumer can still override `--rt-*`
+tokens (the values), they just cannot accidentally override the lib's
+button shape via a global `button` selector.
+
 ## Anti-patterns
 
 1. **No hardcoded hex** in component styl files. Use the `--rt-*` tokens or
