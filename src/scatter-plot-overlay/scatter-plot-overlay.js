@@ -10,7 +10,10 @@ import {
   build_scatter_data_labels,
   SCATTER_LABEL_FONT_SIZE
 } from './scatter-plot-data-labels.js'
-import { build_tier_series } from './scatter-plot-tier-overlay.js'
+import {
+  build_tier_series,
+  clip_tier_segment
+} from './scatter-plot-tier-overlay.js'
 import { format_column_params } from '../utils/format-column-params.js'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
 import 'highcharts/modules/exporting'
@@ -89,6 +92,51 @@ const calculate_std_dev = (values, mean) => {
 
 export { resolve_point_color } from './scatter-plot-point-color-utils.js'
 export { build_scatter_data_labels } from './scatter-plot-data-labels.js'
+
+// Recompute tier line endpoints against the chart's *current* axis extremes
+// so the dotted tier guides extend through any visible padding and follow the
+// user when they zoom into a sub-region. Identifies tier series by the
+// custom.tier_k field stamped on them in build_tier_series.
+const refit_tier_segments_to_axes = (chart) => {
+  if (!chart || !chart.xAxis || !chart.yAxis) return
+  const x_axis = chart.xAxis[0]
+  const y_axis = chart.yAxis[0]
+  if (!x_axis || !y_axis) return
+  const { min: x_min, max: x_max } = x_axis.getExtremes()
+  const { min: y_min, max: y_max } = y_axis.getExtremes()
+  if (
+    !isFinite(x_min) ||
+    !isFinite(x_max) ||
+    !isFinite(y_min) ||
+    !isFinite(y_max)
+  ) {
+    return
+  }
+
+  let any_changed = false
+  chart.series.forEach((series) => {
+    const k = series.userOptions && series.userOptions.custom
+      ? series.userOptions.custom.tier_k
+      : undefined
+    if (typeof k !== 'number') return
+
+    const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
+    const next_data = segment || []
+    const current = (series.options && series.options.data) || []
+    const same =
+      current.length === next_data.length &&
+      current.every((pt, i) => {
+        const a = pt
+        const b = next_data[i]
+        return Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]
+      })
+    if (same) return
+    series.setData(next_data, false)
+    any_changed = true
+  })
+
+  if (any_changed) chart.redraw(false)
+}
 
 const ScatterPlotOverlay = ({
   data,
@@ -238,6 +286,10 @@ const ScatterPlotOverlay = ({
       events: {
         load: function () {
           chart_instance_ref.current = this
+          refit_tier_segments_to_axes(this)
+        },
+        redraw: function () {
+          refit_tier_segments_to_axes(this)
         }
       }
     },

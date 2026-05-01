@@ -22,25 +22,78 @@ const quantile = (sorted, p) => {
 }
 
 /**
- * Build an array of Highcharts line-series configs for iso-value (x+y=k) diagonal lines
- * at the quintile cut points of {x_i + y_i}.
+ * Clip a slope-(-1) iso-value line (y = k - x) to a rectangular bounding box.
+ * Returns the [[sx,sy],[ex,ey]] segment with sx < ex, or null if the line
+ * does not intersect the box.
+ *
+ * Exposed so the chart can recompute tier endpoints against current axis
+ * extremes (data bbox at load, zoom region after user-initiated zoom).
  *
  * @param {object} params
- * @param {number[]} params.x_values - array of x data values
- * @param {number[]} params.y_values - array of y data values (parallel to x_values)
- * @returns {object[]} array of Highcharts series config objects (0–4 items)
+ * @param {number} params.k - line constant (x + y = k)
+ * @param {number} params.x_min
+ * @param {number} params.x_max
+ * @param {number} params.y_min
+ * @param {number} params.y_max
+ * @returns {[[number,number],[number,number]] | null}
  */
-const build_tier_series = ({ x_values, y_values }) => {
+const clip_tier_segment = ({ k, x_min, x_max, y_min, y_max }) => {
+  if (
+    !isFinite(k) ||
+    !isFinite(x_min) ||
+    !isFinite(x_max) ||
+    !isFinite(y_min) ||
+    !isFinite(y_max) ||
+    x_min >= x_max ||
+    y_min >= y_max
+  ) {
+    return null
+  }
+
+  let sx = x_min
+  let sy = k - x_min
+  let ex = x_max
+  let ey = k - x_max
+
+  if (sy > y_max) {
+    sy = y_max
+    sx = k - y_max
+  }
+  if (sy < y_min) return null
+  if (ey < y_min) {
+    ey = y_min
+    ex = k - y_min
+  }
+  if (ey > y_max) return null
+  if (sx >= ex) return null
+
+  return [
+    [sx, sy],
+    [ex, ey]
+  ]
+}
+
+/**
+ * Compute the deduplicated quintile k values for {x_i + y_i}, plus the data
+ * bounding box. Caller can use the returned k_values to (re)build segments
+ * against any bounding box (e.g. current axis extremes).
+ *
+ * @param {object} params
+ * @param {number[]} params.x_values
+ * @param {number[]} params.y_values
+ * @returns {{ k_values: number[], data_bounds: {x_min,x_max,y_min,y_max} | null }}
+ */
+const compute_tier_k_values = ({ x_values, y_values }) => {
+  const empty = { k_values: [], data_bounds: null }
   if (
     !Array.isArray(x_values) ||
     !Array.isArray(y_values) ||
     x_values.length === 0 ||
     y_values.length === 0
   ) {
-    return []
+    return empty
   }
 
-  // Pair-wise filter: both x and y must be valid finite numbers
   const sums = []
   const valid_x = []
   const valid_y = []
@@ -62,62 +115,78 @@ const build_tier_series = ({ x_values, y_values }) => {
     valid_y.push(y)
   }
 
-  if (sums.length < 2) return []
+  if (sums.length < 2) return empty
 
   const sorted_sums = [...sums].sort((a, b) => a - b)
   const percentiles = [0.2, 0.4, 0.6, 0.8]
-  const k_values = percentiles.map((p) => quantile(sorted_sums, p))
+  const raw_k = percentiles.map((p) => quantile(sorted_sums, p))
+  const k_values = [...new Set(raw_k.map((k) => Math.round(k * 1e9) / 1e9))]
 
-  // Deduplicate k_values (degenerate case: all sums identical)
-  const unique_k = [...new Set(k_values.map((k) => Math.round(k * 1e9) / 1e9))]
+  return {
+    k_values,
+    data_bounds: {
+      x_min: Math.min(...valid_x),
+      x_max: Math.max(...valid_x),
+      y_min: Math.min(...valid_y),
+      y_max: Math.max(...valid_y)
+    }
+  }
+}
 
-  const x_min = Math.min(...valid_x)
-  const x_max = Math.max(...valid_x)
-  const y_min = Math.min(...valid_y)
-  const y_max = Math.max(...valid_y)
+const TIER_SERIES_BASE = {
+  type: 'line',
+  dashStyle: 'ShortDash',
+  color: 'rgba(60,60,60,0.7)',
+  lineWidth: 1.25,
+  zIndex: 5,
+  enableMouseTracking: false,
+  marker: { enabled: false },
+  showInLegend: false,
+  includeInDataExport: false,
+  accessibility: { enabled: false }
+}
 
-  // Clip each iso-value line (y = k - x, slope -1) to the data's bounding box
-  // so tier lines never extend outside the data extent and force the chart to
-  // expand its axes to fit them.
+/**
+ * Build Highcharts line-series configs for iso-value tier lines at quintile
+ * cut points of {x_i + y_i}, clipped to the data bounding box (or to the
+ * caller-supplied `bounds` if given — typically the chart's axis extremes
+ * so lines extend through the visible padding/zoom region).
+ *
+ * Each emitted series carries a `custom.tier_k` field so the chart can
+ * recompute endpoints later (e.g. on `chart.load` or `axis.afterSetExtremes`)
+ * by re-running clip_tier_segment with new bounds.
+ *
+ * @param {object} params
+ * @param {number[]} params.x_values
+ * @param {number[]} params.y_values
+ * @param {{x_min,x_max,y_min,y_max}} [params.bounds] - optional override
+ * @returns {object[]}
+ */
+const build_tier_series = ({ x_values, y_values, bounds }) => {
+  const { k_values, data_bounds } = compute_tier_k_values({
+    x_values,
+    y_values
+  })
+  if (!data_bounds) return []
+
+  const clip_bounds = bounds || data_bounds
   const series = []
-  unique_k.forEach((k, i) => {
-    let sx = x_min
-    let sy = k - x_min
-    let ex = x_max
-    let ey = k - x_max
-
-    if (sy > y_max) {
-      sy = y_max
-      sx = k - y_max
-    }
-    if (sy < y_min) return
-    if (ey < y_min) {
-      ey = y_min
-      ex = k - y_min
-    }
-    if (ey > y_max) return
-    if (sx >= ex) return
-
+  k_values.forEach((k, i) => {
+    const segment = clip_tier_segment({ k, ...clip_bounds })
+    if (!segment) return
     series.push({
-      type: 'line',
+      ...TIER_SERIES_BASE,
       name: `Tier ${i + 1}`,
-      data: [
-        [sx, sy],
-        [ex, ey]
-      ],
-      dashStyle: 'ShortDash',
-      color: 'rgba(60,60,60,0.7)',
-      lineWidth: 1.25,
-      zIndex: 5,
-      enableMouseTracking: false,
-      marker: { enabled: false },
-      showInLegend: false,
-      includeInDataExport: false,
-      accessibility: { enabled: false }
+      data: segment,
+      custom: { tier_k: k }
     })
   })
-
   return series
 }
 
-export { build_tier_series }
+export {
+  build_tier_series,
+  clip_tier_segment,
+  compute_tier_k_values,
+  TIER_SERIES_BASE
+}
