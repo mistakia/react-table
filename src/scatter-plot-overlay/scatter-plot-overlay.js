@@ -2,9 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import ClickAwayListener from '@mui/material/ClickAwayListener'
-import IconButton from '@mui/material/IconButton'
-import CloseIcon from '@mui/icons-material/Close'
 import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
@@ -138,12 +135,23 @@ const ScatterPlotOverlay = ({
   const y_subtitle = y_params_result.short
   const has_subtitle = Boolean(x_subtitle || y_subtitle)
 
-  const x_values = data
-    .map((row) => Number(row[x_accessor_path] || 0))
-    .filter((x) => !isNaN(x))
-  const y_values = data
-    .map((row) => Number(row[y_accessor_path] || 0))
-    .filter((y) => !isNaN(y))
+  // Filter out rows whose x or y value is null/undefined, zero, or non-finite.
+  // Zero and null cluster against the axis edges and visually swamp the chart;
+  // doing the filter once here keeps means, regression, tier cuts, and rendered
+  // points in sync.
+  const filtered_data = data.filter((row) => {
+    const xv = row[x_accessor_path]
+    const yv = row[y_accessor_path]
+    if (xv == null || yv == null) return false
+    const x = Number(xv)
+    const y = Number(yv)
+    if (!isFinite(x) || !isFinite(y)) return false
+    if (x === 0 || y === 0) return false
+    return true
+  })
+
+  const x_values = filtered_data.map((row) => Number(row[x_accessor_path]))
+  const y_values = filtered_data.map((row) => Number(row[y_accessor_path]))
   const x_average = x_values.reduce((sum, x) => sum + x, 0) / x_values.length
   const y_average = y_values.reduce((sum, y) => sum + y, 0) / y_values.length
   const x_std_dev = calculate_std_dev(x_values, x_average)
@@ -368,62 +376,64 @@ const ScatterPlotOverlay = ({
         }
       }
     },
+    // Scatter must stay at series index 0. Highcharts' index-based series.update
+    // path (used by HighchartsReact on options change) loses the per-point
+    // marker.symbol = url(...) config when the scatter series shifts position
+    // as tier_series toggles. Keeping scatter first preserves the logos.
     series: [
-      ...tier_series,
       {
         id: 'scatter-plot-points',
         type: 'scatter',
         color: 'rgba(37, 99, 235, 0.5)',
-        data: data
-          .map((row) => {
-            const x = Number(row[x_accessor_path] || 0)
-            const y = Number(row[y_accessor_path] || 0)
-            const point = {
-              x,
-              y,
-              label: get_point_label(row),
-              original_data: row,
-              is_outlier: is_outlier(x, y)
-            }
+        data: filtered_data.map((row) => {
+          const x = Number(row[x_accessor_path])
+          const y = Number(row[y_accessor_path])
+          const point = {
+            x,
+            y,
+            label: get_point_label(row),
+            original_data: row,
+            is_outlier: is_outlier(x, y)
+          }
 
-            const resolved_color = resolve_point_color({
+          const resolved_color = resolve_point_color({
+            row,
+            point_color_mode,
+            get_point_color
+          })
+          if (resolved_color) {
+            // Set marker fill color only. Data label color is handled via the series-level
+            // dataLabels.color callback in build_scatter_data_labels, which reads this.point.color.
+            // Per-point dataLabels objects would overwrite the series formatter and allowOverlap config.
+            point.color = resolved_color
+          }
+
+          if (get_point_image) {
+            const image_data = get_point_image({
               row,
-              point_color_mode,
-              get_point_color
+              logo_size
             })
-            if (resolved_color) {
-              // Set marker fill color only. Data label color is handled via the series-level
-              // dataLabels.color callback in build_scatter_data_labels, which reads this.point.color.
-              // Per-point dataLabels objects would overwrite the series formatter and allowOverlap config.
-              point.color = resolved_color
-            }
-
-            if (get_point_image) {
-              const image_data = get_point_image({
-                row,
-                logo_size
-              })
-              if (image_data) {
-                point.marker = {
-                  symbol: `url(${image_data.url})`,
-                  width: image_data.width || 32,
-                  height: image_data.height || 32
-                }
-              } else {
-                point.marker = {
-                  symbol: 'circle',
-                  radius: 1,
-                  fillColor: '#2563eb',
-                  lineWidth: 1,
-                  lineColor: '#1e40af'
-                }
+            if (image_data) {
+              point.marker = {
+                symbol: `url(${image_data.url})`,
+                width: image_data.width || 32,
+                height: image_data.height || 32
+              }
+            } else {
+              point.marker = {
+                symbol: 'circle',
+                radius: 1,
+                fillColor: '#2563eb',
+                lineWidth: 1,
+                lineColor: '#1e40af'
               }
             }
+          }
 
-            return point
-          })
-          .filter((point) => !isNaN(point.x) && !isNaN(point.y))
+          return point
+        })
       },
+      ...tier_series,
       show_regression && {
         type: 'line',
         name: 'Trend Line',
@@ -446,46 +456,49 @@ const ScatterPlotOverlay = ({
     }
   }
 
+  // Backdrop click: only close when the click target is the overlay element
+  // itself (the scrim), not a descendant. Replaces MUI ClickAwayListener.
+  const handle_backdrop_click = (event) => {
+    if (event.target === event.currentTarget) on_close()
+  }
+
   return (
-    <div className='scatter-plot-overlay'>
-      <ClickAwayListener onClickAway={on_close}>
-        <div className='scatter-plot-container'>
-          <IconButton
-            className='close-button'
-            onClick={on_close}
-            size='small'
-            aria_label='close'>
-            <CloseIcon />
-          </IconButton>
-          <ScatterPlotSettingsPanel
-            scatter_plot_options={local_scatter_plot_options}
-            on_change={handle_scatter_plot_options_change}
-            show_regression={show_regression}
-            on_toggle_regression={() => set_show_regression(!show_regression)}
-            on_download_png={handle_download_png}
-          />
-          <HighchartsReact highcharts={Highcharts} options={options} />
-          {show_regression && regression_stats && (
-            <div className='regression-stats'>
-              <h4>Regression Statistics</h4>
-              <div>
-                Slope: {format_stat_value({ value: regression_stats.slope })}
-              </div>
-              <div>
-                Y-Intercept:{' '}
-                {format_stat_value({ value: regression_stats.intercept })}
-              </div>
-              <div>
-                R²: {format_stat_value({ value: regression_stats.r_squared })}
-              </div>
-              <div>
-                p Value:{' '}
-                {format_stat_value({ value: regression_stats.p_value })}
-              </div>
+    <div className='scatter-plot-overlay' onMouseDown={handle_backdrop_click}>
+      <div className='scatter-plot-container'>
+        <button
+          className='scatter-plot-close-button'
+          type='button'
+          onClick={on_close}
+          aria-label='Close scatter plot'>
+          &times;
+        </button>
+        <ScatterPlotSettingsPanel
+          scatter_plot_options={local_scatter_plot_options}
+          on_change={handle_scatter_plot_options_change}
+          show_regression={show_regression}
+          on_toggle_regression={() => set_show_regression(!show_regression)}
+          on_download_png={handle_download_png}
+        />
+        <HighchartsReact highcharts={Highcharts} options={options} />
+        {show_regression && regression_stats && (
+          <div className='regression-stats'>
+            <h4>Regression Statistics</h4>
+            <div>
+              Slope: {format_stat_value({ value: regression_stats.slope })}
             </div>
-          )}
-        </div>
-      </ClickAwayListener>
+            <div>
+              Y-Intercept:{' '}
+              {format_stat_value({ value: regression_stats.intercept })}
+            </div>
+            <div>
+              R²: {format_stat_value({ value: regression_stats.r_squared })}
+            </div>
+            <div>
+              p Value: {format_stat_value({ value: regression_stats.p_value })}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

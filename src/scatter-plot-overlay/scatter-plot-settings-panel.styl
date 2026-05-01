@@ -1,3 +1,5 @@
+@import '../styles/tokens'
+
 .scatter-plot-settings-panel
   width 100%
 
@@ -6,199 +8,216 @@
   align-items center
   justify-content space-between
   flex-wrap wrap
-  gap 8px
-  padding 8px 0
+  gap $rt_space_sm
+  padding $rt_space_sm 0
 
 .scatter-plot-toolbar
   display flex
   align-items center
-  gap 6px
+  gap $rt_space_xs + 2
   flex-wrap wrap
 
 .toolbar-actions
   display flex
   align-items center
-  gap 6px
+  gap $rt_space_xs + 2
 
 .toolbar-btn
   display inline-flex
   align-items center
   padding 6px 12px
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 6px
-  background-color white
-  font-size 13px
+  border 1px solid transparent
+  border-radius $rt_radius
+  background-color transparent
+  color $rt_text
+  font-size $rt_font_size
+  font-family inherit
   cursor pointer
-  transition border-color 150ms ease, box-shadow 150ms ease, background-color 150ms ease
+  transition border-color $rt_transition, background-color $rt_transition
   white-space nowrap
 
   &:hover
-    border-color rgba(0, 0, 0, 0.45)
-    box-shadow $box_shadow
+    border-color $rt_border
+    background-color $rt_bg_hover
 
   &.active
-    background-color #e8f0fe
-    border-color #1a73e8
-    color #1a73e8
+    border-color $rt_border
+    background-color $rt_bg_hover
 
 .toolbar-select
   padding 6px 8px
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 6px
-  background-color white
-  font-size 13px
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
+  background-color $rt_bg
+  color $rt_text
+  font-size $rt_font_size
+  font-family inherit
   cursor pointer
 
   &:hover
-    border-color rgba(0, 0, 0, 0.45)
+    background-color $rt_bg_hover
 
-// Modal overlay
 .scatter-plot-settings-modal-overlay
   position fixed
   top 0
   left 0
   right 0
   bottom 0
-  background-color rgba(0, 0, 0, 0.4)
+  background-color $rt_bg_overlay
   display flex
   justify-content center
   align-items center
   z-index 3000
 
 .scatter-plot-settings-modal
-  background-color white
-  border-radius 8px
+  background-color $rt_bg
+  border-radius $rt_radius_lg
   width 480px
   max-width 95vw
   max-height 80vh
   display flex
   flex-direction column
-  box-shadow 0 8px 32px rgba(0, 0, 0, 0.18)
+  box-shadow $rt_shadow_overlay
 
 .modal-header
   display flex
   align-items center
   justify-content space-between
-  padding 16px 20px 12px
-  border-bottom 1px solid #eee
+  padding $rt_space_lg $rt_space_xl $rt_space
+  border-bottom 1px solid $rt_border_subtle
 
   .modal-title
     margin 0
-    font-size 16px
+    font-size $rt_font_size_md + 2
     font-weight 600
+    color $rt_text
 
   .modal-close-btn
     background none
-    border none
+    border 1px solid transparent
+    border-radius $rt_radius_sm
     font-size 20px
     cursor pointer
-    color #555
+    color $rt_text_muted
     line-height 1
     padding 2px 6px
-    border-radius 4px
+    transition border-color $rt_transition, background-color $rt_transition
 
     &:hover
-      color #222
-      background-color #f0f0f0
+      border-color $rt_border
+      background-color $rt_bg_hover
 
 .modal-body
-  padding 16px 20px
+  padding $rt_space_lg $rt_space_xl
   overflow-y auto
   flex 1
 
 .modal-section
-  margin-bottom 20px
+  margin-bottom $rt_space_xl
 
   &:last-child
     margin-bottom 0
 
 .modal-section-label
   display block
-  font-size 13px
+  font-size $rt_font_size
   font-weight 600
-  color #333
+  color $rt_text
   margin-bottom 6px
 
-.modal-placeholder
-  font-size 13px
-  color #999
-  margin 0
-  font-style italic
+.modal-text-input,
+.modal-textarea,
+.modal-select
+  width 100%
+  box-sizing border-box
+  padding 6px 8px
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
+  background-color $rt_bg
+  color $rt_text
+  font-size $rt_font_size
+  font-family inherit
+
+  &:focus
+    outline none
+    border-color $rt_border
+
+.modal-textarea
+  resize vertical
+  min-height 60px
 
 .modal-footer
   display flex
   justify-content flex-end
-  gap 8px
-  padding 12px 20px 16px
-  border-top 1px solid #eee
+  gap $rt_space_sm
+  padding $rt_space $rt_space_xl $rt_space_lg
+  border-top 1px solid $rt_border_subtle
 
 .modal-btn
-  padding 7px 18px
-  border-radius 6px
-  font-size 14px
+  padding 6px 16px
+  border 1px solid $rt_border
+  border-radius $rt_radius
+  font-size $rt_font_size_md
+  font-family inherit
   cursor pointer
-  transition background-color 150ms ease
-
-.modal-btn-cancel
-  background-color white
-  border 1px solid rgba(0, 0, 0, 0.23)
-  color #333
+  background-color $rt_bg
+  color $rt_text
+  transition background-color $rt_transition, border-color $rt_transition
 
   &:hover
-    background-color #f5f5f5
+    background-color $rt_bg_hover
 
 .modal-btn-save
-  background-color #1a73e8
-  border 1px solid #1a73e8
-  color white
+  background-color $rt_bg_subtle
 
   &:hover
-    background-color #1558b0
+    background-color $rt_bg_hover_strong
 
-// Reference lines editor
 .ref-lines-editor
   display flex
   flex-direction column
-  gap 10px
+  gap $rt_space_sm + 2
 
 .ref-lines-table
   width 100%
   border-collapse collapse
-  font-size 13px
+  font-size $rt_font_size
 
   th
     text-align left
     font-weight 600
-    color #555
-    padding 4px 6px
-    border-bottom 1px solid #e0e0e0
-    font-size 12px
+    color $rt_text_muted
+    padding $rt_space_xs 6px
+    border-bottom 1px solid $rt_border_subtle
+    font-size $rt_font_size_sm
 
   td
-    padding 4px 6px
+    padding $rt_space_xs 6px
     vertical-align middle
 
   .ref-line-row:nth-child(even) td
-    background-color #fafafa
+    background-color $rt_bg_subtle
 
 .ref-line-select
   padding 3px 6px
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 4px
-  font-size 13px
-  background-color white
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
+  font-size $rt_font_size
+  background-color $rt_bg
+  font-family inherit
   cursor pointer
 
 .ref-line-input
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 4px
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
   padding 3px 6px
-  font-size 13px
-  background-color white
+  font-size $rt_font_size
+  background-color $rt_bg
+  font-family inherit
 
   &:focus
     outline none
-    border-color #1a73e8
+    border-color $rt_border
 
 .ref-line-value
   width 80px
@@ -211,36 +230,39 @@
   width 36px
   height 28px
   padding 1px
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 4px
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
   cursor pointer
-  background-color white
+  background-color $rt_bg
 
 .ref-line-delete
   background none
-  border none
+  border 1px solid transparent
   font-size 16px
   cursor pointer
-  color #888
+  color $rt_text_muted
   padding 2px 6px
-  border-radius 4px
+  border-radius $rt_radius_sm
   line-height 1
+  transition border-color $rt_transition, background-color $rt_transition
 
   &:hover
-    color #c0392b
-    background-color #fdecea
+    border-color $rt_border
+    background-color $rt_bg_hover
 
 .ref-line-add-btn
   align-self flex-start
   padding 5px 12px
-  border 1px dashed rgba(0, 0, 0, 0.3)
-  border-radius 6px
-  background-color transparent
-  font-size 13px
+  border 1px solid transparent
+  border-radius $rt_radius
+  background-color $rt_bg_subtle
+  font-size $rt_font_size
+  font-family inherit
   cursor pointer
-  color #555
-  transition border-color 150ms ease, color 150ms ease
+  color $rt_text_muted
+  transition border-color $rt_transition, background-color $rt_transition
 
   &:hover
-    border-color #1a73e8
-    color #1a73e8
+    border-color $rt_border
+    background-color $rt_bg_hover_strong
+    color $rt_text
