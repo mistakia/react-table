@@ -47,8 +47,9 @@ describe('build_tier_series', () => {
     const result = build_tier_series({ x_values, y_values })
     // Must not throw; must return an array
     expect(Array.isArray(result)).toBe(true)
-    // With deduplication, all cuts identical → 1 unique series
-    expect(result.length).toBe(1)
+    // All points collapse to a single coordinate → bounding box has zero
+    // width/height, every clipped segment is degenerate (sx >= ex) → no series.
+    expect(result.length).toBe(0)
   })
 
   test('NaN entries are dropped before computing', () => {
@@ -96,13 +97,82 @@ describe('build_tier_series', () => {
     })
   })
 
-  test('series data spans the x range', () => {
+  test('series segments stay within the data bounding box', () => {
+    // Iso-value (x+y=k, slope -1) lines are clipped to the data extent so
+    // they never force the chart axes to expand.
     const x_values = [1, 2, 3, 4, 5]
     const y_values = [1, 2, 3, 4, 5]
+    const x_min = 1
+    const x_max = 5
+    const y_min = 1
+    const y_max = 5
     const result = build_tier_series({ x_values, y_values })
     result.forEach((series) => {
-      expect(series.data[0][0]).toBe(1) // x_min
-      expect(series.data[1][0]).toBe(5) // x_max
+      const [sx, sy] = series.data[0]
+      const [ex, ey] = series.data[1]
+      expect(sx).toBeGreaterThanOrEqual(x_min)
+      expect(sx).toBeLessThanOrEqual(x_max)
+      expect(ex).toBeGreaterThanOrEqual(x_min)
+      expect(ex).toBeLessThanOrEqual(x_max)
+      expect(sy).toBeGreaterThanOrEqual(y_min)
+      expect(sy).toBeLessThanOrEqual(y_max)
+      expect(ey).toBeGreaterThanOrEqual(y_min)
+      expect(ey).toBeLessThanOrEqual(y_max)
+      expect(sx).toBeLessThan(ex)
+    })
+  })
+
+  test('large-x / small-y data does not produce y-extending lines', () => {
+    // Regression test: with x_max >> y_max, the unclipped y = k - x_max
+    // would be a large negative number, expanding the chart y-axis and
+    // collapsing the data band. Clipping must keep all y in [y_min, y_max].
+    const x_values = [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+    const y_values = [50, 80, 90, 70, 60, 100, 40, 110, 30, 20]
+    const y_min = 20
+    const y_max = 110
+    const result = build_tier_series({ x_values, y_values })
+    expect(result.length).toBeGreaterThan(0)
+    result.forEach((series) => {
+      series.data.forEach(([, y]) => {
+        expect(y).toBeGreaterThanOrEqual(y_min)
+        expect(y).toBeLessThanOrEqual(y_max)
+      })
+    })
+  })
+
+  test('tall-y / narrow-x data does not produce x-extending lines', () => {
+    // Symmetric regression: x_max small, y_max large. Clipping must keep
+    // all x within [x_min, x_max] regardless of how steep k is.
+    const x_values = [10, 12, 14, 16, 18, 20, 22, 24, 26, 28]
+    const y_values = [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+    const x_min = 10
+    const x_max = 28
+    const result = build_tier_series({ x_values, y_values })
+    expect(result.length).toBeGreaterThan(0)
+    result.forEach((series) => {
+      series.data.forEach(([x]) => {
+        expect(x).toBeGreaterThanOrEqual(x_min)
+        expect(x).toBeLessThanOrEqual(x_max)
+      })
+    })
+  })
+
+  test('negatively-correlated data clips correctly on both axes', () => {
+    const x_values = [0, 100, 200, 300, 400, 500, 600, 700, 800, 900]
+    const y_values = [900, 800, 700, 600, 500, 400, 300, 200, 100, 0]
+    const result = build_tier_series({ x_values, y_values })
+    const x_min = 0
+    const x_max = 900
+    const y_min = 0
+    const y_max = 900
+    expect(result.length).toBeGreaterThan(0)
+    result.forEach((series) => {
+      series.data.forEach(([x, y]) => {
+        expect(x).toBeGreaterThanOrEqual(x_min)
+        expect(x).toBeLessThanOrEqual(x_max)
+        expect(y).toBeGreaterThanOrEqual(y_min)
+        expect(y).toBeLessThanOrEqual(y_max)
+      })
     })
   })
 

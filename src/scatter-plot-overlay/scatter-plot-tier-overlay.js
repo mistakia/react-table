@@ -43,6 +43,7 @@ const build_tier_series = ({ x_values, y_values }) => {
   // Pair-wise filter: both x and y must be valid finite numbers
   const sums = []
   const valid_x = []
+  const valid_y = []
   for (let i = 0; i < Math.min(x_values.length, y_values.length); i++) {
     const x = x_values[i]
     const y = y_values[i]
@@ -58,6 +59,7 @@ const build_tier_series = ({ x_values, y_values }) => {
     }
     sums.push(x + y)
     valid_x.push(x)
+    valid_y.push(y)
   }
 
   if (sums.length < 2) return []
@@ -71,22 +73,49 @@ const build_tier_series = ({ x_values, y_values }) => {
 
   const x_min = Math.min(...valid_x)
   const x_max = Math.max(...valid_x)
+  const y_min = Math.min(...valid_y)
+  const y_max = Math.max(...valid_y)
 
-  return unique_k.map((k, i) => ({
-    type: 'line',
-    name: `Tier ${i + 1}`,
-    data: [
-      [x_min, k - x_min],
-      [x_max, k - x_max]
-    ],
-    dashStyle: 'Dot',
-    color: 'rgba(120,120,120,0.4)',
-    enableMouseTracking: false,
-    marker: { enabled: false },
-    showInLegend: false,
-    includeInDataExport: false,
-    accessibility: { enabled: false }
-  }))
+  // Clip each iso-value line (y = k - x, slope -1) to the data's bounding box
+  // so tier lines never extend outside the data extent and force the chart to
+  // expand its axes to fit them.
+  const series = []
+  unique_k.forEach((k, i) => {
+    let sx = x_min
+    let sy = k - x_min
+    let ex = x_max
+    let ey = k - x_max
+
+    if (sy > y_max) {
+      sy = y_max
+      sx = k - y_max
+    }
+    if (sy < y_min) return
+    if (ey < y_min) {
+      ey = y_min
+      ex = k - y_min
+    }
+    if (ey > y_max) return
+    if (sx >= ex) return
+
+    series.push({
+      type: 'line',
+      name: `Tier ${i + 1}`,
+      data: [
+        [sx, sy],
+        [ex, ey]
+      ],
+      dashStyle: 'Dot',
+      color: 'rgba(120,120,120,0.4)',
+      enableMouseTracking: false,
+      marker: { enabled: false },
+      showInLegend: false,
+      includeInDataExport: false,
+      accessibility: { enabled: false }
+    })
+  })
+
+  return series
 }
 
 export { build_tier_series }
