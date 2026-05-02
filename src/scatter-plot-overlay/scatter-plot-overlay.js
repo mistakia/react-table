@@ -97,8 +97,14 @@ export { build_scatter_data_labels } from './scatter-plot-data-labels.js'
 // so the dotted tier guides extend through any visible padding and follow the
 // user when they zoom into a sub-region. Identifies tier series by the
 // custom.tier_k field stamped on them in build_tier_series.
+//
+// Guarded against re-entry and against thrashing when extremes haven't moved.
+// Called only from `load` and `axis.afterSetExtremes` — never from the chart's
+// generic `redraw` event, since setData will itself trigger a redraw and
+// looping there hangs the page.
 const refit_tier_segments_to_axes = (chart) => {
   if (!chart || !chart.xAxis || !chart.yAxis) return
+  if (chart._tier_refit_running) return
   const x_axis = chart.xAxis[0]
   const y_axis = chart.yAxis[0]
   if (!x_axis || !y_axis) return
@@ -113,29 +119,37 @@ const refit_tier_segments_to_axes = (chart) => {
     return
   }
 
-  let any_changed = false
-  chart.series.forEach((series) => {
-    const k = series.userOptions && series.userOptions.custom
-      ? series.userOptions.custom.tier_k
-      : undefined
-    if (typeof k !== 'number') return
+  const last = chart._tier_refit_last_bounds
+  if (
+    last &&
+    last.x_min === x_min &&
+    last.x_max === x_max &&
+    last.y_min === y_min &&
+    last.y_max === y_max
+  ) {
+    return
+  }
 
-    const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
-    const next_data = segment || []
-    const current = (series.options && series.options.data) || []
-    const same =
-      current.length === next_data.length &&
-      current.every((pt, i) => {
-        const a = pt
-        const b = next_data[i]
-        return Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]
-      })
-    if (same) return
-    series.setData(next_data, false)
-    any_changed = true
-  })
+  chart._tier_refit_running = true
+  try {
+    let any_changed = false
+    chart.series.forEach((series) => {
+      const k =
+        series.userOptions && series.userOptions.custom
+          ? series.userOptions.custom.tier_k
+          : undefined
+      if (typeof k !== 'number') return
 
-  if (any_changed) chart.redraw(false)
+      const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
+      series.setData(segment || [], false)
+      any_changed = true
+    })
+
+    chart._tier_refit_last_bounds = { x_min, x_max, y_min, y_max }
+    if (any_changed) chart.redraw(false)
+  } finally {
+    chart._tier_refit_running = false
+  }
 }
 
 const ScatterPlotOverlay = ({
@@ -287,9 +301,6 @@ const ScatterPlotOverlay = ({
         load: function () {
           chart_instance_ref.current = this
           refit_tier_segments_to_axes(this)
-        },
-        redraw: function () {
-          refit_tier_segments_to_axes(this)
         }
       }
     },
@@ -318,6 +329,11 @@ const ScatterPlotOverlay = ({
         text: x_label
       },
       gridLineWidth: 1,
+      events: {
+        afterSetExtremes: function () {
+          refit_tier_segments_to_axes(this.chart)
+        }
+      },
       plotLines: [
         ...(local_scatter_plot_options.show_x_mean_line !== false
           ? [
@@ -355,6 +371,11 @@ const ScatterPlotOverlay = ({
     yAxis: {
       title: {
         text: y_label
+      },
+      events: {
+        afterSetExtremes: function () {
+          refit_tier_segments_to_axes(this.chart)
+        }
       },
       plotLines: [
         ...(local_scatter_plot_options.show_y_mean_line !== false
