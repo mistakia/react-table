@@ -444,14 +444,14 @@ const ScatterPlotSettingsPanel = ({
         />
         <div className='toolbar-actions'>
           <button
-            className='toolbar-btn'
+            className='toolbar-btn toolbar-action-btn'
             onClick={open_modal}
             type='button'
             title='Open settings'>
-            Settings...
+            Settings
           </button>
           <button
-            className='toolbar-btn'
+            className='toolbar-btn toolbar-action-btn'
             onClick={on_download_png}
             type='button'
             title='Download chart as PNG'>

@@ -10,6 +10,9 @@
   flex-wrap wrap
   gap $rt_space_sm
   padding $rt_space_sm 0
+  // Reserve space on the right so toolbar actions don't collide with the
+  // absolutely-positioned close button (28px wide, 12px right offset).
+  padding-right ($rt_space + 28px + $rt_space_sm)
 
 .scatter-plot-toolbar
   display flex
@@ -21,17 +24,28 @@
   display flex
   align-items center
   gap $rt_space_xs + 2
+  // Subtle separator between the toggle group and the action group.
+  padding-left $rt_space_sm
+  border-left 1px solid $rt_border_subtle
+
+// Shared sizing for toolbar controls so buttons and selects line up to the
+// same vertical center and read as one cohesive control strip.
+$toolbar_control_padding_y = 5px
+$toolbar_control_padding_x = 12px
+$toolbar_control_height = 28px
 
 .toolbar-btn
   display inline-flex
   align-items center
-  padding 6px 12px
+  height $toolbar_control_height
+  padding 0 $toolbar_control_padding_x
   border 1px solid transparent
-  border-radius $rt_radius
+  border-radius $rt_radius_sm
   background-color transparent
   color $rt_text
   font-size $rt_font_size
   font-family inherit
+  line-height 1
   cursor pointer
   transition border-color $rt_transition, background-color $rt_transition
   white-space nowrap
@@ -44,14 +58,28 @@
     border-color $rt_border
     background-color $rt_bg_hover
 
+// Right-side action buttons (Settings, Download PNG) carry a persistent
+// outline so they read as actions vs the ghost toggle buttons on the left.
+.toolbar-action-btn
+  border-color $rt_border_subtle
+  background-color $rt_bg_subtle
+  color $rt_text_muted
+
+  &:hover
+    color $rt_text
+    border-color $rt_border
+    background-color $rt_bg_hover_strong
+
 .toolbar-select
-  padding 6px 8px
+  height $toolbar_control_height
+  padding 0 $toolbar_control_padding_x
   border 1px solid $rt_border
   border-radius $rt_radius_sm
   background-color $rt_bg
   color $rt_text
   font-size $rt_font_size
   font-family inherit
+  line-height 1
   cursor pointer
 
   &:hover
