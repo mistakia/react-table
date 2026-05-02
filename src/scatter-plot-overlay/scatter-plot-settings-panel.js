@@ -45,15 +45,6 @@ const ScatterPlotToolbar = ({
         title='Toggle tier grid'>
         Tiers
       </button>
-      <select
-        className='toolbar-select'
-        value={point_color_mode}
-        onChange={handle_point_color_mode}
-        title='Point color mode'>
-        <option value=''>Default color</option>
-        <option value='team'>Team color</option>
-        <option value='position'>Position color</option>
-      </select>
       <button
         className={`toolbar-btn${show_x_mean_line ? ' active' : ''}`}
         onClick={() => handle_toggle('show_x_mean_line')}
@@ -68,6 +59,18 @@ const ScatterPlotToolbar = ({
         title='Toggle Y mean line'>
         Y mean
       </button>
+      <span className='toolbar-divider' aria-hidden='true' />
+      <label className='toolbar-select-wrap' title='Point color mode'>
+        <span className='toolbar-select-label'>Color</span>
+        <select
+          className='toolbar-select'
+          value={point_color_mode}
+          onChange={handle_point_color_mode}>
+          <option value=''>Default</option>
+          <option value='team'>Team</option>
+          <option value='position'>Position</option>
+        </select>
+      </label>
     </div>
   )
 }

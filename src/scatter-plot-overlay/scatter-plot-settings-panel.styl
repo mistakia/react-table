@@ -70,20 +70,57 @@ $toolbar_control_height = 28px
     border-color $rt_border
     background-color $rt_bg_hover_strong
 
-.toolbar-select
+.toolbar-divider
+  display inline-block
+  width 1px
+  height ($toolbar_control_height - 8px)
+  background-color $rt_border_subtle
+  margin 0 $rt_space_xs
+
+.toolbar-select-wrap
+  display inline-flex
+  align-items center
   height $toolbar_control_height
   padding 0 $toolbar_control_padding_x
-  border 1px solid $rt_border
+  border 1px solid transparent
   border-radius $rt_radius_sm
-  background-color $rt_bg
+  cursor pointer
+  transition border-color $rt_transition, background-color $rt_transition
+
+  &:hover
+    border-color $rt_border
+    background-color $rt_bg_hover
+
+  &:focus-within
+    border-color $rt_border
+    background-color $rt_bg_hover
+
+.toolbar-select-label
+  font-size $rt_font_size_sm
+  color $rt_text_muted
+  text-transform uppercase
+  letter-spacing 0.04em
+  margin-right 6px
+  white-space nowrap
+
+.toolbar-select
+  appearance none
+  height auto
+  padding 0 16px 0 0
+  border 0
+  background transparent
+  background-image linear-gradient(45deg, transparent 50%, $rt_text_muted 50%), linear-gradient(135deg, $rt_text_muted 50%, transparent 50%)
+  background-position calc(100% - 8px) 50%, calc(100% - 4px) 50%
+  background-size 4px 4px, 4px 4px
+  background-repeat no-repeat
   color $rt_text
   font-size $rt_font_size
   font-family inherit
   line-height 1
   cursor pointer
 
-  &:hover
-    background-color $rt_bg_hover
+  &:focus
+    outline none
 
 .scatter-plot-settings-modal-overlay
   position fixed
