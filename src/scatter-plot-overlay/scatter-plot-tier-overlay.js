@@ -143,7 +143,30 @@ const TIER_SERIES_BASE = {
   marker: { enabled: false },
   showInLegend: false,
   includeInDataExport: false,
-  accessibility: { enabled: false }
+  accessibility: { enabled: false },
+  // Label only the rightmost point of each tier line with the tier name (T1…T4).
+  // We compare against series.points[length-1] so the label moves with the
+  // segment when refit_tier_segments_to_axes updates endpoints on zoom.
+  dataLabels: {
+    enabled: true,
+    align: 'left',
+    verticalAlign: 'middle',
+    x: 4,
+    y: 0,
+    padding: 0,
+    style: {
+      color: 'rgba(60,60,60,0.85)',
+      fontSize: '10px',
+      fontWeight: '600',
+      textOutline: 'none'
+    },
+    formatter: function () {
+      const points = this.series.points
+      if (!points || this.point !== points[points.length - 1]) return null
+      const name = this.series.name || ''
+      return name.replace(/^Tier\s*/, 'T')
+    }
+  }
 }
 
 /**
