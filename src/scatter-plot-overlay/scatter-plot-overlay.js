@@ -555,20 +555,31 @@ const ScatterPlotOverlay = ({
         <HighchartsReact highcharts={Highcharts} options={options} />
         {show_regression && regression_stats && (
           <div className='regression-stats'>
-            <h4>Regression Statistics</h4>
-            <div>
-              Slope: {format_stat_value({ value: regression_stats.slope })}
-            </div>
-            <div>
-              Y-Intercept:{' '}
-              {format_stat_value({ value: regression_stats.intercept })}
-            </div>
-            <div>
-              R²: {format_stat_value({ value: regression_stats.r_squared })}
-            </div>
-            <div>
-              p Value: {format_stat_value({ value: regression_stats.p_value })}
-            </div>
+            <h4 className='regression-stats-title'>Regression statistics</h4>
+            <dl className='regression-stats-grid'>
+              <div className='regression-stat'>
+                <dt>Slope</dt>
+                <dd>{format_stat_value({ value: regression_stats.slope })}</dd>
+              </div>
+              <div className='regression-stat'>
+                <dt>Y-intercept</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.intercept })}
+                </dd>
+              </div>
+              <div className='regression-stat'>
+                <dt>R²</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.r_squared })}
+                </dd>
+              </div>
+              <div className='regression-stat'>
+                <dt>p value</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.p_value })}
+                </dd>
+              </div>
+            </dl>
           </div>
         )}
       </div>

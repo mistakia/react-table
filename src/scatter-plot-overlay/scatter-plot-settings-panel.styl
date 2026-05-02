@@ -137,25 +137,27 @@ $toolbar_control_height = 28px
 .scatter-plot-settings-modal
   background-color $rt_bg
   border-radius $rt_radius_lg
-  width 480px
+  width 520px
   max-width 95vw
-  max-height 80vh
+  max-height 85vh
   display flex
   flex-direction column
   box-shadow $rt_shadow_overlay
+  border 1px solid $rt_border_subtle
 
 .modal-header
   display flex
   align-items center
   justify-content space-between
-  padding $rt_space_lg $rt_space_xl $rt_space
+  padding $rt_space_lg $rt_space_xl
   border-bottom 1px solid $rt_border_subtle
 
   .modal-title
     margin 0
-    font-size $rt_font_size_md + 2
+    font-size 16px
     font-weight 600
     color $rt_text
+    letter-spacing -0.005em
 
   .modal-close-btn
     background none
@@ -165,10 +167,11 @@ $toolbar_control_height = 28px
     cursor pointer
     color $rt_text_muted
     line-height 1
-    padding 2px 6px
-    transition border-color $rt_transition, background-color $rt_transition
+    padding 2px 8px
+    transition border-color $rt_transition, background-color $rt_transition, color $rt_transition
 
     &:hover
+      color $rt_text
       border-color $rt_border
       background-color $rt_bg_hover
 
@@ -178,16 +181,18 @@ $toolbar_control_height = 28px
   flex 1
 
 .modal-section
-  margin-bottom $rt_space_xl
+  margin-bottom $rt_space_lg
 
   &:last-child
     margin-bottom 0
 
 .modal-section-label
   display block
-  font-size $rt_font_size
+  font-size $rt_font_size_sm
   font-weight 600
-  color $rt_text
+  color $rt_text_muted
+  text-transform uppercase
+  letter-spacing 0.05em
   margin-bottom 6px
 
 .modal-text-input,
@@ -195,28 +200,39 @@ $toolbar_control_height = 28px
 .modal-select
   width 100%
   box-sizing border-box
-  padding 6px 8px
+  padding 7px 10px
   border 1px solid $rt_border
   border-radius $rt_radius_sm
   background-color $rt_bg
   color $rt_text
   font-size $rt_font_size
   font-family inherit
+  transition border-color $rt_transition, box-shadow $rt_transition
+
+  &::placeholder
+    color $rt_text_disabled
+
+  &:hover:not(:focus)
+    border-color rgba(0, 0, 0, 0.4)
 
   &:focus
     outline none
-    border-color $rt_border
+    border-color $rt_text
+    box-shadow 0 0 0 3px rgba(0, 0, 0, 0.06)
 
 .modal-textarea
   resize vertical
-  min-height 60px
+  min-height 64px
+  line-height 1.4
 
 .modal-footer
   display flex
   justify-content flex-end
   gap $rt_space_sm
-  padding $rt_space $rt_space_xl $rt_space_lg
+  padding $rt_space_lg $rt_space_xl
   border-top 1px solid $rt_border_subtle
+  background-color $rt_bg_subtle
+  border-radius 0 0 $rt_radius_lg $rt_radius_lg
 
 .modal-btn
   padding 6px 16px
@@ -241,14 +257,17 @@ $toolbar_control_height = 28px
     background-color $rt_bg_hover_strong
     border-color $rt_text
 
+$ref_line_control_height = 26px
+
 .ref-lines-editor
   display flex
   flex-direction column
-  gap $rt_space_sm + 2
+  gap $rt_space_sm
 
 .ref-lines-table
   width 100%
-  border-collapse collapse
+  border-collapse separate
+  border-spacing 0
   font-size $rt_font_size
 
   th
@@ -258,34 +277,41 @@ $toolbar_control_height = 28px
     padding $rt_space_xs 6px
     border-bottom 1px solid $rt_border_subtle
     font-size $rt_font_size_sm
+    text-transform uppercase
+    letter-spacing 0.04em
 
   td
     padding $rt_space_xs 6px
     vertical-align middle
+    border-bottom 1px solid $rt_border_subtle
 
-  .ref-line-row:nth-child(even) td
-    background-color $rt_bg_subtle
+  .ref-line-row:last-child td
+    border-bottom 0
 
-.ref-line-select
-  padding 3px 6px
-  border 1px solid $rt_border
-  border-radius $rt_radius_sm
-  font-size $rt_font_size
-  background-color $rt_bg
-  font-family inherit
-  cursor pointer
-
+.ref-line-select,
 .ref-line-input
+  height $ref_line_control_height
   border 1px solid $rt_border
   border-radius $rt_radius_sm
-  padding 3px 6px
+  padding 0 6px
   font-size $rt_font_size
   background-color $rt_bg
   font-family inherit
+  color $rt_text
+  line-height 1
+  box-sizing border-box
+  transition border-color $rt_transition, box-shadow $rt_transition
+
+  &:hover:not(:focus)
+    border-color rgba(0, 0, 0, 0.4)
 
   &:focus
     outline none
-    border-color $rt_border
+    border-color $rt_text
+    box-shadow 0 0 0 2px rgba(0, 0, 0, 0.06)
+
+.ref-line-select
+  cursor pointer
 
 .ref-line-value
   width 80px
@@ -296,12 +322,26 @@ $toolbar_control_height = 28px
 
 .ref-line-color
   width 36px
-  height 28px
-  padding 1px
+  height $ref_line_control_height
+  padding 0
   border 1px solid $rt_border
   border-radius $rt_radius_sm
   cursor pointer
   background-color $rt_bg
+  vertical-align middle
+  box-sizing border-box
+
+  // Tighten the inner color swatch padding (varies by browser).
+  &::-webkit-color-swatch-wrapper
+    padding 2px
+
+  &::-webkit-color-swatch
+    border 0
+    border-radius 2px
+
+  &::-moz-color-swatch
+    border 0
+    border-radius 2px
 
 .ref-line-delete
   background none
@@ -309,28 +349,34 @@ $toolbar_control_height = 28px
   font-size 16px
   cursor pointer
   color $rt_text_muted
-  padding 2px 6px
+  padding 0 8px
+  height $ref_line_control_height
   border-radius $rt_radius_sm
   line-height 1
-  transition border-color $rt_transition, background-color $rt_transition
+  transition border-color $rt_transition, background-color $rt_transition, color $rt_transition
 
   &:hover
+    color $rt_text
     border-color $rt_border
     background-color $rt_bg_hover
 
 .ref-line-add-btn
   align-self flex-start
-  padding 5px 12px
-  border 1px solid transparent
-  border-radius $rt_radius
-  background-color $rt_bg_subtle
+  display inline-flex
+  align-items center
+  height $ref_line_control_height + 4px
+  padding 0 12px
+  border 1px dashed $rt_border
+  border-radius $rt_radius_sm
+  background-color transparent
   font-size $rt_font_size
   font-family inherit
   cursor pointer
   color $rt_text_muted
-  transition border-color $rt_transition, background-color $rt_transition
+  transition border-color $rt_transition, background-color $rt_transition, color $rt_transition
 
   &:hover
-    border-color $rt_border
-    background-color $rt_bg_hover_strong
+    border-style solid
+    border-color $rt_text
+    background-color $rt_bg_subtle
     color $rt_text

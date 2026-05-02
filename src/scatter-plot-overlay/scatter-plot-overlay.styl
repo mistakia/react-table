@@ -58,9 +58,37 @@
   border 1px solid $rt_border_subtle
   border-radius $rt_radius_sm
 
-  h4
-    margin-top 0
-    margin-bottom $rt_space_sm
+.regression-stats-title
+  margin 0 0 $rt_space 0
+  font-size $rt_font_size_sm
+  font-weight 600
+  color $rt_text_muted
+  text-transform uppercase
+  letter-spacing 0.05em
 
-  div
-    margin-bottom $rt_space_xs
+.regression-stats-grid
+  display grid
+  grid-template-columns repeat(auto-fit, minmax(140px, 1fr))
+  gap $rt_space_sm $rt_space_lg
+  margin 0
+
+.regression-stat
+  display flex
+  flex-direction column
+  gap 2px
+  min-width 0
+
+  dt
+    font-size $rt_font_size_sm
+    color $rt_text_muted
+    font-weight 500
+    text-transform uppercase
+    letter-spacing 0.04em
+
+  dd
+    margin 0
+    font-size $rt_font_size_md
+    font-weight 600
+    color $rt_text
+    font-variant-numeric tabular-nums
+    overflow-wrap anywhere
