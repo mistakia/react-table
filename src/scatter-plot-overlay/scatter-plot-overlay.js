@@ -2,9 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
-import ClickAwayListener from '@mui/material/ClickAwayListener'
-import IconButton from '@mui/material/IconButton'
-import CloseIcon from '@mui/icons-material/Close'
 import './scatter-plot-overlay.styl'
 import cdf from '@stdlib/stats-base-dists-t-cdf'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
@@ -13,7 +10,10 @@ import {
   build_scatter_data_labels,
   SCATTER_LABEL_FONT_SIZE
 } from './scatter-plot-data-labels.js'
-import { build_tier_series } from './scatter-plot-tier-overlay.js'
+import {
+  build_tier_series,
+  clip_tier_segment
+} from './scatter-plot-tier-overlay.js'
 import { format_column_params } from '../utils/format-column-params.js'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
 import 'highcharts/modules/exporting'
@@ -90,8 +90,99 @@ const calculate_std_dev = (values, mean) => {
   return Math.sqrt(sum_sq / values.length)
 }
 
+const build_mean_plot_line = ({ enabled, value }) => {
+  if (!enabled) return []
+  return [
+    {
+      color: 'rgba(180, 60, 60, 0.8)',
+      dashStyle: 'dash',
+      value,
+      width: 1,
+      label: {
+        text: `avg ${value.toFixed(2)}`,
+        align: 'left',
+        style: {
+          color: 'rgba(180, 60, 60, 0.9)',
+          fontSize: '11px',
+          fontWeight: 'bold'
+        }
+      }
+    }
+  ]
+}
+
+const build_reference_plot_lines = ({ reference_lines, axis }) =>
+  (reference_lines || [])
+    .filter((line) => line.axis === axis && isFinite(line.value))
+    .map((line) => ({
+      value: line.value,
+      color: line.color,
+      width: 1,
+      dashStyle: 'Dash',
+      label: {
+        text: line.label,
+        style: { color: line.color }
+      }
+    }))
+
 export { resolve_point_color } from './scatter-plot-point-color-utils.js'
 export { build_scatter_data_labels } from './scatter-plot-data-labels.js'
+
+// Recompute tier line endpoints against the chart's *current* axis extremes
+// so the dotted tier guides extend through any visible padding and follow the
+// user when they zoom into a sub-region. Identifies tier series by the
+// custom.tier_k field stamped on them in build_tier_series.
+//
+// Guarded against re-entry and against thrashing when extremes haven't moved.
+// Called only from `load` and `axis.afterSetExtremes` — never from the chart's
+// generic `redraw` event, since setData will itself trigger a redraw and
+// looping there hangs the page.
+const refit_tier_segments_to_axes = (chart) => {
+  if (!chart || !chart.xAxis || !chart.yAxis) return
+  if (chart._tier_refit_running) return
+  const x_axis = chart.xAxis[0]
+  const y_axis = chart.yAxis[0]
+  if (!x_axis || !y_axis) return
+  const { min: x_min, max: x_max } = x_axis.getExtremes()
+  const { min: y_min, max: y_max } = y_axis.getExtremes()
+  if (
+    !isFinite(x_min) ||
+    !isFinite(x_max) ||
+    !isFinite(y_min) ||
+    !isFinite(y_max)
+  ) {
+    return
+  }
+
+  const last = chart._tier_refit_last_bounds
+  if (
+    last &&
+    last.x_min === x_min &&
+    last.x_max === x_max &&
+    last.y_min === y_min &&
+    last.y_max === y_max
+  ) {
+    return
+  }
+
+  chart._tier_refit_running = true
+  try {
+    let any_changed = false
+    chart.series.forEach((series) => {
+      const k = series.userOptions?.custom?.tier_k
+      if (typeof k !== 'number') return
+
+      const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
+      series.setData(segment || [], false)
+      any_changed = true
+    })
+
+    chart._tier_refit_last_bounds = { x_min, x_max, y_min, y_max }
+    if (any_changed) chart.redraw(false)
+  } finally {
+    chart._tier_refit_running = false
+  }
+}
 
 const ScatterPlotOverlay = ({
   data,
@@ -138,16 +229,43 @@ const ScatterPlotOverlay = ({
   const y_subtitle = y_params_result.short
   const has_subtitle = Boolean(x_subtitle || y_subtitle)
 
-  const x_values = data
-    .map((row) => Number(row[x_accessor_path] || 0))
-    .filter((x) => !isNaN(x))
-  const y_values = data
-    .map((row) => Number(row[y_accessor_path] || 0))
-    .filter((y) => !isNaN(y))
-  const x_average = x_values.reduce((sum, x) => sum + x, 0) / x_values.length
-  const y_average = y_values.reduce((sum, y) => sum + y, 0) / y_values.length
-  const x_std_dev = calculate_std_dev(x_values, x_average)
-  const y_std_dev = calculate_std_dev(y_values, y_average)
+  // Filter out rows whose x or y value is null/undefined, zero, or non-finite.
+  // Zero and null cluster against the axis edges and visually swamp the chart;
+  // doing the filter once here keeps means, regression, tier cuts, and rendered
+  // points in sync.
+  const {
+    filtered_data,
+    x_values,
+    y_values,
+    x_average,
+    y_average,
+    x_std_dev,
+    y_std_dev
+  } = React.useMemo(() => {
+    const filtered = data.filter((row) => {
+      const xv = row[x_accessor_path]
+      const yv = row[y_accessor_path]
+      if (xv == null || yv == null) return false
+      const x = Number(xv)
+      const y = Number(yv)
+      if (!isFinite(x) || !isFinite(y)) return false
+      if (x === 0 || y === 0) return false
+      return true
+    })
+    const xs = filtered.map((row) => Number(row[x_accessor_path]))
+    const ys = filtered.map((row) => Number(row[y_accessor_path]))
+    const x_avg = xs.reduce((sum, x) => sum + x, 0) / xs.length
+    const y_avg = ys.reduce((sum, y) => sum + y, 0) / ys.length
+    return {
+      filtered_data: filtered,
+      x_values: xs,
+      y_values: ys,
+      x_average: x_avg,
+      y_average: y_avg,
+      x_std_dev: calculate_std_dev(xs, x_avg),
+      y_std_dev: calculate_std_dev(ys, y_avg)
+    }
+  }, [data, x_accessor_path, y_accessor_path])
 
   const is_outlier = (x, y) => {
     const x_distance = Math.abs(x - x_average) / (x_std_dev || 1)
@@ -169,9 +287,16 @@ const ScatterPlotOverlay = ({
   // Read from local state so settings-panel changes take effect immediately without a prop change.
   const point_color_mode = local_scatter_plot_options?.point_color_mode
 
+  // Parents commonly pass a fresh object literal each render. Keying the
+  // mirror effect on the serialized content lets React's primitive dep
+  // equality skip both the effect body and the state update when nothing
+  // has actually changed, without clobbering pending optimistic edits.
+  const scatter_plot_options_serialized = JSON.stringify(
+    scatter_plot_options || {}
+  )
   React.useEffect(() => {
     set_local_scatter_plot_options(scatter_plot_options || {})
-  }, [scatter_plot_options])
+  }, [scatter_plot_options_serialized])
 
   const handle_scatter_plot_options_change = (next_options) => {
     set_local_scatter_plot_options(next_options)
@@ -190,9 +315,11 @@ const ScatterPlotOverlay = ({
     }
   }
 
-  const tier_series = local_scatter_plot_options.show_tier_grid
-    ? build_tier_series({ x_values, y_values })
-    : []
+  const show_tier_grid = local_scatter_plot_options.show_tier_grid
+  const tier_series = React.useMemo(
+    () => (show_tier_grid ? build_tier_series({ x_values, y_values }) : []),
+    [x_values, y_values, show_tier_grid]
+  )
 
   React.useEffect(() => {
     if (show_regression) {
@@ -230,6 +357,7 @@ const ScatterPlotOverlay = ({
       events: {
         load: function () {
           chart_instance_ref.current = this
+          refit_tier_segments_to_axes(this)
         }
       }
     },
@@ -258,76 +386,40 @@ const ScatterPlotOverlay = ({
         text: x_label
       },
       gridLineWidth: 1,
+      events: {
+        afterSetExtremes: function () {
+          refit_tier_segments_to_axes(this.chart)
+        }
+      },
       plotLines: [
-        ...(local_scatter_plot_options.show_x_mean_line !== false
-          ? [
-              {
-                color: 'rgba(180, 60, 60, 0.8)',
-                dashStyle: 'dash',
-                value: x_average,
-                width: 1,
-                label: {
-                  text: `avg ${x_average.toFixed(2)}`,
-                  align: 'left',
-                  style: {
-                    color: 'rgba(180, 60, 60, 0.9)',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }
-                }
-              }
-            ]
-          : []),
-        ...(local_scatter_plot_options.reference_lines || [])
-          .filter((line) => line.axis === 'x' && isFinite(line.value))
-          .map((line) => ({
-            value: line.value,
-            color: line.color,
-            width: 1,
-            dashStyle: 'Dash',
-            label: {
-              text: line.label,
-              style: { color: line.color }
-            }
-          }))
+        ...build_mean_plot_line({
+          enabled: local_scatter_plot_options.show_x_mean_line !== false,
+          value: x_average
+        }),
+        ...build_reference_plot_lines({
+          reference_lines: local_scatter_plot_options.reference_lines,
+          axis: 'x'
+        })
       ]
     },
     yAxis: {
       title: {
         text: y_label
       },
+      events: {
+        afterSetExtremes: function () {
+          refit_tier_segments_to_axes(this.chart)
+        }
+      },
       plotLines: [
-        ...(local_scatter_plot_options.show_y_mean_line !== false
-          ? [
-              {
-                color: 'rgba(180, 60, 60, 0.8)',
-                dashStyle: 'dash',
-                value: y_average,
-                width: 1,
-                label: {
-                  text: `avg ${y_average.toFixed(2)}`,
-                  align: 'left',
-                  style: {
-                    color: 'rgba(180, 60, 60, 0.9)',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }
-                }
-              }
-            ]
-          : []),
-        ...(local_scatter_plot_options.reference_lines || [])
-          .filter((line) => line.axis === 'y' && isFinite(line.value))
-          .map((line) => ({
-            value: line.value,
-            color: line.color,
-            width: 1,
-            dashStyle: 'Dash',
-            label: {
-              text: line.label,
-              style: { color: line.color }
-            }
-          }))
+        ...build_mean_plot_line({
+          enabled: local_scatter_plot_options.show_y_mean_line !== false,
+          value: y_average
+        }),
+        ...build_reference_plot_lines({
+          reference_lines: local_scatter_plot_options.reference_lines,
+          axis: 'y'
+        })
       ]
     },
     tooltip: {
@@ -368,62 +460,64 @@ const ScatterPlotOverlay = ({
         }
       }
     },
+    // Scatter must stay at series index 0. Highcharts' index-based series.update
+    // path (used by HighchartsReact on options change) loses the per-point
+    // marker.symbol = url(...) config when the scatter series shifts position
+    // as tier_series toggles. Keeping scatter first preserves the logos.
     series: [
-      ...tier_series,
       {
         id: 'scatter-plot-points',
         type: 'scatter',
         color: 'rgba(37, 99, 235, 0.5)',
-        data: data
-          .map((row) => {
-            const x = Number(row[x_accessor_path] || 0)
-            const y = Number(row[y_accessor_path] || 0)
-            const point = {
-              x,
-              y,
-              label: get_point_label(row),
-              original_data: row,
-              is_outlier: is_outlier(x, y)
-            }
+        data: filtered_data.map((row) => {
+          const x = Number(row[x_accessor_path])
+          const y = Number(row[y_accessor_path])
+          const point = {
+            x,
+            y,
+            label: get_point_label(row),
+            original_data: row,
+            is_outlier: is_outlier(x, y)
+          }
 
-            const resolved_color = resolve_point_color({
+          const resolved_color = resolve_point_color({
+            row,
+            point_color_mode,
+            get_point_color
+          })
+          if (resolved_color) {
+            // Set marker fill color only. Data label color is handled via the series-level
+            // dataLabels.color callback in build_scatter_data_labels, which reads this.point.color.
+            // Per-point dataLabels objects would overwrite the series formatter and allowOverlap config.
+            point.color = resolved_color
+          }
+
+          if (get_point_image) {
+            const image_data = get_point_image({
               row,
-              point_color_mode,
-              get_point_color
+              logo_size
             })
-            if (resolved_color) {
-              // Set marker fill color only. Data label color is handled via the series-level
-              // dataLabels.color callback in build_scatter_data_labels, which reads this.point.color.
-              // Per-point dataLabels objects would overwrite the series formatter and allowOverlap config.
-              point.color = resolved_color
-            }
-
-            if (get_point_image) {
-              const image_data = get_point_image({
-                row,
-                logo_size
-              })
-              if (image_data) {
-                point.marker = {
-                  symbol: `url(${image_data.url})`,
-                  width: image_data.width || 32,
-                  height: image_data.height || 32
-                }
-              } else {
-                point.marker = {
-                  symbol: 'circle',
-                  radius: 1,
-                  fillColor: '#2563eb',
-                  lineWidth: 1,
-                  lineColor: '#1e40af'
-                }
+            if (image_data) {
+              point.marker = {
+                symbol: `url(${image_data.url})`,
+                width: image_data.width || 32,
+                height: image_data.height || 32
+              }
+            } else {
+              point.marker = {
+                symbol: 'circle',
+                radius: 1,
+                fillColor: '#2563eb',
+                lineWidth: 1,
+                lineColor: '#1e40af'
               }
             }
+          }
 
-            return point
-          })
-          .filter((point) => !isNaN(point.x) && !isNaN(point.y))
+          return point
+        })
       },
+      ...tier_series,
       show_regression && {
         type: 'line',
         name: 'Trend Line',
@@ -446,46 +540,60 @@ const ScatterPlotOverlay = ({
     }
   }
 
+  // Backdrop click: only close when the click target is the overlay element
+  // itself (the scrim), not a descendant. Replaces MUI ClickAwayListener.
+  const handle_backdrop_click = (event) => {
+    if (event.target === event.currentTarget) on_close()
+  }
+
   return (
-    <div className='scatter-plot-overlay'>
-      <ClickAwayListener onClickAway={on_close}>
-        <div className='scatter-plot-container'>
-          <IconButton
-            className='close-button'
-            onClick={on_close}
-            size='small'
-            aria_label='close'>
-            <CloseIcon />
-          </IconButton>
-          <ScatterPlotSettingsPanel
-            scatter_plot_options={local_scatter_plot_options}
-            on_change={handle_scatter_plot_options_change}
-            show_regression={show_regression}
-            on_toggle_regression={() => set_show_regression(!show_regression)}
-            on_download_png={handle_download_png}
-          />
-          <HighchartsReact highcharts={Highcharts} options={options} />
-          {show_regression && regression_stats && (
-            <div className='regression-stats'>
-              <h4>Regression Statistics</h4>
-              <div>
-                Slope: {format_stat_value({ value: regression_stats.slope })}
+    <div className='scatter-plot-overlay' onMouseDown={handle_backdrop_click}>
+      <div className='scatter-plot-container'>
+        <button
+          className='scatter-plot-close-button'
+          type='button'
+          onClick={on_close}
+          aria-label='Close scatter plot'>
+          &times;
+        </button>
+        <ScatterPlotSettingsPanel
+          scatter_plot_options={local_scatter_plot_options}
+          on_change={handle_scatter_plot_options_change}
+          show_regression={show_regression}
+          on_toggle_regression={() => set_show_regression(!show_regression)}
+          on_download_png={handle_download_png}
+        />
+        <HighchartsReact highcharts={Highcharts} options={options} />
+        {show_regression && regression_stats && (
+          <div className='regression-stats'>
+            <h4 className='regression-stats-title'>Regression statistics</h4>
+            <dl className='regression-stats-grid'>
+              <div className='regression-stat'>
+                <dt>Slope</dt>
+                <dd>{format_stat_value({ value: regression_stats.slope })}</dd>
               </div>
-              <div>
-                Y-Intercept:{' '}
-                {format_stat_value({ value: regression_stats.intercept })}
+              <div className='regression-stat'>
+                <dt>Y-intercept</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.intercept })}
+                </dd>
               </div>
-              <div>
-                R²: {format_stat_value({ value: regression_stats.r_squared })}
+              <div className='regression-stat'>
+                <dt>R²</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.r_squared })}
+                </dd>
               </div>
-              <div>
-                p Value:{' '}
-                {format_stat_value({ value: regression_stats.p_value })}
+              <div className='regression-stat'>
+                <dt>p value</dt>
+                <dd>
+                  {format_stat_value({ value: regression_stats.p_value })}
+                </dd>
               </div>
-            </div>
-          )}
-        </div>
-      </ClickAwayListener>
+            </dl>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

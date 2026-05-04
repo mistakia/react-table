@@ -45,15 +45,6 @@ const ScatterPlotToolbar = ({
         title='Toggle tier grid'>
         Tiers
       </button>
-      <select
-        className='toolbar-select'
-        value={point_color_mode}
-        onChange={handle_point_color_mode}
-        title='Point color mode'>
-        <option value=''>Default color</option>
-        <option value='team'>Team color</option>
-        <option value='position'>Position color</option>
-      </select>
       <button
         className={`toolbar-btn${show_x_mean_line ? ' active' : ''}`}
         onClick={() => handle_toggle('show_x_mean_line')}
@@ -68,6 +59,18 @@ const ScatterPlotToolbar = ({
         title='Toggle Y mean line'>
         Y mean
       </button>
+      <span className='toolbar-divider' aria-hidden='true' />
+      <label className='toolbar-select-wrap' title='Point color mode'>
+        <span className='toolbar-select-label'>Color</span>
+        <select
+          className='toolbar-select'
+          value={point_color_mode}
+          onChange={handle_point_color_mode}>
+          <option value=''>Default</option>
+          <option value='team'>Team</option>
+          <option value='position'>Position</option>
+        </select>
+      </label>
     </div>
   )
 }
@@ -93,8 +96,12 @@ const next_ref_line_key = () => ++_ref_line_counter
 const ReferenceLineRow = ({ line, index, on_update, on_delete }) => {
   const handle_axis = (e) => on_update(index, { ...line, axis: e.target.value })
   const handle_value = (e) => {
-    const parsed = parseFloat(e.target.value)
-    on_update(index, { ...line, value: isNaN(parsed) ? line.value : parsed })
+    // Keep the raw string while the user is editing so they can clear the
+    // field, type a leading minus or trailing decimal, etc. The save handler
+    // and chart-side plotLines filter both call isFinite() on the value, so
+    // non-numeric intermediates are simply ignored downstream and the row is
+    // skipped at save time.
+    on_update(index, { ...line, value: e.target.value })
   }
   const handle_label = (e) =>
     on_update(index, {
@@ -158,7 +165,8 @@ const ReferenceLineRow = ({ line, index, on_update, on_delete }) => {
 ReferenceLineRow.propTypes = {
   line: PropTypes.shape({
     axis: PropTypes.string.isRequired,
-    value: PropTypes.number.isRequired,
+    // string while the user is mid-edit (incl. empty), number once persisted.
+    value: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     label: PropTypes.string.isRequired,
     color: PropTypes.string.isRequired
   }).isRequired,
@@ -268,9 +276,11 @@ const ScatterPlotSettingsModal = ({
 
   const handle_save = () => {
     const valid_lines = ref_lines.filter((line) => isFinite(line.value))
-    // Strip internal _key field before persisting
+    // Strip internal _key field and coerce value back to a finite number
+    // (it may be a numeric string while the row is being edited).
     const normalized_lines = valid_lines.map(({ _key: _dropped, ...line }) => ({
       ...line,
+      value: Number(line.value),
       label: line.label.trim().slice(0, 200)
     }))
     // Start from the live prop so toolbar-controlled fields (point_color_mode,
@@ -437,14 +447,14 @@ const ScatterPlotSettingsPanel = ({
         />
         <div className='toolbar-actions'>
           <button
-            className='toolbar-btn'
+            className='toolbar-btn toolbar-action-btn'
             onClick={open_modal}
             type='button'
             title='Open settings'>
-            Settings...
+            Settings
           </button>
           <button
-            className='toolbar-btn'
+            className='toolbar-btn toolbar-action-btn'
             onClick={on_download_png}
             type='button'
             title='Download chart as PNG'>

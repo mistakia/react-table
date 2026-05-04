@@ -1,0 +1,57 @@
+// react-table design tokens.
+// See STYLE.md for the contract. Defaults below match the existing visual
+// identity established by table-column-controls and table-filter-controls.
+// Consumers override by redefining the --rt-* CSS custom properties on :root
+// (or any ancestor scope).
+
+// Stylus mirrors — used at build time so component sources stay self-contained
+// when the lib is consumed without a :root override.
+$rt_border = rgba(0, 0, 0, 0.23)
+$rt_border_subtle = #e0e0e0
+$rt_bg = #ffffff
+$rt_bg_subtle = #fafafa
+$rt_bg_hover = rgba(0, 0, 0, 0.05)
+$rt_bg_hover_strong = #e5e5e5
+$rt_bg_overlay = rgba(0, 0, 0, 0.5)
+$rt_text = #222222
+$rt_text_muted = #555555
+$rt_text_disabled = #999999
+$rt_radius_sm = 4px
+$rt_radius = 6px
+$rt_radius_lg = 8px
+$rt_font_size_sm = 12px
+$rt_font_size = 13px
+$rt_font_size_md = 14px
+$rt_space_xs = 4px
+$rt_space_sm = 8px
+$rt_space = 12px
+$rt_space_lg = 16px
+$rt_space_xl = 20px
+$rt_shadow_overlay = 0 8px 32px rgba(0, 0, 0, 0.18)
+$rt_transition = 150ms ease
+
+// Runtime CSS custom properties — consumers override these.
+:root
+  --rt-border rgba(0, 0, 0, 0.23)
+  --rt-border-subtle #e0e0e0
+  --rt-bg #ffffff
+  --rt-bg-subtle #fafafa
+  --rt-bg-hover rgba(0, 0, 0, 0.05)
+  --rt-bg-hover-strong #e5e5e5
+  --rt-bg-overlay rgba(0, 0, 0, 0.5)
+  --rt-text #222222
+  --rt-text-muted #555555
+  --rt-text-disabled #999999
+  --rt-radius-sm 4px
+  --rt-radius 6px
+  --rt-radius-lg 8px
+  --rt-font-size-sm 12px
+  --rt-font-size 13px
+  --rt-font-size-md 14px
+  --rt-space-xs 4px
+  --rt-space-sm 8px
+  --rt-space 12px
+  --rt-space-lg 16px
+  --rt-space-xl 20px
+  --rt-shadow-overlay 0 8px 32px rgba(0, 0, 0, 0.18)
+  --rt-transition 150ms ease

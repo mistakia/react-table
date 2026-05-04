@@ -1,21 +1,23 @@
+@import '../styles/tokens'
+
 .scatter-plot-overlay
   position fixed
   top 0
   left 0
   right 0
   bottom 0
-  background-color rgba(0, 0, 0, 0.5)
+  background-color $rt_bg_overlay
   display flex
   justify-content center
   align-items flex-start
-  padding 20px 0
+  padding $rt_space_xl 0
   z-index 2000
   overflow-y auto
 
   .scatter-plot-container
-    background-color white
-    padding 20px
-    border-radius 8px
+    background-color $rt_bg
+    padding $rt_space_xl
+    border-radius $rt_radius_lg
     width 80%
     height fit-content
     position relative
@@ -26,43 +28,67 @@
     .highcharts-tooltip
       z-index 2
 
-    .close-button
-      position sticky
-      top 10px
-      right 10px
+    .scatter-plot-close-button
+      position absolute
+      top $rt_space
+      right $rt_space
       z-index 1
+      width 28px
+      height 28px
+      display inline-flex
+      align-items center
+      justify-content center
+      background none
+      border 1px solid transparent
+      border-radius $rt_radius_sm
+      font-size 18px
+      line-height 1
+      color $rt_text_muted
+      cursor pointer
+      transition border-color $rt_transition, background-color $rt_transition
 
-.plot-controls
-  margin-top 1rem
-  padding 0.5rem
-  border-radius 4px
-
-  .regression-toggle
-    display flex
-    align-items center
-    gap 8px
-    border 1px solid transparent
-    border-radius 8px
-    width max-content
-    padding 8px 16px
-    background-color white
-    cursor pointer
-    transition transform 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
-
-    &:hover
-      border 1px solid rgba(0, 0, 0, 0.23)
-      box-shadow $box_shadow
+      &:hover
+        border-color $rt_border
+        background-color $rt_bg_hover
 
 .regression-stats
-  margin-top 1rem
-  padding 1rem
-  background-color #f8f8f8
-  border-radius 4px
+  margin-top $rt_space
+  padding $rt_space_lg
+  background-color $rt_bg_subtle
+  border 1px solid $rt_border_subtle
+  border-radius $rt_radius_sm
 
-  h4
-    margin-top 0
-    margin-bottom 0.5rem
+.regression-stats-title
+  margin 0 0 $rt_space 0
+  font-size $rt_font_size_sm
+  font-weight 600
+  color $rt_text_muted
+  text-transform uppercase
+  letter-spacing 0.05em
 
-  div
-    margin-bottom 0.25rem
+.regression-stats-grid
+  display grid
+  grid-template-columns repeat(auto-fit, minmax(140px, 1fr))
+  gap $rt_space_sm $rt_space_lg
+  margin 0
+
+.regression-stat
+  display flex
+  flex-direction column
+  gap 2px
+  min-width 0
+
+  dt
+    font-size $rt_font_size_sm
+    color $rt_text_muted
+    font-weight 500
+    text-transform uppercase
+    letter-spacing 0.04em
+
+  dd
+    margin 0
+    font-size $rt_font_size_md
+    font-weight 600
+    color $rt_text
+    font-variant-numeric tabular-nums
+    overflow-wrap anywhere
