@@ -90,6 +90,41 @@ const calculate_std_dev = (values, mean) => {
   return Math.sqrt(sum_sq / values.length)
 }
 
+const build_mean_plot_line = ({ enabled, value }) => {
+  if (!enabled) return []
+  return [
+    {
+      color: 'rgba(180, 60, 60, 0.8)',
+      dashStyle: 'dash',
+      value,
+      width: 1,
+      label: {
+        text: `avg ${value.toFixed(2)}`,
+        align: 'left',
+        style: {
+          color: 'rgba(180, 60, 60, 0.9)',
+          fontSize: '11px',
+          fontWeight: 'bold'
+        }
+      }
+    }
+  ]
+}
+
+const build_reference_plot_lines = ({ reference_lines, axis }) =>
+  (reference_lines || [])
+    .filter((line) => line.axis === axis && isFinite(line.value))
+    .map((line) => ({
+      value: line.value,
+      color: line.color,
+      width: 1,
+      dashStyle: 'Dash',
+      label: {
+        text: line.label,
+        style: { color: line.color }
+      }
+    }))
+
 export { resolve_point_color } from './scatter-plot-point-color-utils.js'
 export { build_scatter_data_labels } from './scatter-plot-data-labels.js'
 
@@ -134,10 +169,7 @@ const refit_tier_segments_to_axes = (chart) => {
   try {
     let any_changed = false
     chart.series.forEach((series) => {
-      const k =
-        series.userOptions && series.userOptions.custom
-          ? series.userOptions.custom.tier_k
-          : undefined
+      const k = series.userOptions?.custom?.tier_k
       if (typeof k !== 'number') return
 
       const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
@@ -255,20 +287,16 @@ const ScatterPlotOverlay = ({
   // Read from local state so settings-panel changes take effect immediately without a prop change.
   const point_color_mode = local_scatter_plot_options?.point_color_mode
 
-  // Sync from prop only when the prop's *content* changes. Parents commonly
-  // pass a fresh object literal each render; a referential-equality dep would
-  // re-run this effect every render and clobber pending optimistic edits
-  // before on_scatter_plot_options_change has round-tripped through state.
-  const last_synced_serialized = React.useRef(
-    JSON.stringify(scatter_plot_options || {})
+  // Parents commonly pass a fresh object literal each render. Keying the
+  // mirror effect on the serialized content lets React's primitive dep
+  // equality skip both the effect body and the state update when nothing
+  // has actually changed, without clobbering pending optimistic edits.
+  const scatter_plot_options_serialized = JSON.stringify(
+    scatter_plot_options || {}
   )
   React.useEffect(() => {
-    const next_serialized = JSON.stringify(scatter_plot_options || {})
-    if (next_serialized !== last_synced_serialized.current) {
-      last_synced_serialized.current = next_serialized
-      set_local_scatter_plot_options(scatter_plot_options || {})
-    }
-  }, [scatter_plot_options])
+    set_local_scatter_plot_options(scatter_plot_options || {})
+  }, [scatter_plot_options_serialized])
 
   const handle_scatter_plot_options_change = (next_options) => {
     set_local_scatter_plot_options(next_options)
@@ -364,37 +392,14 @@ const ScatterPlotOverlay = ({
         }
       },
       plotLines: [
-        ...(local_scatter_plot_options.show_x_mean_line !== false
-          ? [
-              {
-                color: 'rgba(180, 60, 60, 0.8)',
-                dashStyle: 'dash',
-                value: x_average,
-                width: 1,
-                label: {
-                  text: `avg ${x_average.toFixed(2)}`,
-                  align: 'left',
-                  style: {
-                    color: 'rgba(180, 60, 60, 0.9)',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }
-                }
-              }
-            ]
-          : []),
-        ...(local_scatter_plot_options.reference_lines || [])
-          .filter((line) => line.axis === 'x' && isFinite(line.value))
-          .map((line) => ({
-            value: line.value,
-            color: line.color,
-            width: 1,
-            dashStyle: 'Dash',
-            label: {
-              text: line.label,
-              style: { color: line.color }
-            }
-          }))
+        ...build_mean_plot_line({
+          enabled: local_scatter_plot_options.show_x_mean_line !== false,
+          value: x_average
+        }),
+        ...build_reference_plot_lines({
+          reference_lines: local_scatter_plot_options.reference_lines,
+          axis: 'x'
+        })
       ]
     },
     yAxis: {
@@ -407,37 +412,14 @@ const ScatterPlotOverlay = ({
         }
       },
       plotLines: [
-        ...(local_scatter_plot_options.show_y_mean_line !== false
-          ? [
-              {
-                color: 'rgba(180, 60, 60, 0.8)',
-                dashStyle: 'dash',
-                value: y_average,
-                width: 1,
-                label: {
-                  text: `avg ${y_average.toFixed(2)}`,
-                  align: 'left',
-                  style: {
-                    color: 'rgba(180, 60, 60, 0.9)',
-                    fontSize: '11px',
-                    fontWeight: 'bold'
-                  }
-                }
-              }
-            ]
-          : []),
-        ...(local_scatter_plot_options.reference_lines || [])
-          .filter((line) => line.axis === 'y' && isFinite(line.value))
-          .map((line) => ({
-            value: line.value,
-            color: line.color,
-            width: 1,
-            dashStyle: 'Dash',
-            label: {
-              text: line.label,
-              style: { color: line.color }
-            }
-          }))
+        ...build_mean_plot_line({
+          enabled: local_scatter_plot_options.show_y_mean_line !== false,
+          value: y_average
+        }),
+        ...build_reference_plot_lines({
+          reference_lines: local_scatter_plot_options.reference_lines,
+          axis: 'y'
+        })
       ]
     },
     tooltip: {

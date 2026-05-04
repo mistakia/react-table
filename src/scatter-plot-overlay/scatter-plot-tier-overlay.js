@@ -171,31 +171,26 @@ const TIER_SERIES_BASE = {
 
 /**
  * Build Highcharts line-series configs for iso-value tier lines at quintile
- * cut points of {x_i + y_i}, clipped to the data bounding box (or to the
- * caller-supplied `bounds` if given — typically the chart's axis extremes
- * so lines extend through the visible padding/zoom region).
- *
- * Each emitted series carries a `custom.tier_k` field so the chart can
- * recompute endpoints later (e.g. on `chart.load` or `axis.afterSetExtremes`)
- * by re-running clip_tier_segment with new bounds.
+ * cut points of {x_i + y_i}, clipped to the data bounding box. Each emitted
+ * series carries a `custom.tier_k` field so the chart can recompute endpoints
+ * later (e.g. on `chart.load` or `axis.afterSetExtremes`) by re-running
+ * clip_tier_segment against current axis extremes.
  *
  * @param {object} params
  * @param {number[]} params.x_values
  * @param {number[]} params.y_values
- * @param {{x_min,x_max,y_min,y_max}} [params.bounds] - optional override
  * @returns {object[]}
  */
-const build_tier_series = ({ x_values, y_values, bounds }) => {
+const build_tier_series = ({ x_values, y_values }) => {
   const { k_values, data_bounds } = compute_tier_k_values({
     x_values,
     y_values
   })
   if (!data_bounds) return []
 
-  const clip_bounds = bounds || data_bounds
   const series = []
   k_values.forEach((k, i) => {
-    const segment = clip_tier_segment({ k, ...clip_bounds })
+    const segment = clip_tier_segment({ k, ...data_bounds })
     if (!segment) return
     series.push({
       ...TIER_SERIES_BASE,
@@ -207,9 +202,4 @@ const build_tier_series = ({ x_values, y_values, bounds }) => {
   return series
 }
 
-export {
-  build_tier_series,
-  clip_tier_segment,
-  compute_tier_k_values,
-  TIER_SERIES_BASE
-}
+export { build_tier_series, clip_tier_segment }
