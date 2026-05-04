@@ -201,23 +201,39 @@ const ScatterPlotOverlay = ({
   // Zero and null cluster against the axis edges and visually swamp the chart;
   // doing the filter once here keeps means, regression, tier cuts, and rendered
   // points in sync.
-  const filtered_data = data.filter((row) => {
-    const xv = row[x_accessor_path]
-    const yv = row[y_accessor_path]
-    if (xv == null || yv == null) return false
-    const x = Number(xv)
-    const y = Number(yv)
-    if (!isFinite(x) || !isFinite(y)) return false
-    if (x === 0 || y === 0) return false
-    return true
-  })
-
-  const x_values = filtered_data.map((row) => Number(row[x_accessor_path]))
-  const y_values = filtered_data.map((row) => Number(row[y_accessor_path]))
-  const x_average = x_values.reduce((sum, x) => sum + x, 0) / x_values.length
-  const y_average = y_values.reduce((sum, y) => sum + y, 0) / y_values.length
-  const x_std_dev = calculate_std_dev(x_values, x_average)
-  const y_std_dev = calculate_std_dev(y_values, y_average)
+  const {
+    filtered_data,
+    x_values,
+    y_values,
+    x_average,
+    y_average,
+    x_std_dev,
+    y_std_dev
+  } = React.useMemo(() => {
+    const filtered = data.filter((row) => {
+      const xv = row[x_accessor_path]
+      const yv = row[y_accessor_path]
+      if (xv == null || yv == null) return false
+      const x = Number(xv)
+      const y = Number(yv)
+      if (!isFinite(x) || !isFinite(y)) return false
+      if (x === 0 || y === 0) return false
+      return true
+    })
+    const xs = filtered.map((row) => Number(row[x_accessor_path]))
+    const ys = filtered.map((row) => Number(row[y_accessor_path]))
+    const x_avg = xs.reduce((sum, x) => sum + x, 0) / xs.length
+    const y_avg = ys.reduce((sum, y) => sum + y, 0) / ys.length
+    return {
+      filtered_data: filtered,
+      x_values: xs,
+      y_values: ys,
+      x_average: x_avg,
+      y_average: y_avg,
+      x_std_dev: calculate_std_dev(xs, x_avg),
+      y_std_dev: calculate_std_dev(ys, y_avg)
+    }
+  }, [data, x_accessor_path, y_accessor_path])
 
   const is_outlier = (x, y) => {
     const x_distance = Math.abs(x - x_average) / (x_std_dev || 1)
@@ -239,8 +255,19 @@ const ScatterPlotOverlay = ({
   // Read from local state so settings-panel changes take effect immediately without a prop change.
   const point_color_mode = local_scatter_plot_options?.point_color_mode
 
+  // Sync from prop only when the prop's *content* changes. Parents commonly
+  // pass a fresh object literal each render; a referential-equality dep would
+  // re-run this effect every render and clobber pending optimistic edits
+  // before on_scatter_plot_options_change has round-tripped through state.
+  const last_synced_serialized = React.useRef(
+    JSON.stringify(scatter_plot_options || {})
+  )
   React.useEffect(() => {
-    set_local_scatter_plot_options(scatter_plot_options || {})
+    const next_serialized = JSON.stringify(scatter_plot_options || {})
+    if (next_serialized !== last_synced_serialized.current) {
+      last_synced_serialized.current = next_serialized
+      set_local_scatter_plot_options(scatter_plot_options || {})
+    }
   }, [scatter_plot_options])
 
   const handle_scatter_plot_options_change = (next_options) => {
@@ -260,9 +287,11 @@ const ScatterPlotOverlay = ({
     }
   }
 
-  const tier_series = local_scatter_plot_options.show_tier_grid
-    ? build_tier_series({ x_values, y_values })
-    : []
+  const show_tier_grid = local_scatter_plot_options.show_tier_grid
+  const tier_series = React.useMemo(
+    () => (show_tier_grid ? build_tier_series({ x_values, y_values }) : []),
+    [x_values, y_values, show_tier_grid]
+  )
 
   React.useEffect(() => {
     if (show_regression) {
