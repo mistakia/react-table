@@ -537,6 +537,12 @@ const ScatterPlotOverlay = ({
     ].filter(Boolean),
     credits: {
       enabled: false
+    },
+    // Opt in explicitly so consumers that globally disable exporting (to keep
+    // the burger menu off small/inline charts) still get the multi-format
+    // export menu on this analytical overlay.
+    exporting: {
+      enabled: true
     }
   }
 
