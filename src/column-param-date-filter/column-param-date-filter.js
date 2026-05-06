@@ -7,6 +7,7 @@ import Button from '@mui/material/Button'
 import dayjs from 'dayjs'
 
 import FilterBase from '#src/filter-base'
+import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function ColumnParamDateFilter({
   column_param_name,
@@ -82,9 +83,14 @@ export default function ColumnParamDateFilter({
 
   const selected_label = mixed_state
     ? '-'
-    : !selected_param_values
-      ? default_label
-      : dayjs(selected_param_values).format('YYYY-MM-DD')
+    : format_column_params({
+        column_def: {
+          column_params: { [column_param_name]: column_param_definition }
+        },
+        column_state_params: { [column_param_name]: selected_param_values },
+        variant: 'short',
+        default_label
+      })
 
   return <FilterBase {...{ selected_label, body, label, trigger_close }} />
 }

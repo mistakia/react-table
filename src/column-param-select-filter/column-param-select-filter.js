@@ -4,6 +4,7 @@ import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
 import FilterBase from '#src/filter-base'
+import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function ColumnParamSelectFilter({
   column_param_name,
@@ -143,7 +144,10 @@ export default function ColumnParamSelectFilter({
     single,
     is_column_param_defined,
     all_filter_values,
-    default_value
+    default_value,
+    column_param_name,
+    column_param_definition,
+    selected_param_values
   })
 
   const body = create_filter_body({
@@ -482,7 +486,10 @@ function create_selected_label({
   single,
   is_column_param_defined,
   all_filter_values,
-  default_value
+  default_value,
+  column_param_name,
+  column_param_definition,
+  selected_param_values
 }) {
   if (mixed_state) return '-'
   if (all_selected) return 'ALL'
@@ -492,10 +499,13 @@ function create_selected_label({
       all_filter_values[0]?.label
     )
   }
-  return all_filter_values
-    .filter((v) => v.selected)
-    .map((v) => v.label)
-    .join(', ')
+  return format_column_params({
+    column_def: {
+      column_params: { [column_param_name]: column_param_definition }
+    },
+    column_state_params: { [column_param_name]: selected_param_values },
+    variant: 'short'
+  })
 }
 
 function create_filter_body({

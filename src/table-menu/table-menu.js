@@ -16,9 +16,76 @@ import {
   export_json,
   export_markdown
 } from '#src/utils'
+import { format_column_params } from '#src/utils/format-column-params.js'
 import { table_context } from '#src/table-context'
 
 import './table-menu.styl'
+
+function build_export_headers({ table_state, all_columns }) {
+  const headers = []
+  const seen = new Set()
+  const push = (header) => {
+    let row_key = header.row_key
+    if (seen.has(row_key)) {
+      row_key = `${row_key}_${header.column_index}`
+    }
+    seen.add(row_key)
+    headers.push({ ...header, row_key })
+  }
+
+  for (const column of table_state.prefix_columns || []) {
+    const column_id = typeof column === 'string' ? column : column.column_id
+    const column_def = all_columns[column_id]
+    push({
+      row_key: column_def?.column_title || column_id,
+      export_value: column_def?.export_value,
+      accessorFn: column_def?.accessorFn,
+      accessorKey: column_def?.accessorKey,
+      column_index: 0
+    })
+  }
+
+  const column_indices = {}
+  for (const column of table_state.columns) {
+    const column_id = typeof column === 'string' ? column : column.column_id
+    const column_state_params =
+      typeof column === 'string' ? undefined : column.params
+    column_indices[column_id] = column_indices[column_id] || 0
+
+    const column_def = all_columns[column_id]
+    const column_label = column_def?.column_title || column_id
+    const param_suffix = column_def
+      ? format_column_params({
+          column_def,
+          column_state_params,
+          variant: 'short'
+        })
+      : ''
+    const column_index = column_indices[column_id]
+
+    push({
+      row_key: param_suffix
+        ? `${column_label} (${param_suffix})`
+        : column_label,
+      export_value: column_def?.export_value,
+      accessorFn: column_def?.accessorFn,
+      accessorKey: column_def?.accessorKey,
+      column_index
+    })
+
+    column_indices[column_id]++
+  }
+
+  for (const split of table_state.splits || []) {
+    push({
+      row_key: split,
+      accessorKey: split,
+      column_index: 0
+    })
+  }
+
+  return headers
+}
 
 const TableMenu = ({
   data,
@@ -124,72 +191,16 @@ const TableMenu = ({
   }
 
   const handle_export_csv = () => {
-    const download_data = []
-    const headers = []
-
-    for (const column of table_state.prefix_columns || []) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-
-      headers.push({
-        row_key: column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index: 0
-      })
-    }
-
-    const column_id_counts = {}
-    const column_indices = {}
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
-    }
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_indices[column_id] = column_indices[column_id] || 0
-
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-      const column_index = column_indices[column_id]
-      const is_duplicate = column_id_counts[column_id] > 1
-
-      headers.push({
-        row_key: is_duplicate
-          ? `${column_label}_${column_index}`
-          : column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index
-      })
-
-      column_indices[column_id]++
-    }
-
-    for (const split of table_state.splits || []) {
-      headers.push({
-        row_key: split,
-        accessorKey: split
-      })
-    }
-
-    for (const row of data) {
+    const headers = build_export_headers({ table_state, all_columns })
+    const download_data = data.map((row) => {
       const row_data = {}
-      for (let i = 0; i < headers.length; i++) {
-        const header = headers[i]
+      for (const header of headers) {
         let value = get_cell_value(row, header)
-
-        if (Array.isArray(value)) {
-          value = value.join('|')
-        }
-
+        if (Array.isArray(value)) value = value.join('|')
         row_data[header.row_key] = value
       }
-      download_data.push(row_data)
-    }
+      return row_data
+    })
 
     export_csv({
       headers: headers.map((header) => header.row_key),
@@ -201,68 +212,14 @@ const TableMenu = ({
   }
 
   const handle_export_json = () => {
-    const download_data = []
-    const headers = []
-
-    for (const column of table_state.prefix_columns || []) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-
-      headers.push({
-        row_key: column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index: 0
-      })
-    }
-
-    const column_id_counts = {}
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
-    }
-    const column_indices = {}
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_indices[column_id] = column_indices[column_id] || 0
-
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-      const column_index = column_indices[column_id]
-      const is_duplicate = column_id_counts[column_id] > 1
-
-      headers.push({
-        row_key: is_duplicate
-          ? `${column_label}_${column_index}`
-          : column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index
-      })
-
-      column_indices[column_id]++
-    }
-
-    for (const split of table_state.splits || []) {
-      headers.push({
-        row_key: split,
-        accessorKey: split
-      })
-    }
-
-    for (const row of data) {
+    const headers = build_export_headers({ table_state, all_columns })
+    const download_data = data.map((row) => {
       const row_data = {}
-
-      for (let i = 0; i < headers.length; i++) {
-        const header = headers[i]
+      for (const header of headers) {
         row_data[header.row_key] = get_cell_value(row, header)
       }
-
-      download_data.push(row_data)
-    }
+      return row_data
+    })
 
     export_json({
       data: {
@@ -277,68 +234,14 @@ const TableMenu = ({
   }
 
   const handle_export_markdown = () => {
-    const download_data = []
-    const headers = []
-
-    for (const column of table_state.prefix_columns || []) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-
-      headers.push({
-        row_key: column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index: 0
-      })
-    }
-
-    const column_id_counts = {}
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_id_counts[column_id] = (column_id_counts[column_id] || 0) + 1
-    }
-    const column_indices = {}
-    for (const column of table_state.columns) {
-      const column_id = typeof column === 'string' ? column : column.column_id
-      column_indices[column_id] = column_indices[column_id] || 0
-
-      const column_def = all_columns[column_id]
-      const column_label = column_def?.column_title || column_id
-      const column_index = column_indices[column_id]
-      const is_duplicate = column_id_counts[column_id] > 1
-
-      headers.push({
-        row_key: is_duplicate
-          ? `${column_label}_${column_index}`
-          : column_label,
-        export_value: column_def?.export_value,
-        accessorFn: column_def?.accessorFn,
-        accessorKey: column_def?.accessorKey,
-        column_index
-      })
-
-      column_indices[column_id]++
-    }
-
-    for (const split of table_state.splits || []) {
-      headers.push({
-        row_key: split,
-        accessorKey: split
-      })
-    }
-
-    for (const row of data) {
+    const headers = build_export_headers({ table_state, all_columns })
+    const download_data = data.map((row) => {
       const row_data = {}
-
-      for (let i = 0; i < headers.length; i++) {
-        const header = headers[i]
+      for (const header of headers) {
         row_data[header.row_key] = get_cell_value(row, header)
       }
-
-      download_data.push(row_data)
-    }
+      return row_data
+    })
 
     export_markdown({
       data: download_data,
@@ -365,8 +268,20 @@ const TableMenu = ({
 
     for (const column of table_state.columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
+      const column_state_params =
+        typeof column === 'string' ? undefined : column.params
       const column_def = all_columns[column_id]
-      headers.push(column_def?.column_title || column_id)
+      const column_label = column_def?.column_title || column_id
+      const param_suffix = column_def
+        ? format_column_params({
+            column_def,
+            column_state_params,
+            variant: 'short'
+          })
+        : ''
+      headers.push(
+        param_suffix ? `${column_label} (${param_suffix})` : column_label
+      )
     }
 
     tsv_rows.push(headers.join('\t'))

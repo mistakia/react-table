@@ -1,9 +1,9 @@
-import { describe, expect, test, beforeEach } from 'bun:test'
+import { describe, it, beforeEach } from 'mocha'
+import { expect } from 'chai'
 
 let registry_module
 
 async function fresh_registry() {
-  // Force re-import so each test gets an isolated registry.
   const url =
     '../../src/search/registry.js?fresh=' + Math.random().toString(36).slice(2)
   registry_module = await import(url)
@@ -15,37 +15,37 @@ describe('search adapter registry', () => {
     await fresh_registry()
   })
 
-  test('register_search_adapter stores by id', () => {
+  it('register_search_adapter stores by id', () => {
     const adapter = { id: 'a1', validate: () => null, run: async () => ({}) }
     registry_module.register_search_adapter(adapter)
-    expect(registry_module.get_search_adapter('a1')).toBe(adapter)
+    expect(registry_module.get_search_adapter('a1')).to.equal(adapter)
   })
 
-  test('rejects registration without an id', () => {
+  it('rejects registration without an id', () => {
     expect(() =>
       registry_module.register_search_adapter({ validate: () => null })
-    ).toThrow(/adapter\.id is required/)
+    ).to.throw(/adapter\.id is required/)
   })
 
-  test('rejects duplicate id', () => {
+  it('rejects duplicate id', () => {
     const a = { id: 'dup', validate: () => null, run: async () => ({}) }
     const b = { id: 'dup', validate: () => null, run: async () => ({}) }
     registry_module.register_search_adapter(a)
-    expect(() => registry_module.register_search_adapter(b)).toThrow(
+    expect(() => registry_module.register_search_adapter(b)).to.throw(
       /duplicate id/
     )
   })
 
-  test('get_search_adapter returns null for unknown ids', () => {
-    expect(registry_module.get_search_adapter('missing')).toBeNull()
-    expect(registry_module.get_search_adapter()).toBeNull()
+  it('get_search_adapter returns null for unknown ids', () => {
+    expect(registry_module.get_search_adapter('missing')).to.equal(null)
+    expect(registry_module.get_search_adapter()).to.equal(null)
   })
 
-  test('list_search_adapters enumerates registered adapters', () => {
+  it('list_search_adapters enumerates registered adapters', () => {
     const a = { id: 'a', validate: () => null, run: async () => ({}) }
     const b = { id: 'b', validate: () => null, run: async () => ({}) }
     registry_module.register_search_adapter(a)
     registry_module.register_search_adapter(b)
-    expect(registry_module.list_search_adapters()).toEqual([a, b])
+    expect(registry_module.list_search_adapters()).to.deep.equal([a, b])
   })
 })

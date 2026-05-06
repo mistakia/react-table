@@ -75,5 +75,11 @@ export default [
         }
       ]
     }
+  },
+  {
+    files: ['test/**/*.{mjs,jsx}'],
+    rules: {
+      'no-unused-expressions': 'off'
+    }
   }
 ]

@@ -5,6 +5,7 @@ import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 
 import FilterBase from '#src/filter-base'
+import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function ColumnParamRangeFilter({
   column_param_name,
@@ -90,10 +91,9 @@ export default function ColumnParamRangeFilter({
   const selected_label = create_selected_label({
     mixed_state,
     is_default,
-    is_single,
-    value,
-    default_value,
-    min
+    column_param_name,
+    column_param_definition,
+    value
   })
   const width = calculate_width({ min, max, step })
 
@@ -254,14 +254,18 @@ function create_filter_body({
 function create_selected_label({
   mixed_state,
   is_default,
-  is_single,
-  value,
-  default_value,
-  min
+  column_param_name,
+  column_param_definition,
+  value
 }) {
   if (mixed_state && is_default) return '-'
-  if (is_default) return is_single ? (default_value ?? min) : 'All'
-  return is_single ? value : `${value[0]} to ${value[1]}`
+  return format_column_params({
+    column_def: {
+      column_params: { [column_param_name]: column_param_definition }
+    },
+    column_state_params: { [column_param_name]: value },
+    variant: 'short'
+  })
 }
 
 function calculate_width({ min, max, step }) {
