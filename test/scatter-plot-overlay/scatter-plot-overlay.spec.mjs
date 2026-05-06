@@ -1,12 +1,10 @@
-import { describe, expect, test } from 'bun:test'
-// Import from the pure helper module (no Highcharts dependency) so tests run in isolation.
+import { describe, it } from 'mocha'
+import { expect } from 'chai'
+
 import {
   build_scatter_data_labels,
   SCATTER_LABEL_FONT_SIZE
 } from '../../src/scatter-plot-overlay/scatter-plot-data-labels.js'
-
-// Pure helper functions mirroring the implementation in scatter-plot-overlay.js.
-// These are tested in isolation to verify outlier detection and label configuration.
 
 const calculate_std_dev = (values, mean) => {
   const sum_sq = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0)
@@ -30,81 +28,79 @@ const make_outlier_checker = (x_values, y_values) => {
 }
 
 describe('scatter-plot-overlay label collision config', () => {
-  test('dataLabels.allowOverlap is false', () => {
+  it('dataLabels.allowOverlap is false', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(opts.allowOverlap).toBe(false)
+    expect(opts.allowOverlap).to.equal(false)
   })
 
-  test('dataLabels.align is a static string, not a heuristic function', () => {
+  it('dataLabels.align is a static string, not a heuristic function', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(typeof opts.align).toBe('string')
-    expect(opts.align).toBe('right')
+    expect(typeof opts.align).to.equal('string')
+    expect(opts.align).to.equal('right')
   })
 
-  test('dataLabels.verticalAlign is a static string, not a heuristic function', () => {
+  it('dataLabels.verticalAlign is a static string, not a heuristic function', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(typeof opts.verticalAlign).toBe('string')
-    expect(opts.verticalAlign).toBe('middle')
+    expect(typeof opts.verticalAlign).to.equal('string')
+    expect(opts.verticalAlign).to.equal('middle')
   })
 
-  test('formatter returns null for non-outlier points', () => {
+  it('formatter returns null for non-outlier points', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
     const result = opts.formatter.call({
       point: { is_outlier: false, label: 'Player A' }
     })
-    expect(result).toBeNull()
+    expect(result).to.equal(null)
   })
 
-  test('formatter returns label for outlier points', () => {
+  it('formatter returns label for outlier points', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
     const result = opts.formatter.call({
       point: { is_outlier: true, label: 'Player A' }
     })
-    expect(result).toBe('Player A')
+    expect(result).to.equal('Player A')
   })
 
-  test('enabled reflects labels_enabled param', () => {
-    expect(build_scatter_data_labels({ labels_enabled: true }).enabled).toBe(
-      true
-    )
-    expect(build_scatter_data_labels({ labels_enabled: false }).enabled).toBe(
-      false
-    )
+  it('enabled reflects labels_enabled param', () => {
+    expect(
+      build_scatter_data_labels({ labels_enabled: true }).enabled
+    ).to.equal(true)
+    expect(
+      build_scatter_data_labels({ labels_enabled: false }).enabled
+    ).to.equal(false)
   })
 })
 
 describe('scatter-plot-overlay dataLabels color callback (S6 fix)', () => {
-  test('dataLabels.color is a function (not a static string)', () => {
+  it('dataLabels.color is a function (not a static string)', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(typeof opts.color).toBe('function')
+    expect(typeof opts.color).to.equal('function')
   })
 
-  test('dataLabels.color callback returns point.color when set', () => {
+  it('dataLabels.color callback returns point.color when set', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
     const result = opts.color.call({ point: { color: '#e31837' } })
-    expect(result).toBe('#e31837')
+    expect(result).to.equal('#e31837')
   })
 
-  test('dataLabels.color callback returns undefined when point.color is not set (uniform mode)', () => {
+  it('dataLabels.color callback returns undefined when point.color is not set (uniform mode)', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
     const result = opts.color.call({ point: {} })
-    expect(result).toBeUndefined()
+    expect(result).to.be.undefined
   })
 
-  test('dataLabels.style does not contain a static color (color moved to top-level callback)', () => {
+  it('dataLabels.style does not contain a static color (color moved to top-level callback)', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    // style.color should not be set — color is handled by the top-level color callback
-    expect(opts.style.color).toBeUndefined()
+    expect(opts.style.color).to.be.undefined
   })
 
-  test('formatter and allowOverlap are preserved alongside color callback', () => {
+  it('formatter and allowOverlap are preserved alongside color callback', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(typeof opts.formatter).toBe('function')
-    expect(opts.allowOverlap).toBe(false)
+    expect(typeof opts.formatter).to.equal('function')
+    expect(opts.allowOverlap).to.equal(false)
   })
 })
 
-// Pure helper that mirrors the plotLines construction logic in scatter-plot-overlay.js
 const build_plot_lines = ({ axis, scatter_plot_options, mean_value }) => {
   const show_mean_key = axis === 'x' ? 'show_x_mean_line' : 'show_y_mean_line'
   const mean_lines =
@@ -134,7 +130,7 @@ const build_plot_lines = ({ axis, scatter_plot_options, mean_value }) => {
 }
 
 describe('scatter-plot-overlay reference lines (S8)', () => {
-  test('x-axis reference line appears in xAxis plotLines', () => {
+  it('x-axis reference line appears in xAxis plotLines', () => {
     const options = {
       reference_lines: [
         { axis: 'x', value: 50, label: 'avg', color: '#ff0000' }
@@ -146,14 +142,14 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       mean_value: 25
     })
     const ref = lines.find((l) => l.value === 50)
-    expect(ref).toBeDefined()
-    expect(ref.color).toBe('#ff0000')
-    expect(ref.dashStyle).toBe('Dash')
-    expect(ref.label.text).toBe('avg')
-    expect(ref.label.style.color).toBe('#ff0000')
+    expect(ref).to.not.be.undefined
+    expect(ref.color).to.equal('#ff0000')
+    expect(ref.dashStyle).to.equal('Dash')
+    expect(ref.label.text).to.equal('avg')
+    expect(ref.label.style.color).to.equal('#ff0000')
   })
 
-  test('y-axis reference line appears in yAxis plotLines', () => {
+  it('y-axis reference line appears in yAxis plotLines', () => {
     const options = {
       reference_lines: [
         { axis: 'y', value: 75, label: 'target', color: '#0000ff' }
@@ -165,11 +161,11 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       mean_value: 50
     })
     const ref = lines.find((l) => l.value === 75)
-    expect(ref).toBeDefined()
-    expect(ref.color).toBe('#0000ff')
+    expect(ref).to.not.be.undefined
+    expect(ref.color).to.equal('#0000ff')
   })
 
-  test('x-axis reference line does NOT appear in yAxis plotLines', () => {
+  it('x-axis reference line does NOT appear in yAxis plotLines', () => {
     const options = {
       reference_lines: [
         { axis: 'x', value: 50, label: 'avg', color: '#ff0000' }
@@ -181,10 +177,10 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       mean_value: 25
     })
     const ref = lines.find((l) => l.value === 50 && l.color === '#ff0000')
-    expect(ref).toBeUndefined()
+    expect(ref).to.be.undefined
   })
 
-  test('non-finite value is skipped (defensive)', () => {
+  it('non-finite value is skipped (defensive)', () => {
     const options = {
       reference_lines: [
         { axis: 'x', value: NaN, label: 'bad', color: '#888888' }
@@ -195,11 +191,10 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       scatter_plot_options: options,
       mean_value: 10
     })
-    // Only the mean line should be present
-    expect(lines.length).toBe(1)
+    expect(lines.length).to.equal(1)
   })
 
-  test('mean line and reference lines coexist on the same axis', () => {
+  it('mean line and reference lines coexist on the same axis', () => {
     const options = {
       show_x_mean_line: true,
       reference_lines: [
@@ -211,13 +206,12 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       scatter_plot_options: options,
       mean_value: 30
     })
-    // Mean line + 1 reference line
-    expect(lines.length).toBe(2)
-    expect(lines[0].value).toBe(30)
-    expect(lines[1].value).toBe(50)
+    expect(lines.length).to.equal(2)
+    expect(lines[0].value).to.equal(30)
+    expect(lines[1].value).to.equal(50)
   })
 
-  test('when show_x_mean_line is false, mean line absent but reference line present', () => {
+  it('when show_x_mean_line is false, mean line absent but reference line present', () => {
     const options = {
       show_x_mean_line: false,
       reference_lines: [
@@ -229,23 +223,22 @@ describe('scatter-plot-overlay reference lines (S8)', () => {
       scatter_plot_options: options,
       mean_value: 30
     })
-    expect(lines.length).toBe(1)
-    expect(lines[0].value).toBe(50)
+    expect(lines.length).to.equal(1)
+    expect(lines[0].value).to.equal(50)
   })
 
-  test('empty reference_lines produces no extra plotLines', () => {
+  it('empty reference_lines produces no extra plotLines', () => {
     const options = { reference_lines: [] }
     const lines = build_plot_lines({
       axis: 'x',
       scatter_plot_options: options,
       mean_value: 20
     })
-    expect(lines.length).toBe(1) // only mean line
+    expect(lines.length).to.equal(1)
   })
 })
 
 describe('scatter-plot-overlay outlier detection', () => {
-  // 50 points clustered around (10, 10) with a few outliers spread out
   const base_x = Array.from({ length: 45 }, (_, i) => 9.5 + (i % 5) * 0.2)
   const base_y = Array.from({ length: 45 }, (_, i) => 9.5 + (i % 5) * 0.2)
   const outlier_x = [25, 30, -5, 0, 20]
@@ -255,127 +248,125 @@ describe('scatter-plot-overlay outlier detection', () => {
 
   const is_outlier = make_outlier_checker(all_x, all_y)
 
-  test('clustered points near mean are not outliers', () => {
-    // Points at the cluster center should not be flagged
+  it('clustered points near mean are not outliers', () => {
     const non_outlier_count = base_x.filter(
       (x, i) => !is_outlier(x, base_y[i])
     ).length
-    // Expect the majority of clustered points to not be outliers
-    expect(non_outlier_count).toBeGreaterThan(base_x.length * 0.5)
+    expect(non_outlier_count).to.be.greaterThan(base_x.length * 0.5)
   })
 
-  test('points far from mean are flagged as outliers', () => {
+  it('points far from mean are flagged as outliers', () => {
     const all_flagged = outlier_x.every((x, i) => is_outlier(x, outlier_y[i]))
-    expect(all_flagged).toBe(true)
+    expect(all_flagged).to.equal(true)
   })
-
-  // Real collision behavior requires browser/integration test; unit tests assert config shape only.
 })
 
 describe('scatter-plot-overlay logo size derivation (S5)', () => {
-  test('SCATTER_LABEL_FONT_SIZE is 11', () => {
-    expect(SCATTER_LABEL_FONT_SIZE).toBe(11)
+  it('SCATTER_LABEL_FONT_SIZE is 11', () => {
+    expect(SCATTER_LABEL_FONT_SIZE).to.equal(11)
   })
 
-  test('default ratio 3 yields logo_size 33', () => {
+  it('default ratio 3 yields logo_size 33', () => {
     const logo_size_ratio = 3
     const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
-    expect(logo_size).toBe(33)
+    expect(logo_size).to.equal(33)
   })
 
-  test('custom ratio yields proportional logo_size', () => {
+  it('custom ratio yields proportional logo_size', () => {
     const logo_size = SCATTER_LABEL_FONT_SIZE * 4
-    expect(logo_size).toBe(44)
+    expect(logo_size).to.equal(44)
   })
 
-  test('dataLabels style fontSize matches SCATTER_LABEL_FONT_SIZE', () => {
+  it('dataLabels style fontSize matches SCATTER_LABEL_FONT_SIZE', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(opts.style.fontSize).toBe(`${SCATTER_LABEL_FONT_SIZE}px`)
+    expect(opts.style.fontSize).to.equal(`${SCATTER_LABEL_FONT_SIZE}px`)
   })
 })
 
 describe('scatter-plot-overlay custom title/subtitle override (S11)', () => {
-  // Pure logic mirrors the ternary in scatter-plot-overlay.js options.title.text
   const resolve_title = (custom_title, x_title_base, y_title_base) =>
     custom_title || `${x_title_base} vs ${y_title_base}`
 
   const resolve_subtitle = (custom_subtitle, has_subtitle, x_sub, y_sub) => {
     if (custom_subtitle) return custom_subtitle
-    if (has_subtitle) return `X: ${x_sub}<br/>Y: ${y_sub}`
+    if (has_subtitle) {
+      const lines = []
+      if (x_sub) lines.push(`X: ${x_sub}`)
+      if (y_sub) lines.push(`Y: ${y_sub}`)
+      return lines.join('<br/>')
+    }
     return undefined
   }
 
-  test('custom_title overrides computed title', () => {
+  it('custom_title overrides computed title', () => {
     const title = resolve_title('My Custom Title', 'Pass Yds', 'Rush Yds')
-    expect(title).toBe('My Custom Title')
+    expect(title).to.equal('My Custom Title')
   })
 
-  test('when custom_title is null, computed title is used', () => {
+  it('when custom_title is null, computed title is used', () => {
     const title = resolve_title(null, 'Pass Yds', 'Rush Yds')
-    expect(title).toBe('Pass Yds vs Rush Yds')
+    expect(title).to.equal('Pass Yds vs Rush Yds')
   })
 
-  test('custom_subtitle overrides computed subtitle', () => {
+  it('custom_subtitle overrides computed subtitle', () => {
     const subtitle = resolve_subtitle(
       'My Subtitle',
       true,
       'Year: 2022',
       'Year: 2022'
     )
-    expect(subtitle).toBe('My Subtitle')
+    expect(subtitle).to.equal('My Subtitle')
   })
 
-  test('when custom_subtitle is null, computed subtitle is used when params present', () => {
+  it('when custom_subtitle is null, computed subtitle is used when params present', () => {
     const subtitle = resolve_subtitle(null, true, 'Year: 2022', 'Year: 2022')
-    expect(subtitle).toBe('X: Year: 2022<br/>Y: Year: 2022')
+    expect(subtitle).to.equal('X: Year: 2022<br/>Y: Year: 2022')
   })
 
-  test('when custom_subtitle is null and no params, subtitle is undefined', () => {
+  it('when custom_subtitle is null and no params, subtitle is undefined', () => {
     const subtitle = resolve_subtitle(null, false, '', '')
-    expect(subtitle).toBeUndefined()
+    expect(subtitle).to.be.undefined
   })
 })
 
 describe('scatter-plot-overlay font family application (S12)', () => {
-  // Pure helper that mirrors the chart.style merge in scatter-plot-overlay.js
   const resolve_chart_style = (font_family) =>
     font_family ? { fontFamily: font_family } : {}
 
-  test('when font_family is set, chart style includes fontFamily', () => {
+  it('when font_family is set, chart style includes fontFamily', () => {
     const style = resolve_chart_style('Georgia')
-    expect(style.fontFamily).toBe('Georgia')
+    expect(style.fontFamily).to.equal('Georgia')
   })
 
-  test('when font_family is null, chart style is empty (no override)', () => {
+  it('when font_family is null, chart style is empty (no override)', () => {
     const style = resolve_chart_style(null)
-    expect(style.fontFamily).toBeUndefined()
-    expect(Object.keys(style).length).toBe(0)
+    expect(style.fontFamily).to.be.undefined
+    expect(Object.keys(style).length).to.equal(0)
   })
 
-  test('build_scatter_data_labels applies font_family to style when provided', () => {
+  it('build_scatter_data_labels applies font_family to style when provided', () => {
     const opts = build_scatter_data_labels({
       labels_enabled: true,
       font_family: 'Georgia'
     })
-    expect(opts.style.fontFamily).toBe('Georgia')
+    expect(opts.style.fontFamily).to.equal('Georgia')
   })
 
-  test('build_scatter_data_labels omits fontFamily from style when not provided', () => {
+  it('build_scatter_data_labels omits fontFamily from style when not provided', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
-    expect(opts.style.fontFamily).toBeUndefined()
+    expect(opts.style.fontFamily).to.be.undefined
   })
 })
 
 describe('scatter-plot-overlay PNG download (S13)', () => {
-  test('handle_download_png calls exportChartLocal when available', () => {
+  it('handle_download_png calls exportChartLocal when available', () => {
     let called_local = false
     const mock_chart = {
       exportChartLocal: ({ type }) => {
         called_local = true
-        expect(type).toBe('image/png')
+        expect(type).to.equal('image/png')
       }
     }
-    // Simulate handle_download_png logic
     const chart = mock_chart
     if (chart) {
       if (typeof chart.exportChartLocal === 'function') {
@@ -384,18 +375,17 @@ describe('scatter-plot-overlay PNG download (S13)', () => {
         chart.exportChart({ type: 'image/png' })
       }
     }
-    expect(called_local).toBe(true)
+    expect(called_local).to.equal(true)
   })
 
-  test('handle_download_png falls back to exportChart when exportChartLocal absent', () => {
+  it('handle_download_png falls back to exportChart when exportChartLocal absent', () => {
     let called_server = false
     const mock_chart = {
       exportChart: ({ type }) => {
         called_server = true
-        expect(type).toBe('image/png')
+        expect(type).to.equal('image/png')
       }
     }
-    // Simulate handle_download_png logic
     const chart = mock_chart
     if (chart) {
       if (typeof chart.exportChartLocal === 'function') {
@@ -404,21 +394,20 @@ describe('scatter-plot-overlay PNG download (S13)', () => {
         chart.exportChart({ type: 'image/png' })
       }
     }
-    expect(called_server).toBe(true)
+    expect(called_server).to.equal(true)
   })
 
-  test('handle_download_png does nothing when chart ref is null', () => {
+  it('handle_download_png does nothing when chart ref is null', () => {
     let called = false
     const mock_fn = () => {
       called = true
     }
-    // Simulate handle_download_png with null chart_instance_ref
     const chart = null
     if (chart) {
       if (typeof chart.exportChartLocal === 'function') {
         mock_fn()
       }
     }
-    expect(called).toBe(false)
+    expect(called).to.equal(false)
   })
 })

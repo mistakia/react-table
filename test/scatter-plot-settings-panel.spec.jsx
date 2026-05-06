@@ -1,26 +1,11 @@
-import {
-  describe,
-  expect,
-  test,
-  mock,
-  beforeAll,
-  afterAll,
-  afterEach
-} from 'bun:test'
-import { GlobalRegistrator } from '@happy-dom/global-registrator'
+import { describe, it, afterEach } from 'mocha'
+import { expect } from 'chai'
+import sinon from 'sinon'
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { act } from 'react'
+
 import ScatterPlotSettingsPanel from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
-
-beforeAll(() => {
-  GlobalRegistrator.register()
-  globalThis.IS_REACT_ACT_ENVIRONMENT = true
-})
-
-afterAll(() => {
-  GlobalRegistrator.unregister()
-})
 
 let _containers = []
 
@@ -53,8 +38,8 @@ const render = async (ui, container) => {
 
 const default_options = {}
 
-describe('ScatterPlotSettingsPanel — toolbar controls', () => {
-  test('renders regression, tier, x-mean, y-mean, settings, download buttons and point-color select', async () => {
+describe('ScatterPlotSettingsPanel - toolbar controls', () => {
+  it('renders regression, tier, x-mean, y-mean, settings, download buttons and point-color select', async () => {
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -72,18 +57,18 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       b.textContent.toLowerCase()
     )
 
-    expect(button_texts.some((t) => t.includes('regression'))).toBe(true)
-    expect(button_texts.some((t) => t.includes('tier'))).toBe(true)
-    expect(button_texts.some((t) => t.includes('x mean'))).toBe(true)
-    expect(button_texts.some((t) => t.includes('y mean'))).toBe(true)
-    expect(button_texts.some((t) => t.includes('settings'))).toBe(true)
-    expect(button_texts.some((t) => t.includes('download'))).toBe(true)
+    expect(button_texts.some((t) => t.includes('regression'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('tier'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('x mean'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('y mean'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('settings'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('download'))).to.equal(true)
 
     const selects = container.getElementsByTagName('select')
-    expect(selects.length).toBeGreaterThanOrEqual(1)
+    expect(selects.length).to.be.at.least(1)
   })
 
-  test('clicking Settings... opens the modal', async () => {
+  it('clicking Settings... opens the modal', async () => {
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -96,28 +81,27 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       container
     )
 
-    // Modal should not be present initially
-    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
-      false
-    )
+    expect(
+      container.innerHTML.includes('scatter-plot-settings-modal')
+    ).to.equal(false)
 
     const buttons = Array.from(container.getElementsByTagName('button'))
     const settings_btn = buttons.find((b) =>
       b.textContent.toLowerCase().includes('settings')
     )
-    expect(settings_btn).toBeDefined()
+    expect(settings_btn).to.not.be.undefined
 
     await act(async () => {
       settings_btn.click()
     })
 
-    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
-      true
-    )
+    expect(
+      container.innerHTML.includes('scatter-plot-settings-modal')
+    ).to.equal(true)
   })
 
-  test('Cancel button closes the modal without calling on_change', async () => {
-    const on_change = mock(() => {})
+  it('Cancel button closes the modal without calling on_change', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -146,13 +130,13 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       cancel_btn.click()
     })
 
-    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
-      false
-    )
-    expect(on_change).not.toHaveBeenCalled()
+    expect(
+      container.innerHTML.includes('scatter-plot-settings-modal')
+    ).to.equal(false)
+    expect(on_change.called).to.equal(false)
   })
 
-  test('Save button closes the modal', async () => {
+  it('Save button closes the modal', async () => {
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -181,12 +165,12 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       save_btn.click()
     })
 
-    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
-      false
-    )
+    expect(
+      container.innerHTML.includes('scatter-plot-settings-modal')
+    ).to.equal(false)
   })
 
-  test('on_change is called with deep-cloned options when toggling tier grid', async () => {
+  it('on_change is called with deep-cloned options when toggling tier grid', async () => {
     const received = []
     const on_change = (opts) => received.push(opts)
     const initial = { show_tier_grid: false }
@@ -210,14 +194,13 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       tier_btn.click()
     })
 
-    expect(received.length).toBe(1)
-    expect(received[0].show_tier_grid).toBe(true)
-    // Confirm deep clone — not the same reference as initial
-    expect(received[0]).not.toBe(initial)
+    expect(received.length).to.equal(1)
+    expect(received[0].show_tier_grid).to.equal(true)
+    expect(received[0]).to.not.equal(initial)
   })
 
-  test('on_toggle_regression is called when clicking Regression button', async () => {
-    const toggle = mock(() => {})
+  it('on_toggle_regression is called when clicking Regression button', async () => {
+    const toggle = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -238,11 +221,11 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       reg_btn.click()
     })
 
-    expect(toggle).toHaveBeenCalledTimes(1)
+    expect(toggle.callCount).to.equal(1)
   })
 
-  test('Save with no changes does NOT call on_change', async () => {
-    const on_change = mock(() => {})
+  it('Save with no changes does NOT call on_change', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -271,14 +254,14 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       save_btn.click()
     })
 
-    expect(container.innerHTML.includes('scatter-plot-settings-modal')).toBe(
-      false
-    )
-    expect(on_change).not.toHaveBeenCalled()
+    expect(
+      container.innerHTML.includes('scatter-plot-settings-modal')
+    ).to.equal(false)
+    expect(on_change.called).to.equal(false)
   })
 
-  test('Save preserves toolbar fields updated while modal is open (no stale-draft regression)', async () => {
-    const on_change = mock(() => {})
+  it('Save preserves toolbar fields updated while modal is open (no stale-draft regression)', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -291,7 +274,6 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       container
     )
 
-    // Open modal
     const settings_btn = Array.from(
       container.getElementsByTagName('button')
     ).find((b) => b.textContent.toLowerCase().includes('settings'))
@@ -299,9 +281,6 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       settings_btn.click()
     })
 
-    // Simulate a parent-driven prop update arriving while the modal is open.
-    // (Reproduces the case where a toolbar toggle outside the modal updates
-    // scatter_plot_options between mount and Save.)
     await act(async () => {
       container._react_root.render(
         React.createElement(ScatterPlotSettingsPanel, {
@@ -317,7 +296,6 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       )
     })
 
-    // Make a modal-level change so handle_save's no-op short-circuit doesn't skip the call.
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -332,14 +310,13 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalled()
-    const saved = on_change.mock.calls[on_change.mock.calls.length - 1][0]
-    // Toolbar field set after modal mount must survive Save
-    expect(saved.show_tier_grid).toBe(true)
-    expect(saved.point_color_mode).toBe('team')
+    expect(on_change.called).to.equal(true)
+    const saved = on_change.lastCall.args[0]
+    expect(saved.show_tier_grid).to.equal(true)
+    expect(saved.point_color_mode).to.equal('team')
   })
 
-  test('prop updates after mount propagate into the rendered toolbar state', async () => {
+  it('prop updates after mount propagate into the rendered toolbar state', async () => {
     const container = make_container()
     const initial = { show_tier_grid: false }
     await render(
@@ -353,15 +330,13 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       container
     )
 
-    // Initially tier button should not be active
     const get_tier_btn = () =>
       Array.from(container.getElementsByTagName('button')).find((b) =>
         b.textContent.toLowerCase().includes('tier')
       )
 
-    expect(get_tier_btn().className.includes('active')).toBe(false)
+    expect(get_tier_btn().className.includes('active')).to.equal(false)
 
-    // Re-render with updated prop
     await act(async () => {
       container._react_root.render(
         React.createElement(ScatterPlotSettingsPanel, {
@@ -374,11 +349,11 @@ describe('ScatterPlotSettingsPanel — toolbar controls', () => {
       )
     })
 
-    expect(get_tier_btn().className.includes('active')).toBe(true)
+    expect(get_tier_btn().className.includes('active')).to.equal(true)
   })
 })
 
-describe('ScatterPlotSettingsModal — reference lines editor', () => {
+describe('ScatterPlotSettingsModal - reference lines editor', () => {
   const open_modal = async (container, opts = {}) => {
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -398,16 +373,16 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
     })
   }
 
-  test('shows Add reference line button in modal', async () => {
+  it('shows Add reference line button in modal', async () => {
     const container = make_container()
     await open_modal(container)
     const btns = Array.from(container.getElementsByTagName('button'))
-    expect(btns.some((b) => b.textContent.includes('Add reference line'))).toBe(
-      true
-    )
+    expect(
+      btns.some((b) => b.textContent.includes('Add reference line'))
+    ).to.equal(true)
   })
 
-  test('clicking Add reference line adds a row', async () => {
+  it('clicking Add reference line adds a row', async () => {
     const container = make_container()
     await open_modal(container)
 
@@ -419,10 +394,10 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
     })
 
     const rows = container.querySelectorAll('.ref-line-row')
-    expect(rows.length).toBe(1)
+    expect(rows.length).to.equal(1)
   })
 
-  test('adding two rows then deleting one leaves one row', async () => {
+  it('adding two rows then deleting one leaves one row', async () => {
     const container = make_container()
     await open_modal(container)
 
@@ -438,18 +413,18 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
       get_add_btn().click()
     })
 
-    expect(container.querySelectorAll('.ref-line-row').length).toBe(2)
+    expect(container.querySelectorAll('.ref-line-row').length).to.equal(2)
 
     const delete_btns = container.querySelectorAll('.ref-line-delete')
     await act(async () => {
       delete_btns[0].click()
     })
 
-    expect(container.querySelectorAll('.ref-line-row').length).toBe(1)
+    expect(container.querySelectorAll('.ref-line-row').length).to.equal(1)
   })
 
-  test('Save calls on_change with reference_lines array when a line is added', async () => {
-    const on_change = mock(() => {})
+  it('Save calls on_change with reference_lines array when a line is added', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
 
     await render(
@@ -484,17 +459,17 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    expect(Array.isArray(saved.reference_lines)).toBe(true)
-    expect(saved.reference_lines.length).toBe(1)
-    expect(saved.reference_lines[0].axis).toBe('x')
-    expect(saved.reference_lines[0].value).toBe(0)
-    expect(saved.reference_lines[0].color).toBe('#888888')
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(Array.isArray(saved.reference_lines)).to.equal(true)
+    expect(saved.reference_lines.length).to.equal(1)
+    expect(saved.reference_lines[0].axis).to.equal('x')
+    expect(saved.reference_lines[0].value).to.equal(0)
+    expect(saved.reference_lines[0].color).to.equal('#888888')
   })
 
-  test('Save with existing reference_lines prop preserves them in on_change', async () => {
-    const on_change = mock(() => {})
+  it('Save with existing reference_lines prop preserves them in on_change', async () => {
+    const on_change = sinon.spy()
     const existing_lines = [
       { axis: 'x', value: 50, label: 'midpoint', color: '#ff0000' }
     ]
@@ -518,10 +493,8 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
       settings_btn.click()
     })
 
-    // Rows should be pre-populated
-    expect(container.querySelectorAll('.ref-line-row').length).toBe(1)
+    expect(container.querySelectorAll('.ref-line-row').length).to.equal(1)
 
-    // Add another line
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -536,13 +509,13 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    expect(saved.reference_lines.length).toBe(2)
-    expect(saved.reference_lines[0].label).toBe('midpoint')
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(saved.reference_lines.length).to.equal(2)
+    expect(saved.reference_lines[0].label).to.equal('midpoint')
   })
 
-  test('mean toggle buttons still work alongside reference_lines', async () => {
+  it('mean toggle buttons still work alongside reference_lines', async () => {
     const received = []
     const on_change = (opts) => received.push(opts)
     const container = make_container()
@@ -569,16 +542,14 @@ describe('ScatterPlotSettingsModal — reference lines editor', () => {
       x_mean_btn.click()
     })
 
-    expect(received.length).toBe(1)
-    // show_x_mean_line was toggled (from absent/undefined to a boolean value)
-    expect(typeof received[0].show_x_mean_line).toBe('boolean')
-    // reference_lines must still be present in on_change payload
-    expect(received[0].reference_lines).toBeDefined()
-    expect(Array.isArray(received[0].reference_lines)).toBe(true)
+    expect(received.length).to.equal(1)
+    expect(typeof received[0].show_x_mean_line).to.equal('boolean')
+    expect(received[0].reference_lines).to.not.be.undefined
+    expect(Array.isArray(received[0].reference_lines)).to.equal(true)
   })
 })
 
-describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
+describe('ScatterPlotSettingsModal - custom title and subtitle (S11)', () => {
   const open_modal = async (container, opts = {}) => {
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -598,32 +569,32 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
     })
   }
 
-  test('custom title input is rendered in modal', async () => {
+  it('custom title input is rendered in modal', async () => {
     const container = make_container()
     await open_modal(container)
     const input = container.querySelector('#custom-title-input')
-    expect(input).not.toBeNull()
-    expect(input.tagName.toLowerCase()).toBe('input')
-    expect(input.type).toBe('text')
+    expect(input).to.not.equal(null)
+    expect(input.tagName.toLowerCase()).to.equal('input')
+    expect(input.type).to.equal('text')
   })
 
-  test('custom subtitle textarea is rendered in modal', async () => {
+  it('custom subtitle textarea is rendered in modal', async () => {
     const container = make_container()
     await open_modal(container)
     const textarea = container.querySelector('#custom-subtitle-input')
-    expect(textarea).not.toBeNull()
-    expect(textarea.tagName.toLowerCase()).toBe('textarea')
+    expect(textarea).to.not.equal(null)
+    expect(textarea.tagName.toLowerCase()).to.equal('textarea')
   })
 
-  test('custom title input shows existing value from scatter_plot_options', async () => {
+  it('custom title input shows existing value from scatter_plot_options', async () => {
     const container = make_container()
     await open_modal(container, { custom_title: 'My Title' })
     const input = container.querySelector('#custom-title-input')
-    expect(input.value).toBe('My Title')
+    expect(input.value).to.equal('My Title')
   })
 
-  test('Save with custom_title calls on_change with custom_title set', async () => {
-    const on_change = mock(() => {})
+  it('Save with custom_title calls on_change with custom_title set', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -643,8 +614,6 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
       settings_btn.click()
     })
 
-    // Add a reference line to trigger a detectable change (Save only calls on_change when
-    // the draft differs from scatter_plot_options; adding a line guarantees a diff).
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -659,15 +628,13 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
       save_btn.click()
     })
 
-    // on_change should have been called; custom_title from initial props is preserved
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    // Initial options had no custom_title — key must remain absent
-    expect(saved.custom_title).toBeUndefined()
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(saved.custom_title).to.be.undefined
   })
 
-  test('Save with pre-existing custom_title preserves it in on_change payload', async () => {
-    const on_change = mock(() => {})
+  it('Save with pre-existing custom_title preserves it in on_change payload', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -687,7 +654,6 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
       settings_btn.click()
     })
 
-    // Add a reference line to force a detectable change
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -702,14 +668,13 @@ describe('ScatterPlotSettingsModal — custom title and subtitle (S11)', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    // custom_title from initial props must survive through Save
-    expect(saved.custom_title).toBe('My Title')
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(saved.custom_title).to.equal('My Title')
   })
 })
 
-describe('ScatterPlotSettingsModal — font family (S12)', () => {
+describe('ScatterPlotSettingsModal - font family (S12)', () => {
   const open_modal = async (container, opts = {}) => {
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -729,34 +694,34 @@ describe('ScatterPlotSettingsModal — font family (S12)', () => {
     })
   }
 
-  test('font-family select is rendered in modal', async () => {
+  it('font-family select is rendered in modal', async () => {
     const container = make_container()
     await open_modal(container)
     const select = container.querySelector('#font-family-select')
-    expect(select).not.toBeNull()
-    expect(select.tagName.toLowerCase()).toBe('select')
+    expect(select).to.not.equal(null)
+    expect(select.tagName.toLowerCase()).to.equal('select')
   })
 
-  test('font-family select has Default option with empty value', async () => {
+  it('font-family select has Default option with empty value', async () => {
     const container = make_container()
     await open_modal(container)
     const select = container.querySelector('#font-family-select')
     const default_option = Array.from(select.options).find(
       (o) => o.value === ''
     )
-    expect(default_option).toBeDefined()
-    expect(default_option.text).toBe('Default')
+    expect(default_option).to.not.be.undefined
+    expect(default_option.text).to.equal('Default')
   })
 
-  test('font-family select pre-selects existing font_family from options', async () => {
+  it('font-family select pre-selects existing font_family from options', async () => {
     const container = make_container()
     await open_modal(container, { font_family: 'Georgia' })
     const select = container.querySelector('#font-family-select')
-    expect(select.value).toBe('Georgia')
+    expect(select.value).to.equal('Georgia')
   })
 
-  test('Save with pre-existing font_family preserves it in on_change payload', async () => {
-    const on_change = mock(() => {})
+  it('Save with pre-existing font_family preserves it in on_change payload', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -776,7 +741,6 @@ describe('ScatterPlotSettingsModal — font family (S12)', () => {
       settings_btn.click()
     })
 
-    // Add a reference line to force a detectable change
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -791,13 +755,13 @@ describe('ScatterPlotSettingsModal — font family (S12)', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    expect(saved.font_family).toBe('serif')
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(saved.font_family).to.equal('serif')
   })
 
-  test('Save with no font_family in options does not add font_family key', async () => {
-    const on_change = mock(() => {})
+  it('Save with no font_family in options does not add font_family key', async () => {
+    const on_change = sinon.spy()
     const container = make_container()
     await render(
       React.createElement(ScatterPlotSettingsPanel, {
@@ -817,7 +781,6 @@ describe('ScatterPlotSettingsModal — font family (S12)', () => {
       settings_btn.click()
     })
 
-    // Add a reference line to force a detectable change
     const add_btn = Array.from(container.getElementsByTagName('button')).find(
       (b) => b.textContent.includes('Add reference line')
     )
@@ -832,8 +795,8 @@ describe('ScatterPlotSettingsModal — font family (S12)', () => {
       save_btn.click()
     })
 
-    expect(on_change).toHaveBeenCalledTimes(1)
-    const saved = on_change.mock.calls[0][0]
-    expect(saved.font_family).toBeUndefined()
+    expect(on_change.callCount).to.equal(1)
+    const saved = on_change.firstCall.args[0]
+    expect(saved.font_family).to.be.undefined
   })
 })

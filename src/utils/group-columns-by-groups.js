@@ -5,11 +5,7 @@
 //   columns: array of objects // just like this one or a column definition
 // }
 
-import {
-  handle_array_param_value,
-  handle_dynamic_param_value,
-  handle_single_param_value
-} from '#src/utils/format-column-params.js'
+import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function group_columns_by_groups(
   table_columns = [],
@@ -106,10 +102,12 @@ export default function group_columns_by_groups(
       for (const [param_key, param_value] of Object.entries(
         column_state.params
       )) {
-        // check if param value is not defined
-        if (!param_value && param_value !== 0 && param_value !== false) {
-          continue
-        }
+        const label = format_column_params({
+          column_def: column,
+          column_state_params: { [param_key]: param_value },
+          variant: 'short'
+        })
+        if (!label) continue
 
         // Check if the current parameter is not already present in any parent group
         // This prevents duplicate grouping for the same parameter
@@ -121,37 +119,6 @@ export default function group_columns_by_groups(
                 JSON.stringify(param_value)
           )
         ) {
-          const param_label =
-            column.column_params?.[param_key]?.label || param_key
-
-          let label
-          if (Array.isArray(param_value)) {
-            label = handle_array_param_value(
-              param_value,
-              param_key,
-              column,
-              param_label
-            )
-          } else if (
-            param_value &&
-            typeof param_value === 'object' &&
-            param_value.dynamic_type
-          ) {
-            label = handle_dynamic_param_value(
-              param_value,
-              param_key,
-              column,
-              param_label
-            )
-          } else {
-            label = handle_single_param_value(
-              param_value,
-              param_key,
-              column,
-              param_label
-            )
-          }
-
           identifiers.push({
             type: 'param',
             id: `${param_key}_${JSON.stringify(param_value)}`,

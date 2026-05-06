@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 
 import FilterBase from '#src/filter-base'
+import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function ColumnParamBooleanFilter({
   column_param_name,
@@ -12,8 +13,6 @@ export default function ColumnParamBooleanFilter({
   mixed_state = false
 }) {
   const label = column_param_definition?.label || column_param_name
-  const is_column_param_defined =
-    selected_param_values !== undefined || selected_param_values !== null
 
   const filter_values = [
     { label: 'YES', value: true },
@@ -21,11 +20,7 @@ export default function ColumnParamBooleanFilter({
   ]
 
   const handle_select = (value) => {
-    if (
-      mixed_state ||
-      !is_column_param_defined ||
-      selected_param_values !== value
-    ) {
+    if (mixed_state || selected_param_values !== value) {
       handle_change(value)
     } else {
       handle_change(undefined)
@@ -50,10 +45,14 @@ export default function ColumnParamBooleanFilter({
 
   const selected_label = mixed_state
     ? '-'
-    : !is_column_param_defined
-      ? 'ALL'
-      : filter_values.find((v) => v.value === selected_param_values)?.label ||
-        'ALL'
+    : format_column_params({
+        column_def: {
+          column_params: { [column_param_name]: column_param_definition }
+        },
+        column_state_params: { [column_param_name]: selected_param_values },
+        variant: 'short',
+        default_label: 'ALL'
+      })
 
   const body = <div className='table-filter-item-dropdown-body'>{items}</div>
 

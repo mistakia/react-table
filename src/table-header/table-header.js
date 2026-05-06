@@ -20,6 +20,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
 import { get_string_from_object } from '#src/utils'
+import { format_column_params } from '#src/utils/format-column-params.js'
 import {
   TABLE_DATA_TYPES,
   OPERATOR_MENU_DEFAULT_VALUE
@@ -272,6 +273,20 @@ const TableHeader = ({ header, column, table }) => {
 
   const sticky_left_value = sticky_left(column)
 
+  const column_state_params =
+    table_state.columns?.[table_state_columns_index]?.params
+  const param_suffix = useMemo(
+    () =>
+      column.columnDef.column_params
+        ? format_column_params({
+            column_def: column.columnDef,
+            column_state_params,
+            variant: 'short'
+          })
+        : '',
+    [column.columnDef, column_state_params]
+  )
+
   if (header.column.columnDef.id === 'add_column_action') {
     if (header.depth > 1) {
       return null
@@ -357,7 +372,10 @@ const TableHeader = ({ header, column, table }) => {
                 </div>
               )}
               {!header.isPlaceholder && (
-                <div style={{ flex: 1 }}>{column.columnDef.header_label}</div>
+                <div style={{ flex: 1 }}>
+                  {column.columnDef.header_label}
+                  {!is_grouped && param_suffix ? ` · ${param_suffix}` : ''}
+                </div>
               )}
               {is_sorted && column_sort_direction === 'asc' && (
                 <div className='header-sort-icon'>
