@@ -128,7 +128,11 @@ export default function Table({
   is_scatter_plot_point_label_enabled = () => true,
   metadata = {},
   enable_validation_warnings = false,
-  row_highlights = null
+  row_highlights = null,
+  filter_controls_open: controlled_filter_controls_open,
+  set_filter_controls_open: controlled_set_filter_controls_open,
+  controls_extension = null,
+  clear_local_cache = null
 }) {
   useEffect(() => {
     if (!enable_validation_warnings || !table_state) return
@@ -159,7 +163,17 @@ export default function Table({
   const [slice_size, set_slice_size] = useState(INITIAL_LOAD_NUMBER)
   const [is_quick_filters_expanded, set_is_quick_filters_expanded] =
     useState(false)
-  const [filter_controls_open, set_filter_controls_open] = useState(false)
+  const [internal_filter_controls_open, internal_set_filter_controls_open] =
+    useState(false)
+  const is_filter_controls_open_controlled =
+    controlled_filter_controls_open !== undefined &&
+    typeof controlled_set_filter_controls_open === 'function'
+  const filter_controls_open = is_filter_controls_open_controlled
+    ? controlled_filter_controls_open
+    : internal_filter_controls_open
+  const set_filter_controls_open = is_filter_controls_open_controlled
+    ? controlled_set_filter_controls_open
+    : internal_set_filter_controls_open
   const table_container_ref = useRef()
   const [column_controls_open, set_column_controls_open] = useState(false)
   const [filters_local_table_state, set_filters_local_table_state] =
@@ -810,7 +824,8 @@ export default function Table({
                 all_columns,
                 selected_view,
                 table_username,
-                reset_cache
+                reset_cache,
+                clear_local_cache
               }}
             />
             {selected_view.search && (
@@ -909,6 +924,9 @@ export default function Table({
           {/* <div className='table-state-container'>{state_items}</div> */}
           <TableMetadata created_at={metadata?.created_at} />
         </div>
+        {controls_extension && (
+          <div className='table-controls-extension'>{controls_extension}</div>
+        )}
         {selected_view.view_filters &&
           selected_view.view_filters.length > 0 && (
             <div
@@ -1033,5 +1051,9 @@ Table.propTypes = {
   metadata: PropTypes.object,
   disable_splits: PropTypes.bool,
   enable_validation_warnings: PropTypes.bool,
-  row_highlights: PropTypes.object
+  row_highlights: PropTypes.object,
+  filter_controls_open: PropTypes.bool,
+  set_filter_controls_open: PropTypes.func,
+  controls_extension: PropTypes.node,
+  clear_local_cache: PropTypes.func
 }

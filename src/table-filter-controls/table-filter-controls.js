@@ -201,6 +201,24 @@ const TableFilterControls = ({
     }
   }, [filtered_and_sorted_columns, filter_text_input])
 
+  // Collapse "Available Filters" once per open transition when filters exist
+  // (e.g. via a chip click that bypasses handle_menu_toggle), so the user
+  // lands on "Selected Filters." Keyed off the open transition only, so a
+  // subsequent user expansion is not fought.
+  const did_collapse_for_open_ref = useRef(false)
+  useEffect(() => {
+    if (!filter_controls_open) {
+      did_collapse_for_open_ref.current = false
+      return
+    }
+    if (did_collapse_for_open_ref.current) return
+    const total_filters = (filters_local_table_state.where || []).length
+    if (total_filters > 0) {
+      set_all_columns_expanded(false)
+      did_collapse_for_open_ref.current = true
+    }
+  }, [filter_controls_open, filters_local_table_state, set_all_columns_expanded])
+
   useEffect(() => {
     if (filter_controls_open) {
       if (container_ref.current) {
