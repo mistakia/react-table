@@ -254,6 +254,12 @@ const ScatterPlotSettingsModal = ({
   const [custom_subtitle, set_custom_subtitle] = React.useState(
     scatter_plot_options.custom_subtitle || ''
   )
+  const [custom_x_axis_title, set_custom_x_axis_title] = React.useState(
+    scatter_plot_options.custom_x_axis_title || ''
+  )
+  const [custom_y_axis_title, set_custom_y_axis_title] = React.useState(
+    scatter_plot_options.custom_y_axis_title || ''
+  )
   const [font_family, set_font_family] = React.useState(
     scatter_plot_options.font_family || ''
   )
@@ -268,6 +274,14 @@ const ScatterPlotSettingsModal = ({
 
   const handle_custom_subtitle_change = (e) => {
     set_custom_subtitle(e.target.value.slice(0, 200))
+  }
+
+  const handle_custom_x_axis_title_change = (e) => {
+    set_custom_x_axis_title(e.target.value.slice(0, 200))
+  }
+
+  const handle_custom_y_axis_title_change = (e) => {
+    set_custom_y_axis_title(e.target.value.slice(0, 200))
   }
 
   const handle_font_family_change = (e) => {
@@ -286,31 +300,19 @@ const ScatterPlotSettingsModal = ({
     // Start from the live prop so toolbar-controlled fields (point_color_mode,
     // show_tier_grid, show_*_mean_line) made while the modal was open are preserved.
     const next_draft = { ...scatter_plot_options }
-    if (normalized_lines.length > 0) {
-      next_draft.reference_lines = normalized_lines
-    } else {
-      delete next_draft.reference_lines
+    const set_or_delete = (key, value) => {
+      if (value !== null) next_draft[key] = value
+      else delete next_draft[key]
     }
-    // Normalize custom_title / custom_subtitle: empty string → null
-    const title_value = custom_title.trim() || null
-    const subtitle_value = custom_subtitle.trim() || null
-    if (title_value !== null) {
-      next_draft.custom_title = title_value
-    } else {
-      delete next_draft.custom_title
-    }
-    if (subtitle_value !== null) {
-      next_draft.custom_subtitle = subtitle_value
-    } else {
-      delete next_draft.custom_subtitle
-    }
-    // Normalize font_family: empty string → null → key deleted
-    const font_family_value = font_family || null
-    if (font_family_value !== null) {
-      next_draft.font_family = font_family_value
-    } else {
-      delete next_draft.font_family
-    }
+    set_or_delete(
+      'reference_lines',
+      normalized_lines.length > 0 ? normalized_lines : null
+    )
+    set_or_delete('custom_title', custom_title.trim() || null)
+    set_or_delete('custom_subtitle', custom_subtitle.trim() || null)
+    set_or_delete('custom_x_axis_title', custom_x_axis_title.trim() || null)
+    set_or_delete('custom_y_axis_title', custom_y_axis_title.trim() || null)
+    set_or_delete('font_family', font_family || null)
     if (JSON.stringify(next_draft) !== JSON.stringify(scatter_plot_options)) {
       on_change({ ...next_draft })
     }
@@ -368,6 +370,40 @@ const ScatterPlotSettingsModal = ({
               onChange={handle_custom_subtitle_change}
               placeholder='Leave blank to use computed subtitle'
               rows={3}
+            />
+          </div>
+
+          <div className='modal-section'>
+            <label
+              className='modal-section-label'
+              htmlFor='custom-x-axis-title-input'>
+              X axis title
+            </label>
+            <input
+              id='custom-x-axis-title-input'
+              className='modal-text-input'
+              type='text'
+              maxLength={200}
+              value={custom_x_axis_title}
+              onChange={handle_custom_x_axis_title_change}
+              placeholder='Leave blank to use computed X axis title'
+            />
+          </div>
+
+          <div className='modal-section'>
+            <label
+              className='modal-section-label'
+              htmlFor='custom-y-axis-title-input'>
+              Y axis title
+            </label>
+            <input
+              id='custom-y-axis-title-input'
+              className='modal-text-input'
+              type='text'
+              maxLength={200}
+              value={custom_y_axis_title}
+              onChange={handle_custom_y_axis_title_change}
+              placeholder='Leave blank to use computed Y axis title'
             />
           </div>
 

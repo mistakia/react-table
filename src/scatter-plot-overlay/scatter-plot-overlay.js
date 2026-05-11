@@ -204,6 +204,20 @@ const ScatterPlotOverlay = ({
 }) => {
   const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
 
+  const [local_scatter_plot_options, set_local_scatter_plot_options] =
+    React.useState(() => scatter_plot_options || {})
+
+  // Parents commonly pass a fresh object literal each render. Keying the
+  // mirror effect on the serialized content lets React's primitive dep
+  // equality skip both the effect body and the state update when nothing
+  // has actually changed, without clobbering pending optimistic edits.
+  const scatter_plot_options_serialized = JSON.stringify(
+    scatter_plot_options || {}
+  )
+  React.useEffect(() => {
+    set_local_scatter_plot_options(scatter_plot_options || {})
+  }, [scatter_plot_options_serialized])
+
   const x_axis_base =
     x_column.short_label || x_column.header_label || x_column.name || 'X Axis'
   const y_axis_base =
@@ -234,8 +248,12 @@ const ScatterPlotOverlay = ({
     exclude_defaults: true
   })
 
-  const x_label = x_short ? `${x_axis_base} (${x_short})` : x_axis_base
-  const y_label = y_short ? `${y_axis_base} (${y_short})` : y_axis_base
+  const x_label_computed = x_short ? `${x_axis_base} (${x_short})` : x_axis_base
+  const y_label_computed = y_short ? `${y_axis_base} (${y_short})` : y_axis_base
+  const x_label =
+    local_scatter_plot_options.custom_x_axis_title || x_label_computed
+  const y_label =
+    local_scatter_plot_options.custom_y_axis_title || y_label_computed
 
   const has_subtitle = Boolean(x_long || y_long)
 
@@ -288,25 +306,12 @@ const ScatterPlotOverlay = ({
 
   const [show_regression, set_show_regression] = React.useState(false)
   const [regression_stats, set_regression_stats] = React.useState(null)
-  const [local_scatter_plot_options, set_local_scatter_plot_options] =
-    React.useState(() => scatter_plot_options || {})
 
   // Ref to the live Highcharts chart instance, captured via chart.events.load.
   const chart_instance_ref = React.useRef(null)
 
   // Read from local state so settings-panel changes take effect immediately without a prop change.
   const point_color_mode = local_scatter_plot_options?.point_color_mode
-
-  // Parents commonly pass a fresh object literal each render. Keying the
-  // mirror effect on the serialized content lets React's primitive dep
-  // equality skip both the effect body and the state update when nothing
-  // has actually changed, without clobbering pending optimistic edits.
-  const scatter_plot_options_serialized = JSON.stringify(
-    scatter_plot_options || {}
-  )
-  React.useEffect(() => {
-    set_local_scatter_plot_options(scatter_plot_options || {})
-  }, [scatter_plot_options_serialized])
 
   const handle_scatter_plot_options_change = (next_options) => {
     set_local_scatter_plot_options(next_options)

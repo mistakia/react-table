@@ -65,6 +65,16 @@
       "maxLength": 1000,
       "description": "Custom chart subtitle; null means use auto-generated subtitle"
     },
+    "custom_x_axis_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom X axis title; null means use auto-generated title"
+    },
+    "custom_y_axis_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom Y axis title; null means use auto-generated title"
+    },
     "font_family": {
       "type": ["string", "null"],
       "maxLength": 100,
