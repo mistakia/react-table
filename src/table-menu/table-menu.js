@@ -19,6 +19,7 @@ import {
 } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
 import { table_context } from '#src/table-context'
+import { SHARE_LINK_URL_SCHEMA } from '#src/constants.mjs'
 
 import './table-menu.styl'
 
@@ -133,20 +134,35 @@ const TableMenu = ({
   const handle_shareable_link = async () => {
     const params = new URLSearchParams()
 
-    const { columns, prefix_columns, sort, where, splits, q } = table_state
-    if (columns) params.append('columns', JSON.stringify(columns))
-    if (prefix_columns)
-      params.append('prefix_columns', JSON.stringify(prefix_columns))
-    if (sort) params.append('sort', JSON.stringify(sort))
-    if (where) params.append('where', JSON.stringify(where))
-    if (splits) params.append('splits', JSON.stringify(splits))
-    if (q) params.append('q', q)
+    for (const [key, type] of Object.entries(
+      SHARE_LINK_URL_SCHEMA.table_state
+    )) {
+      const value = table_state?.[key]
+      if (type === 'array') {
+        if (Array.isArray(value) && value.length > 0) {
+          params.append(key, JSON.stringify(value))
+        }
+      } else if (type === 'object') {
+        if (
+          value &&
+          typeof value === 'object' &&
+          Object.keys(value).length > 0
+        ) {
+          params.append(key, JSON.stringify(value))
+        }
+      } else if (type === 'string') {
+        if (value) params.append(key, value)
+      } else if (type === 'boolean') {
+        // Always emit booleans -- saved-view state may default to `true`, and
+        // skipping `false` would let a stale `true` survive a round-trip.
+        params.append(key, String(Boolean(value)))
+      }
+    }
 
-    const { view_id, view_name, search, view_description } = selected_view
-    if (view_id) params.append('view_id', view_id)
-    if (view_name) params.append('view_name', view_name)
-    if (search) params.append('search', JSON.stringify(search))
-    if (view_description) params.append('view_description', view_description)
+    for (const key of SHARE_LINK_URL_SCHEMA.view) {
+      const value = selected_view?.[key]
+      if (value) params.append(key, value)
+    }
 
     const shareable_link = `${window.location.origin}${
       window.location.pathname
@@ -154,13 +170,20 @@ const TableMenu = ({
 
     if (shorten_url) {
       set_link_state('Generating Link')
-      const response = await shorten_url(shareable_link)
-      const shortened_url = `${window.location.origin}${response.short_url}`
-      await copy_to_clipboard(shortened_url)
+      try {
+        const response = await shorten_url(shareable_link)
+        const shortened_url = `${window.location.origin}${response.short_url}`
+        await copy_to_clipboard(shortened_url)
+        set_link_state('Copied Link')
+      } catch (error) {
+        console.error('shorten_url failed, falling back to long URL', error)
+        await copy_to_clipboard(shareable_link)
+        set_link_state('Copy Link Failed')
+      }
     } else {
       await copy_to_clipboard(shareable_link)
+      set_link_state('Copied Link')
     }
-    set_link_state('Copied Link')
 
     setTimeout(() => {
       set_link_state('Copy Link')

@@ -214,7 +214,8 @@ export default function Table({
       rank_aggregation,
       splits,
       q,
-      scatter_plot_options
+      scatter_plot_options,
+      disable_scatter_plot
     }) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
@@ -268,7 +269,8 @@ export default function Table({
             rank_aggregation,
             splits,
             q,
-            scatter_plot_options
+            scatter_plot_options,
+            disable_scatter_plot
           }
         },
         {

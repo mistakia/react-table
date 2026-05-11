@@ -1,5 +1,31 @@
 export const MENU_CLOSE_TIMEOUT = 300
 
+// Contract between the share-link writer (`handle_shareable_link`) and any
+// URL-params parser. Each `table_state` key declares its serialization type,
+// which drives the empty-shape default: `[]` for array, `{}` for object,
+// `''` for string, `false` for boolean. Adding a URL-shareable field happens
+// here, nowhere else.
+//
+// Empty-shape skip rule: writer omits a key when its value equals the
+// empty-shape default, with one exception -- `disable_scatter_plot` is always
+// emitted regardless of value, because the in-page state may start at `true`
+// (saved view) before a user toggle to `false`, and skipping false would let
+// a stale `true` survive a round-trip via /u/<hash>.
+export const SHARE_LINK_URL_SCHEMA = {
+  table_state: {
+    columns: 'array',
+    prefix_columns: 'array',
+    sort: 'array',
+    where: 'array',
+    splits: 'array',
+    q: 'string',
+    rank_aggregation: 'object',
+    scatter_plot_options: 'object',
+    disable_scatter_plot: 'boolean'
+  },
+  view: ['view_id', 'view_name', 'view_description', 'view_search_column_id']
+}
+
 export const TABLE_DATA_TYPES = {
   NUMBER: 1,
   TEXT: 2,
