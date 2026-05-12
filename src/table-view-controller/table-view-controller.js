@@ -352,7 +352,93 @@ const TableViewController = ({
               Current View
             </label>
             <div className='current-view-info'>
-              <div className='current-view-title'>{title}</div>
+              <div className='current-view-title-row'>
+                <div className='current-view-title'>{title}</div>
+                {current_view && (
+                  <div
+                    className='current-view-actions'
+                    onClick={(e) => e.stopPropagation()}>
+                    {on_toggle_favorite && (
+                      <Tooltip
+                        title={
+                          is_favorited
+                            ? 'Remove from favorites'
+                            : 'Add to favorites'
+                        }
+                        placement='top'
+                        enterDelay={700}>
+                        <IconButton
+                          size='small'
+                          onClick={stop(() =>
+                            on_toggle_favorite(current_view.view_id)
+                          )}
+                          className={is_favorited ? '-active' : ''}>
+                          {is_favorited ? (
+                            <StarIcon fontSize='small' />
+                          ) : (
+                            <StarBorderIcon fontSize='small' />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {on_reset_current_view && (
+                      <Tooltip
+                        title='Reset to saved state'
+                        placement='top'
+                        enterDelay={700}>
+                        <span>
+                          <IconButton
+                            size='small'
+                            onClick={stop(on_reset_current_view)}
+                            disabled={!is_table_state_changed}>
+                            <UndoIcon fontSize='small' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {on_save_current_view && (
+                      <Tooltip
+                        title={save_tooltip}
+                        placement='top'
+                        enterDelay={700}>
+                        <span>
+                          <IconButton
+                            size='small'
+                            onClick={stop(on_save_current_view)}
+                            disabled={!can_save}>
+                            <SaveIcon fontSize='small' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {can_edit_current && (
+                      <Tooltip
+                        title='Edit view details'
+                        placement='top'
+                        enterDelay={700}>
+                        <IconButton
+                          size='small'
+                          onClick={stop(() => {
+                            set_selected_edit_view(current_view)
+                            set_edit_view_modal_open(true)
+                          })}>
+                          <EditIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    <Tooltip
+                      title='Duplicate view'
+                      placement='top'
+                      enterDelay={700}>
+                      <IconButton
+                        size='small'
+                        onClick={stop(handle_duplicate_current)}>
+                        <ContentCopyIcon fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                  </div>
+                )}
+              </div>
               {description && (
                 <div className='current-view-description'>{description}</div>
               )}
@@ -396,88 +482,6 @@ const TableViewController = ({
               className='current-view-aside'
               onClick={(e) => e.stopPropagation()}>
               <div className='current-view-username'>{username}</div>
-              {current_view && (
-                <div className='current-view-actions'>
-                  {on_toggle_favorite && (
-                    <Tooltip
-                      title={
-                        is_favorited
-                          ? 'Remove from favorites'
-                          : 'Add to favorites'
-                      }
-                      placement='top'
-                      enterDelay={700}>
-                      <IconButton
-                        size='small'
-                        onClick={stop(() =>
-                          on_toggle_favorite(current_view.view_id)
-                        )}
-                        className={is_favorited ? '-active' : ''}>
-                        {is_favorited ? (
-                          <StarIcon fontSize='small' />
-                        ) : (
-                          <StarBorderIcon fontSize='small' />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  {on_reset_current_view && (
-                    <Tooltip
-                      title='Reset to saved state'
-                      placement='top'
-                      enterDelay={700}>
-                      <span>
-                        <IconButton
-                          size='small'
-                          onClick={stop(on_reset_current_view)}
-                          disabled={!is_table_state_changed}>
-                          <UndoIcon fontSize='small' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  )}
-                  {on_save_current_view && (
-                    <Tooltip
-                      title={save_tooltip}
-                      placement='top'
-                      enterDelay={700}>
-                      <span>
-                        <IconButton
-                          size='small'
-                          onClick={stop(on_save_current_view)}
-                          disabled={!can_save}>
-                          <SaveIcon fontSize='small' />
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  )}
-                  {can_edit_current && (
-                    <Tooltip
-                      title='Edit view details'
-                      placement='top'
-                      enterDelay={700}>
-                      <IconButton
-                        size='small'
-                        onClick={stop(() => {
-                          set_selected_edit_view(current_view)
-                          set_edit_view_modal_open(true)
-                        })}>
-                        <EditIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                  )}
-                  <Tooltip
-                    title='Duplicate view'
-                    placement='top'
-                    enterDelay={700}>
-                    <IconButton
-                      size='small'
-                      onClick={stop(handle_duplicate_current)}>
-                      <ContentCopyIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                </div>
-              )}
             </div>
           </div>
 
