@@ -114,8 +114,10 @@ $breakpoint_mobile = 768px
   display flex
   flex-direction row
   flex-wrap wrap
+  align-items center
+  gap 4px
   border-bottom 1px solid $borderColor
-  padding 4px
+  padding 6px
   overflow-x auto
   overflow-y hidden
   background rgba(0, 0, 0, 0.02)
@@ -124,6 +126,8 @@ $breakpoint_mobile = 768px
   @media (min-width: $breakpoint_mobile + 1px)
     flex-direction column
     flex-wrap nowrap
+    align-items stretch
+    gap 0
     border-right 1px solid $borderColor
     border-bottom none
     padding 8px 0
@@ -133,50 +137,67 @@ $breakpoint_mobile = 768px
 .tvc-rail-sections
   display flex
   flex-direction row
-  gap 2px
-  padding 0
+  align-items center
+  gap 4px
   flex 1 1 auto
   min-width 0
   overflow-x auto
+  scrollbar-width thin
 
   @media (min-width: $breakpoint_mobile + 1px)
     flex-direction column
+    align-items stretch
+    gap 2px
     padding 0 4px
     overflow-x visible
 
 .tvc-rail-section
   display inline-flex
   align-items center
-  justify-content space-between
-  padding 6px 10px
-  border none
-  border-radius 4px
+  justify-content flex-start
+  gap 6px
+  min-height 30px
+  padding 4px 10px
+  border 1px solid transparent
+  border-radius 6px
   background none
   cursor pointer
   font-size 13px
-  color rgba(0, 0, 0, 0.7)
+  line-height 1.2
+  color rgba(0, 0, 0, 0.72)
   text-align left
   white-space nowrap
   flex 0 0 auto
+  transition background 120ms ease, color 120ms ease, border-color 120ms ease
 
   &:hover
     background rgba(0, 0, 0, 0.06)
+    color rgba(0, 0, 0, 0.9)
 
   &.-active
     background rgba($accent_color, 0.12)
     color $accent_color
+    border-color rgba($accent_color, 0.22)
     font-weight 600
 
   @media (min-width: $breakpoint_mobile + 1px)
     display flex
     width 100%
+    justify-content space-between
 
 .tvc-rail-section-count
   font-size 11px
-  background rgba(0, 0, 0, 0.1)
+  font-weight 500
+  line-height 1.2
+  background rgba(0, 0, 0, 0.08)
+  color rgba(0, 0, 0, 0.6)
   border-radius 10px
-  padding 1px 6px
-  margin-left 6px
+  padding 1px 7px
+  margin-left 0
+
+  .tvc-rail-section.-active &
+    background rgba($accent_color, 0.18)
+    color $accent_color
 
 // On mobile the tag cloud is collapsed behind a "Tags" toggle button in the
 // rail and rendered as a wrap-row below the section strip when expanded.
@@ -184,20 +205,23 @@ $breakpoint_mobile = 768px
   display flex
   flex-wrap wrap
   align-items center
-  gap 4px
-  padding 8px 10px
+  gap 6px
+  padding 10px 12px 12px
   flex 1 1 100%
-  border-top 1px solid $borderColor
-  background rgba(0, 0, 0, 0.025)
+  margin 0 -6px -6px
+  border-top 1px solid rgba(0, 0, 0, 0.08)
+  background rgba(0, 0, 0, 0.03)
 
   &.-collapsed
     display none
 
   @media (min-width: $breakpoint_mobile + 1px)
-    margin-top 4px
+    margin 6px 4px 0
     flex 0 0 auto
     padding 8px 6px
+    gap 4px
     background none
+    border-top 1px solid $borderColor
 
     &.-collapsed
       display flex
@@ -205,31 +229,34 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags-toggle
   display inline-flex
   align-items center
+  justify-content flex-start
   gap 6px
-  padding 6px 8px 6px 10px
-  margin 2px 4px 2px 2px
+  min-height 30px
+  padding 4px 8px 4px 10px
   border 1px solid transparent
-  background rgba(0, 0, 0, 0.03)
+  background none
   cursor pointer
   font-size 13px
-  color rgba(0, 0, 0, 0.7)
-  border-radius 4px
+  line-height 1.2
+  color rgba(0, 0, 0, 0.72)
+  border-radius 6px
   white-space nowrap
   flex 0 0 auto
   transition background 120ms ease, color 120ms ease, border-color 120ms ease
 
   &:hover
-    background rgba(0, 0, 0, 0.07)
+    background rgba(0, 0, 0, 0.06)
     color rgba(0, 0, 0, 0.9)
 
   &.-active
     background rgba($accent_color, 0.12)
     color $accent_color
-    border-color rgba($accent_color, 0.25)
+    border-color rgba($accent_color, 0.22)
     font-weight 600
 
   &.-has-filters
     color $accent_color
+    font-weight 600
 
     .tvc-rail-tags-toggle-count
       background $accent_color
@@ -243,14 +270,16 @@ $breakpoint_mobile = 768px
 
 .tvc-rail-tags-toggle-count
   font-size 11px
-  background rgba(0, 0, 0, 0.1)
-  border-radius 10px
-  padding 1px 6px
+  font-weight 500
   line-height 1.2
+  background rgba(0, 0, 0, 0.08)
+  color rgba(0, 0, 0, 0.6)
+  border-radius 10px
+  padding 1px 7px
 
   &.-muted
     background rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.55)
+    color rgba(0, 0, 0, 0.5)
 
 .tvc-rail-tags-toggle-chevron
   display inline-block
@@ -259,23 +288,40 @@ $breakpoint_mobile = 768px
   margin-left 2px
   border-left 4px solid transparent
   border-right 4px solid transparent
-  border-top 4px solid currentColor
-  opacity 0.6
-  transition transform 160ms ease
+  border-top 5px solid currentColor
+  opacity 0.55
+  transition transform 180ms ease, opacity 180ms ease
 
   &.-open
     transform rotate(180deg)
-    opacity 0.9
+    opacity 0.85
 
 .tvc-rail-tag-filter
+  display inline-flex
+  align-items center
   border none
   background none
-  padding 0
+  padding 4px 2px
+  margin 0
   cursor pointer
-  border-radius 12px
+  border-radius 4px
+  transition background 120ms ease
 
-  &.-active .tvc-tag-chip
-    outline 2px solid $accent_color
+  &:hover
+    background rgba(0, 0, 0, 0.05)
+
+  &.-active
+    background rgba($accent_color, 0.10)
+
+    .tvc-tag-chip
+      outline 2px solid $accent_color
+      outline-offset 1px
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    padding 0
+
+    &:hover
+      background none
 
 // ── Author column (rendered when 'By author' rail section is active) ──────
 // On desktop renders as a middle column; on mobile flattens to a horizontal
@@ -366,12 +412,16 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags-controls
   display flex
   flex-direction row
-  gap 4px
+  align-items center
+  gap 6px
   width 100%
-  margin-bottom 6px
+  margin-bottom 8px
 
   @media (min-width: $breakpoint_mobile + 1px)
     flex-direction column
+    align-items stretch
+    gap 4px
+    margin-bottom 6px
 
 .tvc-rail-tags-search
   flex 1
@@ -419,9 +469,18 @@ $breakpoint_mobile = 768px
     background none
 
 .tvc-rail-tags-empty
-  font-size 11px
-  color rgba(0, 0, 0, 0.45)
-  padding 4px 2px
+  flex 1 1 100%
+  font-size 12px
+  color rgba(0, 0, 0, 0.5)
+  padding 6px 2px
+  text-align center
+  font-style italic
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    font-size 11px
+    padding 4px 2px
+    text-align left
+    font-style normal
 
 // ── Tag chips (three source styles) ─────────────────────────────────────────
 .tvc-tag-chip
