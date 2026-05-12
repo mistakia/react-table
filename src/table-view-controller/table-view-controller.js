@@ -9,7 +9,6 @@ import { generate_view_id, get_string_from_object } from '#src/utils'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
 import ViewItem from './view-item'
-import CurrentViewHeader from './current-view-header'
 import ViewOrganizationRail from './view-organization-rail'
 import { use_auto_tags } from './use-auto-tags'
 import { use_organized_views } from './use-organized-views'
@@ -86,6 +85,27 @@ const TableViewController = ({
     }
     return Array.from(seen.values())
   }, [filtered, sections, active_section])
+
+  // Autocomplete suggestions for TagInput: union of user tag names across all
+  // views (so the user sees their existing tag vocabulary) plus auto/llm tag
+  // names visible in the current view set.
+  const tag_suggestions = React.useMemo(() => {
+    const names = new Set()
+    if (tags_by_view_id && tags_by_view_id.forEach) {
+      tags_by_view_id.forEach((tag_list) => {
+        if (!tag_list) return
+        const iter = tag_list.forEach ? tag_list : Array.from(tag_list)
+        iter.forEach((t) => {
+          if (t && t.name) names.add(t.name)
+        })
+      })
+    }
+    for (const v of views) {
+      const auto = auto_tags_map && auto_tags_map.get(v.view_id)
+      if (auto) for (const name of auto) names.add(name)
+    }
+    return Array.from(names).sort()
+  }, [tags_by_view_id, views, auto_tags_map])
 
   const handle_menu_toggle = useCallback(() => {
     if (view_controls_open) {
@@ -207,32 +227,38 @@ const TableViewController = ({
     view_username: ''
   }
 
-  const is_favorited =
-    on_toggle_favorite && favorite_view_ids
-      ? favorite_view_ids instanceof Set
-        ? favorite_view_ids.has(selected_view.view_id)
-        : false
-      : false
-
   const display_views =
     active_section === 'all' ? filtered : sections[active_section] || []
 
-  const list_items = display_views.map((view) => (
-    <ViewItem
-      key={view.view_id}
-      {...{
-        handle_select_view,
-        set_selected_edit_view,
-        set_edit_view_modal_open,
-        delete_view,
-        view,
-        on_view_change,
-        disable_edit_view,
-        selected_view,
-        handle_menu_toggle
-      }}
-    />
-  ))
+  const list_items = display_views.map((view) => {
+    const view_is_favorited =
+      favorite_view_ids && favorite_view_ids instanceof Set
+        ? favorite_view_ids.has(view.view_id)
+        : false
+    return (
+      <ViewItem
+        key={view.view_id}
+        {...{
+          handle_select_view,
+          set_selected_edit_view,
+          set_edit_view_modal_open,
+          delete_view,
+          view,
+          on_view_change,
+          disable_edit_view,
+          selected_view,
+          handle_menu_toggle,
+          is_favorited: view_is_favorited,
+          on_toggle_favorite,
+          on_save_current_view,
+          on_reset_current_view,
+          on_add_user_tag,
+          on_remove_user_tag,
+          tag_suggestions
+        }}
+      />
+    )
+  })
 
   return (
     <div className='table-view-controller-container'>
@@ -264,39 +290,6 @@ const TableViewController = ({
 
           {view_controls_open && (
             <div className='table-view-controls'>
-              {has_org_props && current_view && (
-                <CurrentViewHeader
-                  view={current_view}
-                  is_favorited={is_favorited}
-                  is_table_state_changed={Boolean(
-                    current_view.is_table_state_changed
-                  )}
-                  on_toggle_favorite={on_toggle_favorite}
-                  on_save_current_view={on_save_current_view}
-                  on_reset_current_view={on_reset_current_view}
-                  on_edit={
-                    !disable_edit_view
-                      ? (v) => {
-                          set_selected_edit_view(v)
-                          set_edit_view_modal_open(true)
-                        }
-                      : undefined
-                  }
-                  on_duplicate={(v) => {
-                    on_view_change(
-                      {
-                        view_id: generate_view_id(),
-                        view_name: `${v.view_name} (copy)`,
-                        view_username: table_username || 'system',
-                        view_description: v.view_description,
-                        table_state: v.table_state
-                      },
-                      { view_state_changed: true, is_new_view: true }
-                    )
-                  }}
-                />
-              )}
-
               <div
                 className={get_string_from_object({
                   'table-view-body': true,

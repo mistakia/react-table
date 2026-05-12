@@ -35,83 +35,22 @@ $breakpoint_mobile = 768px
 .table-view-controller:not(.-open)
   border 1px solid $borderColor
 
-// ── Open modal shell ──────────────────────────────────────────────────────────
-// At ≥768px: centered modal panel
-// At <768px : Popper-style bottom-anchored sheet (same as before)
+// ── Open panel shell ──────────────────────────────────────────────────────────
+// Animate width/height from the collapsed trigger into the expanded panel.
+// The parent rule (src/styles/table-expanding-control-container.styl) supplies
+// the 250ms cubic-bezier transitions on transform/width/height/box-shadow.
+// JS in table-view-controller.js computes a translateX to horizontally center
+// the expanded panel. The explicit .-open size override below wins over the
+// .table-view-controller collapsed-size rule above via source order.
 
-.table-view-controller.-open
-  @media (min-width: $breakpoint_mobile + 1px)
-    position fixed
-    top 50%
-    left 50%
-    transform translate(-50%, -50%) !important
-    width 80vw
-    max-width 960px
-    max-height 80vh
-    display flex
-    flex-direction column
-    z-index 1300
-    background white
-    border-radius 8px
-    box-shadow 0 8px 32px rgba(0, 0, 0, 0.24)
-    overflow hidden
+.table-expanding-control-container.table-view-controller.-open
+  width 80vw
+  max-width 960px
+  height 80vh
 
-// ── Current view header ───────────────────────────────────────────────────────
-.tvc-current-view-header
-  border-bottom 1px solid $borderColor
-  padding 12px 16px
-  flex 0 0 auto
-  background rgba(0, 0, 0, 0.02)
-
-.tvc-current-view-header-main
-  display flex
-  align-items flex-start
-  gap 8px
-
-.tvc-current-view-header-meta
-  flex 1
-  display flex
-  flex-direction column
-  gap 4px
-  min-width 0
-
-.tvc-current-view-header-username
-  font-size 11px
-  color rgba(0, 0, 0, 0.5)
-  background rgba(0, 0, 0, 0.06)
-  padding 2px 6px
-  border-radius 3px
-  align-self flex-start
-
-.tvc-current-view-header-name
-  font-size 15px
-  font-weight 600
-  color rgba(0, 0, 0, 0.87)
-  white-space nowrap
-  overflow hidden
-  text-overflow ellipsis
-
-.tvc-current-view-unsaved-dot
-  display inline-block
-  width 6px
-  height 6px
-  margin-left 6px
-  border-radius 50%
-  background-color red
-  vertical-align middle
-
-.tvc-current-view-header-description
-  font-size 12px
-  color rgba(0, 0, 0, 0.54)
-  white-space nowrap
-  overflow hidden
-  text-overflow ellipsis
-
-.tvc-current-view-header-actions
-  display flex
-  align-items center
-  gap 0
-  flex 0 0 auto
+  @media (max-width: $breakpoint_mobile)
+    width 90vw
+    height 85vh
 
 // ── Body: two-column grid ─────────────────────────────────────────────────────
 .table-view-body
@@ -336,6 +275,7 @@ $breakpoint_mobile = 768px
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
   display flex
+  flex-direction column
   cursor pointer
   padding 4px 16px
   border-left 3px solid transparent
@@ -348,6 +288,27 @@ $breakpoint_mobile = 768px
     border-color $accent_color
     background-color rgba($accent_color, 0.08)
     font-weight 500
+
+.table-view-item-row
+  display flex
+  align-items center
+  width 100%
+
+.table-view-item-actions
+  display flex
+  align-items center
+  gap 0
+  flex 0 0 auto
+
+.table-view-item-tags
+  display flex
+  flex-wrap wrap
+  align-items center
+  gap 4px
+  padding 4px 0 4px 96px // align with name column (80px username + 16px gap)
+
+  @media (max-width: 400px)
+    padding-left 76px
 
 .table-view-item-info-container
   display flex
