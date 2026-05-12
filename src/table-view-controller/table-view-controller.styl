@@ -52,6 +52,34 @@ $breakpoint_mobile = 768px
     width 90vw
     height 85vh
 
+  // Let the trigger button area grow to host actions + tag editor when open.
+  .table-expanding-control-button
+    height auto
+    flex 0 0 auto
+    overflow visible
+    border-bottom 1px solid $borderColor
+    background rgba(0, 0, 0, 0.02)
+    align-items flex-start
+    padding 16px 12px 12px
+
+    .current-view-info
+      flex 1
+      overflow visible
+
+  .current-view-actions
+    display flex
+    align-items center
+    gap 0
+    flex 0 0 auto
+    margin-left 8px
+
+  .current-view-tags
+    display flex
+    flex-wrap wrap
+    align-items center
+    gap 4px
+    padding-top 6px
+
 // ── Body: two-column grid ─────────────────────────────────────────────────────
 .table-view-body
   display flex
@@ -284,27 +312,10 @@ $breakpoint_mobile = 768px
   &:hover
     background-color rgba(0, 0, 0, 0.04)
 
-  // Selected = "Current View" pinned card. Sticky at top of the list so it
-  // stays visible while scrolling other views, padded and visually distinct.
   &.-selected
-    position sticky
-    top 0
-    z-index 2
     border-color $accent_color
     background-color rgba($accent_color, 0.08)
-    border-bottom 1px solid rgba($accent_color, 0.35)
-    padding 8px 16px
     font-weight 500
-
-    &:hover
-      background-color rgba($accent_color, 0.12)
-
-.table-view-item-actions
-  display flex
-  align-items center
-  gap 0
-  flex 0 0 auto
-  margin-left 8px
 
 .table-view-item-tags
   display flex

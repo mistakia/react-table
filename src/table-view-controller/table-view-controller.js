@@ -2,7 +2,15 @@ import React, { useEffect, useCallback, useContext, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
 import AddIcon from '@mui/icons-material/Add'
+import StarIcon from '@mui/icons-material/Star'
+import StarBorderIcon from '@mui/icons-material/StarBorder'
+import SaveIcon from '@mui/icons-material/Save'
+import UndoIcon from '@mui/icons-material/Undo'
+import EditIcon from '@mui/icons-material/Edit'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 
 import TableViewModal from '#src/table-view-modal'
 import { generate_view_id, get_string_from_object } from '#src/utils'
@@ -10,6 +18,8 @@ import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
 import ViewItem from './view-item'
 import ViewOrganizationRail from './view-organization-rail'
+import TagChip from './tag-chip'
+import TagInput from './tag-input'
 import { use_auto_tags } from './use-auto-tags'
 import { use_organized_views } from './use-organized-views'
 
@@ -204,12 +214,35 @@ const TableViewController = ({
     }
   }, [view_controls_open])
 
-  // Reset list scroll to top when the panel opens. The selected ("current
-  // view") item is rendered first and sticks to top via CSS, so it's always
-  // visible regardless of the prior scroll position.
+  // Scroll the list so the selected item is visible after the expand
+  // animation settles. Use two rAF ticks so the list element has its final
+  // height before we measure offsets.
   useEffect(() => {
-    if (view_controls_open && list_ref.current) {
-      list_ref.current.scrollTop = 0
+    if (!view_controls_open) return
+    let raf1 = 0
+    let raf2 = 0
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const list = list_ref.current
+        if (!list) return
+        const selected_el = list.querySelector('.table-view-item.-selected')
+        if (!selected_el) {
+          list.scrollTop = 0
+          return
+        }
+        const list_rect = list.getBoundingClientRect()
+        const item_rect = selected_el.getBoundingClientRect()
+        const target =
+          list.scrollTop +
+          (item_rect.top - list_rect.top) -
+          list.clientHeight / 2 +
+          item_rect.height / 2
+        list.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
+      })
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
     }
   }, [view_controls_open])
 
@@ -224,53 +257,69 @@ const TableViewController = ({
     view_username: ''
   }
 
-  const raw_display_views =
+  const display_views =
     active_section === 'all' ? filtered : sections[active_section] || []
 
-  // Pin the selected ("current view") to the top of the list so the sticky-top
-  // styling lands on a row that's already first; otherwise the sticky behavior
-  // looks odd because the item starts mid-list and "jumps" to the top edge.
-  const display_views = React.useMemo(() => {
-    if (!selected_view || !selected_view.view_id) return raw_display_views
-    const idx = raw_display_views.findIndex(
-      (v) => v.view_id === selected_view.view_id
-    )
-    if (idx <= 0) return raw_display_views
-    const reordered = raw_display_views.slice()
-    const [selected] = reordered.splice(idx, 1)
-    reordered.unshift(selected)
-    return reordered
-  }, [raw_display_views, selected_view])
+  const list_items = display_views.map((view) => (
+    <ViewItem
+      key={view.view_id}
+      {...{
+        handle_select_view,
+        set_selected_edit_view,
+        set_edit_view_modal_open,
+        delete_view,
+        view,
+        on_view_change,
+        disable_edit_view,
+        selected_view,
+        handle_menu_toggle
+      }}
+    />
+  ))
 
-  const list_items = display_views.map((view) => {
-    const view_is_favorited =
-      favorite_view_ids && favorite_view_ids instanceof Set
-        ? favorite_view_ids.has(view.view_id)
-        : false
-    return (
-      <ViewItem
-        key={view.view_id}
-        {...{
-          handle_select_view,
-          set_selected_edit_view,
-          set_edit_view_modal_open,
-          delete_view,
-          view,
-          on_view_change,
-          disable_edit_view,
-          selected_view,
-          handle_menu_toggle,
-          is_favorited: view_is_favorited,
-          on_toggle_favorite,
-          on_save_current_view,
-          on_reset_current_view,
-          on_add_user_tag,
-          on_remove_user_tag,
-          tag_suggestions
-        }}
-      />
+  // Tag list, tag input, and action set for the selected view -- shown inside
+  // the trigger button area when the panel is open.
+  const current_view_with_tags = display_views.find(
+    (v) => v.view_id === selected_view.view_id
+  )
+  const current_tags =
+    (current_view_with_tags && current_view_with_tags.tags) || []
+  const is_favorited =
+    favorite_view_ids && favorite_view_ids instanceof Set
+      ? favorite_view_ids.has(selected_view.view_id)
+      : false
+  const can_edit_current =
+    Boolean(current_view && current_view.is_editable) && !disable_edit_view
+  const can_edit_tags =
+    can_edit_current && Boolean(on_add_user_tag && on_remove_user_tag)
+  const is_table_state_changed = Boolean(
+    current_view && current_view.is_table_state_changed
+  )
+  const can_save =
+    is_table_state_changed && Boolean(current_view && current_view.is_editable)
+  const save_tooltip =
+    current_view && current_view.is_editable
+      ? 'Save current view'
+      : 'Duplicate this view to save your changes'
+
+  const stop = (fn) => (e) => {
+    e.stopPropagation()
+    if (fn) fn()
+  }
+
+  const handle_duplicate_current = () => {
+    if (!current_view) return
+    on_view_change(
+      {
+        view_id: generate_view_id(),
+        view_name: `${current_view.view_name} (copy)`,
+        view_username: table_username || 'system',
+        view_description: current_view.view_description,
+        table_state: current_view.table_state
+      },
+      { view_state_changed: true, is_new_view: true }
     )
-  })
+  }
 
   return (
     <div className='table-view-controller-container'>
@@ -297,7 +346,126 @@ const TableViewController = ({
               {description && (
                 <div className='current-view-description'>{description}</div>
               )}
+              {view_controls_open && current_view && (
+                <>
+                  {(current_tags.length > 0 || can_edit_tags) && (
+                    <div
+                      className='current-view-tags'
+                      onClick={(e) => e.stopPropagation()}>
+                      {current_tags.map((tag) => (
+                        <TagChip
+                          key={`${tag.source}-${tag.name}`}
+                          name={tag.name}
+                          source={tag.source}
+                          on_remove={
+                            can_edit_tags && tag.source === 'user'
+                              ? () =>
+                                  on_remove_user_tag(
+                                    current_view.view_id,
+                                    tag.name
+                                  )
+                              : undefined
+                          }
+                        />
+                      ))}
+                      {can_edit_tags && (
+                        <TagInput
+                          suggestions={tag_suggestions}
+                          on_submit={(name) =>
+                            on_add_user_tag(current_view.view_id, name)
+                          }
+                          placeholder='Add tag...'
+                        />
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
+            {view_controls_open && current_view && (
+              <div
+                className='current-view-actions'
+                onClick={(e) => e.stopPropagation()}>
+                {on_toggle_favorite && (
+                  <Tooltip
+                    title={
+                      is_favorited
+                        ? 'Remove from favorites'
+                        : 'Add to favorites'
+                    }
+                    placement='top'
+                    enterDelay={700}>
+                    <IconButton
+                      size='small'
+                      onClick={stop(() =>
+                        on_toggle_favorite(current_view.view_id)
+                      )}
+                      className={is_favorited ? '-active' : ''}>
+                      {is_favorited ? (
+                        <StarIcon fontSize='small' />
+                      ) : (
+                        <StarBorderIcon fontSize='small' />
+                      )}
+                    </IconButton>
+                  </Tooltip>
+                )}
+                {on_reset_current_view && (
+                  <Tooltip
+                    title='Reset to saved state'
+                    placement='top'
+                    enterDelay={700}>
+                    <span>
+                      <IconButton
+                        size='small'
+                        onClick={stop(on_reset_current_view)}
+                        disabled={!is_table_state_changed}>
+                        <UndoIcon fontSize='small' />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {on_save_current_view && (
+                  <Tooltip
+                    title={save_tooltip}
+                    placement='top'
+                    enterDelay={700}>
+                    <span>
+                      <IconButton
+                        size='small'
+                        onClick={stop(on_save_current_view)}
+                        disabled={!can_save}>
+                        <SaveIcon fontSize='small' />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                )}
+                {can_edit_current && (
+                  <Tooltip
+                    title='Edit view details'
+                    placement='top'
+                    enterDelay={700}>
+                    <IconButton
+                      size='small'
+                      onClick={stop(() => {
+                        set_selected_edit_view(current_view)
+                        set_edit_view_modal_open(true)
+                      })}>
+                      <EditIcon fontSize='small' />
+                    </IconButton>
+                  </Tooltip>
+                )}
+                <Tooltip
+                  title='Duplicate view'
+                  placement='top'
+                  enterDelay={700}>
+                  <IconButton
+                    size='small'
+                    onClick={stop(handle_duplicate_current)}>
+                    <ContentCopyIcon fontSize='small' />
+                  </IconButton>
+                </Tooltip>
+              </div>
+            )}
           </div>
 
           {view_controls_open && (
