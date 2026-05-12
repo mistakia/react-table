@@ -174,10 +174,12 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags
   display flex
   flex-wrap wrap
+  align-items center
   gap 4px
-  padding 8px 6px
+  padding 8px 10px
   flex 1 1 100%
   border-top 1px solid $borderColor
+  background rgba(0, 0, 0, 0.025)
 
   &.-collapsed
     display none
@@ -185,6 +187,8 @@ $breakpoint_mobile = 768px
   @media (min-width: $breakpoint_mobile + 1px)
     margin-top 4px
     flex 0 0 auto
+    padding 8px 6px
+    background none
 
     &.-collapsed
       display flex
@@ -192,26 +196,67 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags-toggle
   display inline-flex
   align-items center
-  gap 4px
-  padding 6px 10px
-  border none
-  background none
+  gap 6px
+  padding 6px 8px 6px 10px
+  margin 2px 4px 2px 2px
+  border 1px solid transparent
+  background rgba(0, 0, 0, 0.03)
   cursor pointer
-  font-size 12px
+  font-size 13px
   color rgba(0, 0, 0, 0.7)
   border-radius 4px
   white-space nowrap
   flex 0 0 auto
+  transition background 120ms ease, color 120ms ease, border-color 120ms ease
 
   &:hover
-    background rgba(0, 0, 0, 0.06)
+    background rgba(0, 0, 0, 0.07)
+    color rgba(0, 0, 0, 0.9)
 
   &.-active
+    background rgba($accent_color, 0.12)
     color $accent_color
+    border-color rgba($accent_color, 0.25)
     font-weight 600
+
+  &.-has-filters
+    color $accent_color
+
+    .tvc-rail-tags-toggle-count
+      background $accent_color
+      color white
 
   @media (min-width: $breakpoint_mobile + 1px)
     display none
+
+.tvc-rail-tags-toggle-label
+  font-size 13px
+
+.tvc-rail-tags-toggle-count
+  font-size 11px
+  background rgba(0, 0, 0, 0.1)
+  border-radius 10px
+  padding 1px 6px
+  line-height 1.2
+
+  &.-muted
+    background rgba(0, 0, 0, 0.06)
+    color rgba(0, 0, 0, 0.55)
+
+.tvc-rail-tags-toggle-chevron
+  display inline-block
+  width 0
+  height 0
+  margin-left 2px
+  border-left 4px solid transparent
+  border-right 4px solid transparent
+  border-top 4px solid currentColor
+  opacity 0.6
+  transition transform 160ms ease
+
+  &.-open
+    transform rotate(180deg)
+    opacity 0.9
 
 .tvc-rail-tag-filter
   border none
@@ -322,32 +367,47 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags-search
   flex 1
   min-width 0
-  padding 3px 6px
-  font-size 11px
+  padding 5px 8px
+  font-size 12px
   border 1px solid $borderColor
-  border-radius 3px
+  border-radius 4px
   background white
   outline none
+  transition border-color 120ms ease, box-shadow 120ms ease
 
   &:focus
     border-color $accent_color
+    box-shadow 0 0 0 2px rgba($accent_color, 0.15)
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    padding 3px 6px
+    font-size 11px
+    border-radius 3px
+
+    &:focus
+      box-shadow none
 
 .tvc-rail-tags-clear
   flex 0 0 auto
-  padding 3px 6px
-
-  @media (min-width: $breakpoint_mobile + 1px)
-    width 100%
-  font-size 10px
+  padding 5px 10px
+  font-size 11px
   border 1px solid rgba(0, 0, 0, 0.2)
-  border-radius 3px
-  background none
+  border-radius 4px
+  background white
   cursor pointer
   color rgba(0, 0, 0, 0.7)
+  white-space nowrap
 
   &:hover
     background rgba(0, 0, 0, 0.06)
     color rgba(0, 0, 0, 0.9)
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    width 100%
+    padding 3px 6px
+    font-size 10px
+    border-radius 3px
+    background none
 
 .tvc-rail-tags-empty
   font-size 11px

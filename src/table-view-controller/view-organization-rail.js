@@ -70,16 +70,28 @@ function ViewOrganizationRail({
           type='button'
           className={get_string_from_object({
             'tvc-rail-tags-toggle': true,
-            '-active': tags_expanded || has_active_filters
+            '-active': tags_expanded,
+            '-has-filters': has_active_filters
           })}
           onClick={() => set_tags_expanded((v) => !v)}
           aria-expanded={tags_expanded}>
-          Tags
-          {has_active_filters && (
-            <span className='tvc-rail-section-count'>
+          <span className='tvc-rail-tags-toggle-label'>Tags</span>
+          {has_active_filters ? (
+            <span className='tvc-rail-tags-toggle-count'>
               {active_tag_filters.size}
             </span>
+          ) : (
+            <span className='tvc-rail-tags-toggle-count -muted'>
+              {all_tags.length}
+            </span>
           )}
+          <span
+            className={get_string_from_object({
+              'tvc-rail-tags-toggle-chevron': true,
+              '-open': tags_expanded
+            })}
+            aria-hidden='true'
+          />
         </button>
       )}
 

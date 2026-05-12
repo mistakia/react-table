@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback, useContext, useRef } from 'react'
+import React, {
+  useEffect,
+  useLayoutEffect,
+  useCallback,
+  useContext,
+  useRef
+} from 'react'
 import PropTypes from 'prop-types'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import TextField from '@mui/material/TextField'
@@ -202,10 +208,14 @@ const TableViewController = ({
 
   // Center the panel horizontally. On mobile we let CSS handle sizing/centering
   // (96vw with auto margins) so the JS transform never pushes the panel
-  // partially off-screen. On desktop we clamp the computed translateX to keep
-  // both edges of the panel inside the viewport.
-  useEffect(() => {
-    if (!view_controls_open || !container_ref.current) {
+  // partially off-screen. On desktop we measure the container's untransformed
+  // left edge (clearing any in-flight transform first so getBoundingClientRect
+  // returns the stable layout position rather than a mid-animation value), then
+  // clamp the result to keep both edges of the panel inside the viewport with
+  // a small safety margin.
+  useLayoutEffect(() => {
+    const el = container_ref.current
+    if (!view_controls_open || !el) {
       set_transform('')
       return
     }
@@ -213,15 +223,22 @@ const TableViewController = ({
       set_transform('')
       return
     }
-    const rect = container_ref.current.getBoundingClientRect()
+    el.style.transform = ''
+    // Force a synchronous layout read so the cleared transform is honored
+    // before we measure.
+    // eslint-disable-next-line no-unused-expressions
+    el.offsetWidth
+    const rect = el.getBoundingClientRect()
     const element_width = Math.min(0.8 * window.innerWidth, 960)
-    const window_center_x = window.innerWidth / 2
-    const element_center_x = rect.left + element_width / 2
-    const raw_dx = window_center_x - element_center_x
-    const min_dx = -rect.left
-    const max_dx = window.innerWidth - (rect.left + element_width)
-    const dx = Math.max(min_dx, Math.min(max_dx, raw_dx))
-    set_transform(`translateX(${dx}px)`)
+    const margin = 12
+    const desired_left = (window.innerWidth - element_width) / 2
+    const min_left = margin
+    const max_left = window.innerWidth - element_width - margin
+    const clamped_left = Math.max(
+      min_left,
+      Math.min(max_left, desired_left)
+    )
+    set_transform(`translateX(${clamped_left - rect.left}px)`)
   }, [view_controls_open])
 
   // Scroll the list so the selected item is visible after the expand
