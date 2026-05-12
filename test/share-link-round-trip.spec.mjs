@@ -2,7 +2,7 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 
 import { SHARE_LINK_URL_SCHEMA } from '#src/constants.mjs'
-import { parse_url_params_to_table_state } from '#src/utils/parse-url-params-to-table-state.js'
+import { parse_url_params_to_table_state } from '#src/utils/parse-url-params-to-table-state.mjs'
 
 // Mirrors the writer iteration in
 // `src/table-menu/table-menu.js::handle_shareable_link`. Kept in lockstep with

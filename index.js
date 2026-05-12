@@ -1,7 +1,7 @@
 export { default } from './src/table'
 
 export { SHARE_LINK_URL_SCHEMA } from './src/constants.mjs'
-export { parse_url_params_to_table_state } from './src/utils/parse-url-params-to-table-state'
+export { parse_url_params_to_table_state } from './src/utils/parse-url-params-to-table-state.mjs'
 
 // Validators
 export {
