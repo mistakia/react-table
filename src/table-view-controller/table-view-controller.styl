@@ -12,6 +12,11 @@ $breakpoint_mobile = 768px
   max-width 90vw
   height $unopened_height
 
+  @media (max-width: $breakpoint_mobile)
+    min-width 0
+    max-width 100%
+    width 100%
+
   .table-expanding-control-button
     height $unopened_height
     margin-bottom 0
@@ -31,6 +36,10 @@ $breakpoint_mobile = 768px
   height $unopened_height
   min-width 250px
   width 30vw
+
+  @media (max-width: $breakpoint_mobile)
+    width 100%
+    min-width 0
 
 .table-view-controller:not(.-open)
   border 1px solid $borderColor
@@ -823,7 +832,7 @@ $breakpoint_mobile = 768px
   align-self flex-start
 
 .current-view-actions
-  display inline-flex
+  display none
   align-items center
   flex-wrap wrap
   row-gap 2px
@@ -895,8 +904,8 @@ $breakpoint_mobile = 768px
   50%
     box-shadow 0 0 0 4px rgba(209, 36, 47, 0)
 
-.table-expanding-control-container.table-view-controller:hover .current-view-actions,
 .table-expanding-control-container.table-view-controller.-open .current-view-actions
+  display inline-flex
   opacity 1
   transform translateY(0)
   box-shadow 0 1px 2px rgba(15, 23, 42, 0.06)
