@@ -1,11 +1,12 @@
 @import '../styles/misc-menu.styl'
 
+// ── Shared constants ──────────────────────────────────────────────────────────
 $unopened_height = 80px
+$accent_color = #1976d2
+$rail_width = 160px
+$breakpoint_mobile = 768px
 
-.table-view-popper.base-Popper-root
-.table-view-popper.MuiPopper-root
-  width 300px
-
+// ── Collapsed trigger button ──────────────────────────────────────────────────
 .table-view-controller-container
   min-width 60vw
   max-width 90vw
@@ -34,6 +35,279 @@ $unopened_height = 80px
 .table-view-controller:not(.-open)
   border 1px solid $borderColor
 
+// ── Open modal shell ──────────────────────────────────────────────────────────
+// At ≥768px: centered modal panel
+// At <768px : Popper-style bottom-anchored sheet (same as before)
+
+.table-view-controller.-open
+  @media (min-width: $breakpoint_mobile + 1px)
+    position fixed
+    top 50%
+    left 50%
+    transform translate(-50%, -50%) !important
+    width 80vw
+    max-width 960px
+    max-height 80vh
+    display flex
+    flex-direction column
+    z-index 1300
+    background white
+    border-radius 8px
+    box-shadow 0 8px 32px rgba(0, 0, 0, 0.24)
+    overflow hidden
+
+// ── Current view header ───────────────────────────────────────────────────────
+.tvc-current-view-header
+  border-bottom 1px solid $borderColor
+  padding 12px 16px
+  flex 0 0 auto
+  background rgba(0, 0, 0, 0.02)
+
+.tvc-current-view-header-main
+  display flex
+  align-items flex-start
+  gap 8px
+
+.tvc-current-view-header-meta
+  flex 1
+  display flex
+  flex-direction column
+  gap 4px
+  min-width 0
+
+.tvc-current-view-header-username
+  font-size 11px
+  color rgba(0, 0, 0, 0.5)
+  background rgba(0, 0, 0, 0.06)
+  padding 2px 6px
+  border-radius 3px
+  align-self flex-start
+
+.tvc-current-view-header-name
+  font-size 15px
+  font-weight 600
+  color rgba(0, 0, 0, 0.87)
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+.tvc-current-view-unsaved-dot
+  display inline-block
+  width 6px
+  height 6px
+  margin-left 6px
+  border-radius 50%
+  background-color red
+  vertical-align middle
+
+.tvc-current-view-header-description
+  font-size 12px
+  color rgba(0, 0, 0, 0.54)
+  white-space nowrap
+  overflow hidden
+  text-overflow ellipsis
+
+.tvc-current-view-header-actions
+  display flex
+  align-items center
+  gap 0
+  flex 0 0 auto
+
+// ── Body: two-column grid ─────────────────────────────────────────────────────
+.table-view-body
+  display flex
+  flex 1
+  overflow hidden
+
+  &.-with-rail
+    @media (min-width: $breakpoint_mobile + 1px)
+      display grid
+      grid-template-columns $rail_width 1fr
+
+// ── Organization rail ─────────────────────────────────────────────────────────
+.tvc-rail
+  display flex
+  flex-direction column
+  border-right 1px solid $borderColor
+  padding 8px 0
+  overflow-y auto
+  background rgba(0, 0, 0, 0.02)
+
+  @media (max-width: $breakpoint_mobile)
+    flex-direction row
+    border-right none
+    border-bottom 1px solid $borderColor
+    overflow-x auto
+    overflow-y hidden
+    padding 0
+
+.tvc-rail-sections
+  display flex
+  flex-direction column
+  gap 2px
+  padding 0 4px
+
+  @media (max-width: $breakpoint_mobile)
+    flex-direction row
+    padding 0
+
+.tvc-rail-section
+  display flex
+  align-items center
+  justify-content space-between
+  padding 6px 10px
+  border none
+  border-radius 4px
+  background none
+  cursor pointer
+  font-size 13px
+  color rgba(0, 0, 0, 0.7)
+  text-align left
+  width 100%
+
+  &:hover
+    background rgba(0, 0, 0, 0.06)
+
+  &.-active
+    background rgba($accent_color, 0.12)
+    color $accent_color
+    font-weight 600
+
+  @media (max-width: $breakpoint_mobile)
+    white-space nowrap
+    width auto
+
+.tvc-rail-section-count
+  font-size 11px
+  background rgba(0, 0, 0, 0.1)
+  border-radius 10px
+  padding 1px 6px
+  margin-left 6px
+
+.tvc-rail-tags
+  display flex
+  flex-wrap wrap
+  gap 4px
+  padding 8px 6px
+  border-top 1px solid $borderColor
+  margin-top 4px
+
+  @media (max-width: $breakpoint_mobile)
+    display none
+
+.tvc-rail-tag-filter
+  border none
+  background none
+  padding 0
+  cursor pointer
+  border-radius 12px
+
+  &.-active .tvc-tag-chip
+    outline 2px solid $accent_color
+
+// ── Tag chips (three source styles) ─────────────────────────────────────────
+.tvc-tag-chip
+  display inline-flex
+  align-items center
+  gap 4px
+  padding 2px 8px
+  border-radius 12px
+  font-size 11px
+  line-height 18px
+  cursor default
+  user-select none
+  max-width 120px
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
+
+  // user — solid accent background
+  &.-user
+    background-color $accent_color
+    color white
+
+  // llm — outlined with subtle glyph
+  &.-llm
+    background transparent
+    border 1px solid $accent_color
+    color $accent_color
+
+  // auto — dashed border, muted
+  &.-auto
+    background transparent
+    border 1px dashed rgba(0, 0, 0, 0.35)
+    color rgba(0, 0, 0, 0.54)
+
+.tvc-tag-chip-llm-glyph
+  font-size 9px
+  font-style italic
+  opacity 0.8
+  flex 0 0 auto
+
+.tvc-tag-chip-name
+  overflow hidden
+  text-overflow ellipsis
+
+.tvc-tag-chip-remove
+  border none
+  background none
+  padding 0
+  cursor pointer
+  font-size 14px
+  line-height 1
+  margin-left 2px
+  opacity 0.7
+
+  &:hover
+    opacity 1
+
+// ── Tag input ────────────────────────────────────────────────────────────────
+.tvc-tag-input-container
+  position relative
+  display inline-flex
+
+.tvc-tag-input
+  border 1px solid $borderColor
+  border-radius 4px
+  padding 4px 8px
+  font-size 12px
+  width 100%
+  outline none
+
+  &:focus
+    border-color $accent_color
+
+.tvc-tag-input-suggestions
+  position absolute
+  top 100%
+  left 0
+  right 0
+  z-index 100
+  list-style none
+  margin 2px 0 0
+  padding 4px 0
+  background white
+  border 1px solid $borderColor
+  border-radius 4px
+  box-shadow 0 2px 8px rgba(0, 0, 0, 0.12)
+  max-height 200px
+  overflow-y auto
+
+.tvc-tag-input-suggestion
+  padding 6px 12px
+  font-size 12px
+  cursor pointer
+
+  &:hover
+    background rgba(0, 0, 0, 0.06)
+
+// ── Main view panel ───────────────────────────────────────────────────────────
+.table-view-main
+  display flex
+  flex-direction column
+  overflow hidden
+  flex 1
+
 .table-view-controls
   display flex
   flex-direction column
@@ -59,17 +333,21 @@ $unopened_height = 80px
 .table-view-footer
   border-top 1px solid $borderColor
 
+// ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
   display flex
   cursor pointer
   padding 4px 16px
-  border-left 2px solid transparent
+  border-left 3px solid transparent
+  border-radius 2px
 
   &:hover
     background-color rgba(0, 0, 0, 0.04)
 
   &.-selected
-    border-color red
+    border-color $accent_color
+    background-color rgba($accent_color, 0.08)
+    font-weight 500
 
 .table-view-item-info-container
   display flex
@@ -131,6 +409,7 @@ $unopened_height = 80px
 .table-view-item-right
   flex 0 0 40px
 
+// ── Collapsed trigger: current view summary ───────────────────────────────────
 .current-view-username
   position absolute
   top 6px
