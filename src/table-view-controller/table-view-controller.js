@@ -11,6 +11,7 @@ import SaveIcon from '@mui/icons-material/Save'
 import UndoIcon from '@mui/icons-material/Undo'
 import EditIcon from '@mui/icons-material/Edit'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 import TableViewModal from '#src/table-view-modal'
 import { generate_view_id, get_string_from_object } from '#src/utils'
@@ -436,6 +437,20 @@ const TableViewController = ({
                         <ContentCopyIcon fontSize='small' />
                       </IconButton>
                     </Tooltip>
+                    {can_edit_current && (
+                      <Tooltip
+                        title='Delete view'
+                        placement='top'
+                        enterDelay={700}>
+                        <IconButton
+                          size='small'
+                          onClick={stop(() =>
+                            delete_view(current_view.view_id)
+                          )}>
+                          <DeleteIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </div>
                 )}
               </div>
