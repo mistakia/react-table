@@ -42,10 +42,7 @@ function get_all_tags(view, tags_by_view_id, auto_tags_map) {
       ? tags_by_view_id.get(view.view_id) || []
       : []
   const auto = (auto_tags_map && auto_tags_map.get(view.view_id)) || []
-  return [
-    ...persisted,
-    ...auto.map((name) => ({ name, source: 'auto' }))
-  ]
+  return [...persisted, ...auto.map((name) => ({ name, source: 'auto' }))]
 }
 
 /**
@@ -145,16 +142,19 @@ export function organize_views({
  * Hook: memoized wrapper around organize_views.
  */
 export function use_organized_views(params) {
-  return useMemo(() => organize_views(params), [
-    params.views,
-    params.table_username,
-    params.favorite_view_ids,
-    params.tags_by_view_id,
-    params.auto_tags_map,
-    params.filter_text,
-    params.active_tag_filters,
-    params.active_section
-  ])
+  return useMemo(
+    () => organize_views(params),
+    [
+      params.views,
+      params.table_username,
+      params.favorite_view_ids,
+      params.tags_by_view_id,
+      params.auto_tags_map,
+      params.filter_text,
+      params.active_tag_filters,
+      params.active_section
+    ]
+  )
 }
 
 export default use_organized_views

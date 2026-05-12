@@ -24,7 +24,8 @@ Module._resolveFilename = function (request, parent, ...args) {
 
 // Now it is safe to load the component — babel/require resolves #src/* via
 // the patched resolver above.
-const TableViewController = require('../src/table-view-controller/table-view-controller').default
+const TableViewController =
+  require('../src/table-view-controller/table-view-controller').default
 const { table_context } = require('../src/table-context.js')
 
 // Restore resolver after loading to avoid polluting other tests
@@ -90,13 +91,21 @@ const legacy_props = {
 describe('TableViewController — legacy flat-list shape (no org props)', () => {
   it('renders without crashing when only legacy props are supplied', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
-    expect(container.querySelector('.table-view-controller-container')).to.not.equal(null)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
+    expect(
+      container.querySelector('.table-view-controller-container')
+    ).to.not.equal(null)
   })
 
   it('renders collapsed trigger button with current view name', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     const button = container.querySelector('.table-expanding-control-button')
     expect(button).to.not.equal(null)
     expect(button.textContent).to.include(SELECTED_VIEW.view_name)
@@ -104,13 +113,19 @@ describe('TableViewController — legacy flat-list shape (no org props)', () => 
 
   it('does not render org rail in collapsed state', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     expect(container.querySelector('.tvc-rail')).to.equal(null)
   })
 
   it('opens flat view list when trigger is clicked', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     await act(async () =>
       container.querySelector('.table-expanding-control-button').click()
     )
@@ -122,7 +137,10 @@ describe('TableViewController — legacy flat-list shape (no org props)', () => 
 
   it('marks the selected view with -selected class', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     await act(async () =>
       container.querySelector('.table-expanding-control-button').click()
     )
@@ -133,7 +151,10 @@ describe('TableViewController — legacy flat-list shape (no org props)', () => 
 
   it('does not render org rail when opened without table_username in context', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     await act(async () =>
       container.querySelector('.table-expanding-control-button').click()
     )
@@ -142,7 +163,10 @@ describe('TableViewController — legacy flat-list shape (no org props)', () => 
 
   it('does not render CurrentViewHeader when no org props are supplied', async () => {
     const container = make_container()
-    await render(wrap(React.createElement(TableViewController, legacy_props)), container)
+    await render(
+      wrap(React.createElement(TableViewController, legacy_props)),
+      container
+    )
     await act(async () =>
       container.querySelector('.table-expanding-control-button').click()
     )

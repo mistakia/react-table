@@ -7,7 +7,11 @@ import ParametersEditor from '#src/parameters-editor'
 
 import './filter-controls-selected-columns-parameters.styl'
 
-const build_records = (selected_where_indexes, local_table_state, set_local_table_state) =>
+const build_records = (
+  selected_where_indexes,
+  local_table_state,
+  set_local_table_state
+) =>
   selected_where_indexes
     .map((index) => {
       const where_entry = local_table_state.where?.[index]
@@ -56,7 +60,12 @@ export default function FilterControlsSelectedColumnsParameters({
   }, [selected_where_indexes, local_table_state_where_columns])
 
   const records = useMemo(
-    () => build_records(selected_where_indexes, local_table_state, set_local_table_state),
+    () =>
+      build_records(
+        selected_where_indexes,
+        local_table_state,
+        set_local_table_state
+      ),
     [selected_where_indexes, local_table_state.where, set_local_table_state]
   )
 

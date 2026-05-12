@@ -55,7 +55,9 @@ export default function ParametersEditor({
       records,
       all_columns
     )) {
-      for (const [name, def] of Object.entries(definition?.column_params || {})) {
+      for (const [name, def] of Object.entries(
+        definition?.column_params || {}
+      )) {
         if (!defs[name]) defs[name] = def
       }
     }
@@ -89,7 +91,12 @@ export default function ParametersEditor({
       ]
     }
     return [{ key: 'flat', title: null, params: visible_params }]
-  }, [show_sections, records.length, visible_params, supporting_records_by_param])
+  }, [
+    show_sections,
+    records.length,
+    visible_params,
+    supporting_records_by_param
+  ])
 
   const root_class = get_string_from_object({
     'parameters-editor': true,

@@ -19,20 +19,29 @@ const make_view = (overrides = {}) => ({
 describe('organize_views — sectioning', () => {
   it('puts views owned by table_username into mine', () => {
     const view = make_view({ view_username: 'alice' })
-    const { counts } = organize_views({ views: [view], table_username: 'alice' })
+    const { counts } = organize_views({
+      views: [view],
+      table_username: 'alice'
+    })
     expect(counts.mine).to.equal(1)
   })
 
   it('puts other users views into shared', () => {
     const view = make_view({ view_username: 'bob' })
-    const { counts } = organize_views({ views: [view], table_username: 'alice' })
+    const { counts } = organize_views({
+      views: [view],
+      table_username: 'alice'
+    })
     expect(counts.shared).to.equal(1)
     expect(counts.mine).to.equal(0)
   })
 
   it('puts system views into system section', () => {
     const view = make_view({ view_username: 'system' })
-    const { counts } = organize_views({ views: [view], table_username: 'alice' })
+    const { counts } = organize_views({
+      views: [view],
+      table_username: 'alice'
+    })
     expect(counts.system).to.equal(1)
   })
 
@@ -146,7 +155,10 @@ describe('organize_views — tag filter', () => {
 
   it('returns all views when active_tag_filters is empty', () => {
     const views = [make_view(), make_view()]
-    const { filtered } = organize_views({ views, active_tag_filters: new Set() })
+    const { filtered } = organize_views({
+      views,
+      active_tag_filters: new Set()
+    })
     expect(filtered.length).to.equal(2)
   })
 })
@@ -167,9 +179,16 @@ describe('organize_views — auto_tags_map integration', () => {
   it('attaches auto tags to view.tags in result', () => {
     const view = make_view()
     const auto_map = new Map([[view.view_id, ['efficiency']]])
-    const { filtered } = organize_views({ views: [view], auto_tags_map: auto_map })
+    const { filtered } = organize_views({
+      views: [view],
+      auto_tags_map: auto_map
+    })
     const result_view = filtered.find((v) => v.view_id === view.view_id)
-    expect(result_view.tags.some((t) => t.name === 'efficiency' && t.source === 'auto')).to.equal(true)
+    expect(
+      result_view.tags.some(
+        (t) => t.name === 'efficiency' && t.source === 'auto'
+      )
+    ).to.equal(true)
   })
 })
 

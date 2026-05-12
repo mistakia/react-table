@@ -95,9 +95,14 @@ export default function SelectPickerPanel({
   const filtered_items = useMemo(() => {
     if (!search) return scoped_items
     const lowered = search.toLowerCase()
-    return scoped_items.filter((it) =>
-      String(it.label || '').toLowerCase().includes(lowered) ||
-      String(it.id || '').toLowerCase().includes(lowered)
+    return scoped_items.filter(
+      (it) =>
+        String(it.label || '')
+          .toLowerCase()
+          .includes(lowered) ||
+        String(it.id || '')
+          .toLowerCase()
+          .includes(lowered)
     )
   }, [scoped_items, search])
 
@@ -157,12 +162,18 @@ export default function SelectPickerPanel({
         })}
         onClick={() => on_select && on_select(item)}>
         <span className={indicator_class}>
-          {item.mixed ? '–' : item.selected ? <CheckIcon fontSize='inherit' /> : null}
+          {item.mixed ? (
+            '–'
+          ) : item.selected ? (
+            <CheckIcon fontSize='inherit' />
+          ) : null}
         </span>
         {render_icon(item.icon)}
         <span className='rt-spp-item-label'>{item.label}</span>
         {item.tag && <span className='rt-spp-item-tag'>{item.tag}</span>}
-        {item.suffix && <span className='rt-spp-item-suffix'>{item.suffix}</span>}
+        {item.suffix && (
+          <span className='rt-spp-item-suffix'>{item.suffix}</span>
+        )}
       </div>
     )
   }
@@ -276,7 +287,11 @@ export default function SelectPickerPanel({
             )}
             {should_search && (
               <div className='rt-spp-search'>
-                <SearchIcon className='rt-spp-search-icon' fontSize='small' aria-hidden='true' />
+                <SearchIcon
+                  className='rt-spp-search-icon'
+                  fontSize='small'
+                  aria-hidden='true'
+                />
                 <input
                   type='text'
                   autoFocus

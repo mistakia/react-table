@@ -21,7 +21,13 @@ function CurrentViewHeader({
 }) {
   if (!view) return null
 
-  const { view_name, view_description, view_username, has_unsaved_local_edits, is_editable } = view
+  const {
+    view_name,
+    view_description,
+    view_username,
+    has_unsaved_local_edits,
+    is_editable
+  } = view
 
   const can_save = is_table_state_changed && is_editable
   const save_tooltip = is_editable
@@ -56,7 +62,9 @@ function CurrentViewHeader({
         <div className='tvc-current-view-header-actions'>
           {on_toggle_favorite && (
             <Tooltip
-              title={is_favorited ? 'Remove from favorites' : 'Add to favorites'}
+              title={
+                is_favorited ? 'Remove from favorites' : 'Add to favorites'
+              }
               placement='top'
               enterDelay={700}>
               <IconButton
@@ -75,7 +83,10 @@ function CurrentViewHeader({
           {(on_save_current_view || on_reset_current_view) && (
             <>
               {on_reset_current_view && (
-                <Tooltip title='Reset to saved state' placement='top' enterDelay={700}>
+                <Tooltip
+                  title='Reset to saved state'
+                  placement='top'
+                  enterDelay={700}>
                   <span>
                     <IconButton
                       size='small'

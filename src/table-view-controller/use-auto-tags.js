@@ -99,7 +99,8 @@ function derive_position(where, view_name, subject) {
   }
 
   if (subject === 'player-stats') return 'multi-position'
-  if (subject === 'team-stats' || subject === 'defense-stats') return 'team-level'
+  if (subject === 'team-stats' || subject === 'defense-stats')
+    return 'team-level'
   return null
 }
 
@@ -132,7 +133,8 @@ function derive_metric_domain(col_ids) {
 }
 
 function derive_time_horizon(view_name, splits) {
-  if (/matchup preview|week \d|this week/i.test(view_name)) return 'current-week'
+  if (/matchup preview|week \d|this week/i.test(view_name))
+    return 'current-week'
   if (/by week|weekly/i.test(view_name) && splits.length > 0)
     return 'season-to-date'
   if (/\b\d{4}[-–]\d{4}\b/.test(view_name)) return 'multi-season'

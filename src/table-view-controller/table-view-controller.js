@@ -56,7 +56,11 @@ const TableViewController = ({
   )
 
   // Deterministic auto-tags per view — empty Map when derive_auto_tags is absent
-  const auto_tags_map = use_auto_tags(views, all_columns || {}, derive_auto_tags)
+  const auto_tags_map = use_auto_tags(
+    views,
+    all_columns || {},
+    derive_auto_tags
+  )
 
   // Organized / filtered view list
   const { sections, counts, filtered } = use_organized_views({
@@ -73,9 +77,7 @@ const TableViewController = ({
   // Collect all unique tags visible in the current section for the rail chip cloud
   const all_visible_tags = React.useMemo(() => {
     const source_views =
-      active_section === 'all'
-        ? filtered
-        : sections[active_section] || []
+      active_section === 'all' ? filtered : sections[active_section] || []
     const seen = new Map()
     for (const v of source_views) {
       for (const tag of v.tags || []) {
@@ -168,7 +170,8 @@ const TableViewController = ({
   useEffect(() => {
     if (view_controls_open && container_ref.current) {
       const rect = container_ref.current.getBoundingClientRect()
-      const scroll_left = window.pageXOffset || document.documentElement.scrollLeft
+      const scroll_left =
+        window.pageXOffset || document.documentElement.scrollLeft
       const window_center_x = window.innerWidth / 2 + scroll_left
       const element_width =
         window.innerWidth < 768
@@ -194,8 +197,15 @@ const TableViewController = ({
   }, [view_controls_open])
 
   const current_view = views.find((v) => v.view_id === selected_view.view_id)
-  const { view_name: title, view_description: description, view_username: username } =
-    current_view || { view_name: 'Views', view_description: '', view_username: '' }
+  const {
+    view_name: title,
+    view_description: description,
+    view_username: username
+  } = current_view || {
+    view_name: 'Views',
+    view_description: '',
+    view_username: ''
+  }
 
   const is_favorited =
     on_toggle_favorite && favorite_view_ids
@@ -204,7 +214,8 @@ const TableViewController = ({
         : false
       : false
 
-  const display_views = active_section === 'all' ? filtered : sections[active_section] || []
+  const display_views =
+    active_section === 'all' ? filtered : sections[active_section] || []
 
   const list_items = display_views.map((view) => (
     <ViewItem
@@ -239,7 +250,9 @@ const TableViewController = ({
           <div
             onClick={handle_menu_toggle}
             className='table-expanding-control-button'>
-            <label className='table-expanding-control-label'>Current View</label>
+            <label className='table-expanding-control-label'>
+              Current View
+            </label>
             <div className='current-view-info'>
               <div className='current-view-username'>{username}</div>
               <div className='current-view-title'>{title}</div>

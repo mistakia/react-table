@@ -55,7 +55,10 @@ export const fuzzy_match = (needle, view_or_string = '') => {
   const view = view_or_string
 
   if (fuzzy_match_string(needle, view.view_name)) return true
-  if (view.view_description && fuzzy_match_string(needle, view.view_description))
+  if (
+    view.view_description &&
+    fuzzy_match_string(needle, view.view_description)
+  )
     return true
   if (view.view_username && fuzzy_match_string(needle, view.view_username))
     return true

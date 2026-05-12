@@ -12,7 +12,9 @@ import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 const sanitize_value = (value) => {
   if (value === null || value === undefined) return value
   if (Array.isArray(value)) {
-    return value.flat(Infinity).filter((v) => v !== undefined && v !== null && v !== '')
+    return value
+      .flat(Infinity)
+      .filter((v) => v !== undefined && v !== null && v !== '')
   }
   return value
 }

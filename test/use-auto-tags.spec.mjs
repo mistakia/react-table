@@ -38,7 +38,12 @@ describe('derive_auto_tags_impl — Axis 1: Subject', () => {
 
   it('emits team-stats when >50% of columns are team_*', () => {
     const view = make_view({
-      columns: [col('team_name'), col('team_wins'), col('team_losses'), col('week')]
+      columns: [
+        col('team_name'),
+        col('team_wins'),
+        col('team_losses'),
+        col('week')
+      ]
     })
     const tags = derive_auto_tags_impl(view, {})
     expect(tags).to.include('team-stats')
@@ -177,7 +182,12 @@ describe('derive_auto_tags_impl — Axis 2: Position', () => {
   it('emits team-level for team-stats subject', () => {
     const view = make_view({
       view_name: 'Team Rankings',
-      columns: [col('team_name'), col('team_wins'), col('team_losses'), col('z')]
+      columns: [
+        col('team_name'),
+        col('team_wins'),
+        col('team_losses'),
+        col('z')
+      ]
     })
     const tags = derive_auto_tags_impl(view, {})
     expect(tags).to.include('team-level')
@@ -199,7 +209,9 @@ describe('derive_auto_tags_impl — Axis 2: Position', () => {
 // ── Axis 3: Metric domain ─────────────────────────────────────────────────────
 describe('derive_auto_tags_impl — Axis 3: Metric domain', () => {
   it('emits betting-markets for _game_prop_ columns (betting-prop cluster)', () => {
-    const view = make_view({ columns: [col('player_passing_yards_game_prop_over')] })
+    const view = make_view({
+      columns: [col('player_passing_yards_game_prop_over')]
+    })
     expect(derive_auto_tags_impl(view, {})).to.include('betting-markets')
   })
 
@@ -250,7 +262,14 @@ describe('derive_auto_tags_impl — Axis 3: Metric domain', () => {
       columns: [col('player_pff_grade'), col('player_air_yards_total')]
     })
     const metric_tags = derive_auto_tags_impl(view, {}).filter((t) =>
-      ['opportunity', 'efficiency', 'betting-markets', 'projections', 'trade-values', 'play-by-play'].includes(t)
+      [
+        'opportunity',
+        'efficiency',
+        'betting-markets',
+        'projections',
+        'trade-values',
+        'play-by-play'
+      ].includes(t)
     )
     expect(metric_tags.length).to.be.at.most(1)
   })
@@ -294,7 +313,9 @@ describe('derive_auto_tags_impl — Axis 4: Time horizon', () => {
   it('emits at most one time-horizon tag', () => {
     const view = make_view({ view_name: 'QB Stats' })
     const time_tags = derive_auto_tags_impl(view, {}).filter((t) =>
-      ['current-week', 'season-to-date', 'multi-season', 'historical'].includes(t)
+      ['current-week', 'season-to-date', 'multi-season', 'historical'].includes(
+        t
+      )
     )
     expect(time_tags.length).to.be.at.most(1)
   })

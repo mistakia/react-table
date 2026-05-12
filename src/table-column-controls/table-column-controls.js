@@ -708,9 +708,7 @@ const TableColumnControls = ({
                               className='action'
                               ref={replace_column_anchor_ref}
                               onClick={() =>
-                                set_replace_column_open(
-                                  !replace_column_open
-                                )
+                                set_replace_column_open(!replace_column_open)
                               }>
                               Replace Column
                             </div>
@@ -772,13 +770,14 @@ const TableColumnControls = ({
                         {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
                       </div>
                     )}
-                    {!bulk_edit_mode && local_table_state_columns.length > 0 && (
-                      <div
-                        className='action -destructive'
-                        onClick={set_all_columns_hidden}>
-                        Remove All
-                      </div>
-                    )}
+                    {!bulk_edit_mode &&
+                      local_table_state_columns.length > 0 && (
+                        <div
+                          className='action -destructive'
+                          onClick={set_all_columns_hidden}>
+                          Remove All
+                        </div>
+                      )}
                   </div>
                 </div>
                 <div className='selected-columns-container'>
