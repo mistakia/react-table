@@ -245,7 +245,9 @@ const FilterValuePicker = ({
           {render_icon(first.icon, 'rt-spp-icon -trigger')}
           <span>{first.label}</span>
         </span>
-        <span className='filter-item-value-more'>+{display_entries.length - 1}</span>
+        <span className='filter-item-value-more'>
+          +{display_entries.length - 1}
+        </span>
       </span>
     )
   }, [display_entries])
@@ -264,8 +266,13 @@ const FilterValuePicker = ({
             '-empty': !display_entries
           })}
           onClick={() => set_open(!open)}>
-          <span className='rt-value-picker-trigger-text'>{trigger_content}</span>
-          <KeyboardArrowDownIcon className='rt-value-picker-trigger-icon' fontSize='small' />
+          <span className='rt-value-picker-trigger-text'>
+            {trigger_content}
+          </span>
+          <KeyboardArrowDownIcon
+            className='rt-value-picker-trigger-icon'
+            fontSize='small'
+          />
         </div>
         <Popper
           className='rt-value-picker-popper'
@@ -309,7 +316,11 @@ FilterValuePicker.propTypes = {
 
 FilterItemValue.propTypes = {
   where_item: PropTypes.object.isRequired,
-  filter_value: PropTypes.oneOfType([PropTypes.string, PropTypes.array, PropTypes.number]),
+  filter_value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.array,
+    PropTypes.number
+  ]),
   handle_value_change: PropTypes.func.isRequired,
   column_values: PropTypes.array,
   column_value_groups: PropTypes.array,
@@ -541,7 +552,11 @@ export default function FilterItem({
         {is_column_in_table ? (
           <span className='filter-item-slot' aria-hidden='true' />
         ) : (
-          <Tooltip title='Show this column in the table' placement='top' enterDelay={700} enterNextDelay={300}>
+          <Tooltip
+            title='Show this column in the table'
+            placement='top'
+            enterDelay={700}
+            enterNextDelay={300}>
             <span className='filter-item-slot'>
               <IconButton
                 size='small'
@@ -598,11 +613,19 @@ export default function FilterItem({
               className='filter-item-action'
               disabled={!has_column_params}
               onClick={() => set_show_column_params(!show_column_params)}>
-              {show_column_params ? <ExpandLessIcon fontSize='small' /> : <ExpandMoreIcon fontSize='small' />}
+              {show_column_params ? (
+                <ExpandLessIcon fontSize='small' />
+              ) : (
+                <ExpandMoreIcon fontSize='small' />
+              )}
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title='Remove filter' placement='top' enterDelay={700} enterNextDelay={300}>
+        <Tooltip
+          title='Remove filter'
+          placement='top'
+          enterDelay={700}
+          enterNextDelay={300}>
           <span className='filter-item-slot'>
             <IconButton
               size='small'

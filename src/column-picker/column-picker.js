@@ -24,9 +24,7 @@ export default function ColumnPicker({
   const debounced_filter = useCallback(
     debounce((filter) => {
       const filtered = all_columns
-        .filter((col) =>
-          fuzzy_match(filter, col.column_title || col.column_id)
-        )
+        .filter((col) => fuzzy_match(filter, col.column_title || col.column_id))
         .sort(
           (a, b) =>
             distance(filter, a.column_title || a.column_id) -

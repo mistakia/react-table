@@ -123,7 +123,11 @@ const ColumnControlsSelectedColumn = React.memo(
             className='column-name'>
             {column.column_title || column.column_id}
             {has_active_where && (
-              <Tooltip title='This column has an active filter' placement='top' enterDelay={700} enterNextDelay={300}>
+              <Tooltip
+                title='This column has an active filter'
+                placement='top'
+                enterDelay={700}
+                enterNextDelay={300}>
                 <FilterListIcon
                   className='column-name-funnel'
                   fontSize='inherit'
@@ -164,7 +168,11 @@ const ColumnControlsSelectedColumn = React.memo(
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title='Remove column' placement='top' enterDelay={700} enterNextDelay={300}>
+            <Tooltip
+              title='Remove column'
+              placement='top'
+              enterDelay={700}
+              enterNextDelay={300}>
               <span className='column-item-slot'>
                 <IconButton
                   size='small'
@@ -175,7 +183,11 @@ const ColumnControlsSelectedColumn = React.memo(
               </span>
             </Tooltip>
             {bulk_edit_mode && (
-              <Tooltip title='Select for bulk action' placement='top' enterDelay={700} enterNextDelay={300}>
+              <Tooltip
+                title='Select for bulk action'
+                placement='top'
+                enterDelay={700}
+                enterNextDelay={300}>
                 <span className='column-item-slot'>
                   <Checkbox
                     size='small'
@@ -194,7 +206,11 @@ const ColumnControlsSelectedColumn = React.memo(
                 </span>
               </Tooltip>
             )}
-            <Tooltip title='Drag to reorder' placement='top' enterDelay={700} enterNextDelay={300}>
+            <Tooltip
+              title='Drag to reorder'
+              placement='top'
+              enterDelay={700}
+              enterNextDelay={300}>
               <div className='column-drag-handle' {...listeners}>
                 <DragIndicatorIcon fontSize='small' />
               </div>

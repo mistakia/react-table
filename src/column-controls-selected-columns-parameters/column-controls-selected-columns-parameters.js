@@ -7,7 +7,11 @@ import ParametersEditor from '#src/parameters-editor'
 
 import './column-controls-selected-columns-parameters.styl'
 
-const build_records = (selected_column_indexes, local_table_state, set_local_table_state) =>
+const build_records = (
+  selected_column_indexes,
+  local_table_state,
+  set_local_table_state
+) =>
   selected_column_indexes
     .map((index) => {
       const entry = local_table_state.columns?.[index]
@@ -24,8 +28,10 @@ const build_records = (selected_column_indexes, local_table_state, set_local_tab
             ...prev,
             columns: prev.columns.map((column, i) => {
               if (i !== index) return column
-              const cur_id = typeof column === 'string' ? column : column.column_id
-              const cur_params = typeof column === 'string' ? {} : column.params || {}
+              const cur_id =
+                typeof column === 'string' ? column : column.column_id
+              const cur_params =
+                typeof column === 'string' ? {} : column.params || {}
               return {
                 column_id: cur_id,
                 params: { ...cur_params, [param_name]: value }
@@ -57,7 +63,12 @@ export default function ColumnControlsSelectedColumnsParameters({
   }, [selected_column_indexes, local_table_state_columns])
 
   const records = useMemo(
-    () => build_records(selected_column_indexes, local_table_state, set_local_table_state),
+    () =>
+      build_records(
+        selected_column_indexes,
+        local_table_state,
+        set_local_table_state
+      ),
     [selected_column_indexes, local_table_state.columns, set_local_table_state]
   )
 

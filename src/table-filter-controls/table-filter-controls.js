@@ -212,7 +212,11 @@ const TableFilterControls = ({
       set_all_columns_expanded(false)
       did_collapse_for_open_ref.current = true
     }
-  }, [filter_controls_open, filters_local_table_state, set_all_columns_expanded])
+  }, [
+    filter_controls_open,
+    filters_local_table_state,
+    set_all_columns_expanded
+  ])
 
   useEffect(() => {
     if (filter_controls_open) {
