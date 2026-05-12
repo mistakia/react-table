@@ -1,0 +1,64 @@
+@import '../styles/tokens.styl'
+@import '../styles/search-input.styl'
+
+.parameters-editor
+  display flex
+  flex-direction column
+  width 100%
+  height 100%
+  overflow hidden
+
+  &.parameters-editor--inline
+    width 100%
+    height auto
+    overflow visible
+
+    .rt-search-input
+      padding $rt_space_xs 0
+      background transparent
+      border-bottom 0
+
+    .parameters-editor-body
+      overflow visible
+
+    .parameters-container
+      padding $rt_space_xs 0 0
+      gap 2px
+
+    .parameters-editor-item
+      padding 0
+      background transparent
+      border-radius 0
+
+.parameters-editor-body
+  display flex
+  flex-direction column
+  width 100%
+  overflow-y auto
+
+  .section-header
+    font-family "IBM Plex Mono", monospace
+    font-size $rt_font_size_micro
+    font-weight $rt_font_weight_label
+    letter-spacing 0.06em
+    text-transform uppercase
+    color $rt_text_muted
+    position sticky
+    top 0px
+    background $rt_bg_subtle
+    border-bottom 1px solid $rt_divider
+    z-index 2
+    padding $rt_space_xs $rt_space
+
+.parameters-container
+  padding $rt_space_xs $rt_space_sm $rt_space_sm
+  display flex
+  flex-wrap wrap
+  gap $rt_space_xs
+
+.parameters-editor-item
+  padding $rt_space_xs $rt_space_sm
+  background $rt_bg_subtle
+  border-radius $rt_radius_sm
+  display flex
+  align-items center

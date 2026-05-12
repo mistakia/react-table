@@ -12,16 +12,7 @@ import TextField from '@mui/material/TextField'
 import { SortableContext, arrayMove } from '@dnd-kit/sortable'
 import { DndContext, PointerSensor, useSensors, useSensor } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import Collapse from '@mui/material/Collapse'
-import Badge from '@mui/material/Badge'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
-import Popper from '@mui/material/Popper'
-import MenuList from '@mui/material/MenuList'
-import MenuItem from '@mui/material/MenuItem'
 import DehazeIcon from '@mui/icons-material/Dehaze'
 import CloseIcon from '@mui/icons-material/Close'
 import AddIcon from '@mui/icons-material/Add'
@@ -29,14 +20,13 @@ import { distance } from 'fastest-levenshtein'
 
 import ColumnControlsSelectedColumnsParameters from '#src/column-controls-selected-columns-parameters'
 import ColumnControlsSelectedColumn from '#src/column-controls-selected-column'
+import ColumnPicker from '#src/column-picker'
+import { CategoryTree } from '#src/category-tree'
 import DataTypeIcon from '#src/data-type-icon'
 import {
   fuzzy_match,
   group_columns_into_tree_view,
-  get_string_from_object,
-  use_count_children,
-  levenstein_distance,
-  debounce
+  get_string_from_object
 } from '#src/utils'
 import { table_context } from '#src/table-context'
 import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '#src/constants.mjs'
@@ -113,6 +103,7 @@ const TableColumnControls = ({
   const { set_column_controls_open } = useContext(table_context)
   const [local_table_state, set_local_table_state] = useState(table_state)
   const [selected_column_indexes, set_selected_column_indexes] = useState([])
+  const [bulk_edit_mode, set_bulk_edit_mode] = useState(false)
   const [all_columns_expanded, set_all_columns_expanded] = useState(true)
 
   const load_remaining_columns = () => set_loaded_all(true)
@@ -128,16 +119,12 @@ const TableColumnControls = ({
   )
   const [loaded_all, set_loaded_all] = useState(false)
   const filter_input_ref = useRef(null)
-  const count_children = use_count_children()
 
   const container_ref = useRef(null)
   const [transform, set_transform] = useState('')
 
   const [replace_column_open, set_replace_column_open] = useState(false)
   const replace_column_anchor_ref = useRef(null)
-  const [replace_column_filter, set_replace_column_filter] = useState('')
-  const [replace_column_filtered_columns, set_replace_column_filtered_columns] =
-    useState(all_columns)
 
   const local_table_state_columns = useMemo(() => {
     const columns = []
@@ -331,6 +318,14 @@ const TableColumnControls = ({
     return index
   }, [local_table_state_columns])
 
+  const active_where_index = useMemo(() => {
+    const index = {}
+    for (const w of local_table_state.where || []) {
+      if (w && w.column_id) index[w.column_id] = true
+    }
+    return index
+  }, [local_table_state.where])
+
   const filtered_and_sorted_columns = useMemo(() => {
     if (!filter_text_input) {
       return group_columns_into_tree_view(all_columns)
@@ -485,6 +480,7 @@ const TableColumnControls = ({
       document.addEventListener('keydown', handleKeyDown)
     } else {
       set_selected_column_indexes([])
+      set_bulk_edit_mode(false)
       document.removeEventListener('keydown', handleKeyDown)
     }
 
@@ -561,47 +557,17 @@ const TableColumnControls = ({
     }))
   }, [])
 
-  const render_category = useCallback(
-    (category, depth = 0, base_path = '/') => {
-      const category_path = `${base_path}${category.header}/`
-      const is_open = open_categories[category_path] || false
-      const total_children_count = count_children(category.columns || [])
-      return (
-        <div key={category_path}>
-          <ListItem
-            disablePadding
-            onClick={() => toggle_category(category_path)}
-            className={`column-category column-category-depth-${depth}`}>
-            <KeyboardArrowRightIcon
-              style={{ transform: is_open ? 'rotate(90deg)' : 'none' }}
-            />
-            <ListItemText primary={category.header} />
-            <Badge badgeContent={total_children_count} color='primary' />
-          </ListItem>
-          <Collapse in={is_open} timeout='auto' unmountOnExit>
-            <List component='div' disablePadding>
-              {category.columns &&
-                category.columns.map((sub_category) =>
-                  sub_category.columns ? (
-                    render_category(sub_category, depth + 1, category_path)
-                  ) : (
-                    <ColumnControlsTableColumnItem
-                      key={sub_category.column_id}
-                      column={sub_category}
-                      is_visible={Boolean(
-                        shown_column_index[sub_category.column_id]
-                      )}
-                      {...{ set_column_hidden_by_id, set_column_visible }}
-                      depth={depth + 1}
-                    />
-                  )
-                )}
-            </List>
-          </Collapse>
-        </div>
-      )
-    },
-    [open_categories, count_children, shown_column_index, local_table_state]
+  const render_leaf = useCallback(
+    (column, depth) => (
+      <ColumnControlsTableColumnItem
+        key={column.column_id}
+        column={column}
+        is_visible={Boolean(shown_column_index[column.column_id])}
+        {...{ set_column_hidden_by_id, set_column_visible }}
+        depth={depth}
+      />
+    ),
+    [shown_column_index, set_column_hidden_by_id, set_column_visible]
   )
 
   const handle_apply = useCallback(() => {
@@ -651,36 +617,6 @@ const TableColumnControls = ({
     set_selected_column_indexes([])
   }
 
-  const debounced_replace_column_filter = useCallback(
-    debounce((filter) => {
-      if (filter) {
-        const filtered = all_columns
-          .filter((col) =>
-            fuzzy_match(filter, col.column_title || col.column_id)
-          )
-          .sort((a, b) => {
-            const distance_a = levenstein_distance(
-              filter,
-              a.column_title || a.column_id
-            )
-            const distance_b = levenstein_distance(
-              filter,
-              b.column_title || b.column_id
-            )
-            return distance_a - distance_b
-          })
-        set_replace_column_filtered_columns(filtered)
-      } else {
-        set_replace_column_filtered_columns(all_columns)
-      }
-    }, 100),
-    [all_columns]
-  )
-
-  useEffect(() => {
-    debounced_replace_column_filter(replace_column_filter)
-  }, [replace_column_filter, debounced_replace_column_filter])
-
   const handle_replace_selected_columns = useCallback(
     (new_column) => {
       set_local_table_state((prev) => ({
@@ -707,7 +643,6 @@ const TableColumnControls = ({
       }))
       set_selected_column_indexes([])
       set_replace_column_open(false)
-      set_replace_column_filter('')
     },
     [selected_column_indexes]
   )
@@ -757,107 +692,93 @@ const TableColumnControls = ({
                     Shown in table
                   </div>
                   <div style={{ display: 'flex' }}>
-                    {selected_column_indexes.length > 0 && (
+                    {bulk_edit_mode && (
                       <>
-                        <ColumnControlsSelectedColumnsParameters
-                          selected_column_indexes={selected_column_indexes}
-                          local_table_state={local_table_state}
-                          local_table_state_columns={local_table_state_columns}
-                          set_local_table_state={set_local_table_state}
-                        />
-                        <ClickAwayListener
-                          onClickAway={() => {
-                            set_replace_column_open(false)
-                            set_replace_column_filter('')
-                          }}>
-                          <div>
+                        {selected_column_indexes.length > 0 && (
+                          <>
+                            <ColumnControlsSelectedColumnsParameters
+                              selected_column_indexes={selected_column_indexes}
+                              local_table_state={local_table_state}
+                              local_table_state_columns={
+                                local_table_state_columns
+                              }
+                              set_local_table_state={set_local_table_state}
+                            />
                             <div
                               className='action'
                               ref={replace_column_anchor_ref}
                               onClick={() =>
-                                set_replace_column_open(!replace_column_open)
+                                set_replace_column_open(
+                                  !replace_column_open
+                                )
                               }>
                               Replace Column
                             </div>
-                            <Popper
-                              className='table-popper'
+                            <ColumnPicker
                               open={replace_column_open}
-                              anchorEl={replace_column_anchor_ref.current}
-                              placement='bottom-start'>
-                              <div className='column-select-menu'>
-                                <div className='column-select-filter-container'>
-                                  <TextField
-                                    variant='outlined'
-                                    margin='none'
-                                    fullWidth
-                                    label='Search columns'
-                                    size='small'
-                                    autoComplete='off'
-                                    autoFocus
-                                    value={replace_column_filter}
-                                    onChange={(e) =>
-                                      set_replace_column_filter(e.target.value)
-                                    }
-                                  />
-                                </div>
-                                <div className='column-select-list'>
-                                  <MenuList>
-                                    {replace_column_filtered_columns.map(
-                                      (col) => (
-                                        <MenuItem
-                                          key={col.column_id}
-                                          onClick={() =>
-                                            handle_replace_selected_columns(col)
-                                          }>
-                                          {col.column_title || col.column_id}
-                                        </MenuItem>
-                                      )
-                                    )}
-                                  </MenuList>
-                                </div>
-                              </div>
-                            </Popper>
-                          </div>
-                        </ClickAwayListener>
-                        <div
-                          className='action'
-                          onClick={handle_duplicate_columns}>
-                          Duplicate {selected_column_indexes.length} column
-                          {selected_column_indexes.length > 1 ? 's' : ''}
-                        </div>
-                        <div
-                          className='action'
-                          onClick={() => set_selected_column_indexes([])}>
-                          Deselect All
-                        </div>
-                        <div
-                          className='action'
-                          onClick={handle_remove_selected_columns}>
-                          Remove Selected
-                        </div>
+                              anchor_el={replace_column_anchor_ref.current}
+                              all_columns={all_columns}
+                              on_select={handle_replace_selected_columns}
+                              on_close={() => set_replace_column_open(false)}
+                            />
+                            <div
+                              className='action'
+                              onClick={handle_duplicate_columns}>
+                              Duplicate {selected_column_indexes.length} column
+                              {selected_column_indexes.length > 1 ? 's' : ''}
+                            </div>
+                            <div
+                              className='action'
+                              onClick={() => set_selected_column_indexes([])}>
+                              Deselect All
+                            </div>
+                            <div
+                              className='action -destructive'
+                              onClick={handle_remove_selected_columns}>
+                              Remove Selected
+                            </div>
+                          </>
+                        )}
+                        {selected_column_indexes.length !==
+                          local_table_state_columns.length &&
+                          has_selectable_columns && (
+                            <div
+                              className='action'
+                              onClick={() =>
+                                set_selected_column_indexes(
+                                  local_table_state_columns.map(
+                                    (_, index) => index
+                                  )
+                                )
+                              }>
+                              Select All
+                            </div>
+                          )}
                       </>
                     )}
-                    {selected_column_indexes.length !==
-                      local_table_state_columns.length &&
-                      has_selectable_columns && (
-                        <div
-                          className='action'
-                          onClick={() =>
-                            set_selected_column_indexes(
-                              local_table_state_columns.map((_, index) => index)
-                            )
-                          }>
-                          Select All
-                        </div>
-                      )}
-                    {local_table_state_columns.length > 0 &&
-                      !selected_column_indexes.length && (
-                        <div
-                          className='action'
-                          onClick={set_all_columns_hidden}>
-                          Remove All
-                        </div>
-                      )}
+                    {has_selectable_columns && (
+                      <div
+                        className={get_string_from_object({
+                          action: true,
+                          'action-toggle': true,
+                          '-active': bulk_edit_mode
+                        })}
+                        onClick={() => {
+                          if (bulk_edit_mode) {
+                            set_selected_column_indexes([])
+                          }
+                          set_bulk_edit_mode(!bulk_edit_mode)
+                        }}>
+                        {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
+                      </div>
+                    )}
+                    {!bulk_edit_mode && local_table_state_columns.length > 0 && (
+                      <div
+                        className='action -destructive'
+                        onClick={set_all_columns_hidden}>
+                        Remove All
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className='selected-columns-container'>
@@ -877,6 +798,10 @@ const TableColumnControls = ({
                             column_index,
                             selected_column_indexes,
                             set_selected_column_indexes,
+                            bulk_edit_mode,
+                            has_active_where: Boolean(
+                              active_where_index[column.column_id]
+                            ),
                             splits: local_table_state.splits || []
                           }}
                         />
@@ -898,15 +823,15 @@ const TableColumnControls = ({
             </div>
             {all_columns_expanded && (
               <>
-                <div className='table-expanding-control-input-container'>
+                <div className='rt-search-input'>
                   <TextField
                     variant='outlined'
-                    margin='normal'
+                    size='small'
+                    margin='none'
                     fullWidth
                     id='filter'
                     label='Search columns'
                     name='filter'
-                    size='small'
                     autoComplete='off'
                     value={filter_text_input}
                     onChange={handle_filter_change}
@@ -930,7 +855,12 @@ const TableColumnControls = ({
                             {...{ set_column_visible, set_column_hidden_by_id }}
                           />
                         ) : item.columns ? (
-                          render_category(item)
+                          <CategoryTree
+                            category={item}
+                            open_categories={open_categories}
+                            toggle_category={toggle_category}
+                            render_leaf={render_leaf}
+                          />
                         ) : (
                           <ColumnControlsTableColumnItem
                             key={item.column_id}

@@ -1,3 +1,8 @@
+@import '../styles/tokens.styl'
+@import '../styles/column-category.styl'
+@import '../styles/search-input.styl'
+@import '../styles/popper-surface.styl'
+
 .table-column-controls
   width 100px
 
@@ -6,12 +11,53 @@
     align-items center
     justify-content center
     cursor ns-resize
+    color $rt_text_subtle
 
 .selected-columns-container
-  padding 8px
+  padding $rt_space_sm
   display flex
-  gap 4px
+  gap $rt_space_xs
   flex-direction column
+
+  .column-actions
+    display flex
+    align-items center
+
+  .column-item-slot
+    width 32px
+    display flex
+    align-items center
+    justify-content center
+    flex 0 0 32px
+
+  .column-item-action
+    color $rt_text_muted
+    padding 4px
+    &.Mui-disabled
+      color $rt_text_disabled
+      opacity 0.35
+    &:hover
+      background $rt_button_hover_bg
+      color $rt_text
+
+  .column-item-remove:hover
+    color #c0392b
+    background rgba(192, 57, 43, 0.08)
+
+  .column-item-bulk-checkbox
+    padding 4px
+    &.Mui-disabled
+      opacity 0.35
+
+  .column-drag-handle
+    width 32px
+    flex 0 0 32px
+
+  .column-name-funnel
+    margin-left $rt_space_xs
+    font-size 14px
+    color $rt_text_subtle
+    vertical-align middle
 
 .column-controls-body
   overflow-y scroll
@@ -19,43 +65,32 @@
   flex 1
 
 .table-column-controls-load-all-columns
-  margin 8px
-  padding 8px 16px
-  border-radius 4px
-  background rgba(0, 0, 0, 0.05)
+  margin $rt_space_sm
+  padding $rt_space_sm $rt_space_lg
+  border-radius $rt_radius_sm
+  background $rt_bg_hover
   cursor pointer
   border 1px solid transparent
   display flex
   align-items center
   justify-content center
+  color $rt_text_muted
+  font-size $rt_font_size_sm
+  transition border-color $rt_transition, background $rt_transition
   &:hover
-    border 1px solid rgba(0, 0, 0, 0.23)
+    border 1px solid $rt_border
+    background $rt_bg_hover_strong
+    color $rt_text
 
 .column-category-container
-  padding 8px
-  margin-bottom 8px
+  padding $rt_space_sm
+  margin-bottom $rt_space_sm
   display flex
   flex-direction column
   overflow-y auto
 
   .column-category
     cursor pointer
-
-.column-select-menu
-  display flex
-  flex-direction column
-  max-height 300px
-
-.column-select-filter-container
-  padding 8px
-
-.column-select-filter.
-  margin 0
-
-.column-select-list
-  border-top 1px solid #e0e0e0
-  overflow-y auto
-  flex-grow 1
 
 .rank-aggregation-controls-visible .table-column-controls
   left 80px
@@ -64,4 +99,4 @@
   .column-category-container
     .column-category
       &:hover
-        background rgba(0, 0, 0, 0.05)
+        background $rt_bg_hover

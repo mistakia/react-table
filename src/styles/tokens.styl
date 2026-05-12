@@ -6,52 +6,98 @@
 
 // Stylus mirrors — used at build time so component sources stay self-contained
 // when the lib is consumed without a :root override.
-$rt_border = rgba(0, 0, 0, 0.23)
-$rt_border_subtle = #e0e0e0
+$rt_border = rgba(15, 23, 42, 0.14)
+$rt_border_subtle = #e6e8eb
+$rt_divider = #eef0f2
 $rt_bg = #ffffff
-$rt_bg_subtle = #fafafa
-$rt_bg_hover = rgba(0, 0, 0, 0.05)
-$rt_bg_hover_strong = #e5e5e5
-$rt_bg_overlay = rgba(0, 0, 0, 0.5)
-$rt_text = #222222
-$rt_text_muted = #555555
-$rt_text_disabled = #999999
+$rt_bg_subtle = #f7f8f9
+$rt_bg_hover = rgba(15, 23, 42, 0.04)
+$rt_bg_hover_strong = #eceff2
+$rt_bg_selected = rgba(15, 23, 42, 0.06)
+$rt_bg_overlay = rgba(15, 23, 42, 0.45)
+$rt_text = #1f2328
+$rt_text_muted = #57606a
+$rt_text_subtle = #6e7781
+$rt_text_disabled = #9aa0a6
+$rt_accent = #1f6feb
+$rt_accent_strong = #1158c7
+$rt_accent_subtle = rgba(31, 111, 235, 0.10)
+$rt_accent_text = #0a59c9
+$rt_success = #1f883d
+$rt_success_strong = #186a2e
+$rt_success_bg = #2da44e
+$rt_active_bg = rgba(31, 111, 235, 0.08)
+$rt_active_bar = #1f6feb
+$rt_destructive = #d1242f
+$rt_destructive_subtle = rgba(209, 36, 47, 0.10)
 $rt_radius_sm = 4px
 $rt_radius = 6px
 $rt_radius_lg = 8px
+$rt_font_size_micro = 11px
 $rt_font_size_sm = 12px
 $rt_font_size = 13px
 $rt_font_size_md = 14px
+$rt_font_weight_label = 600
 $rt_space_xs = 4px
 $rt_space_sm = 8px
 $rt_space = 12px
 $rt_space_lg = 16px
 $rt_space_xl = 20px
-$rt_shadow_overlay = 0 8px 32px rgba(0, 0, 0, 0.18)
+$rt_row_height = 28px
+$rt_row_padding_y = 6px
+$rt_focus_ring = 0 0 0 2px rgba(31, 111, 235, 0.25)
+$rt_shadow_overlay = 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08)
+$rt_modal_border = rgba(0, 0, 0, 0.23)
+$rt_modal_shadow = #D0D0D0 4px 4px 0px 0px
+$rt_button_hover_bg = #f0f0f0
+$rt_button_hover_bg_strong = #b3b3b3
 $rt_transition = 150ms ease
 
 // Runtime CSS custom properties — consumers override these.
 :root
-  --rt-border rgba(0, 0, 0, 0.23)
-  --rt-border-subtle #e0e0e0
+  --rt-border rgba(15, 23, 42, 0.14)
+  --rt-border-subtle #e6e8eb
+  --rt-divider #eef0f2
   --rt-bg #ffffff
-  --rt-bg-subtle #fafafa
-  --rt-bg-hover rgba(0, 0, 0, 0.05)
-  --rt-bg-hover-strong #e5e5e5
-  --rt-bg-overlay rgba(0, 0, 0, 0.5)
-  --rt-text #222222
-  --rt-text-muted #555555
-  --rt-text-disabled #999999
+  --rt-bg-subtle #f7f8f9
+  --rt-bg-hover rgba(15, 23, 42, 0.04)
+  --rt-bg-hover-strong #eceff2
+  --rt-bg-selected rgba(15, 23, 42, 0.06)
+  --rt-bg-overlay rgba(15, 23, 42, 0.45)
+  --rt-text #1f2328
+  --rt-text-muted #57606a
+  --rt-text-subtle #6e7781
+  --rt-text-disabled #9aa0a6
+  --rt-accent #1f6feb
+  --rt-accent-strong #1158c7
+  --rt-accent-subtle rgba(31, 111, 235, 0.10)
+  --rt-accent-text #0a59c9
+  --rt-success #1f883d
+  --rt-success-strong #186a2e
+  --rt-success-bg #2da44e
+  --rt-active-bg rgba(31, 111, 235, 0.08)
+  --rt-active-bar #1f6feb
+  --rt-destructive #d1242f
+  --rt-destructive-subtle rgba(209, 36, 47, 0.10)
   --rt-radius-sm 4px
   --rt-radius 6px
   --rt-radius-lg 8px
+  --rt-font-size-micro 11px
   --rt-font-size-sm 12px
   --rt-font-size 13px
   --rt-font-size-md 14px
+  --rt-font-weight-label 600
   --rt-space-xs 4px
   --rt-space-sm 8px
   --rt-space 12px
   --rt-space-lg 16px
   --rt-space-xl 20px
-  --rt-shadow-overlay 0 8px 32px rgba(0, 0, 0, 0.18)
+  --rt-row-height 28px
+  --rt-row-padding-y 6px
+  --rt-focus-ring 0 0 0 2px rgba(31, 111, 235, 0.25)
+  --rt-shadow-overlay 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08)
+  --rt-modal-border rgba(0, 0, 0, 0.23)
+  --rt-modal-shadow #D0D0D0 4px 4px 0px 0px
+  --rt-button-hover-bg #f0f0f0
+  --rt-button-hover-bg-strong #b3b3b3
   --rt-transition 150ms ease

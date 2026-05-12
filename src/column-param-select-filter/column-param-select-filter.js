@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
 import FilterBase from '#src/filter-base'
+import SelectPickerPanel from '#src/select-picker-panel'
 import { format_column_params } from '#src/utils/format-column-params.js'
 
 export default function ColumnParamSelectFilter({
@@ -53,9 +53,19 @@ export default function ColumnParamSelectFilter({
   const set_null_on_all_click = !single && !default_value
 
   // TODO should probably always set it to null
-  const handle_all_click = () => {
-    const values = all_filter_values.map((i) => i.value).flat(Infinity)
-    handle_change(set_null_on_all_click ? null : values)
+  const handle_all_click = (filtered_items) => {
+    if (!filtered_items || filtered_items.length === all_filter_values.length) {
+      const values = all_filter_values.map((i) => i.value).flat(Infinity)
+      return handle_change(set_null_on_all_click ? null : values)
+    }
+    const filtered_values = filtered_items
+      .map((it) => all_filter_values[it._orig_index]?.value)
+      .filter((v) => v !== undefined)
+      .flat(Infinity)
+    const existing = Array.isArray(selected_param_values)
+      ? selected_param_values
+      : []
+    handle_change([...new Set([...existing, ...filtered_values])])
   }
 
   const handle_clear_click = () => {
@@ -124,7 +134,7 @@ export default function ColumnParamSelectFilter({
     handle_change(new_values)
   }
 
-  const items = create_filter_items({
+  const spp_items = create_spp_items({
     preset_values,
     dynamic_filter_values,
     static_values,
@@ -133,9 +143,8 @@ export default function ColumnParamSelectFilter({
     is_column_param_defined,
     default_value,
     dynamic_values,
-    handle_select,
-    handle_dynamic_value_change,
-    all_selected
+    all_selected,
+    handle_dynamic_value_change
   })
 
   const selected_label = create_selected_label({
@@ -150,13 +159,21 @@ export default function ColumnParamSelectFilter({
     selected_param_values
   })
 
-  const body = create_filter_body({
-    single,
-    handle_all_click,
-    handle_clear_click,
-    set_trigger_close,
-    items
-  })
+  const value_groups = column_param_definition?.value_groups
+
+  const body = (
+    <SelectPickerPanel
+      chromeless
+      items={spp_items}
+      value_groups={value_groups}
+      is_multi={!single}
+      is_single={single}
+      on_select={(item) => handle_select(item._orig_index)}
+      on_select_all={!single ? handle_all_click : undefined}
+      on_clear={!single ? handle_clear_click : undefined}
+      on_close={!single ? () => set_trigger_close((prev) => !prev) : undefined}
+    />
+  )
 
   return <FilterBase {...{ label, selected_label, body, trigger_close }} />
 }
@@ -191,15 +208,17 @@ function create_static_values({
   mixed_state
 }) {
   return (column_param_definition?.values || []).map((param_value) => {
-    const value =
-      param_value.value !== undefined
+    const is_object = typeof param_value === 'object' && param_value !== null
+    const value = is_object
+      ? param_value.value !== undefined
         ? param_value.value
-        : param_value !== null
-          ? param_value
-          : null
+        : null
+      : param_value
     return {
-      label: param_value.label || param_value,
+      label: is_object ? param_value.label : param_value,
       value,
+      icon: is_object ? param_value.icon : null,
+      group: is_object ? param_value.group : null,
       selected:
         !mixed_state &&
         ((Array.isArray(selected_param_values) &&
@@ -361,7 +380,7 @@ function handle_static_select({
   handle_change(filtered_values)
 }
 
-function create_filter_items({
+function create_spp_items({
   preset_values,
   dynamic_filter_values,
   static_values,
@@ -370,79 +389,36 @@ function create_filter_items({
   is_column_param_defined,
   default_value,
   dynamic_values,
-  handle_select,
-  handle_dynamic_value_change,
-  all_selected
-}) {
-  const create_item = (v, index) => {
-    const class_names = ['table-filter-item-dropdown-item']
-    const is_selected =
-      !mixed_state &&
-      (v.selected ||
-        all_selected ||
-        (single && !is_column_param_defined && v.value === default_value) ||
-        (single && !is_column_param_defined && !default_value && index === 0))
-    if (is_selected) class_names.push('selected')
-    if (v.className) class_names.push(v.className)
-
-    if (v.is_dynamic) {
-      return create_dynamic_item({
-        v,
-        index,
-        class_names,
-        is_selected,
-        dynamic_values,
-        handle_select,
-        handle_dynamic_value_change
-      })
-    }
-    return create_static_item({
-      v,
-      index,
-      class_names,
-      is_selected,
-      handle_select,
-      is_default_value: v.value === default_value
-    })
-  }
-
-  const preset_items = preset_values.map((v, index) => create_item(v, index))
-  const dynamic_items = dynamic_filter_values.map((v, index) =>
-    create_item(v, preset_values.length + index)
-  )
-  const static_items = static_values.map((v, index) =>
-    create_item(v, preset_values.length + dynamic_filter_values.length + index)
-  )
-
-  return [
-    preset_items.length > 0 && (
-      <div key='preset-section' className='table-filter-item-dropdown-section'>
-        {preset_items}
-      </div>
-    ),
-    <div key='other-section' className='table-filter-item-dropdown-section'>
-      {[...dynamic_items, ...static_items]}
-    </div>
-  ]
-}
-
-function create_dynamic_item({
-  v,
-  index,
-  class_names,
-  is_selected,
-  dynamic_values,
-  handle_select,
+  all_selected,
   handle_dynamic_value_change
 }) {
-  return (
-    <div
-      key={v.value}
-      className={class_names.join(' ')}
-      onClick={() => handle_select(index)}>
-      <Checkbox checked={is_selected} size='small' />
-      <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
-      {v.has_value_field && (
+  const is_implicit_selected = (v, index) =>
+    !mixed_state &&
+    (v.selected ||
+      all_selected ||
+      (single && !is_column_param_defined && v.value === default_value) ||
+      (single && !is_column_param_defined && !default_value && index === 0))
+
+  const preset_items = preset_values.map((v, index) => ({
+    id: `preset:${v.label}`,
+    label: v.label,
+    kind: 'preset',
+    tag: 'Preset',
+    selected: is_implicit_selected(v, index),
+    mixed: mixed_state,
+    _orig_index: index
+  }))
+
+  const dynamic_items = dynamic_filter_values.map((v, idx) => {
+    const orig_index = preset_values.length + idx
+    return {
+      id: `dynamic:${v.value}`,
+      label: v.label,
+      kind: 'dynamic',
+      selected: is_implicit_selected(v, orig_index),
+      mixed: mixed_state,
+      _orig_index: orig_index,
+      suffix: v.has_value_field ? (
         <TextField
           size='small'
           value={dynamic_values[v.value] ?? ''}
@@ -450,34 +426,25 @@ function create_dynamic_item({
           onClick={(e) => e.stopPropagation()}
           placeholder={v.default_value?.toString() || ''}
         />
-      )}
-    </div>
-  )
-}
+      ) : null
+    }
+  })
 
-function create_static_item({
-  v,
-  index,
-  class_names,
-  is_selected,
-  handle_select,
-  is_default_value
-}) {
-  return (
-    <div
-      key={v.is_preset ? v.label : v.value}
-      className={class_names.join(' ')}
-      onClick={() => handle_select(index)}>
-      <Checkbox checked={is_selected} size='small' />
-      <div className='table-filter-item-dropdown-item-label'>{v.label}</div>
-      {is_default_value && (
-        <div className='table-filter-item-dropdown-item-tag'>Default</div>
-      )}
-      {v.is_preset && (
-        <div className='table-filter-item-dropdown-item-tag'>Preset</div>
-      )}
-    </div>
-  )
+  const static_items = static_values.map((v, idx) => {
+    const orig_index = preset_values.length + dynamic_filter_values.length + idx
+    return {
+      id: v.value ?? `static:${v.label}`,
+      label: v.label,
+      icon: v.icon,
+      group: v.group,
+      tag: v.value === default_value ? 'Default' : undefined,
+      selected: is_implicit_selected(v, orig_index),
+      mixed: mixed_state,
+      _orig_index: orig_index
+    }
+  })
+
+  return [...preset_items, ...dynamic_items, ...static_items]
 }
 
 function create_selected_label({
@@ -506,35 +473,6 @@ function create_selected_label({
     column_state_params: { [column_param_name]: selected_param_values },
     variant: 'short'
   })
-}
-
-function create_filter_body({
-  single,
-  handle_all_click,
-  handle_clear_click,
-  set_trigger_close,
-  items
-}) {
-  return (
-    <>
-      {!single && (
-        <div className='table-filter-item-dropdown-head'>
-          <div className='controls-button' onClick={handle_all_click}>
-            All
-          </div>
-          <div className='controls-button' onClick={handle_clear_click}>
-            Clear
-          </div>
-          <div
-            className='controls-button close'
-            onClick={() => set_trigger_close((prev) => !prev)}>
-            Close
-          </div>
-        </div>
-      )}
-      <div className='table-filter-item-dropdown-body'>{items}</div>
-    </>
-  )
 }
 
 ColumnParamSelectFilter.propTypes = {

@@ -1,12 +1,14 @@
+@import '../styles/tokens.styl'
+
 .table-search
   flex 0 0 auto
-  height 35px
-  width 35px
-  margin-right 8px
+  height 32px
+  width 32px
+  margin-right $rt_space_sm
   position relative
   border 1px solid transparent
-  border-radius 4px
-  transition width 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
+  border-radius $rt_radius_sm
+  transition width 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, border-color $rt_transition, box-shadow $rt_transition
   overflow hidden
   align-items center
   justify-content flex-start
@@ -16,13 +18,14 @@
     opacity 0
 
   &:hover
-    background white
-    border 1px solid rgba(0, 0, 0, 0.23)
+    background $rt_bg
+    border 1px solid $rt_border
 
   &.-open
     display flex
-    background white
-    border 1px solid rgba(0, 0, 0, 0.23)
+    background $rt_bg
+    border 1px solid $rt_accent
+    box-shadow $rt_focus_ring
     width 250px
 
     .table-search-icon
@@ -40,27 +43,30 @@
   display flex
   align-items center
   justify-content center
-  width 35px
-  height 35px
+  width 32px
+  height 32px
   cursor pointer
-  flex 0 0 35px
+  flex 0 0 32px
+  color $rt_text_muted
 
 .table-search-input
-  height 35px
+  height 32px
   width 200px
-  border-radius 4px
-  padding-left 16px
-  font-size 14px
+  border-radius $rt_radius_sm
+  padding-left $rt_space_lg
+  font-size $rt_font_size_md
+  color $rt_text
   flex 1
   border 0
 
 .table-search-clear
   flex 0 0 auto
   cursor pointer
-  padding 0 4px
+  padding 0 $rt_space_xs
   display flex
   align-items center
   justify-content center
-  height 35px
+  height 32px
+  color $rt_text_muted
   &:hover
-    fill red
+    color $rt_accent

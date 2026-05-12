@@ -154,6 +154,9 @@ const ColumnParamObjectPresetFilter = ({
         return (
           <Tooltip
             key={preset.label}
+            placement='top'
+            enterDelay={700}
+            enterNextDelay={300}
             title={
               count !== null ? `${preset.label} (n=${count})` : preset.label
             }>

@@ -1,0 +1,326 @@
+@import '../styles/tokens.styl'
+
+.rt-spp
+  background $rt_bg
+  border 1px solid $rt_modal_border
+  box-shadow $rt_modal_shadow
+  border-radius $rt_radius
+  display flex
+  flex-direction column
+  max-height 320px
+  min-width 200px
+  overflow hidden
+
+.rt-spp.-two-pane
+  flex-direction row
+  width 520px
+  max-width calc(100vw - 32px)
+  max-height 420px
+
+.rt-spp.-chromeless
+  border none
+  box-shadow none
+  border-radius 0
+  max-height none
+
+.rt-spp-right
+  display flex
+  flex-direction column
+  flex 1
+  min-width 0
+  overflow hidden
+
+.rt-spp-tree
+  width 200px
+  flex 0 0 200px
+  border-right 1px solid $rt_divider
+  background $rt_bg_subtle
+  overflow-y auto
+  padding $rt_space_xs 0
+
+@media (max-width 600px)
+  .rt-spp.-two-pane
+    flex-direction column
+    max-height calc(100vh - 80px)
+
+  .rt-spp.-two-pane .rt-spp-tree
+    width 100%
+    flex 0 0 auto
+    max-height 120px
+    border-right none
+    border-bottom 1px solid $rt_divider
+    display flex
+    flex-direction row
+    overflow-x auto
+    overflow-y hidden
+    padding $rt_space_xs $rt_space_xs
+
+  .rt-spp.-two-pane .rt-spp-tree-item
+    flex 0 0 auto
+    padding 4px $rt_space_sm
+    white-space nowrap
+    min-height 28px
+
+    &.-depth-1, &.-depth-2
+      padding-left $rt_space_sm
+
+    &.-active:before
+      top auto
+      bottom 0
+      left $rt_space_xs
+      right $rt_space_xs
+      width auto
+      height 2px
+      border-radius 2px 2px 0 0
+
+.rt-spp-tree-item
+  display flex
+  align-items center
+  gap $rt_space_sm
+  padding 6px $rt_space
+  cursor pointer
+  color $rt_text_muted
+  position relative
+  text-transform uppercase
+  letter-spacing 0.04em
+  font-weight 600
+  font-size $rt_font_size_sm
+  min-height 32px
+
+  &:hover
+    background $rt_bg_hover
+    color $rt_text
+
+  &.-depth-1
+    padding-left $rt_space_xl
+    text-transform none
+    letter-spacing 0
+    font-weight 500
+    color $rt_text_subtle
+    font-size $rt_font_size_sm
+
+  &.-depth-2
+    padding-left 36px
+
+  &.-active
+    background $rt_bg
+    color $rt_text
+
+    &:before
+      content ''
+      position absolute
+      left 0
+      top 6px
+      bottom 6px
+      width 3px
+      background $rt_border
+      border-radius 0 2px 2px 0
+
+  .rt-spp-tree-item-label
+    flex 1
+    min-width 0
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+
+  .rt-spp-tree-item-count
+    font-size $rt_font_size_micro
+    color $rt_text_subtle
+    font-weight 500
+    text-transform none
+    letter-spacing 0
+    background $rt_bg_hover_strong
+    border-radius 10px
+    padding 0 6px
+    min-width 22px
+    text-align center
+    line-height 18px
+
+.rt-spp-head
+  display flex
+  flex-direction column
+  border-bottom 1px solid $rt_divider
+  background $rt_bg_subtle
+
+.rt-spp-head-actions
+  display flex
+  align-items center
+  gap $rt_space_xs
+  padding $rt_space_xs $rt_space_sm
+
+.rt-spp-head-action
+  border 1px solid $rt_border_subtle
+  background $rt_bg
+  color $rt_text_muted
+  padding 2px $rt_space_sm
+  font-size $rt_font_size_sm
+  font-weight 500
+  border-radius $rt_radius_sm
+  cursor pointer
+  transition background $rt_transition, color $rt_transition, border-color $rt_transition
+
+  &:hover
+    background $rt_button_hover_bg
+    color $rt_text
+    border-color $rt_border
+
+  &.-close
+    margin-left auto
+
+.rt-spp-head-count
+  margin-left auto
+  font-size $rt_font_size_sm
+  color $rt_text_subtle
+
+.rt-spp-head-actions:has(.-close) .rt-spp-head-count
+  margin-left 0
+
+.rt-spp-search
+  display flex
+  align-items center
+  gap $rt_space_xs
+  padding $rt_space_xs $rt_space_sm
+  border-top 1px solid $rt_divider
+
+  .rt-spp-search-icon
+    color $rt_text_subtle
+
+  input
+    flex 1
+    border none
+    outline none
+    font-size $rt_font_size_md
+    background transparent
+    color $rt_text
+    padding 4px 0
+
+    &::placeholder
+      color $rt_text_disabled
+
+.rt-spp-body
+  flex 1
+  overflow-y auto
+  padding $rt_space_xs 0
+
+.rt-spp-empty
+  padding $rt_space $rt_space_lg
+  font-size $rt_font_size_sm
+  color $rt_text_subtle
+  text-align center
+
+.rt-spp-item
+  display flex
+  align-items center
+  gap $rt_space_sm
+  padding 6px $rt_space
+  cursor pointer
+  font-size $rt_font_size_md
+  color $rt_text
+  position relative
+  transition background $rt_transition
+
+  &:hover
+    background $rt_bg_hover
+
+  &.-selected
+    background $rt_bg_selected
+    color $rt_text
+    font-weight 500
+
+    &:before
+      content ''
+      position absolute
+      left 0
+      top 4px
+      bottom 4px
+      width 3px
+      background $rt_border
+      border-radius 0 2px 2px 0
+
+  &.-kind-preset .rt-spp-item-label
+    font-style italic
+
+  .rt-spp-item-label
+    flex 1
+    min-width 0
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+
+.rt-spp-item-tag
+  font-size $rt_font_size_micro
+  font-weight 600
+  letter-spacing 0.06em
+  text-transform uppercase
+  color $rt_text_muted
+  background $rt_bg_hover_strong
+  padding 1px 6px
+  border-radius $rt_radius_sm
+
+.rt-spp-item-suffix
+  margin-left auto
+
+.rt-spp-indicator
+  width 16px
+  height 16px
+  flex 0 0 16px
+  border 1px solid $rt_border
+  border-radius 3px
+  display flex
+  align-items center
+  justify-content center
+  font-size 14px
+  background $rt_bg
+  color $rt_text
+  transition border-color $rt_transition, background $rt_transition
+
+  &.-radio
+    border-radius 50%
+
+  &.-checked
+    border-color $rt_border
+    background $rt_bg_selected
+
+  &.-mixed
+    border-color $rt_border
+    background $rt_bg_selected
+    color $rt_text
+
+.rt-spp-icon
+  width 18px
+  height 18px
+  display inline-flex
+  align-items center
+  justify-content center
+  flex 0 0 18px
+  border-radius 2px
+  overflow hidden
+
+  img&,
+  > img
+    width 100%
+    height 100%
+    object-fit contain
+
+.rt-spp-icon.-tree
+  width 20px
+  height 20px
+  flex 0 0 20px
+
+.rt-spp-group
+  display flex
+  flex-direction column
+
+.rt-spp-group-label
+  position sticky
+  top 0
+  z-index 1
+  padding 4px $rt_space
+  font-size $rt_font_size_micro
+  font-weight 600
+  text-transform uppercase
+  letter-spacing 0.06em
+  color $rt_text_subtle
+  background $rt_bg_subtle
+  border-top 1px solid $rt_divider
+  border-bottom 1px solid $rt_divider

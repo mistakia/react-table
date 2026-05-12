@@ -495,7 +495,7 @@ const TableMenu = ({
           </div>
           <div className='table-menu-item'>
             <div className='table-menu-item-text small description'>
-              <Tooltip title='When enabled, null values in the data will be replaced with zero during export and copy operations.'>
+              <Tooltip title='When enabled, null values in the data will be replaced with zero during export and copy operations.' placement='top' enterDelay={700} enterNextDelay={300}>
                 <InfoIcon
                   fontSize='small'
                   style={{ marginRight: '8px', verticalAlign: 'middle' }}

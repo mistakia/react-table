@@ -1,0 +1,28 @@
+@import './tokens.styl'
+
+// Shared category tree styling — used by Available sections in both
+// table-filter-controls and table-column-controls panels.
+
+.column-category
+  padding-top $rt_space_xs
+  padding-bottom $rt_space_xs
+  padding-right $rt_space_lg
+  border-radius $rt_radius
+
+  .MuiTypography-root
+    font-size $rt_font_size_md
+    line-height 1.4
+    color $rt_text
+    font-weight 600
+
+.column-category-depth-0
+  padding-left 2px !important
+
+.column-category-depth-1
+  padding-left 36px !important
+
+.column-category-depth-2
+  padding-left 72px !important
+
+.column-category-depth-3
+  padding-left 90px !important

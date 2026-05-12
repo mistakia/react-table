@@ -903,7 +903,7 @@ export default function Table({
                         Save
                       </div>
                     ) : (
-                      <Tooltip title='Duplicate this view to save your changes'>
+                      <Tooltip title='Duplicate this view to save your changes' placement='top' enterDelay={700} enterNextDelay={300}>
                         <span>
                           <div className='table-top-lead-button save -disabled'>
                             Save

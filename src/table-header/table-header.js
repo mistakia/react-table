@@ -38,7 +38,7 @@ export function AddColumnAction({ set_column_controls_open, table_state }) {
   return (
     <div className='cell add-column-action'>
       <div className='cell-content'>
-        <Tooltip title='Add Column'>
+        <Tooltip title='Add Column' placement='top' enterDelay={700} enterNextDelay={300}>
           <IconButton
             onClick={() => set_column_controls_open(true)}
             className='add-column-action-button'>
@@ -313,7 +313,7 @@ const TableHeader = ({ header, column, table }) => {
             borderRight: '1px solid #D0D0D0'
           }
         }}>
-        <Tooltip title={header.column.columnDef.header}>
+        <Tooltip title={header.column.columnDef.header} placement='top' enterDelay={700} enterNextDelay={300}>
           <div
             className='cell-content'
             style={{

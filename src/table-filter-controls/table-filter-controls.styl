@@ -1,167 +1,327 @@
-.table-filter-modal.MuiModal-root
-  z-index 4
+@import '../styles/tokens.styl'
+@import '../styles/column-category.styl'
+@import '../styles/misc-menu.styl'
+@import '../styles/search-input.styl'
 
 .filter-controls-container
   width 90px
   left 104px
 
+  .filter-seed-ribbon
+    display flex
+    align-items center
+    gap $rt_space_sm
+    padding $rt_space_xs $rt_space
+    margin $rt_space_sm
+    background $rt_accent_subtle
+    border 1px solid $rt_border_subtle
+    border-radius $rt_radius_sm
+    font-size $rt_font_size_sm
+    color $rt_text
+
+  .filter-seed-ribbon-text
+    flex 1
+    min-width 0
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
+
+  .filter-seed-ribbon-lead
+    color $rt_text_muted
+
+  .filter-seed-ribbon-names
+    font-weight 600
+    color $rt_text
+
+  .filter-seed-ribbon-action
+    border 1px solid $rt_border
+    background $rt_bg
+    color $rt_text
+    padding 2px $rt_space_sm
+    font-size $rt_font_size_sm
+    font-weight 600
+    border-radius $rt_radius_sm
+    cursor pointer
+    transition background $rt_transition, color $rt_transition
+
+    &:hover
+      background $rt_button_hover_bg
+
   .filter-item
     display flex
-    padding 10px 4px
-    flex-wrap wrap
-    gap 8px
+    align-items center
+    padding $rt_space_xs $rt_space_sm
+    gap $rt_space_sm
     border 1px solid transparent
-    background #fafafa
+    background $rt_bg_subtle
+    border-radius $rt_radius_sm
+    min-height 40px
 
     &.filter-item-expanded
-      border 1px solid #e0e0e0
-      background rgba(233, 233, 233, 0.5)
+      border 1px solid $rt_border_subtle
+      flex-wrap wrap
 
 
-  .filter-item-right 
+  .filter-item-right
     display flex
     align-items center
     justify-content flex-end
-
-    button
-      min-width fit-content
+    gap 2px
+    flex 0 0 auto
 
   .filter-item-left
     flex 1
     display flex
-    gap 8px
-
-    .MuiInputBase-root
-    .MuiFormControl-root
-      width 100%
+    align-items center
+    gap $rt_space
+    min-width 0
 
   .filter-item-left-column
-    flex 1
+    flex 0 0 38%
+    max-width 38%
+    min-width 0
     word-break break-word
     white-space normal
     display flex
     align-items center
+    color $rt_text
+    font-size $rt_font_size_md
+    overflow hidden
+
+  .filter-item-column-title
+    font-weight 600
+    white-space nowrap
+    overflow hidden
+    text-overflow ellipsis
 
   .filter-item-left-operator-and-value-container
     display flex
-    gap 8px
+    gap $rt_space_sm
+    flex 1 1 auto
+    align-items center
+    min-width 0
 
-.misc-menu.base-Popper-root
-.misc-menu.MuiPopper-root
-  min-width 160px !important
-  padding 4px
+  .filter-item-left-operator
+    flex 0 0 170px
 
-.misc-menu-item
-  display flex
-  align-items center
-  padding 0 10px
-  cursor pointer
-  min-height 28px
-  gap 8px
+  .filter-item-operator-control
+    width 100%
 
-  .MuiSvgIcon-root
-    width 16px
-    height 16px
+  .filter-item-left-value
+    flex 1 1 auto
+    min-width 0
 
-  &:hover
-    background #f5f5f5
+  .filter-item-value-control
+    width 100%
+    min-width 0
 
-  .misc-menu-item-text
-    font-size 14px
+  .filter-item-operator-control
+  .filter-item-value-control
+    .MuiOutlinedInput-root
+      background $rt_bg
+      border-radius $rt_radius_sm
+      font-size $rt_font_size_md
+      color $rt_text
+      transition box-shadow $rt_transition
 
-  .misc-menu-item-icon
-    width 34px
+      .MuiOutlinedInput-notchedOutline
+        border-color $rt_border_subtle
+        transition border-color $rt_transition
+
+      &:hover .MuiOutlinedInput-notchedOutline
+        border-color $rt_border
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline
+        border-color $rt_accent
+        border-width 1px
+
+      &.Mui-focused
+        box-shadow $rt_focus_ring
+
+    .MuiSelect-select
+    .MuiOutlinedInput-input
+      padding 6px 10px
+      min-height 20px
+      font-size $rt_font_size_md
+      line-height 1.4
+      color $rt_text
+
+    .MuiSelect-select
+      padding-right 28px
+
+    .MuiSelect-icon
+      color $rt_text_subtle
+      transition color $rt_transition
+
+    .MuiOutlinedInput-root:hover .MuiSelect-icon
+      color $rt_text_muted
+
+  .filter-item-value-placeholder
+    color $rt_text_disabled
+    font-style normal
+
+  .filter-item-value-multi
+    display inline-flex
+    align-items center
+    gap $rt_space_xs
+    overflow hidden
+    text-overflow ellipsis
+
+  .filter-item-value-more
+    display inline-flex
+    align-items center
+    justify-content center
+    padding 0 6px
+    height 18px
+    border-radius 9px
+    background $rt_accent_subtle
+    color $rt_accent_text
+    font-size $rt_font_size_micro
+    font-weight 600
+    line-height 1
+
+  .filter-item-slot
+    width 32px
     display flex
     align-items center
     justify-content center
+    flex 0 0 32px
 
-.table-filter-add-content
-  display flex
+  .filter-item-action
+    color $rt_text_muted
+    padding 4px
+    &.Mui-disabled
+      color $rt_text_disabled
+      opacity 0.35
+    &:hover
+      background $rt_button_hover_bg
+      color $rt_text
 
-.table-filter-add-button
-  flex 1
-  display flex
-  align-items center
-  justify-content center
-  margin 10px 12px
-  padding 10px
-  cursor pointer
-  border-radius 4px
-  font-size 12px
-  background #fafafa
+  .filter-item-remove:hover
+    color #c0392b
+    background rgba(192, 57, 43, 0.08)
 
-  .MuiSvgIcon-root
-    width 18px
-    height 18px
-    margin-right 8px
+  .filter-item-bulk-checkbox
+    padding 4px
+    &.Mui-disabled
+      opacity 0.35
 
-  &:hover
-    background #e5e5e5
-
-.column-category
-  padding-top 4px
-  padding-bottom 4px
-  padding-right 16px
-  border-radius 6px
-  .MuiTypography-root
-    font-size 0.875rem
-    line-height 1.5
-    color #1C2025
-    font-weight 600
-
-.column-category-depth-0
-  padding-left 2px !important
-
-.column-category-depth-1
-  padding-left 36px !important
-  &:before
-    content: "";
-    display: block;
-    position: absolute;
-    z-index: 1;
-    left: 9.5px;
-    height: 100%;
-    width: 1px;
-    opacity: 1;
-    background: #E5EAF2
-
-  &.ledger__chart--selected:before
-    background hsl(210, 100%, 60%)
-
-.column-category-depth-2
-  padding-left 72px !important
-  &:before
-    content: ""
-    display block
-    position: absolute
-    z-index 1
-    left 44px
-    height 100%
-    width 1px
-    opacity 1
-    background #E5EAF2
-
-.column-category-depth-3
-  padding-left 90px !important
+  .filter-item-show-in-table
+    color $rt_accent_text
+    &:hover
+      color $rt_accent_text
+      background $rt_accent_subtle
 
 .table-selected-filters-container
-  border-top 1px solid rgba(0, 0, 0, 0.23)
-  border-bottom 1px solid rgba(0, 0, 0, 0.23)
+  border-top 1px solid $rt_divider
+  border-bottom 1px solid $rt_divider
   overflow hidden
   overflow-y scroll
   height 100%
   transition max-height 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
 
-.filter-control-item
-  .filter-item-right-action
-    display none
-
-  &:hover
-    .filter-item-right-action
-      display block
-
 .rank-aggregation-controls-visible .filter-controls-container
   left 184px
+
+// --- Styled MUI Menu for operator dropdown (portaled, hence global) ---
+.rt-select-menu
+  .MuiPaper-root
+    border 1px solid $rt_modal_border
+    box-shadow $rt_modal_shadow
+    border-radius $rt_radius
+    margin-top 4px
+    background $rt_bg
+
+  .MuiList-root
+    padding $rt_space_xs 0
+
+.rt-menu-item.MuiMenuItem-root
+  position relative
+  font-size $rt_font_size_md
+  color $rt_text
+  padding 6px $rt_space 6px $rt_space_lg
+  min-height 32px
+  transition background $rt_transition
+
+  &:hover
+    background $rt_bg_hover
+
+  &.Mui-selected
+    background $rt_accent_subtle
+    color $rt_accent_text
+    font-weight 500
+
+    &:hover
+      background $rt_accent_subtle
+
+    &:before
+      content ''
+      position absolute
+      left 0
+      top 4px
+      bottom 4px
+      width 3px
+      background $rt_accent
+      border-radius 0 2px 2px 0
+
+// --- Custom value picker (replaces MUI Select for value field) ---
+.rt-value-picker
+  position relative
+  width 100%
+
+.rt-value-picker-trigger
+  display flex
+  align-items center
+  gap $rt_space_sm
+  min-height 32px
+  padding 4px 8px 4px 10px
+  background $rt_bg
+  border 1px solid $rt_border_subtle
+  border-radius $rt_radius_sm
+  cursor pointer
+  font-size $rt_font_size_md
+  color $rt_text
+  transition border-color $rt_transition, box-shadow $rt_transition
+
+  &:hover
+    border-color $rt_border
+
+  &.-open
+    border-color $rt_accent
+    box-shadow $rt_focus_ring
+
+  &.-empty .rt-value-picker-trigger-text
+    color $rt_text_disabled
+
+  .rt-value-picker-trigger-text
+    flex 1
+    min-width 0
+    overflow hidden
+    white-space nowrap
+    text-overflow ellipsis
+
+  .rt-value-picker-trigger-icon
+    color $rt_text_subtle
+    transition transform $rt_transition
+
+  &.-open .rt-value-picker-trigger-icon
+    transform rotate(180deg)
+
+// Portaled — global selector
+.rt-value-picker-popper
+  z-index 1500
+
+.rt-value-picker-trigger-entry
+  display inline-flex
+  align-items center
+  gap $rt_space_xs
+  min-width 0
+  overflow hidden
+
+  > span
+    overflow hidden
+    text-overflow ellipsis
+    white-space nowrap
 
 @media (max-width 600px)
   .filter-item-left

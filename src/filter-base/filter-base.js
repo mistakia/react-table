@@ -15,8 +15,6 @@ export default function FilterBase({
   const [visible, set_visible] = useState(false)
   const button_ref = useRef()
   const handle_toggle_click = () => {
-    console.log('handle_toggle_click')
-    console.log({ visible })
     set_visible(!visible)
   }
 
@@ -42,7 +40,15 @@ export default function FilterBase({
           open={visible}
           anchorEl={button_ref.current}
           placement='bottom-start'
-          className='table-filter-item-dropdown table-popper'>
+          className='table-filter-item-dropdown table-popper'
+          modifiers={[
+            {
+              name: 'preventOverflow',
+              enabled: true,
+              options: { padding: 16, altAxis: true, tether: false }
+            },
+            { name: 'flip', enabled: true, options: { padding: 16 } }
+          ]}>
           {body}
         </Popper>
       </div>

@@ -7,13 +7,8 @@ import React, {
   useContext
 } from 'react'
 import PropTypes from 'prop-types'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemText from '@mui/material/ListItemText'
-import Collapse from '@mui/material/Collapse'
 import Badge from '@mui/material/Badge'
 import FilterListIcon from '@mui/icons-material/FilterList'
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
 import TextField from '@mui/material/TextField'
 import AddIcon from '@mui/icons-material/Add'
@@ -21,11 +16,11 @@ import CloseIcon from '@mui/icons-material/Close'
 import { distance } from 'fastest-levenshtein'
 
 import DataTypeIcon from '#src/data-type-icon'
+import { CategoryTree } from '#src/category-tree'
 import {
   group_columns_into_tree_view,
   fuzzy_match,
-  get_string_from_object,
-  use_count_children
+  get_string_from_object
 } from '#src/utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
@@ -125,6 +120,7 @@ const TableFilterControls = ({
     useContext(table_context)
   const previous_filter_text = useRef('')
   const [selected_where_indexes, set_selected_where_indexes] = useState([])
+  const [bulk_edit_mode, set_bulk_edit_mode] = useState(false)
   const [cached_open_categories, set_cached_open_categories] = useState({})
   const [all_columns_expanded, set_all_columns_expanded] = useState(true)
   const [filter_text_input, set_filter_text_input] = useState('')
@@ -136,7 +132,6 @@ const TableFilterControls = ({
       JSON.stringify(filters_local_table_state) !== JSON.stringify(table_state),
     [filters_local_table_state, table_state]
   )
-  const count_children = use_count_children()
   const container_ref = useRef(null)
   const [transform, set_transform] = useState('')
 
@@ -261,50 +256,71 @@ const TableFilterControls = ({
     }
   }, [all_columns_expanded])
 
-  const add_where_params_from_columns = () => {
-    // populate local_table_state where filters with filters from table_state.columns that do not exist
-    // compare columnn_id and params (json.stringify)
-    const new_where = []
+  const all_columns_by_id = useMemo(() => {
+    const map = new Map()
+    for (const c of all_columns) map.set(c.column_id, c)
+    return map
+  }, [all_columns])
+
+  const seedable_where_info = useMemo(() => {
+    const rows = []
+    const names = []
     const visible_table_columns = [
-      ...(table_state.columns || []),
-      ...(table_state.prefix_columns || [])
+      ...(filters_local_table_state.columns || table_state.columns || []),
+      ...(filters_local_table_state.prefix_columns ||
+        table_state.prefix_columns ||
+        [])
     ]
+    const where = filters_local_table_state.where || []
     for (const column of visible_table_columns) {
       const column_id = typeof column === 'string' ? column : column.column_id
       const column_params = typeof column === 'string' ? {} : column.params
-      if (
-        !(filters_local_table_state.where || []).some(
-          (filter) =>
-            filter.column_id === column_id &&
-            (((filter.params === null ||
-              filter.params === undefined ||
-              Object.keys(filter.params).length === 0) &&
-              (column_params === null ||
-                column_params === undefined ||
-                Object.keys(column_params).length === 0)) ||
-              JSON.stringify(filter.params) === JSON.stringify(column_params))
-        )
-      ) {
-        const column_definition = all_columns.find(
-          (c) => c.column_id === column_id
-        )
-        if (!column_definition) {
-          continue
-        }
-        const operator = column_definition.operators
-          ? column_definition.operators[0]
-          : OPERATOR_MENU_DEFAULT_VALUE
-        new_where.push({
-          column_id,
-          params: column_params,
-          value: null,
-          operator
-        })
-      }
+      const already_present = where.some(
+        (filter) =>
+          filter.column_id === column_id &&
+          (((filter.params === null ||
+            filter.params === undefined ||
+            Object.keys(filter.params).length === 0) &&
+            (column_params === null ||
+              column_params === undefined ||
+              Object.keys(column_params).length === 0)) ||
+            JSON.stringify(filter.params) === JSON.stringify(column_params))
+      )
+      if (already_present) continue
+      const column_definition = all_columns_by_id.get(column_id)
+      if (!column_definition || !column_definition.column_params) continue
+      const operator = column_definition.operators
+        ? column_definition.operators[0]
+        : OPERATOR_MENU_DEFAULT_VALUE
+      rows.push({ column_id, params: column_params, value: null, operator })
+      names.push(column_definition.column_title || column_id)
     }
+    const summary =
+      names.length <= 3
+        ? names.join(', ')
+        : `${names.slice(0, 2).join(', ')} +${names.length - 2} more`
+    const button_label =
+      rows.length === 1 ? 'Add filter' : `Add ${rows.length} filters`
+    return { rows, names, summary, button_label }
+  }, [
+    filters_local_table_state.where,
+    filters_local_table_state.columns,
+    filters_local_table_state.prefix_columns,
+    table_state.columns,
+    table_state.prefix_columns,
+    all_columns_by_id
+  ])
 
-    return new_where
-  }
+  const seedable_where_rows = seedable_where_info.rows
+
+  const handle_add_seedable_rows = useCallback(() => {
+    if (!seedable_where_rows.length) return
+    set_filters_local_table_state((prev) => ({
+      ...prev,
+      where: [...(prev.where || []), ...seedable_where_rows]
+    }))
+    set_all_columns_expanded(false)
+  }, [seedable_where_rows, set_filters_local_table_state])
 
   const handle_menu_toggle = useCallback(() => {
     if (filter_controls_open) {
@@ -314,19 +330,11 @@ const TableFilterControls = ({
         set_menu_closing(false)
       }, 300)
     } else {
-      const new_where = add_where_params_from_columns()
-      const updated_filters_local_table_state = {
-        ...filters_local_table_state,
-        where: [...(filters_local_table_state.where || []), ...new_where]
-      }
-      set_filters_local_table_state(updated_filters_local_table_state)
-
-      const total_filters = (updated_filters_local_table_state.where || [])
-        .length
+      const total_filters = (filters_local_table_state.where || []).length
       set_all_columns_expanded(total_filters === 0)
       set_filter_controls_open(true)
     }
-  }, [filter_controls_open, filters_local_table_state, table_state.columns])
+  }, [filter_controls_open, filters_local_table_state])
 
   const handle_click_away = useCallback(
     (event) => {
@@ -362,6 +370,7 @@ const TableFilterControls = ({
     } else {
       document.removeEventListener('keydown', handle_key_down)
       set_selected_where_indexes([])
+      set_bulk_edit_mode(false)
     }
 
     return () => {
@@ -376,56 +385,20 @@ const TableFilterControls = ({
     }))
   }, [])
 
-  const render_category = useCallback(
-    (category, depth = 0, base_path = '/') => {
-      const category_path = `${base_path}${category.header}/`
-      const is_open = open_categories[category_path] || false
-      const total_children_count = count_children(category.columns || [])
-      return (
-        <div key={category_path}>
-          <ListItem
-            disablePadding
-            onClick={() => toggle_category(category_path)}
-            className={`column-category column-category-depth-${depth}`}>
-            <KeyboardArrowRightIcon
-              style={{ transform: is_open ? 'rotate(90deg)' : 'none' }}
-            />
-            <ListItemText primary={category.header} />
-            <Badge badgeContent={total_children_count} color='primary' />
-          </ListItem>
-          <Collapse in={is_open} timeout='auto' unmountOnExit>
-            <List component='div' disablePadding>
-              {category.columns &&
-                category.columns.map((sub_category) =>
-                  sub_category.columns ? (
-                    render_category(sub_category, depth + 1, category_path)
-                  ) : (
-                    <FilterControlItem
-                      key={sub_category.column_id}
-                      depth={depth + 1}
-                      column_item={sub_category}
-                      is_visible={Boolean(
-                        shown_column_index[sub_category.column_id]
-                      )}
-                      table_state={filters_local_table_state}
-                      on_table_state_change={(new_table_state) => {
-                        set_filters_local_table_state(new_table_state)
-                      }}
-                    />
-                  )
-                )}
-            </List>
-          </Collapse>
-        </div>
-      )
-    },
-    [
-      count_children,
-      open_categories,
-      shown_column_index,
-      filters_local_table_state,
-      toggle_category
-    ]
+  const render_leaf = useCallback(
+    (column_item, depth) => (
+      <FilterControlItem
+        key={column_item.column_id}
+        depth={depth}
+        column_item={column_item}
+        is_visible={Boolean(shown_column_index[column_item.column_id])}
+        table_state={filters_local_table_state}
+        on_table_state_change={(new_table_state) => {
+          set_filters_local_table_state(new_table_state)
+        }}
+      />
+    ),
+    [shown_column_index, filters_local_table_state]
   )
 
   const handle_apply_click = useCallback(() => {
@@ -518,6 +491,29 @@ const TableFilterControls = ({
         )}
         {filter_controls_open && (
           <>
+            {seedable_where_rows.length > 0 && (
+              <div
+                className='filter-seed-ribbon'
+                title={seedable_where_info.names.join(', ')}>
+                <span className='filter-seed-ribbon-text'>
+                  <span className='filter-seed-ribbon-lead'>
+                    Add filter row
+                    {seedable_where_rows.length === 1 ? '' : 's'} for visible
+                    parameterized column
+                    {seedable_where_rows.length === 1 ? '' : 's'}:
+                  </span>{' '}
+                  <span className='filter-seed-ribbon-names'>
+                    {seedable_where_info.summary}
+                  </span>
+                </span>
+                <button
+                  type='button'
+                  className='filter-seed-ribbon-action'
+                  onClick={handle_add_seedable_rows}>
+                  {seedable_where_info.button_label}
+                </button>
+              </div>
+            )}
             {(filters_local_table_state.where || []).length > 0 && (
               <div
                 className='table-selected-filters-container'
@@ -525,9 +521,11 @@ const TableFilterControls = ({
                   maxHeight: all_columns_expanded ? '0' : '100%'
                 }}>
                 <div className='section-header'>
-                  <div style={{ display: 'flex', alignSelf: 'center' }} />
+                  <div style={{ display: 'flex', alignSelf: 'center' }}>
+                    Selected Filters
+                  </div>
                   <div style={{ display: 'flex' }}>
-                    {selected_where_indexes.length > 0 && (
+                    {bulk_edit_mode && has_selectable_where_columns && (
                       <>
                         <FilterControlsSelectedColumnsParameters
                           local_table_state={filters_local_table_state}
@@ -537,41 +535,60 @@ const TableFilterControls = ({
                             local_table_state_where_columns
                           }
                         />
-                        <div
-                          className='action'
-                          onClick={() => set_selected_where_indexes([])}>
-                          Deselect All
-                        </div>
-                        <div
-                          className='action'
-                          onClick={handle_remove_selected_filters}>
-                          Remove Selected
-                        </div>
+                        {selected_where_indexes.length > 0 && (
+                          <div
+                            className='action'
+                            onClick={() => set_selected_where_indexes([])}>
+                            Deselect All
+                          </div>
+                        )}
+                        {selected_where_indexes.length > 0 && (
+                          <div
+                            className='action -destructive'
+                            onClick={handle_remove_selected_filters}>
+                            Remove Selected
+                          </div>
+                        )}
+                        {selected_where_indexes.length !==
+                          local_table_state_where_columns.length && (
+                          <div
+                            className='action'
+                            onClick={() =>
+                              set_selected_where_indexes(
+                                local_table_state_where_columns
+                                  .map((column, index) => ({ column, index }))
+                                  .filter(
+                                    ({ column }) =>
+                                      column.column_params &&
+                                      Object.keys(column.column_params).length
+                                  )
+                                  .map(({ index }) => index)
+                              )
+                            }>
+                            Select All
+                          </div>
+                        )}
                       </>
                     )}
-                    {selected_where_indexes.length !==
-                      local_table_state_where_columns.length &&
-                      has_selectable_where_columns && (
-                        <div
-                          className='action'
-                          onClick={() =>
-                            set_selected_where_indexes(
-                              local_table_state_where_columns
-                                .map((column, index) => ({ column, index }))
-                                .filter(
-                                  ({ column }) =>
-                                    column.column_params &&
-                                    Object.keys(column.column_params).length
-                                )
-                                .map(({ index }) => index)
-                            )
-                          }>
-                          Select All
-                        </div>
-                      )}
-                    {!selected_where_indexes.length && (
+                    {has_selectable_where_columns && (
                       <div
-                        className='action'
+                        className={get_string_from_object({
+                          action: true,
+                          'action-toggle': true,
+                          '-active': bulk_edit_mode
+                        })}
+                        onClick={() => {
+                          if (bulk_edit_mode) {
+                            set_selected_where_indexes([])
+                          }
+                          set_bulk_edit_mode(!bulk_edit_mode)
+                        }}>
+                        {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
+                      </div>
+                    )}
+                    {!bulk_edit_mode && (
+                      <div
+                        className='action -destructive'
                         onClick={handle_remove_all_filters}>
                         Remove All
                       </div>
@@ -582,7 +599,7 @@ const TableFilterControls = ({
                   {(filters_local_table_state.where || []).map(
                     (where_item, where_index) => (
                       <FilterItem
-                        key={where_item.column_id}
+                        key={where_index}
                         column_definition={
                           local_table_state_where_columns[where_index]
                         }
@@ -591,6 +608,7 @@ const TableFilterControls = ({
                           where_index,
                           selected_where_indexes,
                           set_selected_where_indexes,
+                          bulk_edit_mode,
                           local_table_state: filters_local_table_state,
                           set_local_table_state: set_filters_local_table_state
                         }}
@@ -612,15 +630,15 @@ const TableFilterControls = ({
             </div>
             {all_columns_expanded && (
               <>
-                <div className='table-expanding-control-input-container'>
+                <div className='rt-search-input'>
                   <TextField
                     variant='outlined'
-                    margin='normal'
+                    size='small'
+                    margin='none'
                     fullWidth
                     id='filter'
                     label='Search columns'
                     name='filter'
-                    size='small'
                     autoComplete='off'
                     value={filter_text_input}
                     onChange={(e) => set_filter_text_input(e.target.value)}
@@ -644,7 +662,12 @@ const TableFilterControls = ({
                             }}
                           />
                         ) : item.columns ? (
-                          render_category(item)
+                          <CategoryTree
+                            category={item}
+                            open_categories={open_categories}
+                            toggle_category={toggle_category}
+                            render_leaf={render_leaf}
+                          />
                         ) : (
                           <FilterControlItem
                             key={item.column_id}

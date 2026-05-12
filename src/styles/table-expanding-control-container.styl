@@ -1,18 +1,22 @@
+@import './tokens.styl'
+
 .table-expanding-control-button
-  padding 4px
-  margin-bottom 8px
+  padding $rt_space_xs
+  margin-bottom $rt_space_sm
   border none
-  border-radius 4px
+  border-radius $rt_radius_sm
   cursor pointer
   display flex
   align-items center
   justify-content flex-start
+  color $rt_text
+  transition color $rt_transition
   &:hover
-    color #4A90E2
+    color $rt_accent
 
 .table-expanding-control-input-container
-  border-bottom 1px solid rgba(0, 0, 0, 0.23)
-  padding 0 16px
+  border-bottom 1px solid $rt_divider
+  padding 0 $rt_space_lg
 
 .table-expanding-control-container
   opacity 1
@@ -21,97 +25,139 @@
   position absolute
   top 4px
   height 32px
-  border-radius 8px
+  border-radius $rt_radius_lg
   display flex
   flex-direction column
   align-items stretch
   transition transform 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, width 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, height 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms, box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
   border 1px solid transparent
   &:hover
-    border 1px solid rgba(0, 0, 0, 0.23)
-    box-shadow $box_shadow
-    background-color white
+    border 1px solid $rt_modal_border
+    box-shadow $rt_modal_shadow
+    background-color $rt_bg
 
   &.-open
   &.-closing
-    background-color white
+    background-color $rt_bg
     z-index 4
-    border 1px solid rgba(0, 0, 0, 0.23)
+    border 1px solid $rt_modal_border
 
   &.-open
-    box-shadow $box_shadow
+    box-shadow $rt_modal_shadow
     width 60vw
-    height 80vh // Adjust height as needed for full visibility
+    height 80vh
+    overflow hidden
+
+    .MuiBadge-badge
+      display none
 
   .section-header
     position sticky
     top 0px
-    background white
+    background $rt_bg
     z-index 2
-    padding-left 14px
-    color rgb(55, 53, 47)
+    padding-left $rt_space
+    color $rt_text
     display flex
-    font-weight 500
-    line-height 120%
+    font-size $rt_font_size_sm
+    font-weight 600
+    line-height 1.4
+    letter-spacing 0.02em
+    text-transform uppercase
     user-select none
     height fit-content
     justify-content space-between
-    background darken(white, 4%)
+    background $rt_bg_subtle
+    border-bottom 1px solid $rt_divider
 
     &.available-columns
       height 40px
 
-    .action
-      transition background 20ms ease-in 0s
+    .action-group
       display inline-flex
       align-items center
-      font-size 12px
-      padding 2px 6px
-      color rgb(35, 131, 226)
+      gap $rt_space_xs
       margin-left auto
-      border-left 1px solid rgba(0, 0, 0, 0.23)
+
+    .action
+      transition background $rt_transition, color $rt_transition
+      display inline-flex
+      align-items center
+      font-size $rt_font_size_sm
+      font-weight 500
+      text-transform none
+      letter-spacing 0
+      padding 2px $rt_space
+      color $rt_accent_text
       cursor pointer
       &:hover
-        background #f0f0f0
+        background $rt_button_hover_bg
+
+      &.action-toggle
+        color $rt_text_muted
+
+      &.action-toggle.-active
+        color $rt_accent_text
+        font-weight 600
+        background $rt_accent_subtle
+
+      &.-destructive
+        color $rt_destructive
+        &:hover
+          background $rt_destructive_subtle
 
 .table-control-container-state-buttons
   position absolute
-  top 8px
-  right 8px
+  top $rt_space_sm
+  right $rt_space_sm
   display flex
   justify-content space-between
+  gap $rt_space_xs
 
 .controls-discard
-  background #f0f0f0
-  border 1px solid $borderColor
-  margin-right 8px
+  background $rt_button_hover_bg
+  border 1px solid $rt_border_subtle
+  color $rt_text_muted
+  font-weight 500
+  &:hover
+    background $rt_button_hover_bg_strong
+    color $rt_text
 
 .controls-apply
-  background lighten(#388E3C, 20%)
-  border 1px solid #388E3C
-  color white
+  background $rt_success_bg
+  border 1px solid $rt_success
+  color $rt_bg
+  font-weight 600
+  &:hover
+    background $rt_success
+    border-color $rt_success_strong
 
 .column-params-container
   width 100%
   display flex
   flex-wrap wrap
-  padding 0 8px
+  padding 0 $rt_space_xs
+
+  .rt-search-input
+    width 100%
+    padding $rt_space_xs 0
+    background transparent
+    border-bottom 0
 
 .column-param-group
   display flex
   flex-wrap wrap
   width 100%
-  padding-top 16px
 
 .column-param-group-title
   width 100%
-  padding 8px
-  border-top 2px solid rgba(0, 0, 0, 0.23)
+  padding 2px $rt_space_xs
   text-transform uppercase
-  color rgba(0, 0, 0, 0.54)
-  font-size 12px
-  font-weight 500
-  line-height 120%
+  color $rt_text_subtle
+  font-size $rt_font_size_micro
+  font-weight $rt_font_weight_label
+  letter-spacing 0.06em
+  line-height 1.4
 
 @media (max-width: 768px)
   .table-expanding-control-container

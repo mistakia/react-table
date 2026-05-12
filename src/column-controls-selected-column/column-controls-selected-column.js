@@ -1,33 +1,20 @@
-import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react'
+import React, { useMemo, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import ExpandLessIcon from '@mui/icons-material/ExpandLess'
-import Popper from '@mui/material/Popper'
-import MenuList from '@mui/material/MenuList'
-import MenuItem from '@mui/material/MenuItem'
-import MoreVertIcon from '@mui/icons-material/MoreVert'
-import DeleteIcon from '@mui/icons-material/Delete'
-import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import Checkbox from '@mui/material/Checkbox'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
-import ClickAwayListener from '@mui/material/ClickAwayListener'
+import Tooltip from '@mui/material/Tooltip'
 import CloseIcon from '@mui/icons-material/Close'
+import FilterListIcon from '@mui/icons-material/FilterList'
 
-import {
-  fuzzy_match,
-  get_string_from_object,
-  levenstein_distance,
-  debounce,
-  group_parameters
-} from '#src/utils'
+import { get_string_from_object } from '#src/utils'
 import DataTypeIcon from '#src/data-type-icon'
-import ColumnControlsColumnParamItem from '#src/column-controls-column-param-item'
+import ColumnPicker from '#src/column-picker'
+import ParametersEditor from '#src/parameters-editor'
 
 const ColumnControlsSelectedColumn = React.memo(
   ({
@@ -38,7 +25,9 @@ const ColumnControlsSelectedColumn = React.memo(
     column_index,
     selected_column_indexes,
     set_selected_column_indexes,
-    splits
+    splits,
+    bulk_edit_mode = false,
+    has_active_where = false
   }) => {
     const {
       attributes,
@@ -53,14 +42,8 @@ const ColumnControlsSelectedColumn = React.memo(
 
     const has_column_params = Boolean(column.column_params)
     const [show_column_params, set_show_column_params] = useState(false)
-    const [param_filter_text, set_param_filter_text] = useState('')
-    const param_filter_input_ref = useRef(null)
-    const [more_menu_open, set_more_menu_open] = useState(false)
-    const more_button_ref = useRef(null)
     const [column_select_open, set_column_select_open] = useState(false)
     const column_select_button_ref = useRef(null)
-    const [column_select_filter, set_column_select_filter] = useState('')
-    const [filtered_columns, set_filtered_columns] = useState(all_columns)
 
     const style = {
       position: 'relative',
@@ -69,113 +52,57 @@ const ColumnControlsSelectedColumn = React.memo(
       zIndex: isDragging ? 100 : null
     }
 
-    useEffect(() => {
-      if (show_column_params && param_filter_input_ref.current) {
-        param_filter_input_ref.current.focus()
-      }
-    }, [show_column_params])
-
-    const handle_param_filter_change = (event) => {
-      set_param_filter_text(event.target.value)
-    }
-
-    const handle_column_select_filter_change = (event) => {
-      set_column_select_filter(event.target.value)
-    }
-
-    const filtered_params = useMemo(() => {
-      return Object.entries(column.column_params || {}).filter(
-        ([param_name, param_def]) =>
-          !param_def.hidden &&
-          (!param_filter_text || fuzzy_match(param_filter_text, param_name))
-      )
-    }, [param_filter_text, column.column_params])
-
-    const debounced_filter_columns = useCallback(
-      debounce((filter) => {
-        if (filter) {
-          const filtered = all_columns
-            .filter((col) =>
-              fuzzy_match(filter, col.column_title || col.column_id)
-            )
-            .sort((a, b) => {
-              const distance_a = levenstein_distance(
-                filter,
-                a.column_title || a.column_id
-              )
-              const distance_b = levenstein_distance(
-                filter,
-                b.column_title || b.column_id
-              )
-              return distance_a - distance_b
-            })
-          set_filtered_columns(filtered)
-        } else {
-          set_filtered_columns(all_columns)
-        }
-      }, 100),
-      [all_columns]
-    )
-
-    useEffect(() => {
-      debounced_filter_columns(column_select_filter)
-    }, [column_select_filter, debounced_filter_columns])
-
-    const handle_more_click = () => {
-      set_more_menu_open(!more_menu_open)
-    }
-
-    const handle_remove_click = () => {
-      set_column_hidden_by_index(column_index)
-      set_more_menu_open(false)
-    }
-
-    const handle_duplicate_click = () => {
-      set_local_table_state((prev) => ({
-        ...prev,
-        columns: [
-          ...prev.columns.slice(0, column_index + 1),
-          prev.columns[column_index],
-          ...prev.columns.slice(column_index + 1)
-        ]
-      }))
-      // Shift selected column indexes to account for the added column
-      set_selected_column_indexes((prev_indexes) => {
-        return prev_indexes.map((index) => {
-          if (index > column_index) {
-            return index + 1
-          }
-          return index
-        })
-      })
-      set_more_menu_open(false)
-    }
-
     const handle_column_select = (new_column) => {
       set_local_table_state((prev) => ({
         ...prev,
-        columns: prev.columns.map((col, index) =>
-          index === column_index
-            ? typeof col === 'string'
-              ? new_column.column_id
-              : {
-                  ...col,
-                  column_id: new_column.column_id,
-                  column_params: Object.fromEntries(
-                    Object.entries(col.column_params || {}).filter(
-                      ([key]) => new_column.column_params[key]
-                    )
+        columns: prev.columns.map((col, index) => {
+          if (index !== column_index) return col
+          if (typeof col === 'string') return new_column.column_id
+          return {
+            ...col,
+            column_id: new_column.column_id,
+            params: new_column.column_params
+              ? Object.fromEntries(
+                  Object.entries(col.params || {}).filter(
+                    ([key]) => new_column.column_params[key]
                   )
-                }
-            : col
-        )
+                )
+              : {}
+          }
+        })
       }))
       set_column_select_open(false)
     }
 
-    const grouped_params = useMemo(() => {
-      return group_parameters(Object.fromEntries(filtered_params))
-    }, [filtered_params])
+    const editor_records = useMemo(
+      () => [
+        {
+          id: 'self',
+          kind: 'column',
+          column_id: column.column_id,
+          column,
+          column_index,
+          set_local_table_state,
+          get_value: (param_name) => column.selected_params?.[param_name],
+          update: (param_name, value) =>
+            set_local_table_state((prev) => ({
+              ...prev,
+              columns: [
+                ...prev.columns.slice(0, column_index),
+                {
+                  column_id: column.column_id,
+                  params: {
+                    ...(column.selected_params || {}),
+                    [param_name]: value
+                  }
+                },
+                ...prev.columns.slice(column_index + 1)
+              ]
+            }))
+        }
+      ],
+      [column, column_index, set_local_table_state]
+    )
 
     return (
       <div ref={setNodeRef} style={style} {...attributes}>
@@ -185,7 +112,6 @@ const ColumnControlsSelectedColumn = React.memo(
             reorder: true,
             'column-expanded': show_column_params,
             selected: selected_column_indexes.includes(column_index),
-            'more-menu-open': more_menu_open,
             'column-select-open': column_select_open
           })}>
           <div className='column-data-type'>
@@ -196,138 +122,91 @@ const ColumnControlsSelectedColumn = React.memo(
             onClick={() => set_column_select_open(!column_select_open)}
             className='column-name'>
             {column.column_title || column.column_id}
-          </div>
-          <Popper
-            className='table-popper'
-            open={column_select_open}
-            anchorEl={column_select_button_ref.current}
-            placement='bottom-start'>
-            <ClickAwayListener
-              onClickAway={() => set_column_select_open(false)}>
-              <div className='column-select-menu'>
-                <div className='column-select-filter-container'>
-                  <TextField
-                    variant='outlined'
-                    margin='none'
-                    fullWidth
-                    id='column-select-filter'
-                    label='Search columns'
-                    size='small'
-                    autoComplete='off'
-                    autoFocus
-                    value={column_select_filter}
-                    onChange={handle_column_select_filter_change}
-                  />
-                </div>
-                <div className='column-select-list'>
-                  <MenuList>
-                    {filtered_columns.map((col) => (
-                      <MenuItem
-                        key={col.column_id}
-                        onClick={() => handle_column_select(col)}>
-                        {col.column_title || col.column_id}
-                      </MenuItem>
-                    ))}
-                  </MenuList>
-                </div>
-              </div>
-            </ClickAwayListener>
-          </Popper>
-          <div className='column-actions'>
-            {has_column_params && (
-              <IconButton
-                size='small'
-                className='column-action'
-                onClick={() => set_show_column_params(!show_column_params)}>
-                {show_column_params ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-              </IconButton>
+            {has_active_where && (
+              <Tooltip title='This column has an active filter' placement='top' enterDelay={700} enterNextDelay={300}>
+                <FilterListIcon
+                  className='column-name-funnel'
+                  fontSize='inherit'
+                />
+              </Tooltip>
             )}
-            <IconButton
-              size='small'
-              className='column-action'
-              onClick={() => set_column_hidden_by_index(column_index)}>
-              <CloseIcon />
-            </IconButton>
-            <IconButton
-              size='small'
-              className='column-action'
-              onClick={handle_more_click}
-              ref={more_button_ref}>
-              <MoreVertIcon />
-            </IconButton>
-            <Popper
-              className='table-popper'
-              open={more_menu_open}
-              anchorEl={more_button_ref.current}
-              placement='bottom-start'>
-              <ClickAwayListener onClickAway={() => set_more_menu_open(false)}>
-                <MenuList className='more-menu'>
-                  <MenuItem onClick={handle_remove_click}>
-                    <ListItemIcon>
-                      <DeleteIcon fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText>Remove</ListItemText>
-                  </MenuItem>
-                  <MenuItem onClick={handle_duplicate_click}>
-                    <ListItemIcon>
-                      <ContentCopyIcon fontSize='small' />
-                    </ListItemIcon>
-                    <ListItemText>Duplicate</ListItemText>
-                  </MenuItem>
-                </MenuList>
-              </ClickAwayListener>
-            </Popper>
-            <Checkbox
-              checked={selected_column_indexes.includes(column_index)}
-              onChange={(event) => {
-                set_selected_column_indexes(
-                  event.target.checked
-                    ? [...selected_column_indexes, column_index]
-                    : selected_column_indexes.filter(
-                        (index) => index !== column_index
+          </div>
+          <ColumnPicker
+            open={column_select_open}
+            anchor_el={column_select_button_ref.current}
+            all_columns={all_columns}
+            on_select={handle_column_select}
+            on_close={() => set_column_select_open(false)}
+          />
+          <div className='column-actions'>
+            <Tooltip
+              title={
+                has_column_params
+                  ? show_column_params
+                    ? 'Hide parameters'
+                    : 'Edit parameters'
+                  : 'No parameters for this column'
+              }
+              placement='top'
+              enterDelay={700}
+              enterNextDelay={300}>
+              <span className='column-item-slot'>
+                <IconButton
+                  size='small'
+                  className='column-item-action'
+                  disabled={!has_column_params}
+                  onClick={() => set_show_column_params(!show_column_params)}>
+                  {show_column_params ? (
+                    <ExpandLessIcon fontSize='small' />
+                  ) : (
+                    <ExpandMoreIcon fontSize='small' />
+                  )}
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title='Remove column' placement='top' enterDelay={700} enterNextDelay={300}>
+              <span className='column-item-slot'>
+                <IconButton
+                  size='small'
+                  className='column-item-action column-item-remove'
+                  onClick={() => set_column_hidden_by_index(column_index)}>
+                  <CloseIcon fontSize='small' />
+                </IconButton>
+              </span>
+            </Tooltip>
+            {bulk_edit_mode && (
+              <Tooltip title='Select for bulk action' placement='top' enterDelay={700} enterNextDelay={300}>
+                <span className='column-item-slot'>
+                  <Checkbox
+                    size='small'
+                    className='column-item-bulk-checkbox'
+                    checked={selected_column_indexes.includes(column_index)}
+                    onChange={(event) => {
+                      set_selected_column_indexes(
+                        event.target.checked
+                          ? [...selected_column_indexes, column_index]
+                          : selected_column_indexes.filter(
+                              (index) => index !== column_index
+                            )
                       )
-                )
-              }}
-            />
-            <div className='column-drag-handle' {...listeners}>
-              <DragIndicatorIcon />
-            </div>
+                    }}
+                  />
+                </span>
+              </Tooltip>
+            )}
+            <Tooltip title='Drag to reorder' placement='top' enterDelay={700} enterNextDelay={300}>
+              <div className='column-drag-handle' {...listeners}>
+                <DragIndicatorIcon fontSize='small' />
+              </div>
+            </Tooltip>
           </div>
           {show_column_params && (
             <div className='column-params-container'>
-              <TextField
-                variant='outlined'
-                margin='normal'
-                fullWidth
-                id='param-filter'
-                label='Search parameters'
-                name='param_filter'
-                size='small'
-                autoComplete='off'
-                value={param_filter_text}
-                onChange={handle_param_filter_change}
-                inputRef={param_filter_input_ref}
+              <ParametersEditor
+                records={editor_records}
+                splits={splits}
+                inline
               />
-              {Object.entries(grouped_params).map(([group_name, params]) => (
-                <div key={group_name} className='column-param-group'>
-                  {group_name !== 'Ungrouped' && (
-                    <div className='column-param-group-title'>{group_name}</div>
-                  )}
-                  {params.map(
-                    ([column_param_name, column_param_definition]) => (
-                      <ColumnControlsColumnParamItem
-                        key={column_param_name}
-                        column={column}
-                        set_local_table_state={set_local_table_state}
-                        column_index={column_index}
-                        column_param_name={column_param_name}
-                        column_param_definition={column_param_definition}
-                        splits={splits}
-                      />
-                    )
-                  )}
-                </div>
-              ))}
             </div>
           )}
         </div>
@@ -345,7 +224,9 @@ ColumnControlsSelectedColumn.propTypes = {
   selected_column_indexes: PropTypes.array.isRequired,
   set_selected_column_indexes: PropTypes.func.isRequired,
   splits: PropTypes.array,
-  all_columns: PropTypes.array
+  all_columns: PropTypes.array,
+  bulk_edit_mode: PropTypes.bool,
+  has_active_where: PropTypes.bool
 }
 
 export default ColumnControlsSelectedColumn

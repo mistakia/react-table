@@ -1,38 +1,42 @@
+@import './tokens.styl'
+
 .column-item
   position relative
   display flex
   align-items center
   user-select none
-  border-radius 3px
-  font-size 14px
-  min-height 28px
-  padding 0 8px
+  border-radius $rt_radius_sm
+  font-size $rt_font_size_md
+  min-height $rt_row_height
+  padding 0 $rt_space_sm
   flex-wrap wrap
   border 1px solid transparent
 
   &.column-expanded
   &.more-menu-open
   &.column-select-open
-    border 1px solid #e0e0e0
-    background rgba(233, 233, 233, 0.5)
+    border 1px solid $rt_border_subtle
+    background $rt_bg_selected
 
   &.prefix
-    background darken(white, 4%)
+    background $rt_bg_subtle
 
   &.shown
-    background rgba(21, 255, 0, 0.334)
+    background $rt_active_bg
+    box-shadow inset 2px 0 0 0 $rt_active_bar
 
   .column-name
     flex 1
     font-family "Roboto","Helvetica","Arial",sans-serif
     font-weight 400
-    font-size 1rem
-    line-height 1.5
+    font-size $rt_font_size_md
+    line-height 1.4
     letter-spacing 0.00938em
+    color $rt_text
     border 1px solid transparent
-    border-radius 3px
-    margin 4px 0
-    padding 0 12px 0 4px
+    border-radius $rt_radius_sm
+    margin $rt_space_xs 0
+    padding 0 $rt_space 0 $rt_space_xs
     position relative
 
   .column-category
@@ -42,8 +46,9 @@
     display flex
     align-items center
     justify-content center
-    margin-left 10px
-    margin-right 4px
+    margin-left $rt_space_sm
+    margin-right $rt_space_xs
+    color $rt_text_muted
 
     svg
       width 16px
@@ -53,14 +58,14 @@
   .column-name::after
     content '\270E'
     position absolute
-    right 4px
+    right $rt_space_xs
     top 50%
     transform translateY(-50%) scaleX(-1)
-    font-size 18px
-    color #1976d2
+    font-size 16px
+    color $rt_accent
     opacity 0
   .column-item
-    background #fafafa
+    background $rt_bg_subtle
 
 .column-actions
   display flex
@@ -71,8 +76,8 @@
     cursor pointer
 
     &:hover
-      border 1px solid #1976d2
-      background rgba(25, 118, 210, 0.04)
+      border 1px solid $rt_accent
+      background $rt_accent_subtle
 
       &::after
         opacity 1
@@ -80,14 +85,14 @@
   .column-item
     .column-action
       opacity 0
-      transition opacity 20ms ease-in 0s
+      transition opacity $rt_transition
 
     &:hover
-      background rgba(233, 233, 233, 0.5)
+      background $rt_bg_hover
 
       .column-action
         opacity 1
-        transition opacity 20ms ease-in 0s
+        transition opacity $rt_transition
 
 @media (max-width 601px)
   .column-item

@@ -1,0 +1,37 @@
+@import './tokens.styl'
+
+.misc-menu.base-Popper-root
+.misc-menu.MuiPopper-root
+  min-width 160px !important
+  padding $rt_space_xs
+  background $rt_bg
+  border 1px solid $rt_modal_border
+  border-radius $rt_radius
+  box-shadow $rt_modal_shadow
+
+.misc-menu-item
+  display flex
+  align-items center
+  padding 0 $rt_space
+  cursor pointer
+  min-height $rt_row_height
+  gap $rt_space_sm
+  border-radius $rt_radius_sm
+  color $rt_text
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
+    color $rt_text_muted
+
+  &:hover
+    background $rt_bg_hover
+
+  .misc-menu-item-text
+    font-size $rt_font_size_md
+
+  .misc-menu-item-icon
+    width 28px
+    display flex
+    align-items center
+    justify-content center

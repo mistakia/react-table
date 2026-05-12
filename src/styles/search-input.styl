@@ -1,0 +1,41 @@
+@import './tokens.styl'
+
+.rt-search-input
+  padding $rt_space_sm $rt_space
+  background $rt_bg_subtle
+  border-bottom 1px solid $rt_divider
+
+  .MuiTextField-root
+    margin 0
+
+  .MuiOutlinedInput-root
+    background $rt_bg
+    border-radius $rt_radius_sm
+    font-size $rt_font_size_sm
+
+    .MuiOutlinedInput-notchedOutline
+      border 1px solid $rt_border_subtle
+
+    &:hover .MuiOutlinedInput-notchedOutline
+      border-color $rt_border
+
+    &.Mui-focused .MuiOutlinedInput-notchedOutline
+      border-color $rt_accent
+      border-width 1px
+
+  .MuiOutlinedInput-input
+    padding 6px $rt_space_sm
+    height auto
+
+  .MuiInputLabel-root
+    font-size $rt_font_size_sm
+    color $rt_text_subtle
+    transform translate($rt_space_sm, 6px) scale(1)
+
+    &.MuiInputLabel-shrink
+      transform translate($rt_space_sm, -7px) scale(0.85)
+      background $rt_bg
+      padding 0 4px
+
+    &.Mui-focused
+      color $rt_accent
