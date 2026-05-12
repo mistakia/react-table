@@ -63,25 +63,7 @@ $breakpoint_mobile = 768px
     padding 16px 12px 12px
 
     .current-view-info
-      flex 1
       overflow visible
-      min-width 0
-
-    // When open, lift the username out of its absolute top-right slot so it
-    // doesn't overlap the inline action row. Render it as a chip on the left.
-    .current-view-username
-      position static
-      top auto
-      right auto
-      align-self flex-start
-      margin-bottom 4px
-
-  .current-view-actions
-    display flex
-    align-items center
-    gap 0
-    flex 0 0 auto
-    margin-left 8px
 
   .current-view-tags
     display flex
@@ -400,28 +382,33 @@ $breakpoint_mobile = 768px
 .table-view-item-right
   flex 0 0 40px
 
-// ── Collapsed trigger: current view summary ───────────────────────────────────
+// ── Trigger summary: same layout whether collapsed or expanded ────────────────
 .current-view-username
-  position absolute
-  top 6px
-  right 8px
   font-size 12px
   color rgba(0, 0, 0, 0.54)
   background-color rgba(0, 0, 0, 0.04)
   padding 4px 8px
   border-radius 4px
+  align-self flex-start
+  max-width 100%
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
 
 .table-expanding-control-button
   display flex
   align-items center
+  gap 8px
 
   .current-view-info
     display flex
-    gap 8px
+    gap 4px
     flex-direction column
     padding 8px
     text-align left
     overflow hidden
+    flex 1
+    min-width 0
 
     .current-view-title
       font-weight bold
@@ -432,3 +419,12 @@ $breakpoint_mobile = 768px
       color rgba(0, 0, 0, 0.6)
       overflow hidden
       text-overflow ellipsis
+
+// Action row sits to the right of the info column whether the panel is open
+// or collapsed.
+.current-view-actions
+  display flex
+  align-items center
+  gap 0
+  flex 0 0 auto
+  padding-right 4px

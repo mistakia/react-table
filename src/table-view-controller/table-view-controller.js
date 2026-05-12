@@ -393,7 +393,7 @@ const TableViewController = ({
                 </>
               )}
             </div>
-            {view_controls_open && current_view && (
+            {current_view && (
               <div
                 className='current-view-actions'
                 onClick={(e) => e.stopPropagation()}>
