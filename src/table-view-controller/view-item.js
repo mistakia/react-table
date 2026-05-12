@@ -218,53 +218,50 @@ function ViewItem({
         'table-view-item': true,
         '-selected': is_selected
       })}>
-      <div className='table-view-item-row'>
-        <div className='table-view-item-left' onClick={handle_select_click}>
-          <div className='table-view-item-username'>{view.view_username}</div>
-          <div className='table-view-item-info-container'>
-            <div className='table-view-item-name'>
-              {view.view_name}
-              {has_unsaved_local_edits && (
-                <span
-                  className='table-view-item-unsaved-dot'
-                  title='Unsaved local edits'
+      <div className='table-view-item-left' onClick={handle_select_click}>
+        <div className='table-view-item-username'>{view.view_username}</div>
+        <div className='table-view-item-info-container'>
+          <div className='table-view-item-name'>
+            {view.view_name}
+            {has_unsaved_local_edits && (
+              <span
+                className='table-view-item-unsaved-dot'
+                title='Unsaved local edits'
+              />
+            )}
+          </div>
+          {view.view_description && (
+            <div className='table-view-item-description'>
+              {view.view_description}
+            </div>
+          )}
+          {(tags.length > 0 || can_edit_tags) && (
+            <div className='table-view-item-tags'>
+              {tags.map((tag) => (
+                <TagChip
+                  key={`${tag.source}-${tag.name}`}
+                  name={tag.name}
+                  source={tag.source}
+                  on_remove={
+                    can_edit_tags && tag.source === 'user'
+                      ? () => on_remove_user_tag(view.view_id, tag.name)
+                      : undefined
+                  }
+                />
+              ))}
+              {can_edit_tags && (
+                <TagInput
+                  suggestions={tag_suggestions || []}
+                  on_submit={(name) => on_add_user_tag(view.view_id, name)}
+                  placeholder='Add tag...'
                 />
               )}
             </div>
-            {view.view_description && (
-              <div className='table-view-item-description'>
-                {view.view_description}
-              </div>
-            )}
-          </div>
-        </div>
-        {inline_actions}
-        {misc_menu}
-      </div>
-
-      {(tags.length > 0 || can_edit_tags) && (
-        <div className='table-view-item-tags'>
-          {tags.map((tag) => (
-            <TagChip
-              key={`${tag.source}-${tag.name}`}
-              name={tag.name}
-              source={tag.source}
-              on_remove={
-                can_edit_tags && tag.source === 'user'
-                  ? () => on_remove_user_tag(view.view_id, tag.name)
-                  : undefined
-              }
-            />
-          ))}
-          {can_edit_tags && (
-            <TagInput
-              suggestions={tag_suggestions || []}
-              on_submit={(name) => on_add_user_tag(view.view_id, name)}
-              placeholder='Add tag...'
-            />
           )}
         </div>
-      )}
+      </div>
+      {inline_actions}
+      {misc_menu}
     </div>
   )
 }

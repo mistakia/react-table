@@ -275,7 +275,7 @@ $breakpoint_mobile = 768px
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
   display flex
-  flex-direction column
+  align-items flex-start
   cursor pointer
   padding 4px 16px
   border-left 3px solid transparent
@@ -284,31 +284,34 @@ $breakpoint_mobile = 768px
   &:hover
     background-color rgba(0, 0, 0, 0.04)
 
+  // Selected = "Current View" pinned card. Sticky at top of the list so it
+  // stays visible while scrolling other views, padded and visually distinct.
   &.-selected
+    position sticky
+    top 0
+    z-index 2
     border-color $accent_color
     background-color rgba($accent_color, 0.08)
+    border-bottom 1px solid rgba($accent_color, 0.35)
+    padding 8px 16px
     font-weight 500
 
-.table-view-item-row
-  display flex
-  align-items center
-  width 100%
+    &:hover
+      background-color rgba($accent_color, 0.12)
 
 .table-view-item-actions
   display flex
   align-items center
   gap 0
   flex 0 0 auto
+  margin-left 8px
 
 .table-view-item-tags
   display flex
   flex-wrap wrap
   align-items center
   gap 4px
-  padding 4px 0 4px 96px // align with name column (80px username + 16px gap)
-
-  @media (max-width: 400px)
-    padding-left 76px
+  padding-top 4px
 
 .table-view-item-info-container
   display flex

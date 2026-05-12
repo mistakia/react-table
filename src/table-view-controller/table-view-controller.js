@@ -204,15 +204,12 @@ const TableViewController = ({
     }
   }, [view_controls_open])
 
-  // Auto-scroll to selected item when modal opens
+  // Reset list scroll to top when the panel opens. The selected ("current
+  // view") item is rendered first and sticks to top via CSS, so it's always
+  // visible regardless of the prior scroll position.
   useEffect(() => {
     if (view_controls_open && list_ref.current) {
-      const selected_el = list_ref.current.querySelector(
-        '.table-view-item.-selected'
-      )
-      if (selected_el) {
-        selected_el.scrollIntoView({ block: 'center', behavior: 'smooth' })
-      }
+      list_ref.current.scrollTop = 0
     }
   }, [view_controls_open])
 
@@ -227,8 +224,23 @@ const TableViewController = ({
     view_username: ''
   }
 
-  const display_views =
+  const raw_display_views =
     active_section === 'all' ? filtered : sections[active_section] || []
+
+  // Pin the selected ("current view") to the top of the list so the sticky-top
+  // styling lands on a row that's already first; otherwise the sticky behavior
+  // looks odd because the item starts mid-list and "jumps" to the top edge.
+  const display_views = React.useMemo(() => {
+    if (!selected_view || !selected_view.view_id) return raw_display_views
+    const idx = raw_display_views.findIndex(
+      (v) => v.view_id === selected_view.view_id
+    )
+    if (idx <= 0) return raw_display_views
+    const reordered = raw_display_views.slice()
+    const [selected] = reordered.splice(idx, 1)
+    reordered.unshift(selected)
+    return reordered
+  }, [raw_display_views, selected_view])
 
   const list_items = display_views.map((view) => {
     const view_is_favorited =
