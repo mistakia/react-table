@@ -478,11 +478,7 @@ const TableViewController = ({
                 </>
               )}
             </div>
-            <div
-              className='current-view-aside'
-              onClick={(e) => e.stopPropagation()}>
-              <div className='current-view-username'>{username}</div>
-            </div>
+            <div className='current-view-username'>{username}</div>
           </div>
 
           {view_controls_open && (

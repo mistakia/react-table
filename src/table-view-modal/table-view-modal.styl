@@ -1,45 +1,59 @@
+@import '../styles/tokens.styl'
+
 .table-view-modal.MuiModal-root
   z-index 10000
 
 .table-view-modal-paper.MuiPaper-root
-  border-radius 10px
+  border-radius $rt_radius_lg
   box-shadow 0 24px 60px rgba(0, 0, 0, 0.2)
   overflow hidden
 
+// Match the .section-header treatment used by column/filter controllers so the
+// modal title reads as part of the same control family.
 .table-view-modal-title.MuiDialogTitle-root
   display flex
   align-items center
   justify-content space-between
-  font-size 16px
+  font-size $rt_font_size_sm
   font-weight 600
-  padding 14px 20px
-  letter-spacing 0.01em
+  line-height 1.4
+  letter-spacing 0.02em
+  text-transform uppercase
+  color $rt_text
+  background $rt_bg_subtle
+  border-bottom 1px solid $rt_divider
+  padding $rt_space_sm $rt_space
+  user-select none
 
 .table-view-modal-close.MuiIconButton-root
-  color rgba(0, 0, 0, 0.54)
-  margin -4px -8px -4px 0
+  color $rt_text_muted
+  margin -4px -6px -4px 0
+  padding 4px
 
   &:hover
-    color rgba(0, 0, 0, 0.87)
+    color $rt_text
     background rgba(0, 0, 0, 0.04)
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
 
 .table-view-modal-content.MuiDialogContent-root
   display flex
   flex-direction column
-  gap 16px
-  padding 20px
-
-  // Material UI ships a default `padding-top: 20px !important` on MuiDialogContent
-  // when paired with a title in some setups; the value above already matches.
+  gap $rt_space
+  padding $rt_space
 
 .table-view-modal-actions.MuiDialogActions-root
-  padding 12px 20px
-  gap 8px
+  padding $rt_space_sm $rt_space
+  gap $rt_space_sm
+  border-top 1px solid $rt_divider
+  background $rt_bg_subtle
 
   .MuiButton-root
     text-transform none
     font-weight 500
-    border-radius 6px
+    border-radius $rt_radius
     padding 4px 14px
     min-width 80px
 
