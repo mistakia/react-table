@@ -65,6 +65,16 @@ $breakpoint_mobile = 768px
     .current-view-info
       flex 1
       overflow visible
+      min-width 0
+
+    // When open, lift the username out of its absolute top-right slot so it
+    // doesn't overlap the inline action row. Render it as a chip on the left.
+    .current-view-username
+      position static
+      top auto
+      right auto
+      align-self flex-start
+      margin-bottom 4px
 
   .current-view-actions
     display flex
@@ -204,6 +214,12 @@ $breakpoint_mobile = 768px
     background transparent
     border 1px dashed rgba(0, 0, 0, 0.35)
     color rgba(0, 0, 0, 0.54)
+
+  // +N overflow indicator
+  &.-overflow
+    background rgba(0, 0, 0, 0.06)
+    color rgba(0, 0, 0, 0.6)
+    font-weight 500
 
 .tvc-tag-chip-llm-glyph
   font-size 9px

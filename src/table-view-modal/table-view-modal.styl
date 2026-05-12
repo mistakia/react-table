@@ -1,53 +1,69 @@
 .table-view-modal.MuiModal-root
   z-index 10000
 
-.table-view-modal-content
+.table-view-modal-paper.MuiPaper-root
+  border-radius 10px
+  box-shadow 0 24px 60px rgba(0, 0, 0, 0.2)
   overflow hidden
-  overflow-y scroll
-  position fixed
-  top 50%
-  left 50%
-  transform translate(-50%, -50%)
-  width 90vw
-  max-width 600px
-  height fit-content
-  max-height 90%
-  background white
-  border-radius 4px
-  padding 16px
 
-.table-view-item-content-name
-  font-size 14px
-  font-weight 500
-
-.table-view-item-content-description
-  flex 1
+.table-view-modal-title.MuiDialogTitle-root
   display flex
-  padding-top 24px
+  align-items center
+  justify-content space-between
+  font-size 16px
+  font-weight 600
+  padding 14px 20px
+  letter-spacing 0.01em
 
-  .MuiTextField-root 
-    width 100%
+.table-view-modal-close.MuiIconButton-root
+  color rgba(0, 0, 0, 0.54)
+  margin -4px -8px -4px 0
 
-.table-view-modal-actions
+  &:hover
+    color rgba(0, 0, 0, 0.87)
+    background rgba(0, 0, 0, 0.04)
+
+.table-view-modal-content.MuiDialogContent-root
   display flex
-  justify-content flex-end
-  padding-top 16px
+  flex-direction column
+  gap 16px
+  padding 20px
 
+  // Material UI ships a default `padding-top: 20px !important` on MuiDialogContent
+  // when paired with a title in some setups; the value above already matches.
+
+.table-view-modal-actions.MuiDialogActions-root
+  padding 12px 20px
+  gap 8px
+
+  .MuiButton-root
+    text-transform none
+    font-weight 500
+    border-radius 6px
+    padding 4px 14px
+    min-width 80px
+
+// The "Add view" footer button on the controller still uses this styl file's
+// scope when imported -- keep it nearby.
 .table-view-add-button
   flex 1
   display flex
   align-items center
   justify-content center
+  gap 6px
   margin 10px 12px
   padding 10px
   cursor pointer
-  border-radius 4px
-  font-size 12px
+  border-radius 6px
+  font-size 13px
+  color rgba(0, 0, 0, 0.7)
   background #fafafa
+  transition background 150ms ease
 
   .MuiSvgIcon-root
-    width 16px
-    height 16px
+    width 18px
+    height 18px
 
   &:hover
-    background #e5e5e5
+    background #ececec
+    color rgba(0, 0, 0, 0.87)

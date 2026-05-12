@@ -1,8 +1,15 @@
-import { Modal } from '@mui/material'
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  IconButton
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import PropTypes from 'prop-types'
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import TextField from '@mui/material/TextField'
-import Button from '@mui/material/Button'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import './table-view-modal.styl'
 
@@ -22,25 +29,15 @@ export default function TableViewModal({
     set_view_description(view.view_description || '')
   }, [view])
 
-  const handle_view_name_change = useCallback((event) => {
-    set_view_name(event.target.value)
-  }, [])
-
-  const handle_view_description_change = useCallback((event) => {
-    set_view_description(event.target.value)
-  }, [])
+  const handle_close = useCallback(
+    () => set_edit_view_modal_open(false),
+    [set_edit_view_modal_open]
+  )
 
   const handle_save_click = useCallback(() => {
     on_view_change(
-      {
-        ...view,
-        view_name,
-        view_description
-      },
-      {
-        view_state_changed: false,
-        view_metadata_changed: true
-      }
+      { ...view, view_name, view_description },
+      { view_state_changed: false, view_metadata_changed: true }
     )
     set_edit_view_modal_open(false)
   }, [
@@ -51,54 +48,58 @@ export default function TableViewModal({
     set_edit_view_modal_open
   ])
 
-  const modal_content = useMemo(
-    () => (
-      <div className='table-view-modal-content'>
-        <div className='table-view-item-content-name'>
-          <TextField
-            label='View name'
-            variant='outlined'
-            value={view_name}
-            size='small'
-            onChange={handle_view_name_change}
-          />
-        </div>
-        <div className='table-view-item-content-description'>
-          <TextField
-            label='View description'
-            variant='outlined'
-            value={view_description}
-            multiline
-            rows={4}
-            size='small'
-            onChange={handle_view_description_change}
-          />
-        </div>
-        <div className='table-view-modal-actions'>
-          <Button onClick={() => set_edit_view_modal_open(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handle_save_click}>Save</Button>
-        </div>
-      </div>
-    ),
-    [
-      view_name,
-      view_description,
-      handle_view_name_change,
-      handle_view_description_change,
-      handle_save_click,
-      set_edit_view_modal_open
-    ]
-  )
-
   return (
-    <Modal
+    <Dialog
       open={edit_view_modal_open}
-      onClose={() => set_edit_view_modal_open(false)}
-      className='table-view-modal'>
-      {modal_content}
-    </Modal>
+      onClose={handle_close}
+      className='table-view-modal'
+      maxWidth='sm'
+      fullWidth
+      PaperProps={{ className: 'table-view-modal-paper' }}>
+      <DialogTitle className='table-view-modal-title'>
+        Edit view
+        <IconButton
+          aria-label='Close'
+          onClick={handle_close}
+          size='small'
+          className='table-view-modal-close'>
+          <CloseIcon fontSize='small' />
+        </IconButton>
+      </DialogTitle>
+      <DialogContent className='table-view-modal-content' dividers>
+        <TextField
+          label='Name'
+          variant='outlined'
+          value={view_name}
+          size='small'
+          fullWidth
+          autoFocus
+          onChange={(e) => set_view_name(e.target.value)}
+        />
+        <TextField
+          label='Description'
+          variant='outlined'
+          value={view_description}
+          multiline
+          minRows={3}
+          maxRows={8}
+          size='small'
+          fullWidth
+          onChange={(e) => set_view_description(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions className='table-view-modal-actions'>
+        <Button onClick={handle_close} color='inherit'>
+          Cancel
+        </Button>
+        <Button
+          onClick={handle_save_click}
+          variant='contained'
+          disableElevation>
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }
 

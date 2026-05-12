@@ -60,7 +60,10 @@ function ViewItem({
     set_misc_menu_open(false)
   }
 
-  const tags = view.tags || []
+  const MAX_INLINE_TAGS = 6
+  const all_tags = view.tags || []
+  const visible_tags = all_tags.slice(0, MAX_INLINE_TAGS)
+  const overflow_count = all_tags.length - visible_tags.length
 
   return (
     <div
@@ -85,15 +88,20 @@ function ViewItem({
               {view.view_description}
             </div>
           )}
-          {tags.length > 0 && (
+          {all_tags.length > 0 && (
             <div className='table-view-item-tags'>
-              {tags.map((tag) => (
+              {visible_tags.map((tag) => (
                 <TagChip
                   key={`${tag.source}-${tag.name}`}
                   name={tag.name}
                   source={tag.source}
                 />
               ))}
+              {overflow_count > 0 && (
+                <span className='tvc-tag-chip -overflow'>
+                  +{overflow_count}
+                </span>
+              )}
             </div>
           )}
         </div>

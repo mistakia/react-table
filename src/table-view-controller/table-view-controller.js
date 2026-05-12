@@ -215,34 +215,45 @@ const TableViewController = ({
   }, [view_controls_open])
 
   // Scroll the list so the selected item is visible after the expand
-  // animation settles. Use two rAF ticks so the list element has its final
-  // height before we measure offsets.
+  // animation settles. The parent container animates width/height over 250ms;
+  // measuring offsets before that finishes scrolls to wrong positions.
+  // Listen for transitionend on the container instead of guessing with rAF.
   useEffect(() => {
     if (!view_controls_open) return
-    let raf1 = 0
-    let raf2 = 0
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        const list = list_ref.current
-        if (!list) return
-        const selected_el = list.querySelector('.table-view-item.-selected')
-        if (!selected_el) {
-          list.scrollTop = 0
-          return
-        }
-        const list_rect = list.getBoundingClientRect()
-        const item_rect = selected_el.getBoundingClientRect()
-        const target =
-          list.scrollTop +
-          (item_rect.top - list_rect.top) -
-          list.clientHeight / 2 +
-          item_rect.height / 2
-        list.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
-      })
-    })
+    const container = container_ref.current
+    const list = list_ref.current
+    if (!container || !list) return
+
+    let done = false
+    const do_scroll = () => {
+      if (done) return
+      done = true
+      const selected_el = list.querySelector('.table-view-item.-selected')
+      if (!selected_el) {
+        list.scrollTop = 0
+        return
+      }
+      const list_rect = list.getBoundingClientRect()
+      const item_rect = selected_el.getBoundingClientRect()
+      const target =
+        list.scrollTop +
+        (item_rect.top - list_rect.top) -
+        list.clientHeight / 2 +
+        item_rect.height / 2
+      list.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
+    }
+
+    const handler = (e) => {
+      if (e.target !== container) return
+      if (e.propertyName !== 'height' && e.propertyName !== 'width') return
+      do_scroll()
+    }
+    container.addEventListener('transitionend', handler)
+    // Fallback in case the transition never fires (reduced-motion, etc.)
+    const fallback = setTimeout(do_scroll, 350)
     return () => {
-      cancelAnimationFrame(raf1)
-      cancelAnimationFrame(raf2)
+      container.removeEventListener('transitionend', handler)
+      clearTimeout(fallback)
     }
   }, [view_controls_open])
 
