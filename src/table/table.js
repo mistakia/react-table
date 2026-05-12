@@ -132,7 +132,13 @@ export default function Table({
   filter_controls_open: controlled_filter_controls_open,
   set_filter_controls_open: controlled_set_filter_controls_open,
   controls_extension = null,
-  clear_local_cache = null
+  clear_local_cache = null,
+  favorite_view_ids,
+  tags_by_view_id,
+  derive_auto_tags,
+  on_toggle_favorite,
+  on_add_user_tag,
+  on_remove_user_tag
 }) {
   useEffect(() => {
     if (!enable_validation_warnings || !table_state) return
@@ -286,6 +292,23 @@ export default function Table({
       !saved_table_state ||
       JSON.stringify(table_state) !== JSON.stringify(saved_table_state),
     [table_state, saved_table_state]
+  )
+
+  const enriched_views = useMemo(
+    () =>
+      views.map((view) => {
+        const is_owned =
+          Boolean(table_username) &&
+          view.view_username === table_username &&
+          table_username !== 'system'
+        const is_selected = view.view_id === selected_view.view_id
+        return {
+          ...view,
+          is_editable: is_owned,
+          is_table_state_changed: is_selected ? is_table_state_changed : false
+        }
+      }),
+    [views, table_username, selected_view.view_id, is_table_state_changed]
   )
 
   const save_table_state_change = useCallback(() => {
@@ -809,12 +832,24 @@ export default function Table({
               {...{
                 select_view,
                 selected_view,
-                views,
+                views: enriched_views,
                 on_view_change,
                 delete_view,
                 disable_create_view,
                 disable_edit_view,
-                new_view_prefix_columns
+                new_view_prefix_columns,
+                favorite_view_ids,
+                tags_by_view_id,
+                derive_auto_tags,
+                on_toggle_favorite,
+                on_add_user_tag,
+                on_remove_user_tag,
+                on_save_current_view: is_table_state_changed
+                  ? save_table_state_change
+                  : undefined,
+                on_reset_current_view: is_table_state_changed
+                  ? discard_table_state_changes
+                  : undefined
               }}
             />
           )}
@@ -1061,5 +1096,11 @@ Table.propTypes = {
   filter_controls_open: PropTypes.bool,
   set_filter_controls_open: PropTypes.func,
   controls_extension: PropTypes.node,
-  clear_local_cache: PropTypes.func
+  clear_local_cache: PropTypes.func,
+  favorite_view_ids: PropTypes.object,
+  tags_by_view_id: PropTypes.object,
+  derive_auto_tags: PropTypes.func,
+  on_toggle_favorite: PropTypes.func,
+  on_add_user_tag: PropTypes.func,
+  on_remove_user_tag: PropTypes.func
 }

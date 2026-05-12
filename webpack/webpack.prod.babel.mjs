@@ -19,12 +19,15 @@ export default base({
 
   externals: [
     /@mui.*/,
+    /^highcharts(\/.*)?$/,
     {
       '@emotion/react': '@emotion/react',
       '@emotion/styled': '@emotion/styled',
       react: 'react',
       'react-dom': 'react-dom',
-      'prop-types': 'prop-types'
+      'prop-types': 'prop-types',
+      'highcharts-react-official': 'highcharts-react-official',
+      dayjs: 'dayjs'
     }
   ],
 

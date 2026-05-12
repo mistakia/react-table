@@ -34,15 +34,19 @@ function classify_view(view, table_username, favorite_view_ids) {
 }
 
 /**
- * Build a combined tag array for a view: persisted (user + llm) + auto.
+ * Build a combined tag array for a view, ordered: user → llm → auto.
  */
-function get_all_tags(view, tags_by_view_id, auto_tags_map) {
-  const persisted =
-    tags_by_view_id && tags_by_view_id.get
-      ? tags_by_view_id.get(view.view_id) || []
-      : []
+export function get_all_tags(view, tags_by_view_id, auto_tags_map) {
+  const raw = (tags_by_view_id && tags_by_view_id.get(view.view_id)) || []
+  const persisted = raw.toArray ? raw.toArray() : Array.from(raw)
+  const user_tags = persisted.filter((t) => t.source === 'user')
+  const llm_tags = persisted.filter((t) => t.source !== 'user')
   const auto = (auto_tags_map && auto_tags_map.get(view.view_id)) || []
-  return [...persisted, ...auto.map((name) => ({ name, source: 'auto' }))]
+  return [
+    ...user_tags,
+    ...llm_tags,
+    ...auto.map((name) => ({ name, source: 'auto' }))
+  ]
 }
 
 /**
@@ -117,7 +121,7 @@ export function organize_views({
   }
 
   const filtered =
-    active_section === 'all'
+    active_section === 'all' || active_section === 'authors'
       ? views
           .map((v) => ({
             ...v,

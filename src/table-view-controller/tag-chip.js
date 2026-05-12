@@ -11,7 +11,6 @@ function TagChip({ name, source, on_remove }) {
         [`-${source}`]: true
       })}
       title={`Source: ${source}`}>
-      {source === 'llm' && <span className='tvc-tag-chip-llm-glyph'>ai</span>}
       <span className='tvc-tag-chip-name'>{name}</span>
       {on_remove && (
         <button

@@ -15,6 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 import TableViewModal from '#src/table-view-modal'
 import { generate_view_id, get_string_from_object } from '#src/utils'
+import { use_confirm_click } from '#src/utils/use-confirm-click'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
 import ViewItem from './view-item'
@@ -22,7 +23,7 @@ import ViewOrganizationRail from './view-organization-rail'
 import TagChip from './tag-chip'
 import TagInput from './tag-input'
 import { use_auto_tags } from './use-auto-tags'
-import { use_organized_views } from './use-organized-views'
+import { use_organized_views, get_all_tags } from './use-organized-views'
 
 import './table-view-controller.styl'
 
@@ -87,7 +88,9 @@ const TableViewController = ({
   // Collect all unique tags visible in the current section for the rail chip cloud
   const all_visible_tags = React.useMemo(() => {
     const source_views =
-      active_section === 'all' ? filtered : sections[active_section] || []
+      active_section === 'all' || active_section === 'authors'
+        ? filtered
+        : sections[active_section] || []
     const seen = new Map()
     for (const v of source_views) {
       for (const tag of v.tags || []) {
@@ -269,8 +272,48 @@ const TableViewController = ({
     view_username: ''
   }
 
-  const display_views =
-    active_section === 'all' ? filtered : sections[active_section] || []
+  const author_list = React.useMemo(() => {
+    if (active_section !== 'authors') return []
+    const counts = new Map()
+    for (const v of filtered) {
+      const author = v.view_username || 'system'
+      counts.set(author, (counts.get(author) || 0) + 1)
+    }
+    return Array.from(counts.entries()).sort(([a], [b]) => {
+      if (a === table_username) return -1
+      if (b === table_username) return 1
+      if (a === 'system') return 1
+      if (b === 'system') return -1
+      return a.localeCompare(b)
+    })
+  }, [active_section, filtered, table_username])
+
+  const [selected_author, set_selected_author] = React.useState(null)
+
+  React.useEffect(() => {
+    if (active_section !== 'authors') {
+      set_selected_author(null)
+      return
+    }
+    if (selected_author && author_list.some(([a]) => a === selected_author)) {
+      return
+    }
+    const fallback =
+      (author_list.find(([a]) => a === table_username) || author_list[0] || [])[0] ||
+      null
+    set_selected_author(fallback)
+  }, [active_section, author_list, table_username, selected_author])
+
+  const display_views = React.useMemo(() => {
+    if (active_section === 'all') return filtered
+    if (active_section === 'authors') {
+      if (!selected_author) return []
+      return filtered.filter(
+        (v) => (v.view_username || 'system') === selected_author
+      )
+    }
+    return sections[active_section] || []
+  }, [active_section, filtered, sections, selected_author])
 
   const list_items = display_views.map((view) => (
     <ViewItem
@@ -284,22 +327,29 @@ const TableViewController = ({
         on_view_change,
         disable_edit_view,
         selected_view,
-        handle_menu_toggle
+        handle_menu_toggle,
+        on_toggle_favorite,
+        is_favorited: Boolean(
+          favorite_view_ids &&
+            typeof favorite_view_ids.has === 'function' &&
+            favorite_view_ids.has(view.view_id)
+        )
       }}
     />
   ))
 
-  // Tag list, tag input, and action set for the selected view -- shown inside
-  // the trigger button area when the panel is open.
-  const current_view_with_tags = display_views.find(
-    (v) => v.view_id === selected_view.view_id
+  // Tag list, tag input, and action set for the selected view. Looked up
+  // across the unfiltered views array so the chips stay visible regardless of
+  // which rail section is active.
+  const current_tags = React.useMemo(() => {
+    if (!current_view) return []
+    return get_all_tags(current_view, tags_by_view_id, auto_tags_map)
+  }, [current_view, tags_by_view_id, auto_tags_map])
+  const is_favorited = Boolean(
+    favorite_view_ids &&
+      typeof favorite_view_ids.has === 'function' &&
+      favorite_view_ids.has(selected_view.view_id)
   )
-  const current_tags =
-    (current_view_with_tags && current_view_with_tags.tags) || []
-  const is_favorited =
-    favorite_view_ids && favorite_view_ids instanceof Set
-      ? favorite_view_ids.has(selected_view.view_id)
-      : false
   const can_edit_current =
     Boolean(current_view && current_view.is_editable) && !disable_edit_view
   const can_edit_tags =
@@ -318,6 +368,20 @@ const TableViewController = ({
     e.stopPropagation()
     if (fn) fn()
   }
+
+  const {
+    is_confirming: is_delete_confirming,
+    handle_click: handle_delete_click,
+    reset: reset_delete_confirm
+  } = use_confirm_click({
+    on_confirm: () => {
+      if (current_view) delete_view(current_view.view_id)
+    }
+  })
+
+  React.useEffect(() => {
+    reset_delete_confirm()
+  }, [view_controls_open, selected_view.view_id, reset_delete_confirm])
 
   const handle_duplicate_current = () => {
     if (!current_view) return
@@ -370,10 +434,17 @@ const TableViewController = ({
                         enterDelay={700}>
                         <IconButton
                           size='small'
+                          className={get_string_from_object({
+                            'cva-btn': true,
+                            '-favorite': true,
+                            '-active': is_favorited
+                          })}
                           onClick={stop(() =>
-                            on_toggle_favorite(current_view.view_id)
-                          )}
-                          className={is_favorited ? '-active' : ''}>
+                            on_toggle_favorite(
+                              current_view.view_id,
+                              is_favorited
+                            )
+                          )}>
                           {is_favorited ? (
                             <StarIcon fontSize='small' />
                           ) : (
@@ -381,6 +452,9 @@ const TableViewController = ({
                           )}
                         </IconButton>
                       </Tooltip>
+                    )}
+                    {(on_reset_current_view || on_save_current_view) && (
+                      <span className='cva-divider' aria-hidden='true' />
                     )}
                     {on_reset_current_view && (
                       <Tooltip
@@ -390,6 +464,7 @@ const TableViewController = ({
                         <span>
                           <IconButton
                             size='small'
+                            className='cva-btn'
                             onClick={stop(on_reset_current_view)}
                             disabled={!is_table_state_changed}>
                             <UndoIcon fontSize='small' />
@@ -405,6 +480,10 @@ const TableViewController = ({
                         <span>
                           <IconButton
                             size='small'
+                            className={get_string_from_object({
+                              'cva-btn': true,
+                              '-primary': true
+                            })}
                             onClick={stop(on_save_current_view)}
                             disabled={!can_save}>
                             <SaveIcon fontSize='small' />
@@ -412,6 +491,7 @@ const TableViewController = ({
                         </span>
                       </Tooltip>
                     )}
+                    <span className='cva-divider' aria-hidden='true' />
                     {can_edit_current && (
                       <Tooltip
                         title='Edit view details'
@@ -419,6 +499,7 @@ const TableViewController = ({
                         enterDelay={700}>
                         <IconButton
                           size='small'
+                          className='cva-btn'
                           onClick={stop(() => {
                             set_selected_edit_view(current_view)
                             set_edit_view_modal_open(true)
@@ -433,20 +514,28 @@ const TableViewController = ({
                       enterDelay={700}>
                       <IconButton
                         size='small'
+                        className='cva-btn'
                         onClick={stop(handle_duplicate_current)}>
                         <ContentCopyIcon fontSize='small' />
                       </IconButton>
                     </Tooltip>
                     {can_edit_current && (
                       <Tooltip
-                        title='Delete view'
+                        title={
+                          is_delete_confirming
+                            ? 'Click again to confirm'
+                            : 'Delete view'
+                        }
                         placement='top'
                         enterDelay={700}>
                         <IconButton
                           size='small'
-                          onClick={stop(() =>
-                            delete_view(current_view.view_id)
-                          )}>
+                          className={get_string_from_object({
+                            'cva-btn': true,
+                            '-destructive': true,
+                            '-confirming': is_delete_confirming
+                          })}
+                          onClick={stop(handle_delete_click)}>
                           <DeleteIcon fontSize='small' />
                         </IconButton>
                       </Tooltip>
@@ -482,10 +571,16 @@ const TableViewController = ({
                       {can_edit_tags && (
                         <TagInput
                           suggestions={tag_suggestions}
+                          existing_tag_names={current_tags
+                            .filter((t) => t.source === 'user')
+                            .map((t) => t.name)}
                           on_submit={(name) =>
                             on_add_user_tag(current_view.view_id, name)
                           }
-                          placeholder='Add tag...'
+                          on_remove={(name) =>
+                            on_remove_user_tag(current_view.view_id, name)
+                          }
+                          placeholder='Add tag'
                         />
                       )}
                     </div>
@@ -501,7 +596,9 @@ const TableViewController = ({
               <div
                 className={get_string_from_object({
                   'table-view-body': true,
-                  '-with-rail': has_org_props
+                  '-with-rail': has_org_props,
+                  '-with-authors':
+                    has_org_props && active_section === 'authors'
                 })}>
                 {has_org_props && (
                   <ViewOrganizationRail
@@ -511,7 +608,35 @@ const TableViewController = ({
                     all_tags={all_visible_tags}
                     active_tag_filters={active_tag_filters}
                     on_toggle_tag_filter={handle_toggle_tag_filter}
+                    on_clear_tag_filters={() =>
+                      set_active_tag_filters(new Set())
+                    }
                   />
+                )}
+
+                {active_section === 'authors' && (
+                  <div className='tvc-author-column'>
+                    <div className='tvc-author-column-header'>Author</div>
+                    <div className='tvc-author-column-list'>
+                      {author_list.map(([author, count]) => (
+                        <button
+                          key={author}
+                          type='button'
+                          className={get_string_from_object({
+                            'tvc-author-column-item': true,
+                            '-active': author === selected_author
+                          })}
+                          onClick={() => set_selected_author(author)}>
+                          <span className='tvc-author-column-name'>
+                            {author}
+                          </span>
+                          <span className='tvc-author-column-count'>
+                            {count}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 <div className='table-view-main'>
@@ -549,7 +674,20 @@ const TableViewController = ({
               view: selected_edit_view,
               edit_view_modal_open,
               set_edit_view_modal_open,
-              on_view_change
+              on_view_change,
+              tags_by_view_id,
+              auto_tags_map,
+              tag_suggestions,
+              can_edit_tags: Boolean(
+                !disable_edit_view &&
+                  selected_edit_view &&
+                  selected_edit_view.view_username &&
+                  selected_edit_view.view_username === table_username &&
+                  on_add_user_tag &&
+                  on_remove_user_tag
+              ),
+              on_add_user_tag,
+              on_remove_user_tag
             }}
           />
         </div>
@@ -568,8 +706,8 @@ TableViewController.propTypes = {
   disable_edit_view: PropTypes.bool,
   new_view_prefix_columns: PropTypes.array,
   // Organization props (all optional)
-  favorite_view_ids: PropTypes.instanceOf(Set),
-  tags_by_view_id: PropTypes.instanceOf(Map),
+  favorite_view_ids: PropTypes.object,
+  tags_by_view_id: PropTypes.object,
   derive_auto_tags: PropTypes.func,
   on_toggle_favorite: PropTypes.func,
   on_add_user_tag: PropTypes.func,

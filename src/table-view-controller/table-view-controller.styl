@@ -83,6 +83,10 @@ $breakpoint_mobile = 768px
       display grid
       grid-template-columns $rail_width 1fr
 
+  &.-with-rail.-with-authors
+    @media (min-width: $breakpoint_mobile + 1px)
+      grid-template-columns $rail_width auto 1fr
+
 // ── Organization rail ─────────────────────────────────────────────────────────
 .tvc-rail
   display flex
@@ -164,42 +168,140 @@ $breakpoint_mobile = 768px
   &.-active .tvc-tag-chip
     outline 2px solid $accent_color
 
-// ── Tag chips (three source styles) ─────────────────────────────────────────
-.tvc-tag-chip
-  display inline-flex
-  align-items center
-  gap 4px
-  padding 2px 8px
-  border-radius 12px
+// ── Author column (rendered when 'By author' rail section is active) ──────
+.tvc-author-column
+  display flex
+  flex-direction column
+  border-right 1px solid $borderColor
+  background rgba(0, 0, 0, 0.015)
+  min-width 140px
+  max-width 200px
+  overflow-y auto
+
+.tvc-author-column-header
   font-size 11px
-  line-height 18px
-  cursor default
-  user-select none
-  max-width 120px
+  font-weight 600
+  text-transform uppercase
+  letter-spacing 0.5px
+  padding 8px 12px 6px
+  color rgba(0, 0, 0, 0.55)
+  border-bottom 1px solid $borderColor
+
+.tvc-author-column-list
+  display flex
+  flex-direction column
+  padding 4px
+
+.tvc-author-column-item
+  display flex
+  align-items center
+  justify-content space-between
+  gap 8px
+  padding 6px 10px
+  border none
+  border-radius 4px
+  background none
+  cursor pointer
+  font-size 12px
+  color rgba(0, 0, 0, 0.75)
+  text-align left
+
+  &:hover
+    background rgba(0, 0, 0, 0.06)
+
+  &.-active
+    background rgba($accent_color, 0.12)
+    color $accent_color
+    font-weight 600
+
+.tvc-author-column-name
   overflow hidden
   text-overflow ellipsis
   white-space nowrap
 
-  // user — solid accent background
+.tvc-author-column-count
+  font-size 10px
+  background rgba(0, 0, 0, 0.1)
+  border-radius 10px
+  padding 1px 6px
+
+// ── Rail tag-cloud controls (search + clear) ──────────────────────────────
+.tvc-rail-tags-controls
+  display flex
+  flex-direction column
+  gap 4px
+  width 100%
+  margin-bottom 6px
+
+.tvc-rail-tags-search
+  flex 1
+  min-width 0
+  padding 3px 6px
+  font-size 11px
+  border 1px solid $borderColor
+  border-radius 3px
+  background white
+  outline none
+
+  &:focus
+    border-color $accent_color
+
+.tvc-rail-tags-clear
+  width 100%
+  padding 3px 6px
+  font-size 10px
+  border 1px solid rgba(0, 0, 0, 0.2)
+  border-radius 3px
+  background none
+  cursor pointer
+  color rgba(0, 0, 0, 0.7)
+
+  &:hover
+    background rgba(0, 0, 0, 0.06)
+    color rgba(0, 0, 0, 0.9)
+
+.tvc-rail-tags-empty
+  font-size 11px
+  color rgba(0, 0, 0, 0.45)
+  padding 4px 2px
+
+// ── Tag chips (three source styles) ─────────────────────────────────────────
+.tvc-tag-chip
+  display inline-flex
+  align-items center
+  gap 2px
+  padding 0 5px
+  border-radius 2px
+  font-size 10px
+  line-height 14px
+  height 14px
+  cursor default
+  user-select none
+  max-width 110px
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
+
+  // user — filled accent (most prominent, manual tags)
   &.-user
     background-color $accent_color
     color white
+    font-weight 500
 
-  // llm — outlined with subtle glyph
+  // llm — light tinted accent
   &.-llm
-    background transparent
-    border 1px solid $accent_color
+    background-color rgba($accent_color, 0.10)
     color $accent_color
+    font-style italic
 
-  // auto — dashed border, muted
+  // auto — very light neutral background
   &.-auto
-    background transparent
-    border 1px dashed rgba(0, 0, 0, 0.35)
-    color rgba(0, 0, 0, 0.54)
+    background-color rgba(0, 0, 0, 0.04)
+    color rgba(0, 0, 0, 0.55)
 
   // +N overflow indicator
   &.-overflow
-    background rgba(0, 0, 0, 0.06)
+    background-color rgba(0, 0, 0, 0.06)
     color rgba(0, 0, 0, 0.6)
     font-weight 500
 
@@ -218,53 +320,87 @@ $breakpoint_mobile = 768px
   background none
   padding 0
   cursor pointer
-  font-size 14px
+  font-size 12px
   line-height 1
-  margin-left 2px
+  margin-left 1px
   opacity 0.7
 
   &:hover
     opacity 1
 
-// ── Tag input ────────────────────────────────────────────────────────────────
-.tvc-tag-input-container
-  position relative
+// ── Tag picker (base-style "+ Add" chip + dropdown) ───────────────────────
+.tvc-tag-add-chip
   display inline-flex
+  align-items center
+  height 14px
+  padding 0 5px
+  border-radius 2px
+  font-size 10px
+  line-height 14px
+  cursor pointer
+  user-select none
+  background-color rgba(0, 0, 0, 0.04)
+  color rgba(0, 0, 0, 0.55)
 
-.tvc-tag-input
+  &:hover
+    background-color rgba(0, 0, 0, 0.08)
+    color rgba(0, 0, 0, 0.8)
+
+.tvc-tag-picker-dropdown
+  position absolute
+  z-index 2000
+  min-width 200px
+  background white
   border 1px solid $borderColor
   border-radius 4px
+  box-shadow 0 4px 12px rgba(0, 0, 0, 0.15)
+  display flex
+  flex-direction column
+
+.tvc-tag-picker-search
+  padding 6px
+  border-bottom 1px solid $borderColor
+
+.tvc-tag-picker-search-input
+  width 100%
+  border 1px solid $borderColor
+  border-radius 3px
   padding 4px 8px
   font-size 12px
-  width 100%
   outline none
 
   &:focus
     border-color $accent_color
 
-.tvc-tag-input-suggestions
-  position absolute
-  top 100%
-  left 0
-  right 0
-  z-index 100
-  list-style none
-  margin 2px 0 0
-  padding 4px 0
-  background white
-  border 1px solid $borderColor
-  border-radius 4px
-  box-shadow 0 2px 8px rgba(0, 0, 0, 0.12)
-  max-height 200px
+.tvc-tag-picker-list
+  max-height 220px
   overflow-y auto
+  padding 4px 0
 
-.tvc-tag-input-suggestion
-  padding 6px 12px
+.tvc-tag-picker-empty
+  padding 8px 12px
+  font-size 12px
+  color rgba(0, 0, 0, 0.5)
+
+.tvc-tag-picker-option
+  display flex
+  align-items center
+  gap 6px
+  padding 4px 10px
   font-size 12px
   cursor pointer
 
-  &:hover
+  &:hover, &.-focused
     background rgba(0, 0, 0, 0.06)
+
+  &.-create
+    font-style italic
+    color $accent_color
+
+.tvc-tag-picker-check
+  width 12px
+  font-size 12px
+  color $accent_color
 
 // ── Main view panel ───────────────────────────────────────────────────────────
 .table-view-main
@@ -301,86 +437,181 @@ $breakpoint_mobile = 768px
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
   display flex
-  align-items flex-start
+  align-items stretch
   cursor pointer
-  padding 4px 16px
+  padding 6px 12px 6px 9px
   border-left 3px solid transparent
-  border-radius 2px
+  border-radius $rt_radius_sm
+  position relative
+  transition background-color 120ms ease, border-color 120ms ease
 
   &:hover
-    background-color rgba(0, 0, 0, 0.04)
+    background-color $rt_bg_hover
 
   &.-selected
-    border-color $accent_color
-    background-color rgba($accent_color, 0.08)
-    font-weight 500
+    border-color $rt_accent
+    background-color $rt_active_bg
 
-.table-view-item-tags
+  &.-selected .table-view-item-name
+    font-weight 600
+    color $rt_text
+
+.table-view-item-left
+  flex 1
+  min-width 0
   display flex
-  flex-wrap wrap
-  align-items center
-  gap 4px
-  padding-top 4px
+  gap 10px
+  align-items flex-start
 
 .table-view-item-info-container
   display flex
   flex-direction column
-  gap 4px
+  gap 2px
   flex 1
-  overflow hidden
+  min-width 0
+  padding-top 1px
 
 .table-view-item-name
-  font-size 14px
-  line-height 24px
-  color rgba(0, 0, 0, 0.87)
+  font-size $rt_font_size_md
+  line-height 1.35
+  color $rt_text
+  display flex
+  align-items center
+  gap 6px
+  overflow hidden
+  text-overflow ellipsis
+  white-space nowrap
 
 .table-view-item-unsaved-dot
   display inline-block
   width 6px
   height 6px
-  margin-left 6px
   border-radius 50%
-  background-color red
-  vertical-align middle
+  background-color $rt_destructive
+  flex 0 0 6px
 
 .table-view-item-description
-  font-size 12px
-  line-height 16px
-  color rgba(0, 0, 0, 0.54)
-  white-space nowrap
+  font-size $rt_font_size_sm
+  line-height 1.4
+  color $rt_text_subtle
   overflow hidden
   text-overflow ellipsis
-  display block
+  display -webkit-box
+  -webkit-line-clamp 2
+  -webkit-box-orient vertical
+  word-break break-word
 
-.table-view-item-left
-  flex 1
-  max-width calc(100% - 40px)
+.table-view-item-tags
   display flex
-  gap 16px
+  flex-wrap wrap
+  align-items center
+  gap 3px
+  padding-top 4px
 
+// Username chip — fixed-width rectangular block, monogram + label side by
+// side, vertically centered against the row content.
 .table-view-item-username
-  font-size 12px
-  color white
-  font-weight bold
-  overflow hidden
-  text-overflow ellipsis
-  white-space nowrap
-  background-color rgba(0, 0, 0, 0.8)
-  padding 6px 8px
-  border-radius 4px
+  flex 0 0 88px
+  align-self center
   display flex
   align-items center
+  gap 6px
+  font-size $rt_font_size_sm
+  color $rt_text_muted
+  background $rt_bg_subtle
+  border 1px solid $rt_border_subtle
+  border-radius $rt_radius_sm
+  padding 3px 7px 3px 3px
+  height 24px
+  overflow hidden
+  white-space nowrap
+
+  &.-placeholder
+    color $rt_text_disabled
+    background transparent
+    border 1px dashed $rt_border_subtle
+    font-style italic
+
+    .table-view-item-username-initial
+      background transparent
+      color $rt_text_disabled
+
+.table-view-item-username-initial
+  width 18px
+  height 18px
+  flex 0 0 18px
+  display inline-flex
+  align-items center
   justify-content center
-  height 30px
-  margin-top 4px
-  flex 0 0 80px
+  border-radius 2px
+  font-size 10px
+  font-weight 700
+  background $rt_text
+  color $rt_bg
+  text-transform uppercase
+
+.table-view-item-username-text
+  min-width 0
+  overflow hidden
+  text-overflow ellipsis
 
 @media (max-width: 400px)
   .table-view-item-username
-    flex 0 0 60px
+    flex 0 0 28px
+    padding 3px
+    justify-content center
 
-.table-view-item-right
-  flex 0 0 40px
+  .table-view-item-username-text
+    display none
+
+.table-view-item-actions
+  flex 0 0 auto
+  display flex
+  align-items center
+  gap 2px
+
+  .MuiIconButton-root
+    width 28px
+    height 28px
+    padding 0
+    border-radius $rt_radius_sm
+    color $rt_text_muted
+    transition opacity 120ms ease, color 120ms ease, background 120ms ease
+
+    .MuiSvgIcon-root
+      font-size 18px
+
+    &:hover
+      background $rt_bg_hover_strong
+      color $rt_text
+
+  .table-view-item-favorite.MuiIconButton-root
+    &:hover
+      color #d99100
+      background rgba(217, 145, 0, 0.10)
+
+    &.-active
+      color #d99100
+      opacity 1
+
+      &:hover
+        color #b87600
+        background rgba(217, 145, 0, 0.16)
+
+  // Reveal-on-hover behavior: dim non-active buttons until row is hovered or
+  // selected. Active favorite always stays visible so users can see what's
+  // already favorited.
+  .table-view-item-favorite.MuiIconButton-root:not(.-active),
+  .table-view-item-more.MuiIconButton-root
+    opacity 0
+
+.table-view-item:hover .table-view-item-actions .MuiIconButton-root,
+.table-view-item.-selected .table-view-item-actions .MuiIconButton-root
+  opacity 1
+
+@media (hover: none)
+  .table-view-item-actions .MuiIconButton-root
+    opacity 1
 
 // ── Trigger summary: same layout whether collapsed or expanded ────────────────
 .table-expanding-control-button
@@ -401,7 +632,7 @@ $breakpoint_mobile = 768px
     .current-view-title-row
       display flex
       align-items center
-      gap 2px
+      gap 12px
       min-width 0
 
     .current-view-title
@@ -437,7 +668,74 @@ $breakpoint_mobile = 768px
   z-index 1
 
 .current-view-actions
-  display flex
+  display inline-flex
   align-items center
-  gap 0
+  gap 1px
   flex 0 0 auto
+  padding 2px
+  background rgba(15, 23, 42, 0.03)
+  border 1px solid rgba(15, 23, 42, 0.08)
+  border-radius 6px
+  opacity 0
+  transform translateY(-1px)
+  transition opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease
+
+  .cva-divider
+    width 1px
+    align-self stretch
+    margin 2px 2px
+    background rgba(15, 23, 42, 0.1)
+
+  .cva-btn.MuiIconButton-root
+    width 24px
+    height 24px
+    padding 0
+    border-radius 4px
+    color rgba(15, 23, 42, 0.62)
+    transition background 120ms ease, color 120ms ease
+
+    .MuiSvgIcon-root
+      font-size 16px
+
+    &:hover
+      background rgba(15, 23, 42, 0.07)
+      color rgba(15, 23, 42, 0.92)
+
+    &.Mui-disabled
+      color rgba(15, 23, 42, 0.22)
+
+    &.-favorite.-active
+      color #d99100
+
+      &:hover
+        background rgba(217, 145, 0, 0.12)
+        color #b87600
+
+    &.-primary
+      color $accent_color
+
+      &:hover:not(.Mui-disabled)
+        background rgba($accent_color, 0.14)
+        color $accent_color
+
+    &.-destructive:hover
+      background rgba(209, 36, 47, 0.10)
+      color #b51e26
+
+    &.-destructive.-confirming,
+    &.-destructive.-confirming:hover
+      background #d1242f
+      color #ffffff
+      animation tvc-confirm-pulse 1.2s ease-in-out infinite
+
+@keyframes tvc-confirm-pulse
+  0%, 100%
+    box-shadow 0 0 0 0 rgba(209, 36, 47, 0.5)
+  50%
+    box-shadow 0 0 0 4px rgba(209, 36, 47, 0)
+
+.table-expanding-control-container.table-view-controller:hover .current-view-actions,
+.table-expanding-control-container.table-view-controller.-open .current-view-actions
+  opacity 1
+  transform translateY(0)
+  box-shadow 0 1px 2px rgba(15, 23, 42, 0.06)

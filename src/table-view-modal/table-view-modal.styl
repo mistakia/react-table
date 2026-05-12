@@ -3,62 +3,181 @@
 .table-view-modal.MuiModal-root
   z-index 10000
 
+  .MuiBackdrop-root
+    background $rt_bg_overlay
+
 .table-view-modal-paper.MuiPaper-root
   border-radius $rt_radius_lg
-  box-shadow 0 24px 60px rgba(0, 0, 0, 0.2)
+  background transparent
+  box-shadow none
+  overflow visible
+
+.tvm-frame
+  background $rt_bg
+  color $rt_text
+  border 1px solid $rt_modal_border
+  border-radius $rt_radius_lg
+  box-shadow $rt_modal_shadow
+  display flex
+  flex-direction column
   overflow hidden
 
-// Match the .section-header treatment used by column/filter controllers so the
-// modal title reads as part of the same control family.
-.table-view-modal-title.MuiDialogTitle-root
+// Header matches the .section-header treatment shared by column/filter controllers
+.tvm-header
   display flex
   align-items center
   justify-content space-between
-  font-size $rt_font_size_sm
-  font-weight 600
-  line-height 1.4
-  letter-spacing 0.02em
-  text-transform uppercase
-  color $rt_text
+  padding $rt_space_sm $rt_space
   background $rt_bg_subtle
   border-bottom 1px solid $rt_divider
-  padding $rt_space_sm $rt_space
   user-select none
 
-.table-view-modal-close.MuiIconButton-root
+.tvm-header-label
+  font-size $rt_font_size_sm
+  font-weight $rt_font_weight_label
+  line-height 1.4
+  letter-spacing 0.04em
+  text-transform uppercase
+  color $rt_text
+
+.tvm-close.MuiIconButton-root
   color $rt_text_muted
   margin -4px -6px -4px 0
   padding 4px
+  border-radius $rt_radius_sm
 
   &:hover
     color $rt_text
-    background rgba(0, 0, 0, 0.04)
+    background $rt_bg_hover
 
   .MuiSvgIcon-root
     width 16px
     height 16px
 
-.table-view-modal-content.MuiDialogContent-root
+.tvm-body
   display flex
   flex-direction column
   gap $rt_space
   padding $rt_space
 
-.table-view-modal-actions.MuiDialogActions-root
+.tvm-field
+  display flex
+  flex-direction column
+  gap 4px
+
+.tvm-label
+  font-size $rt_font_size_micro
+  font-weight $rt_font_weight_label
+  letter-spacing 0.04em
+  text-transform uppercase
+  color $rt_text_muted
+
+.tvm-input,
+.tvm-textarea
+  font-family inherit
+  font-size $rt_font_size
+  color $rt_text
+  background $rt_bg
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
+  padding 7px 10px
+  outline none
+  width 100%
+  resize vertical
+  transition border-color 120ms ease, box-shadow 120ms ease
+
+  &::placeholder
+    color $rt_text_disabled
+
+  &:hover
+    border-color rgba(15, 23, 42, 0.24)
+
+  &:focus
+    border-color $rt_accent
+    box-shadow $rt_focus_ring
+
+.tvm-textarea
+  min-height 96px
+  line-height 1.5
+
+.tvm-tags
+  display flex
+  flex-wrap wrap
+  align-items center
+  gap 4px
+  padding 6px 8px
+  background $rt_bg_subtle
+  border 1px dashed $rt_border_subtle
+  border-radius $rt_radius_sm
+  min-height 28px
+
+.tvm-footer
+  display flex
+  align-items center
+  justify-content space-between
+  gap $rt_space
   padding $rt_space_sm $rt_space
-  gap $rt_space_sm
   border-top 1px solid $rt_divider
   background $rt_bg_subtle
 
-  .MuiButton-root
-    text-transform none
-    font-weight 500
-    border-radius $rt_radius
-    padding 4px 14px
-    min-width 80px
+.tvm-hint
+  display flex
+  align-items center
+  gap 4px
+  font-size $rt_font_size_micro
+  color $rt_text_muted
 
-// The "Add view" footer button on the controller still uses this styl file's
-// scope when imported -- keep it nearby.
+  kbd
+    font-family inherit
+    font-size 10px
+    padding 1px 5px
+    border 1px solid $rt_border
+    background $rt_bg
+    border-radius $rt_radius_sm
+    color $rt_text_muted
+
+.tvm-actions
+  display flex
+  gap $rt_space_sm
+
+.tvm-button
+  font-family inherit
+  font-size $rt_font_size_sm
+  font-weight 500
+  padding 5px 14px
+  min-width 80px
+  border 1px solid $rt_border
+  background $rt_bg
+  color $rt_text
+  cursor pointer
+  border-radius $rt_radius
+  transition background 120ms ease, color 120ms ease, border-color 120ms ease
+
+  &:hover
+    background $rt_bg_hover_strong
+
+  &:focus-visible
+    outline none
+    box-shadow $rt_focus_ring
+
+  &.-primary
+    background $rt_accent
+    border-color $rt_accent
+    color #ffffff
+
+    &:hover
+      background $rt_accent_strong
+      border-color $rt_accent_strong
+
+  &.-ghost
+    background transparent
+    color $rt_text_muted
+
+    &:hover
+      color $rt_text
+      background $rt_bg_hover
+
+// "Add view" footer button stays here per original
 .table-view-add-button
   flex 1
   display flex
@@ -68,16 +187,16 @@
   margin 10px 12px
   padding 10px
   cursor pointer
-  border-radius 6px
-  font-size 13px
-  color rgba(0, 0, 0, 0.7)
-  background #fafafa
-  transition background 150ms ease
+  border-radius $rt_radius
+  font-size $rt_font_size
+  color $rt_text_muted
+  background $rt_bg_subtle
+  transition background 150ms ease, color 150ms ease
 
   .MuiSvgIcon-root
     width 18px
     height 18px
 
   &:hover
-    background #ececec
-    color rgba(0, 0, 0, 0.87)
+    background $rt_bg_hover_strong
+    color $rt_text

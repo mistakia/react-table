@@ -35,3 +35,27 @@
     display flex
     align-items center
     justify-content center
+
+  &.-destructive
+    color $rt_destructive
+
+    .MuiSvgIcon-root
+      color $rt_destructive
+
+    &:hover
+      background $rt_destructive_subtle
+
+  &.-destructive.-confirming,
+  &.-destructive.-confirming:hover
+    background $rt_destructive
+    color #ffffff
+    animation rt-confirm-pulse 1.2s ease-in-out infinite
+
+    .MuiSvgIcon-root
+      color #ffffff
+
+@keyframes rt-confirm-pulse
+  0%, 100%
+    box-shadow inset 0 0 0 0 rgba(255, 255, 255, 0.0)
+  50%
+    box-shadow inset 0 0 0 2px rgba(255, 255, 255, 0.25)
