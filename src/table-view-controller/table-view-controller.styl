@@ -49,8 +49,8 @@ $breakpoint_mobile = 768px
   height 80vh
 
   @media (max-width: $breakpoint_mobile)
-    width 90vw
-    height 85vh
+    width 96vw
+    height 90vh
 
   // Let the trigger button area grow to host actions + tag editor when open.
   .table-expanding-control-button
@@ -64,6 +64,15 @@ $breakpoint_mobile = 768px
 
     .current-view-info
       overflow visible
+      // Reset the collapsed-state right padding that reserves space for the
+      // absolutely-positioned username chip; in the open state the username
+      // renders inline so the chip room is wasted.
+      padding 0
+      gap 6px
+
+      .current-view-title-row
+        flex-wrap wrap
+        row-gap 6px
 
   .current-view-tags
     display flex
@@ -72,50 +81,62 @@ $breakpoint_mobile = 768px
     gap 4px
     padding-top 6px
 
-// ── Body: two-column grid ─────────────────────────────────────────────────────
+// ── Body layout ──────────────────────────────────────────────────────────────
+// Mobile-first: stack rail above main vertically so neither pane is starved of
+// horizontal space. Above the mobile breakpoint switch to a two- or three-
+// column grid (rail | [authors] | main).
 .table-view-body
   display flex
+  flex-direction column
   flex 1
+  min-height 0
   overflow hidden
 
-  &.-with-rail
-    @media (min-width: $breakpoint_mobile + 1px)
+  @media (min-width: $breakpoint_mobile + 1px)
+    &.-with-rail
       display grid
       grid-template-columns $rail_width 1fr
 
-  &.-with-rail.-with-authors
-    @media (min-width: $breakpoint_mobile + 1px)
-      grid-template-columns $rail_width auto 1fr
+    &.-with-rail.-with-authors
+      grid-template-columns $rail_width minmax(140px, 200px) 1fr
 
 // ── Organization rail ─────────────────────────────────────────────────────────
 .tvc-rail
   display flex
-  flex-direction column
-  border-right 1px solid $borderColor
-  padding 8px 0
-  overflow-y auto
+  flex-direction row
+  flex-wrap wrap
+  border-bottom 1px solid $borderColor
+  padding 4px
+  overflow-x auto
+  overflow-y hidden
   background rgba(0, 0, 0, 0.02)
+  flex 0 0 auto
 
-  @media (max-width: $breakpoint_mobile)
-    flex-direction row
-    border-right none
-    border-bottom 1px solid $borderColor
-    overflow-x auto
-    overflow-y hidden
-    padding 0
+  @media (min-width: $breakpoint_mobile + 1px)
+    flex-direction column
+    flex-wrap nowrap
+    border-right 1px solid $borderColor
+    border-bottom none
+    padding 8px 0
+    overflow-x hidden
+    overflow-y auto
 
 .tvc-rail-sections
   display flex
-  flex-direction column
+  flex-direction row
   gap 2px
-  padding 0 4px
+  padding 0
+  flex 1 1 auto
+  min-width 0
+  overflow-x auto
 
-  @media (max-width: $breakpoint_mobile)
-    flex-direction row
-    padding 0
+  @media (min-width: $breakpoint_mobile + 1px)
+    flex-direction column
+    padding 0 4px
+    overflow-x visible
 
 .tvc-rail-section
-  display flex
+  display inline-flex
   align-items center
   justify-content space-between
   padding 6px 10px
@@ -126,7 +147,8 @@ $breakpoint_mobile = 768px
   font-size 13px
   color rgba(0, 0, 0, 0.7)
   text-align left
-  width 100%
+  white-space nowrap
+  flex 0 0 auto
 
   &:hover
     background rgba(0, 0, 0, 0.06)
@@ -136,9 +158,9 @@ $breakpoint_mobile = 768px
     color $accent_color
     font-weight 600
 
-  @media (max-width: $breakpoint_mobile)
-    white-space nowrap
-    width auto
+  @media (min-width: $breakpoint_mobile + 1px)
+    display flex
+    width 100%
 
 .tvc-rail-section-count
   font-size 11px
@@ -147,15 +169,48 @@ $breakpoint_mobile = 768px
   padding 1px 6px
   margin-left 6px
 
+// On mobile the tag cloud is collapsed behind a "Tags" toggle button in the
+// rail and rendered as a wrap-row below the section strip when expanded.
 .tvc-rail-tags
   display flex
   flex-wrap wrap
   gap 4px
   padding 8px 6px
+  flex 1 1 100%
   border-top 1px solid $borderColor
-  margin-top 4px
 
-  @media (max-width: $breakpoint_mobile)
+  &.-collapsed
+    display none
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    margin-top 4px
+    flex 0 0 auto
+
+    &.-collapsed
+      display flex
+
+.tvc-rail-tags-toggle
+  display inline-flex
+  align-items center
+  gap 4px
+  padding 6px 10px
+  border none
+  background none
+  cursor pointer
+  font-size 12px
+  color rgba(0, 0, 0, 0.7)
+  border-radius 4px
+  white-space nowrap
+  flex 0 0 auto
+
+  &:hover
+    background rgba(0, 0, 0, 0.06)
+
+  &.-active
+    color $accent_color
+    font-weight 600
+
+  @media (min-width: $breakpoint_mobile + 1px)
     display none
 
 .tvc-rail-tag-filter
@@ -169,16 +224,30 @@ $breakpoint_mobile = 768px
     outline 2px solid $accent_color
 
 // ── Author column (rendered when 'By author' rail section is active) ──────
+// On desktop renders as a middle column; on mobile flattens to a horizontal
+// chip strip below the rail.
 .tvc-author-column
   display flex
-  flex-direction column
-  border-right 1px solid $borderColor
+  flex-direction row
+  flex-wrap nowrap
+  border-bottom 1px solid $borderColor
   background rgba(0, 0, 0, 0.015)
-  min-width 140px
-  max-width 200px
-  overflow-y auto
+  overflow-x auto
+  overflow-y hidden
+  flex 0 0 auto
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    flex-direction column
+    flex-wrap nowrap
+    border-right 1px solid $borderColor
+    border-bottom none
+    min-width 140px
+    max-width 200px
+    overflow-x hidden
+    overflow-y auto
 
 .tvc-author-column-header
+  display none
   font-size 11px
   font-weight 600
   text-transform uppercase
@@ -187,13 +256,21 @@ $breakpoint_mobile = 768px
   color rgba(0, 0, 0, 0.55)
   border-bottom 1px solid $borderColor
 
+  @media (min-width: $breakpoint_mobile + 1px)
+    display block
+
 .tvc-author-column-list
   display flex
-  flex-direction column
+  flex-direction row
   padding 4px
+  gap 2px
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    flex-direction column
+    gap 0
 
 .tvc-author-column-item
-  display flex
+  display inline-flex
   align-items center
   justify-content space-between
   gap 8px
@@ -205,6 +282,12 @@ $breakpoint_mobile = 768px
   font-size 12px
   color rgba(0, 0, 0, 0.75)
   text-align left
+  white-space nowrap
+  flex 0 0 auto
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    display flex
+    width 100%
 
   &:hover
     background rgba(0, 0, 0, 0.06)
@@ -228,10 +311,13 @@ $breakpoint_mobile = 768px
 // ── Rail tag-cloud controls (search + clear) ──────────────────────────────
 .tvc-rail-tags-controls
   display flex
-  flex-direction column
+  flex-direction row
   gap 4px
   width 100%
   margin-bottom 6px
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    flex-direction column
 
 .tvc-rail-tags-search
   flex 1
@@ -247,8 +333,11 @@ $breakpoint_mobile = 768px
     border-color $accent_color
 
 .tvc-rail-tags-clear
-  width 100%
+  flex 0 0 auto
   padding 3px 6px
+
+  @media (min-width: $breakpoint_mobile + 1px)
+    width 100%
   font-size 10px
   border 1px solid rgba(0, 0, 0, 0.2)
   border-radius 3px
@@ -420,9 +509,9 @@ $breakpoint_mobile = 768px
   flex-direction column
   padding 8px
   gap 2px
-  height 100%
-  overflow hidden
-  overflow-y scroll
+  flex 1 1 auto
+  min-height 0
+  overflow-y auto
 
 .table-view-header
   border-bottom 1px solid $borderColor
@@ -650,8 +739,9 @@ $breakpoint_mobile = 768px
       overflow hidden
       text-overflow ellipsis
 
-// Username chip: pinned to the top-right corner of the trigger button in
-// both collapsed and expanded states.
+// Username chip: pinned to the top-right corner of the trigger button in the
+// collapsed state. In the open state (handled below) it flows inline in the
+// title row so it doesn't fight the action toolbar for space.
 .current-view-username
   position absolute
   top 4px
@@ -667,9 +757,16 @@ $breakpoint_mobile = 768px
   white-space nowrap
   z-index 1
 
+.table-expanding-control-container.table-view-controller.-open .current-view-username
+  position static
+  margin-left auto
+  align-self flex-start
+
 .current-view-actions
   display inline-flex
   align-items center
+  flex-wrap wrap
+  row-gap 2px
   gap 1px
   flex 0 0 auto
   padding 2px
@@ -679,6 +776,10 @@ $breakpoint_mobile = 768px
   opacity 0
   transform translateY(-1px)
   transition opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease
+
+  @media (max-width: $breakpoint_mobile)
+    .cva-divider
+      display none
 
   .cva-divider
     width 1px

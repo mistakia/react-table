@@ -200,22 +200,28 @@ const TableViewController = ({
     return () => document.removeEventListener('keydown', handle_key_down)
   }, [view_controls_open, handle_menu_toggle])
 
-  // Center the panel horizontally (desktop only, matches existing behavior)
+  // Center the panel horizontally. On mobile we let CSS handle sizing/centering
+  // (96vw with auto margins) so the JS transform never pushes the panel
+  // partially off-screen. On desktop we clamp the computed translateX to keep
+  // both edges of the panel inside the viewport.
   useEffect(() => {
-    if (view_controls_open && container_ref.current) {
-      const rect = container_ref.current.getBoundingClientRect()
-      const scroll_left =
-        window.pageXOffset || document.documentElement.scrollLeft
-      const window_center_x = window.innerWidth / 2 + scroll_left
-      const element_width =
-        window.innerWidth < 768
-          ? 0.9 * window.innerWidth
-          : 0.6 * window.innerWidth
-      const element_center_x = rect.left + element_width / 2 + scroll_left
-      set_transform(`translateX(${window_center_x - element_center_x}px)`)
-    } else {
+    if (!view_controls_open || !container_ref.current) {
       set_transform('')
+      return
     }
+    if (window.innerWidth <= 768) {
+      set_transform('')
+      return
+    }
+    const rect = container_ref.current.getBoundingClientRect()
+    const element_width = Math.min(0.8 * window.innerWidth, 960)
+    const window_center_x = window.innerWidth / 2
+    const element_center_x = rect.left + element_width / 2
+    const raw_dx = window_center_x - element_center_x
+    const min_dx = -rect.left
+    const max_dx = window.innerWidth - (rect.left + element_width)
+    const dx = Math.max(min_dx, Math.min(max_dx, raw_dx))
+    set_transform(`translateX(${dx}px)`)
   }, [view_controls_open])
 
   // Scroll the list so the selected item is visible after the expand
@@ -299,8 +305,9 @@ const TableViewController = ({
       return
     }
     const fallback =
-      (author_list.find(([a]) => a === table_username) || author_list[0] || [])[0] ||
-      null
+      (author_list.find(([a]) => a === table_username) ||
+        author_list[0] ||
+        [])[0] || null
     set_selected_author(fallback)
   }, [active_section, author_list, table_username, selected_author])
 
@@ -597,8 +604,7 @@ const TableViewController = ({
                 className={get_string_from_object({
                   'table-view-body': true,
                   '-with-rail': has_org_props,
-                  '-with-authors':
-                    has_org_props && active_section === 'authors'
+                  '-with-authors': has_org_props && active_section === 'authors'
                 })}>
                 {has_org_props && (
                   <ViewOrganizationRail

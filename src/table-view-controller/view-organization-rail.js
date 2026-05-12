@@ -28,6 +28,10 @@ function ViewOrganizationRail({
   const total_count = Object.values(counts).reduce((sum, n) => sum + n, 0)
 
   const [tag_query, set_tag_query] = useState('')
+  // Tag cloud is collapsed by default on mobile (rendered behind a "Tags"
+  // toggle button). On desktop CSS overrides the collapsed class so the cloud
+  // is always visible.
+  const [tags_expanded, set_tags_expanded] = useState(false)
   const normalized_query = tag_query.trim().toLowerCase()
   const visible_tags = normalized_query
     ? all_tags.filter(
@@ -36,15 +40,14 @@ function ViewOrganizationRail({
           (active_tag_filters && active_tag_filters.has(name))
       )
     : all_tags
+  const has_tags = Boolean(all_tags && all_tags.length > 0)
 
   return (
     <div className='tvc-rail'>
       <div className='tvc-rail-sections'>
         {SECTIONS.map(({ id, label }) => {
           const count =
-            id === 'all' || id === 'authors'
-              ? total_count
-              : counts[id] || 0
+            id === 'all' || id === 'authors' ? total_count : counts[id] || 0
           if (id !== 'all' && id !== 'authors' && count === 0) return null
           return (
             <button
@@ -62,8 +65,30 @@ function ViewOrganizationRail({
         })}
       </div>
 
-      {all_tags && all_tags.length > 0 && (
-        <div className='tvc-rail-tags'>
+      {has_tags && (
+        <button
+          type='button'
+          className={get_string_from_object({
+            'tvc-rail-tags-toggle': true,
+            '-active': tags_expanded || has_active_filters
+          })}
+          onClick={() => set_tags_expanded((v) => !v)}
+          aria-expanded={tags_expanded}>
+          Tags
+          {has_active_filters && (
+            <span className='tvc-rail-section-count'>
+              {active_tag_filters.size}
+            </span>
+          )}
+        </button>
+      )}
+
+      {has_tags && (
+        <div
+          className={get_string_from_object({
+            'tvc-rail-tags': true,
+            '-collapsed': !tags_expanded
+          })}>
           <div className='tvc-rail-tags-controls'>
             <input
               type='text'
