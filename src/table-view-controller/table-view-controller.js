@@ -66,7 +66,6 @@ const TableViewController = ({
   const container_ref = useRef(null)
   const input_ref = useRef(null)
   const list_ref = useRef(null)
-  const [transform, set_transform] = React.useState('')
 
   const has_org_props = Boolean(
     table_username || favorite_view_ids || tags_by_view_id || derive_auto_tags
@@ -206,24 +205,22 @@ const TableViewController = ({
     return () => document.removeEventListener('keydown', handle_key_down)
   }, [view_controls_open, handle_menu_toggle])
 
-  // Center the panel horizontally relative to the viewport. We measure the
-  // container's untransformed left edge (clearing any in-flight transform
-  // first so getBoundingClientRect returns the stable layout position rather
-  // than a mid-animation value), then translate by the delta needed to land
-  // the panel's left edge at the centered position. The result is clamped
-  // with a small safety margin so neither edge falls outside the viewport.
-  // On mobile the open width is 96vw; on desktop it's min(80vw, 960px).
+  // Center the panel horizontally relative to the viewport. The transform is
+  // written directly to the DOM (rather than routed through React state) so
+  // it lands in the same paint cycle as the .-open class change. Otherwise
+  // the width transition starts from one commit and the transform transition
+  // from a later commit, producing a visibly staggered animation.
+  //
+  // On mobile the open width is 96vw; on desktop it's min(80vw, 960px). The
+  // computed left edge is clamped with a small safety margin (desktop only)
+  // so neither edge falls outside the viewport.
   useLayoutEffect(() => {
     const el = container_ref.current
-    if (!view_controls_open || !el) {
-      set_transform('')
+    if (!el) return
+    if (!view_controls_open) {
+      el.style.transform = ''
       return
     }
-    el.style.transform = ''
-    // Force a synchronous layout read so the cleared transform is honored
-    // before we measure.
-    // eslint-disable-next-line no-unused-expressions
-    el.offsetWidth
     const rect = el.getBoundingClientRect()
     const is_mobile = window.innerWidth <= 768
     const element_width = is_mobile
@@ -237,7 +234,7 @@ const TableViewController = ({
       min_left,
       Math.min(max_left, desired_left)
     )
-    set_transform(`translateX(${clamped_left - rect.left}px)`)
+    el.style.transform = `translateX(${clamped_left - rect.left}px)`
   }, [view_controls_open])
 
   // Scroll the list so the selected item is visible after the expand
@@ -425,7 +422,6 @@ const TableViewController = ({
       <ClickAwayListener onClickAway={handle_click_away}>
         <div
           ref={container_ref}
-          style={{ transform }}
           className={get_string_from_object({
             'table-expanding-control-container': true,
             'table-view-controller': true,
