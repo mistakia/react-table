@@ -206,20 +206,16 @@ const TableViewController = ({
     return () => document.removeEventListener('keydown', handle_key_down)
   }, [view_controls_open, handle_menu_toggle])
 
-  // Center the panel horizontally. On mobile we let CSS handle sizing/centering
-  // (96vw with auto margins) so the JS transform never pushes the panel
-  // partially off-screen. On desktop we measure the container's untransformed
-  // left edge (clearing any in-flight transform first so getBoundingClientRect
-  // returns the stable layout position rather than a mid-animation value), then
-  // clamp the result to keep both edges of the panel inside the viewport with
-  // a small safety margin.
+  // Center the panel horizontally relative to the viewport. We measure the
+  // container's untransformed left edge (clearing any in-flight transform
+  // first so getBoundingClientRect returns the stable layout position rather
+  // than a mid-animation value), then translate by the delta needed to land
+  // the panel's left edge at the centered position. The result is clamped
+  // with a small safety margin so neither edge falls outside the viewport.
+  // On mobile the open width is 96vw; on desktop it's min(80vw, 960px).
   useLayoutEffect(() => {
     const el = container_ref.current
     if (!view_controls_open || !el) {
-      set_transform('')
-      return
-    }
-    if (window.innerWidth <= 768) {
       set_transform('')
       return
     }
@@ -229,8 +225,11 @@ const TableViewController = ({
     // eslint-disable-next-line no-unused-expressions
     el.offsetWidth
     const rect = el.getBoundingClientRect()
-    const element_width = Math.min(0.8 * window.innerWidth, 960)
-    const margin = 12
+    const is_mobile = window.innerWidth <= 768
+    const element_width = is_mobile
+      ? 0.96 * window.innerWidth
+      : Math.min(0.8 * window.innerWidth, 960)
+    const margin = is_mobile ? 0 : 12
     const desired_left = (window.innerWidth - element_width) / 2
     const min_left = margin
     const max_left = window.innerWidth - element_width - margin
