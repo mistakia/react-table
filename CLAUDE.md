@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+For graph context (consumers, related task dir, table-state schema location), see [ABOUT.md](ABOUT.md).
+
 ## Build Commands
 
 ```bash
