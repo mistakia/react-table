@@ -129,6 +129,10 @@ const SCHEMAS = {
         type: 'array',
         items: { type: 'string' }
       },
+      subjects: {
+        type: 'array',
+        items: { type: 'string' }
+      },
       rank_aggregation: { type: 'object' },
       disable_scatter_plot: { type: 'boolean' },
       disable_column_controls: { type: 'boolean' },

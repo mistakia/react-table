@@ -18,6 +18,7 @@ export const SHARE_LINK_URL_SCHEMA = {
     sort: 'array',
     where: 'array',
     splits: 'array',
+    subjects: 'array',
     q: 'string',
     rank_aggregation: 'object',
     scatter_plot_options: 'object',

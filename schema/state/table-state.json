@@ -33,6 +33,11 @@
       "items": { "type": "string" },
       "description": "Array of column IDs to use for splitting/grouping"
     },
+    "subjects": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Array of subject identifiers (e.g., ['player'] or ['team']) declaring which entity type the table is about. Consumer-defined values; the component only round-trips the array."
+    },
     "rank_aggregation": {
       "type": "object",
       "description": "Rank aggregation configuration"
