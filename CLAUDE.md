@@ -107,3 +107,112 @@ Columns are defined via `all_columns` prop as an object mapping column IDs to co
 - PropTypes validation on all components
 - No semicolons (Prettier configured)
 - Single quotes for strings
+
+## Consumer Integration
+
+For external consumers of the published package.
+
+### Install
+
+```bash
+npm install @mistakia/react-table
+```
+
+### Basic Usage
+
+```javascript
+import Table from '@mistakia/react-table'
+
+const all_columns = {
+  name: { column_id: 'name', header_label: 'Name', accessorKey: 'name', data_type: 2 }, // TEXT
+  age:  { column_id: 'age',  header_label: 'Age',  accessorKey: 'age',  data_type: 1 }  // NUMBER
+}
+
+const table_state = {
+  columns: ['name', 'age'],
+  sort: [{ column_id: 'name', desc: false }],
+  where: []
+}
+
+function MyTable({ data }) {
+  return <Table data={data} all_columns={all_columns} table_state={table_state} />
+}
+```
+
+### Validation API
+
+```javascript
+import { validate_table_state, validate_where_clause } from '@mistakia/react-table'
+
+const result = validate_table_state(table_state)
+if (!result.valid) console.error(result.errors)
+```
+
+Enable `enable_validation_warnings` prop to log validation errors to the console.
+
+### Search Adapters
+
+Adapter contract:
+
+```javascript
+{
+  id: string,
+  validate(view_search_config) -> string | null,    // null on valid config
+  async run({ query, table_state, current_rows, view_search_config, signal })
+    -> { state_patch?, client_filter?, highlights? }
+}
+```
+
+Register at app startup (before any table mounts):
+
+```javascript
+import { register_search_adapter } from 'react-table/src/search/registry.js'
+
+register_search_adapter({
+  id: 'my_backend',
+  validate: (cfg) => (cfg.endpoint ? null : 'endpoint required'),
+  async run({ query, view_search_config, signal }) {
+    if (!query.trim()) return { state_patch: { q: null } }
+    const res = await fetch(view_search_config.endpoint, { signal })
+    return { state_patch: { q: query }, highlights: await res.json() }
+  }
+})
+```
+
+View configuration selects the adapter:
+
+```javascript
+selected_view = {
+  search: { type: 'where',  column_id: 'title' }                       // server-side ILIKE
+  // or:  { type: 'client', fields: ['title', 'description'], key_field: 'id' }
+  // or:  { type: 'my_backend', endpoint: '/api/search' }
+}
+```
+
+### Quick-Search Transport
+
+`q` is an optional `table_state` field, sibling to `where` / `sort` / `limit` / `offset`. Server-side adapters write a `state_patch` containing `q` (or a `where`); the table's `on_table_state_change` propagates it. Servers consuming `q` are expected to enforce a minimum query length and attach a `row_highlights` map to their response so cell renderers can paint inline matches via TanStack `meta.row_highlights`.
+
+### Highlighting Cells
+
+```javascript
+import HighlightedText from 'react-table/src/search/highlighted-text.js'
+
+const TitleCell = ({ row, table }) => {
+  const highlights = table?.options?.meta?.row_highlights?.[row.original.base_uri]
+  const ranges = highlights?.cell_ranges?.title || []
+  return <HighlightedText text={row.original.title} ranges={ranges} />
+}
+```
+
+Pass `row_highlights` as a prop to `<Table>`; the component places it on TanStack `meta.row_highlights` for cell renderers to consume. `RowHighlights` shape: `{ matched_field, cell_ranges: { [column_id]: Range[] }, snippet: { text, ranges } | null }`.
+
+### Schemas
+
+JSON Schema definitions live under `schema/`:
+
+- `schema/index.json` — component props
+- `schema/state/table-state.json` — table state
+- `schema/columns/column-definition.json` — column definition
+- `schema/base/table-data-types.json` — data type constants
+- `schema/base/table-operators.json` — filter operators
