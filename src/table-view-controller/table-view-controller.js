@@ -472,9 +472,10 @@ const TableViewController = ({
                         </IconButton>
                       </Tooltip>
                     )}
-                    {(on_reset_current_view || on_save_current_view) && (
-                      <span className='cva-divider' aria-hidden='true' />
-                    )}
+                    {on_toggle_favorite &&
+                      (on_reset_current_view || on_save_current_view) && (
+                        <span className='cva-divider' aria-hidden='true' />
+                      )}
                     {on_reset_current_view && (
                       <Tooltip
                         title='Reset to saved state'
@@ -510,7 +511,11 @@ const TableViewController = ({
                         </span>
                       </Tooltip>
                     )}
-                    <span className='cva-divider' aria-hidden='true' />
+                    {(on_toggle_favorite ||
+                      on_reset_current_view ||
+                      on_save_current_view) && (
+                      <span className='cva-divider' aria-hidden='true' />
+                    )}
                     {can_edit_current && (
                       <Tooltip
                         title='Edit view details'

@@ -6,7 +6,6 @@ import Switch from '@mui/material/Switch'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
-import ColumnControlsColumnParamItem from '#src/column-controls-column-param-item'
 import {
   fuzzy_match,
   group_parameters,
@@ -23,7 +22,8 @@ export default function ColumnParamSelectFilterWithOverrides({
   column,
   column_index,
   set_local_table_state,
-  splits = []
+  splits = [],
+  render_param_item
 }) {
   const { param_override_config } = column_param_definition
   const {
@@ -286,21 +286,19 @@ export default function ColumnParamSelectFilterWithOverrides({
                             </div>
                           )}
                           {params.map(
-                            ([column_param_name, column_param_definition]) => (
-                              <ColumnControlsColumnParamItem
-                                key={column_param_name}
-                                column={override_column}
-                                set_local_table_state={
-                                  handle_override_state_change
-                                }
-                                column_index={column_index}
-                                column_param_name={column_param_name}
-                                column_param_definition={
-                                  column_param_definition
-                                }
-                                splits={splits}
-                              />
-                            )
+                            ([column_param_name, column_param_definition]) =>
+                              render_param_item
+                                ? render_param_item({
+                                    key: column_param_name,
+                                    column: override_column,
+                                    set_local_table_state:
+                                      handle_override_state_change,
+                                    column_index,
+                                    column_param_name,
+                                    column_param_definition,
+                                    splits
+                                  })
+                                : null
                           )}
                         </div>
                       )
@@ -326,5 +324,6 @@ ColumnParamSelectFilterWithOverrides.propTypes = {
   column: PropTypes.object.isRequired,
   column_index: PropTypes.number.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
-  splits: PropTypes.array
+  splits: PropTypes.array,
+  render_param_item: PropTypes.func
 }

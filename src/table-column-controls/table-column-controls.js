@@ -26,7 +26,8 @@ import DataTypeIcon from '#src/data-type-icon'
 import {
   fuzzy_match,
   group_columns_into_tree_view,
-  get_string_from_object
+  get_string_from_object,
+  use_wide_control_layout
 } from '#src/utils'
 import { table_context } from '#src/table-context'
 import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '#src/constants.mjs'
@@ -125,6 +126,8 @@ const TableColumnControls = ({
 
   const [replace_column_open, set_replace_column_open] = useState(false)
   const replace_column_anchor_ref = useRef(null)
+
+  const is_wide_layout = use_wide_control_layout(column_controls_open)
 
   const local_table_state_columns = useMemo(() => {
     const columns = []
@@ -435,25 +438,34 @@ const TableColumnControls = ({
   useEffect(() => {
     if (column_controls_open) {
       if (container_ref.current) {
-        const original_rect = container_ref.current.getBoundingClientRect()
+        const el = container_ref.current
+        const rect = el.getBoundingClientRect()
+        const current_tx = parseFloat(
+          (el.style.transform || '').match(/-?[\d.]+/)?.[0] || '0'
+        )
+        const anchor_left = rect.left - current_tx
         const scroll_left =
           window.pageXOffset || document.documentElement.scrollLeft
         const window_center_x = window.innerWidth / 2 + scroll_left
+        const is_split =
+          is_wide_layout && local_table_state_columns.length > 0
         const element_width =
           window.innerWidth < 768
             ? 0.9 * window.innerWidth
+            : is_split
+            ? Math.min(0.95 * window.innerWidth, 900)
             : 0.6 * window.innerWidth
         const element_center_x =
-          original_rect.left + element_width / 2 + scroll_left
+          anchor_left + element_width / 2 + scroll_left
 
         const translate_x = window_center_x - element_center_x
 
         set_transform(`translateX(${translate_x}px)`)
       }
     } else {
-      set_transform('')
+      set_transform('translateX(0px)')
     }
-  }, [column_controls_open])
+  }, [column_controls_open, is_wide_layout, local_table_state_columns.length])
 
   const handle_menu_toggle = useCallback(() => {
     if (column_controls_open) {
@@ -656,7 +668,11 @@ const TableColumnControls = ({
           'table-expanding-control-container': true,
           'table-column-controls': true,
           '-open': column_controls_open,
-          '-closing': closing
+          '-closing': closing,
+          '-wide-mode':
+            column_controls_open &&
+            is_wide_layout &&
+            shown_column_items.length > 0
         })}
         tabIndex={0}>
         <div
@@ -679,13 +695,21 @@ const TableColumnControls = ({
             </div>
           </div>
         )}
-        {column_controls_open && (
-          <>
+        {column_controls_open && (() => {
+          const is_wide_split = is_wide_layout && shown_column_items.length > 0
+          const picker_visible = all_columns_expanded || is_wide_split
+          return (
+          <div className='table-expanding-control-panels'>
             {shown_column_items.length > 0 && (
+              <div className='table-expanding-control-pane -selected'>
               <div
                 className='table-selected-filters-container'
                 style={{
-                  maxHeight: all_columns_expanded ? '0' : '100%'
+                  maxHeight: is_wide_split
+                    ? '100%'
+                    : all_columns_expanded
+                    ? '0'
+                    : '100%'
                 }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
@@ -809,18 +833,20 @@ const TableColumnControls = ({
                   </DndContext>
                 </div>
               </div>
+              </div>
             )}
+            <div className='table-expanding-control-pane -available'>
             <div className='section-header available-columns'>
               <div style={{ display: 'flex', alignSelf: 'center' }}>
                 {all_columns.length} Available Columns
               </div>
               <div
-                className='action'
+                className='action -mode-toggle'
                 onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
                 {all_columns_expanded ? 'Minimize' : 'Show Available Columns'}
               </div>
             </div>
-            {all_columns_expanded && (
+            {picker_visible && (
               <>
                 <div className='rt-search-input'>
                   <TextField
@@ -883,8 +909,10 @@ const TableColumnControls = ({
                 </div>
               </>
             )}
-          </>
-        )}
+            </div>
+          </div>
+          )
+        })()}
       </div>
     </ClickAwayListener>
   )

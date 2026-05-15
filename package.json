@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "prettier": "prettier --write .",
     "build": "cross-env NODE_ENV=production webpack --config ./webpack/webpack.prod.babel.mjs",
+    "build:watch": "cross-env NODE_ENV=production webpack --watch --config ./webpack/webpack.prod.babel.mjs",
     "test": "mocha --reporter min 'test/**/*.spec.{mjs,jsx}'"
   },
   "peerDependencies": {

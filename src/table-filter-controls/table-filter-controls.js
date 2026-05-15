@@ -20,7 +20,8 @@ import { CategoryTree } from '#src/category-tree'
 import {
   group_columns_into_tree_view,
   fuzzy_match,
-  get_string_from_object
+  get_string_from_object,
+  use_wide_control_layout
 } from '#src/utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
@@ -135,6 +136,8 @@ const TableFilterControls = ({
   const container_ref = useRef(null)
   const [transform, set_transform] = useState('')
 
+  const is_wide_layout = use_wide_control_layout(filter_controls_open)
+
   const shown_column_index = useMemo(() => {
     const index = {}
     for (const item of filters_local_table_state.where || []) {
@@ -221,30 +224,44 @@ const TableFilterControls = ({
   useEffect(() => {
     if (filter_controls_open) {
       if (container_ref.current) {
-        const original_rect = container_ref.current.getBoundingClientRect()
+        const el = container_ref.current
+        const rect = el.getBoundingClientRect()
+        const current_tx = parseFloat(
+          (el.style.transform || '').match(/-?[\d.]+/)?.[0] || '0'
+        )
+        const anchor_left = rect.left - current_tx
         const scroll_left =
           window.pageXOffset || document.documentElement.scrollLeft
         const window_center_x = window.innerWidth / 2 + scroll_left
+        const has_filters =
+          (filters_local_table_state.where || []).length > 0
+        const is_split = is_wide_layout && has_filters
         const element_width =
           window.innerWidth < 768
             ? 0.9 * window.innerWidth
+            : is_split
+            ? Math.min(0.95 * window.innerWidth, 1100)
             : 0.6 * window.innerWidth
         const element_center_x =
-          original_rect.left + element_width / 2 + scroll_left
+          anchor_left + element_width / 2 + scroll_left
 
         const translate_x = window_center_x - element_center_x
 
         set_transform(`translateX(${translate_x}px)`)
       }
     } else {
-      set_transform('')
+      set_transform('translateX(0px)')
 
       if (filter_input_ref.current) {
         filter_input_ref.current.blur()
       }
       set_filter_text_input('')
     }
-  }, [filter_controls_open])
+  }, [
+    filter_controls_open,
+    is_wide_layout,
+    (filters_local_table_state.where || []).length
+  ])
 
   useEffect(() => {
     if (all_columns_expanded) {
@@ -462,7 +479,11 @@ const TableFilterControls = ({
           'table-expanding-control-container': true,
           'filter-controls-container': true,
           '-open': filter_controls_open,
-          '-closing': menu_closing
+          '-closing': menu_closing,
+          '-wide-mode':
+            filter_controls_open &&
+            is_wide_layout &&
+            (filters_local_table_state.where || []).length > 0
         })}
         tabIndex={0}>
         <Badge
@@ -493,7 +514,11 @@ const TableFilterControls = ({
             </div>
           </div>
         )}
-        {filter_controls_open && (
+        {filter_controls_open && (() => {
+          const has_filters = (filters_local_table_state.where || []).length > 0
+          const is_wide_split = is_wide_layout && has_filters
+          const picker_visible = all_columns_expanded || is_wide_split
+          return (
           <>
             {seedable_where_rows.length > 0 && (
               <div
@@ -518,11 +543,17 @@ const TableFilterControls = ({
                 </button>
               </div>
             )}
-            {(filters_local_table_state.where || []).length > 0 && (
+            <div className='table-expanding-control-panels'>
+            {has_filters && (
+              <div className='table-expanding-control-pane -selected'>
               <div
                 className='table-selected-filters-container'
                 style={{
-                  maxHeight: all_columns_expanded ? '0' : '100%'
+                  maxHeight: is_wide_split
+                    ? '100%'
+                    : all_columns_expanded
+                    ? '0'
+                    : '100%'
                 }}>
                 <div className='section-header'>
                   <div style={{ display: 'flex', alignSelf: 'center' }}>
@@ -621,18 +652,20 @@ const TableFilterControls = ({
                   )}
                 </div>
               </div>
+              </div>
             )}
+            <div className='table-expanding-control-pane -available'>
             <div className='section-header available-columns'>
               <div style={{ display: 'flex', alignSelf: 'center' }}>
                 {all_columns.length} Available Filters
               </div>
               <div
-                className='action'
+                className='action -mode-toggle'
                 onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
                 {all_columns_expanded ? 'Minimize' : 'Show Available Filters'}
               </div>
             </div>
-            {all_columns_expanded && (
+            {picker_visible && (
               <>
                 <div className='rt-search-input'>
                   <TextField
@@ -649,7 +682,7 @@ const TableFilterControls = ({
                     inputRef={filter_input_ref}
                   />
                 </div>
-                <div style={{ height: '100%', overflow: 'auto', flex: 1 }}>
+                <div className='column-controls-body' style={{ overflow: 'auto' }}>
                   <div className='column-category-container'>
                     {filtered_and_sorted_columns.map((item, index) => (
                       <div key={index}>
@@ -691,8 +724,11 @@ const TableFilterControls = ({
                 </div>
               </>
             )}
+            </div>
+            </div>
           </>
-        )}
+          )
+        })()}
       </div>
     </ClickAwayListener>
   )

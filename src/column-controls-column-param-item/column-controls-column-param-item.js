@@ -73,6 +73,7 @@ const ColumnControlsColumnParamItem = ({
             column={column}
             column_index={column_index}
             set_local_table_state={set_local_table_state}
+            render_param_item={render_column_param_item}
           />
         )
       }
@@ -97,5 +98,9 @@ ColumnControlsColumnParamItem.propTypes = {
   column: PropTypes.object.isRequired,
   splits: PropTypes.array
 }
+
+const render_column_param_item = ({ key, ...props }) => (
+  <ColumnControlsColumnParamItem key={key} {...props} />
+)
 
 export default React.memo(ColumnControlsColumnParamItem)
