@@ -69,11 +69,20 @@ const FilterControlItem = React.memo(
       })
     }, [column_item.column_id, on_table_state_change, table_state])
 
+    const row_adds = !is_visible
+    const row_removes = is_visible && !enable_duplicate_column_ids
+    const row_onClick = row_adds
+      ? handle_add_filter
+      : row_removes
+        ? handle_remove_filter_by_column_id
+        : undefined
     return (
       <div
+        onClick={row_onClick}
         className={get_string_from_object({
           'column-category': true,
           'column-item': true,
+          '-row-clickable': Boolean(row_onClick),
           shown: is_visible,
           [`column-category-depth-${depth}`]: true
         })}>
@@ -85,13 +94,21 @@ const FilterControlItem = React.memo(
         </div>
         {is_visible && (
           <div
-            onClick={handle_remove_filter_by_column_id}
+            onClick={(e) => {
+              e.stopPropagation()
+              handle_remove_filter_by_column_id()
+            }}
             className='column-action'>
             <CloseIcon />
           </div>
         )}
         {(!is_visible || enable_duplicate_column_ids) && (
-          <div onClick={handle_add_filter} className='column-action'>
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              handle_add_filter()
+            }}
+            className='column-action'>
             <AddIcon />
           </div>
         )}

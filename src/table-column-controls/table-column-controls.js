@@ -50,11 +50,20 @@ const ColumnControlsTableColumnItem = React.memo(
       ref
     ) => {
       const { enable_duplicate_column_ids } = useContext(table_context)
+      const row_adds = !is_visible
+      const row_removes = is_visible && !enable_duplicate_column_ids
+      const row_onClick = row_adds
+        ? () => set_column_visible(column.column_id)
+        : row_removes
+          ? () => set_column_hidden_by_id(column.column_id)
+          : undefined
       return (
         <div
           ref={ref}
+          onClick={row_onClick}
           className={get_string_from_object({
             'column-item': true,
+            '-row-clickable': Boolean(row_onClick),
             shown: is_visible,
             [`column-category-depth-${depth}`]: true
           })}>
@@ -68,7 +77,10 @@ const ColumnControlsTableColumnItem = React.memo(
             <Button
               size='small'
               className='column-action'
-              onClick={() => set_column_hidden_by_id(column.column_id)}>
+              onClick={(e) => {
+                e.stopPropagation()
+                set_column_hidden_by_id(column.column_id)
+              }}>
               <CloseIcon />
             </Button>
           )}
@@ -76,7 +88,10 @@ const ColumnControlsTableColumnItem = React.memo(
             <Button
               size='small'
               className='column-action'
-              onClick={() => set_column_visible(column.column_id)}>
+              onClick={(e) => {
+                e.stopPropagation()
+                set_column_visible(column.column_id)
+              }}>
               <AddIcon />
             </Button>
           )}
