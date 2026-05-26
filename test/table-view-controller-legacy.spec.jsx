@@ -3,20 +3,25 @@ import { expect } from 'chai'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
-// Stub heavy dependencies before importing the component so that babel's
-// require hooks can load them without hitting native ESM/directory-index
-// resolution issues in the test environment.
+// The package's `imports` field maps `#src/*` -> `./src/*` without
+// extensions, which Node's strict subpath-imports resolver rejects under
+// CJS. Patch _resolveFilename to translate `#src/<sub>` into a concrete
+// `src/<sub>` path with `.js` / `index.js` resolution, so babel-register
+// can transform the file.
+const path = require('path')
+const fs = require('fs')
 const Module = require('module')
 const _resolve_orig = Module._resolveFilename.bind(Module)
+const src_root = path.resolve(__dirname, '../src')
 Module._resolveFilename = function (request, parent, ...args) {
-  if (request === '#src/table-view-modal') {
-    return require.resolve('../src/table-view-modal/table-view-modal.js')
-  }
-  if (request === '#src/table-context') {
-    return require.resolve('../src/table-context.js')
-  }
-  if (request === '#src/utils') {
-    return require.resolve('../src/utils/index.js')
+  if (request.startsWith('#src/')) {
+    const base = path.join(src_root, request.slice('#src/'.length))
+    const candidates = [base, `${base}.js`, path.join(base, 'index.js')]
+    for (const candidate of candidates) {
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+        return candidate
+      }
+    }
   }
   return _resolve_orig(request, parent, ...args)
 }
