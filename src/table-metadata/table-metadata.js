@@ -1,8 +1,7 @@
 import React from 'react'
-import { format } from 'timeago.js'
-
 import PropTypes from 'prop-types'
 
+import { format_relative_time } from '../utils/format-relative-time.js'
 import './table-metadata.styl'
 
 export default function TableMetadata({ created_at }) {
@@ -15,7 +14,7 @@ export default function TableMetadata({ created_at }) {
 
   return (
     <div className='table-metadata'>
-      View calculated {format(created_at)} (
+      View calculated {format_relative_time(created_at)} (
       {new Date(created_at).toLocaleString()})
     </div>
   )

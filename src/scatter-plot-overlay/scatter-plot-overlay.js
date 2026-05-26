@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import Highcharts from 'highcharts'
 import HighchartsReact from 'highcharts-react-official'
 import './scatter-plot-overlay.styl'
-import cdf from '@stdlib/stats-base-dists-t-cdf'
+import { student_t_two_tailed_p_value } from '../utils/student-t-p-value.js'
 import ScatterPlotSettingsPanel from './scatter-plot-settings-panel'
 import { resolve_point_color } from './scatter-plot-point-color-utils.js'
 import {
@@ -69,8 +69,7 @@ const calculate_regression_stats = ({ x_values, y_values }) => {
   )
   const t_statistic = regression_slope / standard_error_slope
 
-  // Calculate two-tailed p-value
-  const p_value = 2 * (1 - cdf(Math.abs(t_statistic), degrees_of_freedom))
+  const p_value = student_t_two_tailed_p_value(t_statistic, degrees_of_freedom)
 
   return {
     slope: regression_slope,
