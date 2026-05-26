@@ -130,7 +130,8 @@ RankItem.propTypes = {
 const TableRankAggregationControls = ({
   table_state,
   on_table_state_change,
-  all_columns = []
+  all_columns = [],
+  rank_aggregation_presets = null
 }) => {
   const [container_expanded, set_container_expanded] = useState(false)
   const [container_closing, set_container_closing] = useState(false)
@@ -150,6 +151,40 @@ const TableRankAggregationControls = ({
       />
     ))
   }, [table_state, on_table_state_change, all_columns])
+
+  const handle_preset_change = useCallback(
+    (event, preset) => {
+      if (!preset) {
+        return
+      }
+
+      const rank_param = preset.items.map((item) => ({
+        column_id: item.column_id,
+        weight: item.weight
+      }))
+
+      const columns = [...(table_state.columns || [])]
+      if (
+        rank_param.length &&
+        !columns.find((column) => column.column_id === 'rank_aggregation')
+      ) {
+        columns.unshift({
+          column_id: 'rank_aggregation',
+          accessorKey: 'rank_aggregation',
+          data_type: TABLE_DATA_TYPES.NUMBER,
+          header_label: 'Rank'
+        })
+      }
+
+      on_table_state_change({
+        ...table_state,
+        columns,
+        rank_aggregation: rank_param,
+        rank_aggregation_preset_id: preset.preset_id
+      })
+    },
+    [table_state, on_table_state_change]
+  )
 
   const handle_add_click = useCallback(() => {
     const rank_param = table_state.rank_aggregation || []
@@ -242,6 +277,27 @@ const TableRankAggregationControls = ({
         </div>
         {container_expanded && (
           <div className='table-rank-aggregation-content'>
+            {rank_aggregation_presets &&
+              rank_aggregation_presets.length > 0 && (
+                <div className='table-rank-aggregation-presets'>
+                  <Autocomplete
+                    size='small'
+                    options={rank_aggregation_presets}
+                    getOptionLabel={(option) => option.label || option.preset_id}
+                    isOptionEqualToValue={(option, value) =>
+                      option.preset_id === value.preset_id
+                    }
+                    onChange={handle_preset_change}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label='Preset'
+                        variant='outlined'
+                      />
+                    )}
+                  />
+                </div>
+              )}
             {items}
             <div className='table-rank-aggregation-add'>
               <div
@@ -263,7 +319,19 @@ const TableRankAggregationControls = ({
 TableRankAggregationControls.propTypes = {
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired,
-  all_columns: PropTypes.array.isRequired
+  all_columns: PropTypes.array.isRequired,
+  rank_aggregation_presets: PropTypes.arrayOf(
+    PropTypes.shape({
+      preset_id: PropTypes.string.isRequired,
+      label: PropTypes.string,
+      items: PropTypes.arrayOf(
+        PropTypes.shape({
+          column_id: PropTypes.string.isRequired,
+          weight: PropTypes.number.isRequired
+        })
+      ).isRequired
+    })
+  )
 }
 
 export default React.memo(TableRankAggregationControls)

@@ -111,6 +111,7 @@ export default function Table({
   total_row_count,
   delete_view = () => {},
   disable_rank_aggregation = false,
+  rank_aggregation_presets = null,
   disable_splits = false,
   style = {},
   percentiles = {},
@@ -885,7 +886,8 @@ export default function Table({
                   {...{
                     table_state,
                     on_table_state_change,
-                    all_columns: memoized_visible_columns // TODO
+                    all_columns: memoized_visible_columns, // TODO
+                    rank_aggregation_presets
                   }}
                 />
               )}
@@ -1070,6 +1072,7 @@ Table.propTypes = {
   total_rows_fetched: PropTypes.number,
   delete_view: PropTypes.func,
   disable_rank_aggregation: PropTypes.bool,
+  rank_aggregation_presets: PropTypes.array,
   style: PropTypes.object,
   percentiles: PropTypes.object,
   disable_create_view: PropTypes.bool,
