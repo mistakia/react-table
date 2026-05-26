@@ -1,8 +1,7 @@
-import { describe, it, beforeEach, afterEach } from 'mocha'
+import { describe, it, afterEach } from 'mocha'
 import { expect } from 'chai'
-import React from 'react'
+import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { act } from 'react'
 
 // Stub heavy dependencies before importing the component so that babel's
 // require hooks can load them without hitting native ESM/directory-index

@@ -1,9 +1,8 @@
 import { describe, it, afterEach } from 'mocha'
 import { expect } from 'chai'
 import sinon from 'sinon'
-import React from 'react'
+import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { act } from 'react'
 
 import ScatterPlotSettingsPanel from '../src/scatter-plot-overlay/scatter-plot-settings-panel'
 

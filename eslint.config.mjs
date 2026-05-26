@@ -1,78 +1,47 @@
 import globals from 'globals'
 import babelParser from '@babel/eslint-parser'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import js from '@eslint/js'
-import { FlatCompat } from '@eslint/eslintrc'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
+import neostandard from 'neostandard'
+import react from 'eslint-plugin-react'
 
 export default [
   {
     ignores: ['dist/**/*', '.yarn/**/*']
   },
-  ...compat
-    .extends('standard', 'eslint:recommended', 'plugin:react/recommended')
-    .map((config) => ({
-      ...config,
-      files: ['**/*.js', '**/*.mjs']
-    })),
+  ...neostandard({
+    noJsx: true
+  }),
   {
-    files: ['**/*.js', '**/*.mjs'],
-
+    ...react.configs.flat.recommended,
+    files: ['**/*.{js,mjs,jsx}']
+  },
+  {
+    files: ['**/*.{js,mjs,jsx}'],
     languageOptions: {
-      globals: {
-        ...globals.browser
-      },
-
+      globals: { ...globals.browser },
       parser: babelParser,
       ecmaVersion: 12,
-      sourceType: 'script',
-
+      sourceType: 'module',
       parserOptions: {
-        ecmaFeatures: {
-          jsx: true
-        },
-
+        ecmaFeatures: { jsx: true },
         sourceType: 'module',
-
         requireConfigFile: false
       }
     },
-
     settings: {
-      react: {
-        version: 'detect'
-      }
+      react: { version: 'detect' }
     },
-
     rules: {
-      camelcase: ['off'],
-      curly: ['off'],
-      indent: ['off'],
-      'multiline-ternary': ['off', 'always'],
-
-      'generator-star-spacing': [
+      camelcase: 'off',
+      curly: 'off',
+      '@stylistic/indent': 'off',
+      '@stylistic/multiline-ternary': 'off',
+      '@stylistic/generator-star-spacing': [
         'error',
-        {
-          before: false,
-          after: true
-        }
+        { before: false, after: true }
       ],
-
-      'space-before-function-paren': [
+      '@stylistic/space-before-function-paren': [
         'error',
-        {
-          anonymous: 'always',
-          named: 'never',
-          asyncArrow: 'always'
-        }
+        { anonymous: 'always', named: 'never', asyncArrow: 'always' }
       ]
     }
   },
