@@ -32,7 +32,7 @@ import {
   OPERATOR_MENU_OPTIONS
 } from '#src/constants.mjs'
 import { get_string_from_object } from '#src/utils'
-import { Checkbox } from '@mui/material'
+import Checkbox from '@mui/material/Checkbox'
 
 const FilterItemOperator = ({
   where_item,

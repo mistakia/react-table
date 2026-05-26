@@ -1,4 +1,5 @@
-import { Dialog, IconButton } from '@mui/material'
+import Dialog from '@mui/material/Dialog'
+import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import PropTypes from 'prop-types'
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'

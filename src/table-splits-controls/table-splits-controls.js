@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { ClickAwayListener } from '@mui/material'
+import ClickAwayListener from '@mui/material/ClickAwayListener'
 import { get_string_from_object } from '#src/utils'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
