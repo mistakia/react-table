@@ -20,6 +20,7 @@ import TableHeader from '#src/table-header'
 import TableFooter from '#src/table-footer'
 import TableColumnControls from '#src/table-column-controls'
 import TableSplitsControls from '#src/table-splits-controls'
+import TableSubjectsControls from '#src/table-subjects-controls'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
 import TableQuickFilter from '#src/table-quick-filter'
@@ -134,6 +135,8 @@ export default function Table({
   set_filter_controls_open: controlled_set_filter_controls_open,
   controls_extension = null,
   clear_local_cache = null,
+  subject_options = null,
+  on_subject_change = null,
   favorite_view_ids,
   tags_by_view_id,
   derive_auto_tags,
@@ -220,6 +223,7 @@ export default function Table({
       where,
       rank_aggregation,
       splits,
+      subjects,
       q,
       scatter_plot_options,
       disable_scatter_plot
@@ -275,6 +279,7 @@ export default function Table({
             where,
             rank_aggregation,
             splits,
+            subjects,
             q,
             scatter_plot_options,
             disable_scatter_plot
@@ -332,8 +337,15 @@ export default function Table({
     }
     const { view_id, view_name, view_description, view_username } =
       selected_view
-    const { sort, prefix_columns, columns, where, rank_aggregation, splits } =
-      saved_table_state
+    const {
+      sort,
+      prefix_columns,
+      columns,
+      where,
+      rank_aggregation,
+      splits,
+      subjects
+    } = saved_table_state
     on_view_change(
       {
         view_id,
@@ -346,7 +358,8 @@ export default function Table({
           columns,
           where,
           rank_aggregation,
-          splits
+          splits,
+          subjects
         }
       },
       {
@@ -881,6 +894,15 @@ export default function Table({
                 'table-controls-container': true,
                 'rank-aggregation-controls-visible': !disable_rank_aggregation
               })}>
+              {subject_options &&
+                subject_options.length > 0 &&
+                on_subject_change && (
+                  <TableSubjectsControls
+                    current_subject={(table_state.subjects || ['player'])[0]}
+                    subject_options={subject_options}
+                    on_subject_change={on_subject_change}
+                  />
+                )}
               {!disable_rank_aggregation && (
                 <TableRankAggregationControls
                   {...{
@@ -1100,6 +1122,13 @@ Table.propTypes = {
   set_filter_controls_open: PropTypes.func,
   controls_extension: PropTypes.node,
   clear_local_cache: PropTypes.func,
+  subject_options: PropTypes.arrayOf(
+    PropTypes.shape({
+      value: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired
+    })
+  ),
+  on_subject_change: PropTypes.func,
   favorite_view_ids: PropTypes.object,
   tags_by_view_id: PropTypes.object,
   derive_auto_tags: PropTypes.func,
