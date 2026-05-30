@@ -111,6 +111,10 @@ Columns are defined via `all_columns` prop as an object mapping column IDs to co
 - No semicolons (Prettier configured)
 - Single quotes for strings
 
+## Stylus gotchas
+
+- Stylus normalizes `0px` to unitless `0` in compiled output. CSS calc() addition requires compatible types, so `calc(0 + 108px)` is invalid and the whole chain falls back to initial. When declaring CSS custom properties that may be consumed inside a `calc()` with other lengths, force unit preservation with `unquote('0px')`. Example: `--rt-slot-rank-width unquote('0px')`. See `src/table/table.styl` for an in-tree example.
+
 ## Consumer Integration
 
 For external consumers of the published package.
