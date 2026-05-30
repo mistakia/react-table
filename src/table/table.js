@@ -20,7 +20,7 @@ import TableHeader from '#src/table-header'
 import TableFooter from '#src/table-footer'
 import TableColumnControls from '#src/table-column-controls'
 import TableSplitsControls from '#src/table-splits-controls'
-import TableSubjectsControls from '#src/table-subjects-controls'
+import TableSegmentedSelect from '#src/table-segmented-select'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
 import TableQuickFilter from '#src/table-quick-filter'
@@ -223,7 +223,7 @@ export default function Table({
       where,
       rank_aggregation,
       splits,
-      subjects,
+      row_grain,
       q,
       scatter_plot_options,
       disable_scatter_plot
@@ -279,7 +279,7 @@ export default function Table({
             where,
             rank_aggregation,
             splits,
-            subjects,
+            row_grain,
             q,
             scatter_plot_options,
             disable_scatter_plot
@@ -344,7 +344,7 @@ export default function Table({
       where,
       rank_aggregation,
       splits,
-      subjects
+      row_grain
     } = saved_table_state
     on_view_change(
       {
@@ -359,7 +359,7 @@ export default function Table({
           where,
           rank_aggregation,
           splits,
-          subjects
+          row_grain
         }
       },
       {
@@ -892,10 +892,10 @@ export default function Table({
             {subject_options &&
               subject_options.length > 0 &&
               on_subject_change && (
-                <TableSubjectsControls
-                  current_subject={(table_state.subjects || ['player'])[0]}
-                  subject_options={subject_options}
-                  on_subject_change={on_subject_change}
+                <TableSegmentedSelect
+                  value={(table_state.row_grain || ['player'])[0]}
+                  options={subject_options}
+                  on_change={on_subject_change}
                 />
               )}
             <div

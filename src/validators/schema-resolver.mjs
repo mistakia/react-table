@@ -129,7 +129,7 @@ const SCHEMAS = {
         type: 'array',
         items: { type: 'string' }
       },
-      subjects: {
+      row_grain: {
         type: 'array',
         items: { type: 'string' }
       },
