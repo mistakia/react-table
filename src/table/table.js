@@ -748,9 +748,14 @@ export default function Table({
     })
   }, [virtual_rows, rows])
 
+  // Depend on table_columns (not just `table`): TanStack returns a stable
+  // `table` reference across re-renders, so a memo keyed only on `table`
+  // never recomputes when prefix_columns change (e.g. on row_grain toggle).
+  // That left the previous grain's prefix columns inhabiting sticky_columns
+  // and produced phantom sticky_left offsets like 320px under team grain.
   const sticky_columns = useMemo(
     () => table.getAllLeafColumns().filter((col) => col.columnDef.sticky),
-    [table]
+    [table, table_columns]
   )
 
   const sticky_column_sizes = useMemo(() => {
