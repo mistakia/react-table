@@ -144,6 +144,16 @@ const TableColumnControls = ({
 
   const is_wide_layout = use_wide_control_layout(column_controls_open)
 
+  const current_row_grain = (table_state.row_grain || [])[0] || null
+  const available_columns = useMemo(() => {
+    if (!current_row_grain) return all_columns
+    return all_columns.filter((column) => {
+      const grains = column && column.row_grains
+      if (!Array.isArray(grains) || grains.length === 0) return true
+      return grains.includes(current_row_grain)
+    })
+  }, [all_columns, current_row_grain])
+
   const local_table_state_columns = useMemo(() => {
     const columns = []
     for (const column of local_table_state.columns || []) {
@@ -346,9 +356,9 @@ const TableColumnControls = ({
 
   const filtered_and_sorted_columns = useMemo(() => {
     if (!filter_text_input) {
-      return group_columns_into_tree_view(all_columns)
+      return group_columns_into_tree_view(available_columns)
     }
-    return all_columns
+    return available_columns
       .filter((column) =>
         fuzzy_match(filter_text_input, column.column_title || column.column_id)
       )
@@ -363,7 +373,7 @@ const TableColumnControls = ({
         )
         return distance_a - distance_b
       })
-  }, [all_columns, filter_text_input])
+  }, [available_columns, filter_text_input])
 
   // update local_table_state on table_state change
   useEffect(() => {
@@ -754,7 +764,7 @@ const TableColumnControls = ({
                             <ColumnPicker
                               open={replace_column_open}
                               anchor_el={replace_column_anchor_ref.current}
-                              all_columns={all_columns}
+                              all_columns={available_columns}
                               on_select={handle_replace_selected_columns}
                               on_close={() => set_replace_column_open(false)}
                             />
@@ -853,7 +863,7 @@ const TableColumnControls = ({
             <div className='table-expanding-control-pane -available'>
             <div className='section-header available-columns'>
               <div style={{ display: 'flex', alignSelf: 'center' }}>
-                {all_columns.length} Available Columns
+                {available_columns.length} Available Columns
               </div>
               <div
                 className='action -mode-toggle'

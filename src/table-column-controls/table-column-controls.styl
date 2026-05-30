@@ -4,7 +4,8 @@
 @import '../styles/popper-surface.styl'
 
 .table-column-controls
-  width 100px
+  width var(--rt-slot-columns-width)
+  left var(--rt-slot-columns-left)
 
   .column-drag-handle
     display flex
@@ -91,9 +92,6 @@
 
   .column-category
     cursor pointer
-
-.rank-aggregation-controls-visible .table-column-controls
-  left 80px
 
 @media (pointer: fine)
   .column-category-container

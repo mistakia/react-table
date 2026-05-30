@@ -244,14 +244,40 @@
   width fit-content
   gap 8px
 
+// Closed-state slot geometry for the expanding controls (column / filter /
+// splits / rank-agg) and the absolutely-positioned save/discard buttons.
+// Declared once here, consumed by each per-control styl via custom-property
+// lookups so the closed layout is a single source of truth. Each control
+// stays position:absolute inside .table-controls-container so opening one
+// (animating width -> 60vw / 95vw) doesn't reflow siblings.
 .table-controls-container
   position relative
   height 40px
-  width 280px
+
+  --rt-slot-rank-width 0px
+  --rt-slot-rank-gap 0px
+  --rt-slot-columns-width 108px
+  --rt-slot-columns-gap 4px
+  --rt-slot-filter-width 98px
+  --rt-slot-filter-gap 4px
+  --rt-slot-splits-width 98px
+  --rt-slot-top-lead-gap 74px
+
+  --rt-slot-rank-left 0px
+  --rt-slot-columns-left calc(var(--rt-slot-rank-width) + var(--rt-slot-rank-gap))
+  --rt-slot-filter-left calc(var(--rt-slot-columns-left) + var(--rt-slot-columns-width) + var(--rt-slot-columns-gap))
+  --rt-slot-splits-left calc(var(--rt-slot-filter-left) + var(--rt-slot-filter-width) + var(--rt-slot-filter-gap))
+  --rt-slot-top-lead-left calc(var(--rt-slot-splits-left) + var(--rt-slot-splits-width) + var(--rt-slot-top-lead-gap))
+
+  width calc(var(--rt-slot-splits-left) + var(--rt-slot-splits-width))
+
+  &.rank-aggregation-controls-visible
+    --rt-slot-rank-width 72px
+    --rt-slot-rank-gap 8px
 
 .table-top-lead-buttons-container
   position absolute
-  left 362px
+  left var(--rt-slot-top-lead-left)
   top 4px
   display flex
   flex-direction row
@@ -259,9 +285,6 @@
   justify-content center
   gap 8px
   height 32px
-
-.rank-aggregation-controls-visible .table-top-lead-buttons-container
-  left 326px
 
 .table-top-lead-button
   padding 0 8px

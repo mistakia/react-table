@@ -4,8 +4,8 @@
 @import '../styles/search-input.styl'
 
 .filter-controls-container
-  width 90px
-  left 104px
+  width var(--rt-slot-filter-width)
+  left var(--rt-slot-filter-left)
 
   .filter-seed-ribbon
     display flex
@@ -222,9 +222,6 @@
   flex 0 1 auto
   min-height 0
   max-height 100%
-
-.rank-aggregation-controls-visible .filter-controls-container
-  left 184px
 
 // --- Styled MUI Menu for operator dropdown (portaled, hence global) ---
 .rt-select-menu

@@ -1,29 +1,43 @@
+@import '../styles/tokens.styl'
+
 .table-segmented-select
-  display flex
-  align-items stretch
-  height 36px
-  border 1px solid rgba(0, 0, 0, 0.23)
-  border-radius 4px
-  overflow hidden
-  flex-shrink 0
+  display inline-flex
+  align-items center
+  height 35px
+  padding 0 $rt_space_xs
+  gap 2px
+  border 1px solid transparent
+  border-radius $rt_radius_sm
+  user-select none
+  cursor pointer
+  transition border-color $rt_transition, background $rt_transition
+
+  &:hover
+    border 1px solid $rt_modal_border
+    background #fff
+
+  .table-segmented-select-options
+    display inline-flex
+    align-items center
+    height 100%
+    gap 2px
 
   .table-segmented-select-option
-    display flex
+    display inline-flex
     align-items center
-    padding 0 12px
-    font-size 13px
-    cursor pointer
-    user-select none
-    background-color #fff
-    color rgba(0, 0, 0, 0.6)
+    height 24px
+    padding 0 $rt_space_sm
+    border-radius $rt_radius_sm
+    font-size $rt_font_size_sm
+    font-weight 500
+    color $rt_text_muted
+    transition background $rt_transition, color $rt_transition
 
     &:hover
-      background-color rgba(0, 0, 0, 0.04)
+      color $rt_text
 
     &.-active
-      background-color rgba(25, 118, 210, 0.12)
-      color #1976d2
+      background $rt_accent_subtle
+      color $rt_accent_text
+      font-weight 600
       cursor default
-
-    & + .table-segmented-select-option
-      border-left 1px solid rgba(0, 0, 0, 0.23)

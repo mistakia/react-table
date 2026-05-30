@@ -137,6 +137,8 @@ export default function Table({
   clear_local_cache = null,
   row_grain_options = null,
   on_row_grain_change = null,
+  row_grain_label = null,
+  row_grain_tooltip = null,
   favorite_view_ids,
   tags_by_view_id,
   derive_auto_tags,
@@ -896,6 +898,9 @@ export default function Table({
                   value={(table_state.row_grain || ['player'])[0]}
                   options={row_grain_options}
                   on_change={on_row_grain_change}
+                  label={row_grain_label}
+                  tooltip={row_grain_tooltip}
+                  aria_label={row_grain_label || 'Row grain'}
                 />
               )}
             <div
@@ -1125,10 +1130,13 @@ Table.propTypes = {
   row_grain_options: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired
+      label: PropTypes.string.isRequired,
+      tooltip: PropTypes.string
     })
   ),
   on_row_grain_change: PropTypes.func,
+  row_grain_label: PropTypes.string,
+  row_grain_tooltip: PropTypes.string,
   favorite_view_ids: PropTypes.object,
   tags_by_view_id: PropTypes.object,
   derive_auto_tags: PropTypes.func,
