@@ -254,8 +254,11 @@
   position relative
   height 40px
 
-  --rt-slot-rank-width 0px
-  --rt-slot-rank-gap 0px
+  // Stylus normalizes 0px -> 0 (unitless), which makes
+  // calc(0 + 108px) invalid per CSS Math. Force unit preservation via
+  // unquote() so the calc chain stays length-typed all the way down.
+  --rt-slot-rank-width unquote('0px')
+  --rt-slot-rank-gap unquote('0px')
   --rt-slot-columns-width 108px
   --rt-slot-columns-gap 4px
   --rt-slot-filter-width 98px
@@ -263,7 +266,7 @@
   --rt-slot-splits-width 98px
   --rt-slot-top-lead-gap 74px
 
-  --rt-slot-rank-left 0px
+  --rt-slot-rank-left unquote('0px')
   --rt-slot-columns-left calc(var(--rt-slot-rank-width) + var(--rt-slot-rank-gap))
   --rt-slot-filter-left calc(var(--rt-slot-columns-left) + var(--rt-slot-columns-width) + var(--rt-slot-columns-gap))
   --rt-slot-splits-left calc(var(--rt-slot-filter-left) + var(--rt-slot-filter-width) + var(--rt-slot-filter-gap))
