@@ -495,7 +495,7 @@ export default function Table({
         id: `prefix-${column_id}`,
         index,
         prefix: true,
-        sticky: index === 0
+        sticky: true
       })
       index += 1
     }
