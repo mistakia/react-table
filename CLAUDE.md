@@ -57,9 +57,12 @@ src/
   where: [{ column_id: string, operator: string, value: any, params?: object }],
   splits: [],
   prefix_columns: [],
-  rank_aggregation: {}
+  rank_aggregation: {},
+  row_grain: [string]  // optional; what each row represents (e.g. 'player' vs 'team')
 }
 ```
+
+**Row-grain control:** Pass `row_grain_options` (an array of `{ value, label }`) and `on_row_grain_change` (callback) to the `Table` component to render a `TableSegmentedSelect` switch in the toolbar. The widget is generic -- consumers supply both the values and the display labels. Active value reads from `table_state.row_grain[0]`. Consumers that don't pass `row_grain_options` see no toggle and incur no cost.
 
 **Component Pattern:** Each component directory contains `index.js` (export) and `component-name.js` (implementation).
 
