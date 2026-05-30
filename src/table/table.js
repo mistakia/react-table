@@ -889,20 +889,20 @@ export default function Table({
                 on_highlights_change={set_local_highlights}
               />
             )}
+            {subject_options &&
+              subject_options.length > 0 &&
+              on_subject_change && (
+                <TableSubjectsControls
+                  current_subject={(table_state.subjects || ['player'])[0]}
+                  subject_options={subject_options}
+                  on_subject_change={on_subject_change}
+                />
+              )}
             <div
               className={get_string_from_object({
                 'table-controls-container': true,
                 'rank-aggregation-controls-visible': !disable_rank_aggregation
               })}>
-              {subject_options &&
-                subject_options.length > 0 &&
-                on_subject_change && (
-                  <TableSubjectsControls
-                    current_subject={(table_state.subjects || ['player'])[0]}
-                    subject_options={subject_options}
-                    on_subject_change={on_subject_change}
-                  />
-                )}
               {!disable_rank_aggregation && (
                 <TableRankAggregationControls
                   {...{
