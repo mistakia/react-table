@@ -20,7 +20,7 @@ import TableHeader from '#src/table-header'
 import TableFooter from '#src/table-footer'
 import TableColumnControls from '#src/table-column-controls'
 import TableSplitsControls from '#src/table-splits-controls'
-import TableSegmentedSelect from '#src/table-segmented-select'
+import TableSegmentedSelect from '#src/table-segmented-select/table-segmented-select.js'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
 import TableQuickFilter from '#src/table-quick-filter'
@@ -135,8 +135,8 @@ export default function Table({
   set_filter_controls_open: controlled_set_filter_controls_open,
   controls_extension = null,
   clear_local_cache = null,
-  subject_options = null,
-  on_subject_change = null,
+  row_grain_options = null,
+  on_row_grain_change = null,
   favorite_view_ids,
   tags_by_view_id,
   derive_auto_tags,
@@ -889,13 +889,13 @@ export default function Table({
                 on_highlights_change={set_local_highlights}
               />
             )}
-            {subject_options &&
-              subject_options.length > 0 &&
-              on_subject_change && (
+            {row_grain_options &&
+              row_grain_options.length > 0 &&
+              on_row_grain_change && (
                 <TableSegmentedSelect
                   value={(table_state.row_grain || ['player'])[0]}
-                  options={subject_options}
-                  on_change={on_subject_change}
+                  options={row_grain_options}
+                  on_change={on_row_grain_change}
                 />
               )}
             <div
@@ -1122,13 +1122,13 @@ Table.propTypes = {
   set_filter_controls_open: PropTypes.func,
   controls_extension: PropTypes.node,
   clear_local_cache: PropTypes.func,
-  subject_options: PropTypes.arrayOf(
+  row_grain_options: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired
     })
   ),
-  on_subject_change: PropTypes.func,
+  on_row_grain_change: PropTypes.func,
   favorite_view_ids: PropTypes.object,
   tags_by_view_id: PropTypes.object,
   derive_auto_tags: PropTypes.func,

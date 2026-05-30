@@ -25,18 +25,6 @@ export const parse_url_params_to_table_state = (search_params) => {
     }
   }
 
-  // Legacy ?subjects= -> row_grain back-compat shim. New ?row_grain= wins
-  // when both are present. Carry one release cycle then drop. League
-  // consumer will absorb this shim in the subsequent extension-API extract.
-  const legacy_subjects_raw = search_params.get('subjects')
-  if (
-    legacy_subjects_raw &&
-    (!Array.isArray(table_state.row_grain) ||
-      table_state.row_grain.length === 0)
-  ) {
-    table_state.row_grain = parse_json_with_fallback(legacy_subjects_raw, [])
-  }
-
   const view_fields = {}
   for (const key of SHARE_LINK_URL_SCHEMA.view) {
     view_fields[key] = search_params.get(key) || ''
