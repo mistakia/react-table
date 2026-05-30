@@ -37,6 +37,7 @@ import {
   is_valid_table_state_structure
 } from '#src/utils'
 import { table_context } from '#src/table-context'
+import { COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
 
 import '../styles/mui-unstyled-popper.styl'
@@ -529,7 +530,7 @@ export default function Table({
       [
         column_helper.display({
           id: 'column_index',
-          size: 30
+          size: COLUMN_INDEX_WIDTH
         }),
         ...prefix_columns,
         splits_columns,

@@ -1,5 +1,10 @@
 export const MENU_CLOSE_TIMEOUT = 300
 
+// Width of the row-number gutter column injected at the head of every row.
+// Mirrored in table.styl via the --rt-column-index-width custom property; if
+// either changes, change the other.
+export const COLUMN_INDEX_WIDTH = 30
+
 // Contract between the share-link writer (`handle_shareable_link`) and any
 // URL-params parser. Each `table_state` key declares its serialization type,
 // which drives the empty-shape default: `[]` for array, `{}` for object,

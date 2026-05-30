@@ -13,6 +13,11 @@
     margin-left 29px
 
 .table
+  // Width of the row-number gutter column (.cell.column-index). Centralized
+  // here so the controls bar / quick-filters / table padding offsets stay in
+  // sync if the gutter ever needs to change.
+  --rt-column-index-width 30px
+
   position relative
   padding-left 96px
   width fit-content
@@ -30,7 +35,7 @@
     flex-direction column
     justify-content space-between
     position sticky
-    left 30px
+    left var(--rt-column-index-width)
     width fit-content
     max-width 100%
     margin-top 12px
@@ -190,7 +195,7 @@
       top 0.125rem
 
   .cell.column-index
-    width 30px
+    width var(--rt-column-index-width)
     font-size 9px
     border-top none
     border-bottom none
@@ -200,17 +205,17 @@
       align-items center
 
   .table-controls-extension
-    margin 0 30px 6px
+    margin 0 var(--rt-column-index-width) 6px
     display flex
     flex-direction column
     gap 6px
     position sticky
-    left 30px
+    left var(--rt-column-index-width)
     width fit-content
     max-width calc(100vw - 60px)
 
   .table-quick-filters
-    margin 0 30px 6px
+    margin 0 var(--rt-column-index-width) 6px
     display flex
     padding 0 8px
     flex-direction column
@@ -218,7 +223,7 @@
     border 1px solid transparent
     width fit-content
     position sticky
-    left 30px
+    left var(--rt-column-index-width)
 
     &:hover
     &.-open
