@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import ClickAwayListener from '@mui/material/ClickAwayListener'
-import { get_string_from_object } from '#src/utils'
 import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -10,6 +9,7 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CallSplitIcon from '@mui/icons-material/CallSplit'
 import Alert from '@mui/material/Alert'
 
+import { get_string_from_object } from '#src/utils'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
 import './table-row-axes-controls.styl'
@@ -78,23 +78,26 @@ const TableRowAxesControls = ({
     }
   }, [row_axes_controls_open])
 
+  const handle_close = useCallback(() => {
+    set_closing(true)
+    set_row_axes_controls_open(false)
+    setTimeout(() => {
+      set_closing(false)
+    }, MENU_CLOSE_TIMEOUT)
+  }, [])
+
   const handle_menu_toggle = useCallback(() => {
     if (row_axes_controls_open) {
-      set_closing(true)
-      set_row_axes_controls_open(false)
-
-      setTimeout(() => {
-        set_closing(false)
-      }, MENU_CLOSE_TIMEOUT)
+      handle_close()
     } else {
       set_row_axes_controls_open(true)
     }
-  }, [row_axes_controls_open])
+  }, [row_axes_controls_open, handle_close])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape' && row_axes_controls_open) {
-        handle_menu_toggle()
+        handle_close()
       }
     }
 
@@ -107,20 +110,15 @@ const TableRowAxesControls = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [row_axes_controls_open, handle_menu_toggle])
+  }, [row_axes_controls_open, handle_close])
 
   const handle_click_away = useCallback(
     (event) => {
       if (row_axes_controls_open) {
-        set_closing(true)
-        set_row_axes_controls_open(false)
-
-        setTimeout(() => {
-          set_closing(false)
-        }, MENU_CLOSE_TIMEOUT)
+        handle_close()
       }
     },
-    [row_axes_controls_open]
+    [row_axes_controls_open, handle_close]
   )
 
   const handle_apply = useCallback(() => {
@@ -136,10 +134,7 @@ const TableRowAxesControls = ({
   }, [local_table_state, table_state])
 
   const supported_row_axes = useMemo(() => {
-    const items = table_state_columns
-      .map((column) => column.row_axes)
-      .flat()
-      .filter(Boolean)
+    const items = table_state_columns.flatMap((column) => column.row_axes).filter(Boolean)
     return [...new Set(items)]
   }, [table_state_columns])
 
@@ -176,51 +171,52 @@ const TableRowAxesControls = ({
           </div>
         )}
         {row_axes_controls_open && (
-          <div className='table-expanding-control-input-container'>
-            <Autocomplete
-              multiple
-              options={supported_row_axes}
-              disableCloseOnSelect
-              value={local_table_state.row_axes}
-              openOnFocus
-              getOptionLabel={(option) => option}
-              onChange={(event, new_value) => {
-                set_local_table_state((prev_table_state) => ({
-                  ...prev_table_state,
-                  row_axes: new_value
-                }))
-              }}
-              renderOption={(props, option, { selected }) => {
-                // eslint-disable-next-line react/prop-types
-                const { key, ...optionProps } = props
-                return (
-                  <li key={key} {...optionProps}>
-                    <Checkbox
-                      icon={icon}
-                      checkedIcon={checkedIcon}
-                      style={{ marginRight: 8 }}
-                      checked={selected}
-                    />
-                    {option}
-                  </li>
-                )
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={row_axes_label}
-                  inputRef={filter_input_ref}
-                />
-              )}
-            />
-          </div>
-        )}
-        {row_axes_controls_open && !supported_row_axes.length && (
-          <div className='table-row-axes-controls-no-row-axes'>
-            <Alert severity='info'>
-              {no_row_axes_available_label}
-            </Alert>
-          </div>
+          supported_row_axes.length ? (
+            <div className='table-expanding-control-input-container'>
+              <Autocomplete
+                multiple
+                options={supported_row_axes}
+                disableCloseOnSelect
+                value={local_table_state.row_axes}
+                openOnFocus
+                getOptionLabel={(option) => option}
+                onChange={(event, new_value) => {
+                  set_local_table_state((prev_table_state) => ({
+                    ...prev_table_state,
+                    row_axes: new_value
+                  }))
+                }}
+                renderOption={(props, option, { selected }) => {
+                  // eslint-disable-next-line react/prop-types
+                  const { key, ...optionProps } = props
+                  return (
+                    <li key={key} {...optionProps}>
+                      <Checkbox
+                        icon={icon}
+                        checkedIcon={checkedIcon}
+                        style={{ marginRight: 8 }}
+                        checked={selected}
+                      />
+                      {option}
+                    </li>
+                  )
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={row_axes_label}
+                    inputRef={filter_input_ref}
+                  />
+                )}
+              />
+            </div>
+          ) : (
+            <div className='table-row-axes-controls-no-row-axes'>
+              <Alert severity='info'>
+                {no_row_axes_available_label}
+              </Alert>
+            </div>
+          )
         )}
       </div>
     </ClickAwayListener>

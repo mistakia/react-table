@@ -505,13 +505,17 @@ export default function Table({
     return columns
   }, [table_state.prefix_columns, all_columns])
 
+  // Stabilize on the row_axes contents (a short closed-set string list), not the
+  // array reference: callers that pass an inline array would otherwise bust this
+  // memo every render and cascade into table_columns / the TanStack column model.
+  const row_axes_key = (table_state.row_axes || []).join(',')
   const row_axes_columns = useMemo(() => {
-    if (!table_state.row_axes || table_state.row_axes.length === 0) {
+    if (!row_axes_key) {
       return null
     }
 
     const columns = []
-    for (const row_axis of table_state.row_axes || []) {
+    for (const row_axis of row_axes_key.split(',')) {
       columns.push(
         column_helper.display({
           id: row_axis,
@@ -525,7 +529,7 @@ export default function Table({
       header: row_axes_label,
       columns
     })
-  }, [table_state.row_axes, row_axes_label])
+  }, [row_axes_key, row_axes_label])
 
   const table_columns = useMemo(
     () =>
