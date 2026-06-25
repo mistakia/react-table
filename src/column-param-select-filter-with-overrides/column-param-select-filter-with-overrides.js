@@ -22,7 +22,7 @@ export default function ColumnParamSelectFilterWithOverrides({
   column,
   column_index,
   set_local_table_state,
-  splits = [],
+  row_axes = [],
   render_param_item
 }) {
   const { param_override_config } = column_param_definition
@@ -296,7 +296,7 @@ export default function ColumnParamSelectFilterWithOverrides({
                                     column_index,
                                     column_param_name,
                                     column_param_definition,
-                                    splits
+                                    row_axes
                                   })
                                 : null
                           )}
@@ -324,6 +324,6 @@ ColumnParamSelectFilterWithOverrides.propTypes = {
   column: PropTypes.object.isRequired,
   column_index: PropTypes.number.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
-  splits: PropTypes.array,
+  row_axes: PropTypes.array,
   render_param_item: PropTypes.func
 }

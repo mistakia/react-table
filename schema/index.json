@@ -105,9 +105,9 @@
       "description": "Whether to disable rank aggregation controls",
       "default": false
     },
-    "disable_splits": {
+    "disable_row_axes": {
       "type": "boolean",
-      "description": "Whether to disable splits functionality",
+      "description": "Whether to disable row axes functionality",
       "default": false
     },
     "enable_duplicate_column_ids": {

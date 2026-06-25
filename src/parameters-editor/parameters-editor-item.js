@@ -25,16 +25,16 @@ const ParametersEditorItem = ({
   records,
   param_name,
   param_definition,
-  splits = []
+  row_axes = []
 }) => {
-  if (param_definition?.enable_on_splits) {
-    const is_enabled = splits.some((split) =>
-      param_definition.enable_on_splits.includes(split)
+  if (param_definition?.enable_on_row_axes) {
+    const is_enabled = row_axes.some((row_axis) =>
+      param_definition.enable_on_row_axes.includes(row_axis)
     )
     if (!is_enabled) return null
   }
 
-  if (param_definition?.disable_on_splits && splits.length) return null
+  if (param_definition?.disable_on_row_axes && row_axes.length) return null
 
   if (!records.length) return null
 
@@ -56,7 +56,7 @@ const ParametersEditorItem = ({
     selected_param_values,
     handle_change,
     mixed_state: !is_equal,
-    splits
+    row_axes
   }
 
   const render_content = () => {
@@ -115,7 +115,7 @@ ParametersEditorItem.propTypes = {
   records: PropTypes.array.isRequired,
   param_name: PropTypes.string.isRequired,
   param_definition: PropTypes.object.isRequired,
-  splits: PropTypes.array
+  row_axes: PropTypes.array
 }
 
 export default React.memo(ParametersEditorItem)

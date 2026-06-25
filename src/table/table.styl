@@ -250,7 +250,7 @@
   gap 8px
 
 // Closed-state slot geometry for the expanding controls (column / filter /
-// splits / rank-agg) and the absolutely-positioned save/discard buttons.
+// row-axes / rank-agg) and the absolutely-positioned save/discard buttons.
 // Declared once here, consumed by each per-control styl via custom-property
 // lookups so the closed layout is a single source of truth. Each control
 // stays position:absolute inside .table-controls-container so opening one
@@ -268,16 +268,16 @@
   --rt-slot-columns-gap 4px
   --rt-slot-filter-width 98px
   --rt-slot-filter-gap 4px
-  --rt-slot-splits-width 98px
+  --rt-slot-row-axes-width 98px
   --rt-slot-top-lead-gap 74px
 
   --rt-slot-rank-left unquote('0px')
   --rt-slot-columns-left calc(var(--rt-slot-rank-width) + var(--rt-slot-rank-gap))
   --rt-slot-filter-left calc(var(--rt-slot-columns-left) + var(--rt-slot-columns-width) + var(--rt-slot-columns-gap))
-  --rt-slot-splits-left calc(var(--rt-slot-filter-left) + var(--rt-slot-filter-width) + var(--rt-slot-filter-gap))
-  --rt-slot-top-lead-left calc(var(--rt-slot-splits-left) + var(--rt-slot-splits-width) + var(--rt-slot-top-lead-gap))
+  --rt-slot-row-axes-left calc(var(--rt-slot-filter-left) + var(--rt-slot-filter-width) + var(--rt-slot-filter-gap))
+  --rt-slot-top-lead-left calc(var(--rt-slot-row-axes-left) + var(--rt-slot-row-axes-width) + var(--rt-slot-top-lead-gap))
 
-  width calc(var(--rt-slot-splits-left) + var(--rt-slot-splits-width))
+  width calc(var(--rt-slot-row-axes-left) + var(--rt-slot-row-axes-width))
 
   &.rank-aggregation-controls-visible
     --rt-slot-rank-width 72px

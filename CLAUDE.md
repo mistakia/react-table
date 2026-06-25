@@ -36,7 +36,7 @@ src/
     table-quick-filter/     # Quick filter with checkboxes
     table-search/           # Full-text search
     table-view-controller/  # View management
-    table-splits-controls/  # Data grouping/splitting
+    table-row-axes-controls/  # Row axis selection (e.g. year, week)
   filter-*/                 # Filter control variations
   column-controls-*/        # Column control variations
   utils/                    # Utility functions (16 files)
@@ -55,7 +55,7 @@ src/
   sort: [{ column_id: string, desc: boolean }],
   columns: [string | { column_id: string, params: object }],
   where: [{ column_id: string, operator: string, value: any, params?: object }],
-  splits: [],
+  row_axes: [string],  // optional; axes the row key extends along (e.g. 'year', 'week')
   prefix_columns: [],
   rank_aggregation: {},
   row_grain: [string]  // optional; what each row represents (e.g. 'player' vs 'team')
@@ -63,6 +63,8 @@ src/
 ```
 
 **Row-grain control:** Pass `row_grain_options` (an array of `{ value, label }`) and `on_row_grain_change` (callback) to the `Table` component to render a `TableSegmentedSelect` switch in the toolbar. The widget is generic -- consumers supply both the values and the display labels. Active value reads from `table_state.row_grain[0]`. Consumers that don't pass `row_grain_options` see no toggle and incur no cost.
+
+**Row-axes control:** The `TableRowAxesControls` widget renders when any selected column declares a non-empty `row_axes` array on its column definition. Pass `disable_row_axes` to suppress it entirely. Pass `row_axes_label` (default `'Row axes'`) and `no_row_axes_available_label` (default `'No row axes available for selected columns'`) to control the button label and the empty-state message. Consumers can pass domain-specific copy (e.g. `row_axes_label="Splits"`) without touching the widget code.
 
 **Component Pattern:** Each component directory contains `index.js` (export) and `component-name.js` (implementation).
 

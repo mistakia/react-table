@@ -8,11 +8,11 @@ const make_view = ({
   view_name = 'Test View',
   columns = [],
   where = [],
-  splits = []
+  row_axes = []
 } = {}) => ({
   view_name,
   view_id: 'test-view-id',
-  table_state: { columns, where, splits }
+  table_state: { columns, where, row_axes }
 })
 
 const col = (id) => id
@@ -287,10 +287,10 @@ describe('derive_auto_tags_impl — Axis 4: Time horizon', () => {
     expect(derive_auto_tags_impl(view, {})).to.include('current-week')
   })
 
-  it('emits season-to-date for "by week" + non-empty splits (1st-quarter cluster)', () => {
+  it('emits season-to-date for "by week" + non-empty row_axes (1st-quarter cluster)', () => {
     const view = make_view({
       view_name: 'QB Stats By Week',
-      splits: ['week']
+      row_axes: ['week']
     })
     expect(derive_auto_tags_impl(view, {})).to.include('season-to-date')
   })

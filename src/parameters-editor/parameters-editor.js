@@ -20,7 +20,7 @@ const collect_records_with_definitions = (records, all_columns) =>
 
 export default function ParametersEditor({
   records,
-  splits = [],
+  row_axes = [],
   show_sections = false,
   inline = false
 }) {
@@ -141,7 +141,7 @@ export default function ParametersEditor({
                         records={supporting_records_by_param.get(name) || []}
                         param_name={name}
                         param_definition={def}
-                        splits={splits}
+                        row_axes={row_axes}
                       />
                     ))}
                   </div>
@@ -157,7 +157,7 @@ export default function ParametersEditor({
 
 ParametersEditor.propTypes = {
   records: PropTypes.array.isRequired,
-  splits: PropTypes.array,
+  row_axes: PropTypes.array,
   show_sections: PropTypes.bool,
   inline: PropTypes.bool
 }

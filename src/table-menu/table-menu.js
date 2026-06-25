@@ -78,10 +78,10 @@ function build_export_headers({ table_state, all_columns }) {
     column_indices[column_id]++
   }
 
-  for (const split of table_state.splits || []) {
+  for (const row_axis of table_state.row_axes || []) {
     push({
-      row_key: split,
-      accessorKey: split,
+      row_key: row_axis,
+      accessorKey: row_axis,
       column_index: 0
     })
   }
@@ -294,8 +294,8 @@ const TableMenu = ({
       headers.push(column_def?.column_title || column_id)
     }
 
-    for (const split of table_state.splits || []) {
-      headers.push(split)
+    for (const row_axis of table_state.row_axes || []) {
+      headers.push(row_axis)
     }
 
     for (const column of table_state.columns) {
@@ -335,8 +335,8 @@ const TableMenu = ({
         )
       }
 
-      for (const split of table_state.splits || []) {
-        row_data.push(row[split] || '')
+      for (const row_axis of table_state.row_axes || []) {
+        row_data.push(row[row_axis] || '')
       }
 
       const column_indices = {}

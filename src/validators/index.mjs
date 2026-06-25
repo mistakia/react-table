@@ -57,7 +57,7 @@ export function is_valid_table_state_structure(table_state) {
     return false
   }
 
-  const array_props = ['sort', 'columns', 'where', 'splits', 'row_grain', 'prefix_columns']
+  const array_props = ['sort', 'columns', 'where', 'row_axes', 'row_grain', 'prefix_columns']
   for (const prop of array_props) {
     if (table_state[prop] && !Array.isArray(table_state[prop])) {
       return false
@@ -96,7 +96,7 @@ export function create_safe_table_state(partial_state = {}) {
     columns: [],
     prefix_columns: [],
     where: [],
-    splits: [],
+    row_axes: [],
     row_grain: [],
     rank_aggregation: {},
     disable_scatter_plot: false,
@@ -105,7 +105,7 @@ export function create_safe_table_state(partial_state = {}) {
     ...partial_state
   }
 
-  const array_props = ['sort', 'columns', 'prefix_columns', 'where', 'splits', 'row_grain']
+  const array_props = ['sort', 'columns', 'prefix_columns', 'where', 'row_axes', 'row_grain']
   for (const prop of array_props) {
     if (!Array.isArray(safe_state[prop])) {
       safe_state[prop] = []

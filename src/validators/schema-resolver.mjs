@@ -125,7 +125,7 @@ const SCHEMAS = {
           $ref: 'https://mistakia.github.io/react-table/schema/state/where-item.json'
         }
       },
-      splits: {
+      row_axes: {
         type: 'array',
         items: { type: 'string' }
       },

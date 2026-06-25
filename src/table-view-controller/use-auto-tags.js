@@ -14,7 +14,7 @@ import { useMemo, useRef } from 'react'
 export function derive_auto_tags_impl(view, all_columns) {
   const columns = view.table_state ? view.table_state.columns || [] : []
   const where = view.table_state ? view.table_state.where || [] : []
-  const splits = view.table_state ? view.table_state.splits || [] : []
+  const row_axes = view.table_state ? view.table_state.row_axes || [] : []
   const view_name = view.view_name || ''
 
   const col_ids = columns.map((c) =>
@@ -36,7 +36,7 @@ export function derive_auto_tags_impl(view, all_columns) {
   if (metric) tags.push(metric)
 
   // Axis 4 — Time horizon
-  const time = derive_time_horizon(view_name, splits)
+  const time = derive_time_horizon(view_name, row_axes)
   if (time) tags.push(time)
 
   return tags
@@ -132,10 +132,10 @@ function derive_metric_domain(col_ids) {
   return null
 }
 
-function derive_time_horizon(view_name, splits) {
+function derive_time_horizon(view_name, row_axes) {
   if (/matchup preview|week \d|this week/i.test(view_name))
     return 'current-week'
-  if (/by week|weekly/i.test(view_name) && splits.length > 0)
+  if (/by week|weekly/i.test(view_name) && row_axes.length > 0)
     return 'season-to-date'
   if (/\b\d{4}[-–]\d{4}\b/.test(view_name)) return 'multi-season'
   if (/historical/i.test(view_name)) return 'historical'

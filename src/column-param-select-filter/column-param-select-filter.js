@@ -12,10 +12,10 @@ export default function ColumnParamSelectFilter({
   selected_param_values,
   handle_change = () => {},
   mixed_state = false,
-  splits = []
+  row_axes = []
 }) {
   const label = column_param_definition?.label || column_param_name
-  const single = is_single_select({ column_param_definition, splits })
+  const single = is_single_select({ column_param_definition, row_axes })
   const default_value = column_param_definition?.default_value
   const is_column_param_defined = Boolean(selected_param_values)
 
@@ -180,13 +180,13 @@ export default function ColumnParamSelectFilter({
 
 // Helper functions
 
-function is_single_select({ column_param_definition, splits }) {
+function is_single_select({ column_param_definition, row_axes }) {
   return (
     Boolean(column_param_definition?.single) &&
     !(
       column_param_definition?.enable_multi_on_split &&
-      splits.some((split) =>
-        column_param_definition?.enable_multi_on_split?.includes(split)
+      row_axes.some((row_axis) =>
+        column_param_definition?.enable_multi_on_split?.includes(row_axis)
       )
     )
   )
@@ -481,5 +481,5 @@ ColumnParamSelectFilter.propTypes = {
   column_param_definition: PropTypes.object,
   selected_param_values: PropTypes.array,
   mixed_state: PropTypes.bool,
-  splits: PropTypes.array
+  row_axes: PropTypes.array
 }

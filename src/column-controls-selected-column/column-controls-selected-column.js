@@ -25,7 +25,7 @@ const ColumnControlsSelectedColumn = React.memo(
     column_index,
     selected_column_indexes,
     set_selected_column_indexes,
-    splits,
+    row_axes,
     bulk_edit_mode = false,
     has_active_where = false
   }) => {
@@ -220,7 +220,7 @@ const ColumnControlsSelectedColumn = React.memo(
             <div className='column-params-container'>
               <ParametersEditor
                 records={editor_records}
-                splits={splits}
+                row_axes={row_axes}
                 inline
               />
             </div>
@@ -239,7 +239,7 @@ ColumnControlsSelectedColumn.propTypes = {
   column_index: PropTypes.number.isRequired,
   selected_column_indexes: PropTypes.array.isRequired,
   set_selected_column_indexes: PropTypes.func.isRequired,
-  splits: PropTypes.array,
+  row_axes: PropTypes.array,
   all_columns: PropTypes.array,
   bulk_edit_mode: PropTypes.bool,
   has_active_where: PropTypes.bool

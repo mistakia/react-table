@@ -28,10 +28,10 @@
       "type": ["string", "null"],
       "description": "Quick-search query string consumed by the 'server_q' adapter"
     },
-    "splits": {
+    "row_axes": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Array of column IDs to use for splitting/grouping"
+      "description": "Array of column IDs to use as additional row-key axes (e.g. 'year', 'week')"
     },
     "subjects": {
       "type": "array",

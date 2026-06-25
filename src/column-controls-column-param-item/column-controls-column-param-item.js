@@ -14,18 +14,18 @@ const ColumnControlsColumnParamItem = ({
   set_local_table_state,
   column_index,
   column,
-  splits = []
+  row_axes = []
 }) => {
-  if (column_param_definition?.enable_on_splits) {
-    const is_enabled = splits.some((split) =>
-      column_param_definition.enable_on_splits.includes(split)
+  if (column_param_definition?.enable_on_row_axes) {
+    const is_enabled = row_axes.some((row_axis) =>
+      column_param_definition.enable_on_row_axes.includes(row_axis)
     )
     if (!is_enabled) {
       return null
     }
   }
 
-  if (column_param_definition?.disable_on_splits && splits.length) {
+  if (column_param_definition?.disable_on_row_axes && row_axes.length) {
     return null
   }
 
@@ -56,7 +56,7 @@ const ColumnControlsColumnParamItem = ({
     column_param_definition,
     selected_param_values,
     handle_change,
-    splits
+    row_axes
   }
 
   if (typeof column_param_definition.component === 'function') {
@@ -96,7 +96,7 @@ ColumnControlsColumnParamItem.propTypes = {
   set_local_table_state: PropTypes.func.isRequired,
   column_index: PropTypes.number.isRequired,
   column: PropTypes.object.isRequired,
-  splits: PropTypes.array
+  row_axes: PropTypes.array
 }
 
 const render_column_param_item = ({ key, ...props }) => (

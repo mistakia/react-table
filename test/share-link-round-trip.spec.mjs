@@ -39,8 +39,8 @@ describe('share-link round trip', () => {
       prefix_columns: ['p'],
       sort: [{ column_id: 'a', desc: true }],
       where: [{ column_id: 'a', operator: '=', value: 1 }],
-      splits: ['year'],
-      subjects: ['team'],
+      row_axes: ['year'],
+      row_grain: ['team'],
       q: 'mahomes',
       rank_aggregation: { weights: { a: 1.0 } },
       scatter_plot_options: { x: 'a', y: 'b' },
@@ -67,7 +67,7 @@ describe('share-link round trip', () => {
         prefix_columns: [],
         sort: [],
         where: [],
-        splits: [],
+        row_axes: [],
         q: '',
         rank_aggregation: {},
         scatter_plot_options: {},
@@ -79,8 +79,8 @@ describe('share-link round trip', () => {
     expect(params.has('prefix_columns')).to.equal(false)
     expect(params.has('sort')).to.equal(false)
     expect(params.has('where')).to.equal(false)
-    expect(params.has('splits')).to.equal(false)
-    expect(params.has('subjects')).to.equal(false)
+    expect(params.has('row_axes')).to.equal(false)
+    expect(params.has('row_grain')).to.equal(false)
     expect(params.has('q')).to.equal(false)
     expect(params.has('rank_aggregation')).to.equal(false)
     expect(params.has('scatter_plot_options')).to.equal(false)
@@ -94,8 +94,8 @@ describe('share-link round trip', () => {
       prefix_columns: [],
       sort: [],
       where: [],
-      splits: [],
-      subjects: [],
+      row_axes: [],
+      row_grain: [],
       q: '',
       rank_aggregation: {},
       scatter_plot_options: {},
@@ -143,7 +143,7 @@ describe('share-link round trip', () => {
         prefix_columns: [],
         sort: [],
         where: [],
-        splits: [],
+        row_axes: [],
         q: '',
         rank_aggregation: {},
         scatter_plot_options: {},

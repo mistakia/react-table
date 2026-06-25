@@ -39,14 +39,14 @@
       "type": "number",
       "description": "Maximum value for numeric parameters"
     },
-    "disable_on_splits": {
+    "disable_on_row_axes": {
       "type": "boolean",
-      "description": "Whether this parameter should be disabled when splits are applied"
+      "description": "Whether this parameter should be disabled when row axes are applied"
     },
-    "enable_on_splits": {
+    "enable_on_row_axes": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "Split column IDs that enable this parameter"
+      "description": "Row axis IDs that enable this parameter"
     },
     "groups": {
       "type": "array",

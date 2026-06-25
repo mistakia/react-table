@@ -96,7 +96,7 @@ export default function ColumnControlsSelectedColumnsParameters({
             </div>
             <ParametersEditor
               records={records}
-              splits={local_table_state.splits}
+              row_axes={local_table_state.row_axes}
               show_sections
             />
           </div>

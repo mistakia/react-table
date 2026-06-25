@@ -1,6 +1,6 @@
 # React Table
 
-A virtualized React table built on TanStack/react-table and Material-UI. Renders large datasets, supports parameterized filtering, custom views, splits, rank aggregation, search, and CSV / JSON / Markdown export.
+A virtualized React table built on TanStack/react-table and Material-UI. Renders large datasets, supports parameterized filtering, custom views, row axes, rank aggregation, search, and CSV / JSON / Markdown export.
 
 ## Capabilities
 
@@ -9,12 +9,12 @@ A virtualized React table built on TanStack/react-table and Material-UI. Renders
 - **Parameterized filtering** — server-side `where` clauses with 14 safe operators across 9 data types; type-specific operator whitelisting; nested filtering on column metadata.
 - **Quick filter** — checkbox multi-select via Autocomplete for picking subset values fast.
 - **Multi-column sort** — additive sort with directional indicators.
-- **Splits & rank aggregation** — group rows by columns; build weighted multi-column rankings.
-- **Saved views** — create, edit, delete, favorite, and revert views; views carry their own columns, filters, splits, prefix columns, rank-aggregation weights, search config, and scatter-plot settings.
+- **Row axes & rank aggregation** — expand rows along additional axes (e.g. year, week); build weighted multi-column rankings.
+- **Saved views** — create, edit, delete, favorite, and revert views; views carry their own columns, filters, row axes, prefix columns, rank-aggregation weights, search config, and scatter-plot settings.
 - **Search** — pluggable adapter registry: client (in-memory fuzzy with byte-range highlights), server (`where`-clause injection), or custom backends. Debounced input; cell renderers paint inline match highlights.
 - **Scatter plot overlay** — Highcharts-rendered dual-axis scatter with linear-regression trend, tier-based coloring, T-distribution confidence intervals, and configurable point labels (value, color, image, suffix).
 - **Export** — CSV (RFC 4180 with quote escaping and CRLF), JSON (filename prefix + ISO timestamp), Markdown table (pipe escaping).
-- **Shareable state** — full table state (columns, sort, where, splits, prefix columns, rank aggregation, scatter options, search query) is serialisable for URL sharing or persistence.
+- **Shareable state** — full table state (columns, sort, where, row axes, prefix columns, rank aggregation, scatter options, search query) is serialisable for URL sharing or persistence.
 
 ## Data Types and Operators
 

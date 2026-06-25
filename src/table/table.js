@@ -19,7 +19,7 @@ import TableCell from '#src/table-cell'
 import TableHeader from '#src/table-header'
 import TableFooter from '#src/table-footer'
 import TableColumnControls from '#src/table-column-controls'
-import TableSplitsControls from '#src/table-splits-controls'
+import TableRowAxesControls from '#src/table-row-axes-controls/table-row-axes-controls.js'
 import TableSegmentedSelect from '#src/table-segmented-select/table-segmented-select.js'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
@@ -114,7 +114,9 @@ export default function Table({
   delete_view = () => {},
   disable_rank_aggregation = false,
   rank_aggregation_presets = null,
-  disable_splits = false,
+  disable_row_axes = false,
+  row_axes_label = 'Row axes',
+  no_row_axes_available_label = 'No row axes available for selected columns',
   style = {},
   percentiles = {},
   enable_duplicate_column_ids = false,
@@ -225,7 +227,7 @@ export default function Table({
       columns,
       where,
       rank_aggregation,
-      splits,
+      row_axes,
       row_grain,
       q,
       scatter_plot_options,
@@ -236,8 +238,8 @@ export default function Table({
 
       // cleanup state
 
-      // check if any params are set to disable on splits and remove them
-      if (splits && splits.length > 0) {
+      // check if any params are set to disable on row_axes and remove them
+      if (row_axes && row_axes.length > 0) {
         const remove_disabled_params = (item) => {
           if (item && typeof item === 'object' && item.params) {
             const column_definition = all_columns[item.column_id]
@@ -245,7 +247,7 @@ export default function Table({
               Object.keys(item.params).forEach((param_name) => {
                 const param_definition =
                   column_definition.column_params[param_name]
-                if (param_definition && param_definition.disable_on_splits) {
+                if (param_definition && param_definition.disable_on_row_axes) {
                   delete item.params[param_name]
                 }
               })
@@ -281,7 +283,7 @@ export default function Table({
             columns,
             where,
             rank_aggregation,
-            splits,
+            row_axes,
             row_grain,
             q,
             scatter_plot_options,
@@ -346,7 +348,7 @@ export default function Table({
       columns,
       where,
       rank_aggregation,
-      splits,
+      row_axes,
       row_grain
     } = saved_table_state
     on_view_change(
@@ -361,7 +363,7 @@ export default function Table({
           columns,
           where,
           rank_aggregation,
-          splits,
+          row_axes,
           row_grain
         }
       },
@@ -383,11 +385,11 @@ export default function Table({
         (column) => column.column_id === column_id
       )
 
-      // Check if it's a split column when no column definition is found
+      // Check if it's a row_axis column when no column definition is found
       const is_split_column =
         !column_definition &&
-        table_state.splits &&
-        table_state.splits.includes(column_id)
+        table_state.row_axes &&
+        table_state.row_axes.includes(column_id)
 
       if (!column_definition && !is_split_column) {
         console.error(`Column with id ${column_id} not found`)
@@ -503,27 +505,27 @@ export default function Table({
     return columns
   }, [table_state.prefix_columns, all_columns])
 
-  const splits_columns = useMemo(() => {
-    if (!table_state.splits || table_state.splits.length === 0) {
+  const row_axes_columns = useMemo(() => {
+    if (!table_state.row_axes || table_state.row_axes.length === 0) {
       return null
     }
 
     const columns = []
-    for (const split of table_state.splits || []) {
+    for (const row_axis of table_state.row_axes || []) {
       columns.push(
         column_helper.display({
-          id: split,
-          header_label: split,
+          id: row_axis,
+          header_label: row_axis,
           is_split: true,
           size: 70
         })
       )
     }
     return column_helper.group({
-      header: 'Splits',
+      header: row_axes_label,
       columns
     })
-  }, [table_state.splits])
+  }, [table_state.row_axes, row_axes_label])
 
   const table_columns = useMemo(
     () =>
@@ -533,13 +535,13 @@ export default function Table({
           size: COLUMN_INDEX_WIDTH
         }),
         ...prefix_columns,
-        splits_columns,
+        row_axes_columns,
         ...grouped_columns,
         column_helper.display({
           id: 'add_column_action'
         })
       ].filter(Boolean),
-    [prefix_columns, splits_columns, grouped_columns]
+    [prefix_columns, row_axes_columns, grouped_columns]
   )
 
   const effective_row_highlights = useMemo(
@@ -945,15 +947,17 @@ export default function Table({
                   all_columns: memoized_visible_columns // TODO
                 }}
               />
-              {!disable_splits &&
+              {!disable_row_axes &&
                 table_state_columns.some(
-                  (col) => col.splits && col.splits.length > 0
+                  (col) => col.row_axes && col.row_axes.length > 0
                 ) && (
-                  <TableSplitsControls
+                  <TableRowAxesControls
                     {...{
                       table_state,
                       on_table_state_change,
-                      table_state_columns
+                      table_state_columns,
+                      row_axes_label,
+                      no_row_axes_available_label
                     }}
                   />
                 )}
@@ -1127,7 +1131,9 @@ Table.propTypes = {
   get_scatter_point_label_suffix: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
   metadata: PropTypes.object,
-  disable_splits: PropTypes.bool,
+  disable_row_axes: PropTypes.bool,
+  row_axes_label: PropTypes.string,
+  no_row_axes_available_label: PropTypes.string,
   enable_validation_warnings: PropTypes.bool,
   row_highlights: PropTypes.object,
   filter_controls_open: PropTypes.bool,

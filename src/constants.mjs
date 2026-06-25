@@ -22,7 +22,7 @@ export const SHARE_LINK_URL_SCHEMA = {
     prefix_columns: 'array',
     sort: 'array',
     where: 'array',
-    splits: 'array',
+    row_axes: 'array',
     row_grain: 'array',
     q: 'string',
     rank_aggregation: 'object',

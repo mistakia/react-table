@@ -850,7 +850,7 @@ const TableColumnControls = ({
                             has_active_where: Boolean(
                               active_where_index[column.column_id]
                             ),
-                            splits: local_table_state.splits || []
+                            row_axes: local_table_state.row_axes || []
                           }}
                         />
                       ))}

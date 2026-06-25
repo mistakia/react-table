@@ -12,17 +12,19 @@ import Alert from '@mui/material/Alert'
 
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
-import './table-splits-controls.styl'
+import './table-row-axes-controls.styl'
 
 const icon = <CheckBoxOutlineBlankIcon fontSize='small' />
 const checkedIcon = <CheckBoxIcon fontSize='small' />
 
-const TableSplitsControls = ({
+const TableRowAxesControls = ({
   table_state,
   on_table_state_change,
-  table_state_columns
+  table_state_columns,
+  row_axes_label = 'Row axes',
+  no_row_axes_available_label = 'No row axes available for selected columns'
 }) => {
-  const [splits_controls_open, set_splits_controls_open] = useState(false)
+  const [row_axes_controls_open, set_row_axes_controls_open] = useState(false)
   const [local_table_state, set_local_table_state] = useState(table_state)
   const [closing, set_closing] = useState(false)
   const filter_input_ref = useRef(null)
@@ -36,7 +38,7 @@ const TableSplitsControls = ({
   const was_menu_open = useRef(false)
 
   useEffect(() => {
-    if (splits_controls_open && !was_menu_open.current) {
+    if (row_axes_controls_open && !was_menu_open.current) {
       setTimeout(() => {
         if (window.innerWidth < 768) {
           setTimeout(() => {
@@ -46,17 +48,17 @@ const TableSplitsControls = ({
           filter_input_ref.current.focus()
         }
       }, 300)
-    } else if (!splits_controls_open && was_menu_open.current) {
+    } else if (!row_axes_controls_open && was_menu_open.current) {
       if (filter_input_ref.current) {
         filter_input_ref.current.blur()
       }
     }
 
-    was_menu_open.current = splits_controls_open
-  }, [splits_controls_open])
+    was_menu_open.current = row_axes_controls_open
+  }, [row_axes_controls_open])
 
   useEffect(() => {
-    if (splits_controls_open) {
+    if (row_axes_controls_open) {
       if (container_ref.current) {
         const original_rect = container_ref.current.getBoundingClientRect()
         const scroll_left =
@@ -74,29 +76,29 @@ const TableSplitsControls = ({
     } else {
       set_transform('')
     }
-  }, [splits_controls_open])
+  }, [row_axes_controls_open])
 
   const handle_menu_toggle = useCallback(() => {
-    if (splits_controls_open) {
+    if (row_axes_controls_open) {
       set_closing(true)
-      set_splits_controls_open(false)
+      set_row_axes_controls_open(false)
 
       setTimeout(() => {
         set_closing(false)
       }, MENU_CLOSE_TIMEOUT)
     } else {
-      set_splits_controls_open(true)
+      set_row_axes_controls_open(true)
     }
-  }, [splits_controls_open])
+  }, [row_axes_controls_open])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape' && splits_controls_open) {
+      if (event.key === 'Escape' && row_axes_controls_open) {
         handle_menu_toggle()
       }
     }
 
-    if (splits_controls_open) {
+    if (row_axes_controls_open) {
       document.addEventListener('keydown', handleKeyDown)
     } else {
       document.removeEventListener('keydown', handleKeyDown)
@@ -105,20 +107,20 @@ const TableSplitsControls = ({
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [splits_controls_open, handle_menu_toggle])
+  }, [row_axes_controls_open, handle_menu_toggle])
 
   const handle_click_away = useCallback(
     (event) => {
-      if (splits_controls_open) {
+      if (row_axes_controls_open) {
         set_closing(true)
-        set_splits_controls_open(false)
+        set_row_axes_controls_open(false)
 
         setTimeout(() => {
           set_closing(false)
         }, MENU_CLOSE_TIMEOUT)
       }
     },
-    [splits_controls_open]
+    [row_axes_controls_open]
   )
 
   const handle_apply = useCallback(() => {
@@ -133,9 +135,9 @@ const TableSplitsControls = ({
     return JSON.stringify(local_table_state) !== JSON.stringify(table_state)
   }, [local_table_state, table_state])
 
-  const supported_splits = useMemo(() => {
+  const supported_row_axes = useMemo(() => {
     const items = table_state_columns
-      .map((column) => column.splits)
+      .map((column) => column.row_axes)
       .flat()
       .filter(Boolean)
     return [...new Set(items)]
@@ -148,8 +150,8 @@ const TableSplitsControls = ({
         style={{ transform }}
         className={get_string_from_object({
           'table-expanding-control-container': true,
-          'table-splits-controls': true,
-          '-open': splits_controls_open,
+          'table-row-axes-controls': true,
+          '-open': row_axes_controls_open,
           '-closing': closing
         })}
         tabIndex={0}>
@@ -157,9 +159,9 @@ const TableSplitsControls = ({
           onClick={handle_menu_toggle}
           className='table-expanding-control-button'>
           <CallSplitIcon />
-          Splits
+          {row_axes_label}
         </div>
-        {splits_controls_open && is_local_table_state_changed && (
+        {row_axes_controls_open && is_local_table_state_changed && (
           <div className='table-control-container-state-buttons'>
             <div
               className='controls-button controls-discard'
@@ -173,19 +175,19 @@ const TableSplitsControls = ({
             </div>
           </div>
         )}
-        {splits_controls_open && (
+        {row_axes_controls_open && (
           <div className='table-expanding-control-input-container'>
             <Autocomplete
               multiple
-              options={supported_splits}
+              options={supported_row_axes}
               disableCloseOnSelect
-              value={local_table_state.splits}
+              value={local_table_state.row_axes}
               openOnFocus
               getOptionLabel={(option) => option}
               onChange={(event, new_value) => {
                 set_local_table_state((prev_table_state) => ({
                   ...prev_table_state,
-                  splits: new_value
+                  row_axes: new_value
                 }))
               }}
               renderOption={(props, option, { selected }) => {
@@ -206,17 +208,17 @@ const TableSplitsControls = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label='Splits'
+                  label={row_axes_label}
                   inputRef={filter_input_ref}
                 />
               )}
             />
           </div>
         )}
-        {splits_controls_open && !supported_splits.length && (
-          <div className='table-splits-controls-no-splits'>
+        {row_axes_controls_open && !supported_row_axes.length && (
+          <div className='table-row-axes-controls-no-row-axes'>
             <Alert severity='info'>
-              No splits available for selected columns
+              {no_row_axes_available_label}
             </Alert>
           </div>
         )}
@@ -225,10 +227,12 @@ const TableSplitsControls = ({
   )
 }
 
-TableSplitsControls.propTypes = {
+TableRowAxesControls.propTypes = {
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired,
-  table_state_columns: PropTypes.array.isRequired
+  table_state_columns: PropTypes.array.isRequired,
+  row_axes_label: PropTypes.string,
+  no_row_axes_available_label: PropTypes.string
 }
 
-export default React.memo(TableSplitsControls)
+export default React.memo(TableRowAxesControls)

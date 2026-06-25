@@ -18,13 +18,13 @@ user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349
 
 ## Purpose
 
-Reusable React table component library: filtering, sorting, column controls, virtualization, splits, CSV/markdown export. Built on TanStack/react-table and Material-UI. Used by xo.football data views and other Base projects.
+Reusable React table component library: filtering, sorting, column controls, virtualization, row axes, CSV/markdown export. Built on TanStack/react-table and Material-UI. Used by xo.football data views and other Base projects.
 
 For public overview and install, see [[README.md]]. For agent-facing architecture, validators, and conventions, see [[CLAUDE.md]].
 
 ## Context
 
-This is a shared component library, consumed by sibling repositories. Its table-state schema (`{ sort, columns, where, splits, prefix_columns, rank_aggregation }`) is the wire format for parameterized filtering and grouping across consuming apps. Changes to that schema have downstream consumers.
+This is a shared component library, consumed by sibling repositories. Its table-state schema (`{ sort, columns, where, row_axes, prefix_columns, rank_aggregation }`) is the wire format for parameterized filtering and grouping across consuming apps. Changes to that schema have downstream consumers.
 
 ## Notable Context
 
@@ -45,7 +45,7 @@ This is a shared component library, consumed by sibling repositories. Its table-
 
 ## Scope
 
-**Belongs in this repo**: table components, filter/column/split controls, validators, the data-type enumeration (`constants.mjs`), build config.
+**Belongs in this repo**: table components, filter/column/row-axes controls, validators, the data-type enumeration (`constants.mjs`), build config.
 
 **Belongs elsewhere**:
 

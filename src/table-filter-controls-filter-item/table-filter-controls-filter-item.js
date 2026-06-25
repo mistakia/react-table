@@ -640,7 +640,7 @@ export default function FilterItem({
         <div className='column-params-container'>
           <ParametersEditor
             records={editor_records}
-            splits={local_table_state.splits}
+            row_axes={local_table_state.row_axes}
             inline
           />
         </div>
