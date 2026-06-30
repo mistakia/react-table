@@ -119,7 +119,7 @@ const TableCell = ({ getValue, column, row, table }) => {
     const percentile = percentiles[key]
     const is_reversed = column.columnDef.reverse_percentiles
 
-    if (percentile && !Number.isNaN(value)) {
+    if (percentile && value != null && !Number.isNaN(value)) {
       if (is_reversed ? value > percentile.p25 : value < percentile.p25) {
         const max_percent =
           Math.max(
@@ -151,6 +151,19 @@ const TableCell = ({ getValue, column, row, table }) => {
     return undefined
   }, [percentiles, column.id, value, column.columnDef.reverse_percentiles])
 
+  // Let a column (or the table) decide what a missing cell shows. When value is
+  // null/undefined, defer to column.columnDef.render_null (else
+  // table.options.meta?.render_null), which receives the full row so it can
+  // disambiguate "no value" states. Without a hook, null renders blank as before.
+  let display_value = value
+  if (value == null) {
+    const render_null =
+      column.columnDef.render_null || table.options.meta?.render_null
+    if (render_null) {
+      display_value = render_null({ value, row, column, column_index, table })
+    }
+  }
+
   return (
     <div
       {...{
@@ -175,7 +188,7 @@ const TableCell = ({ getValue, column, row, table }) => {
           // TODO dynamically calculate based on largest character count in this column
           minWidth: `min(${column.columnDef.size}px, 100%)`
         }}>
-        {value}
+        {display_value}
       </div>
     </div>
   )
