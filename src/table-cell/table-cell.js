@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback, useContext } from 'react'
 import PropTypes from 'prop-types'
 
-import { get_string_from_object } from '#src/utils'
+import { get_string_from_object, copy_to_clipboard } from '#src/utils'
 import { table_context } from '#src/table-context'
 
 const TableCell = ({ getValue, column, row, table }) => {
@@ -96,14 +96,11 @@ const TableCell = ({ getValue, column, row, table }) => {
 
   const handle_click = useCallback(() => {
     if (value !== undefined && value !== null) {
-      navigator.clipboard
-        .writeText(`${value}`)
-        .then(() => {
-          console.log('copied to clipboard:', value)
-        })
-        .catch((err) => {
-          console.error('Failed to copy text: ', err)
-        })
+      copy_to_clipboard(`${value}`).then((ok) => {
+        if (!ok) {
+          console.error('Failed to copy text to clipboard')
+        }
+      })
     }
   }, [value])
 

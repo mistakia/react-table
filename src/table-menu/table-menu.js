@@ -15,7 +15,8 @@ import {
   get_string_from_object,
   export_csv,
   export_json,
-  export_markdown
+  export_markdown,
+  copy_to_clipboard as copy_text_to_clipboard
 } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
 import { table_context } from '#src/table-context'
@@ -124,10 +125,9 @@ const TableMenu = ({
   }
 
   const copy_to_clipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text)
-    } catch (err) {
-      console.error('Failed to copy text: ', err)
+    const ok = await copy_text_to_clipboard(text)
+    if (!ok) {
+      console.error('Failed to copy text to clipboard')
     }
   }
 
