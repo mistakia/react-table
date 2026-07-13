@@ -2,11 +2,15 @@ import dayjs from 'dayjs'
 
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
-// Per-param override hook: `param_def.format_value({ value, def }) => string`.
-// When defined, the engine delegates value rendering to the override and
-// computes `is_default` itself. The is_default deep_equal also matches when
-// `value` is a single-element array of `default_value` (covers multi-select
-// params whose default is a bare object, e.g. nfl_week_id).
+// Per-param override hook: `param_def.format_value({ value, def, variant }) =>
+// string`. When defined, the engine delegates value rendering to the override
+// and computes `is_default` itself. The active `variant` ('short' | 'long') is
+// forwarded so an override can render a terse chip label and a descriptive long
+// label from the same value (e.g. year_offset: `prior+` vs `prior year onward`);
+// overrides that ignore it render identically in both variants. The is_default
+// deep_equal also matches when `value` is a single-element array of
+// `default_value` (covers multi-select params whose default is a bare object,
+// e.g. nfl_week_id).
 //
 // Per-param `param_def.show_key_in_short: true` opts into prefixing the value
 // with `${short_label || label}: ` in the `short` variant. Use for params whose
@@ -33,7 +37,7 @@ export function format_column_params({
 
   for (const [param_key, value] of Object.entries(column_state_params)) {
     const param_def = param_defs[param_key] || {}
-    const render = build_param_render({ param_key, value, param_def })
+    const render = build_param_render({ param_key, value, param_def, variant })
     if (render) renders.push(render)
   }
 
@@ -55,7 +59,7 @@ export function format_column_params({
     .join(' · ')
 }
 
-function build_param_render({ param_key, value, param_def }) {
+function build_param_render({ param_key, value, param_def, variant }) {
   // Skip gate: null/undefined and empty arrays produce no render.
   // Bare 0 and false pass through (fixes legacy falsy-gate bugs).
   if (value == null) return null
@@ -70,7 +74,7 @@ function build_param_render({ param_key, value, param_def }) {
     render = {
       param_key,
       key_label,
-      value_label: param_def.format_value({ value, def: param_def }),
+      value_label: param_def.format_value({ value, def: param_def, variant }),
       is_default: matches_default(value, param_def.default_value)
     }
   } else {
