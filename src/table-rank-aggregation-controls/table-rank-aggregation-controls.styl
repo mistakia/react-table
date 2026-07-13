@@ -1,39 +1,115 @@
+@import '../styles/tokens.styl'
+
 .table-rank-aggregation-container
   left var(--rt-slot-rank-left)
   width var(--rt-slot-rank-width)
 
 .table-rank-aggregation-content
   overflow hidden
-  overflow-y scroll
-  padding 10px 0
+  overflow-y auto
+  padding $rt_space_sm
 
-  .rank-item
-    display flex
-    padding 4px
+// Shared MUI outlined-input treatment for the preset picker, the per-item
+// column picker, and the weight field — mirrors table-filter-controls so the
+// rank panel reads as the same design system.
+.table-rank-aggregation-presets
+.rank-item-column
+.rank-item-weight
+  .MuiOutlinedInput-root
+    background $rt_bg
+    border-radius $rt_radius_sm
+    font-size $rt_font_size_md
+    color $rt_text
+    transition box-shadow $rt_transition
 
-  .rank-item-column
-    flex 2
-    padding-left 10px
+    .MuiOutlinedInput-notchedOutline
+      border-color $rt_border_subtle
+      transition border-color $rt_transition
 
-  .rank-item-weight
-    flex 1
-    padding-left 10px
+    &:hover .MuiOutlinedInput-notchedOutline
+      border-color $rt_border
 
-.table-rank-aggregation-add-button
+    &.Mui-focused .MuiOutlinedInput-notchedOutline
+      border-color $rt_accent
+      border-width 1px
+
+    &.Mui-focused
+      box-shadow $rt_focus_ring
+
+  .MuiInputLabel-root
+    font-size $rt_font_size_md
+    color $rt_text_subtle
+
+    &.Mui-focused
+      color $rt_accent
+
+  .MuiOutlinedInput-input
+    padding 6px 10px
+    min-height 20px
+    font-size $rt_font_size_md
+    line-height 1.4
+    color $rt_text
+
+.table-rank-aggregation-presets
+  margin-bottom $rt_space_sm
+  padding-bottom $rt_space_sm
+  border-bottom 1px solid $rt_divider
+
+.rank-item
+  display flex
+  align-items center
+  gap $rt_space_sm
+  padding $rt_space_xs 0
+
+.rank-item-column
+  flex 2
+  min-width 0
+
+.rank-item-weight
   flex 1
+  min-width 0
+
+.rank-item-remove
+  flex 0 0 32px
   display flex
   align-items center
   justify-content center
-  margin 10px 12px
-  padding 10px
+
+  .MuiIconButton-root
+    color $rt_text_muted
+    padding $rt_space_xs
+    transition background $rt_transition, color $rt_transition
+
+    &:hover
+      color $rt_destructive
+      background $rt_destructive_subtle
+
+  .MuiSvgIcon-root
+    width 18px
+    height 18px
+
+.table-rank-aggregation-add
+  padding-top $rt_space_sm
+
+.table-rank-aggregation-add-button
+  display flex
+  align-items center
+  justify-content center
+  gap $rt_space_xs
+  padding $rt_space_sm
   cursor pointer
-  border-radius 4px
-  font-size 12px
-  background #fafafa
+  border 1px solid transparent
+  border-radius $rt_radius_sm
+  font-size $rt_font_size_sm
+  color $rt_text_muted
+  background $rt_bg_hover
+  transition border-color $rt_transition, background $rt_transition, color $rt_transition
 
   .MuiSvgIcon-root
     width 16px
     height 16px
 
   &:hover
-    background #e5e5e5
+    border-color $rt_border
+    background $rt_bg_hover_strong
+    color $rt_text
