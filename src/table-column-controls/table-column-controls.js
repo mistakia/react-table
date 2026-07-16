@@ -685,7 +685,7 @@ const TableColumnControls = ({
   )
 
   return (
-    <ClickAwayListener onClickAway={handle_click_away}>
+    <ClickAwayListener onClickAway={handle_click_away} mouseEvent='onMouseDown'>
       <div
         ref={container_ref}
         style={{ transform }}
