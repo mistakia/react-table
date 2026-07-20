@@ -109,7 +109,10 @@
         position sticky
         left 0
         z-index 1
-        background-color inherit
+        // Opaque fill so columns scrolling underneath the pinned column don't
+        // bleed through. `inherit` resolved to the row's transparent background,
+        // leaving the sticky column see-through on horizontal scroll.
+        background-color $backgroundColor
 
     .cell-content
       height 100%

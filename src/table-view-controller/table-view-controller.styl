@@ -867,6 +867,13 @@ $breakpoint_mobile = 768px
       color rgba(0, 0, 0, 0.6)
       overflow hidden
       text-overflow ellipsis
+      // Clamp to two lines in the collapsed trigger so a long description can't
+      // overflow the fixed $unopened_height box and clip mid-line. The open
+      // state below removes the clamp to show the full text.
+      display -webkit-box
+      -webkit-box-orient vertical
+      -webkit-line-clamp 2
+      word-break break-word
 
 // Username chip: pinned to the top-right corner of the trigger button in the
 // collapsed state. In the open state (handled below) it flows inline in the
@@ -890,6 +897,14 @@ $breakpoint_mobile = 768px
   position static
   margin-left auto
   align-self flex-start
+
+// Open panel has room for the full description; drop the collapsed two-line
+// clamp so nothing is truncated.
+.table-expanding-control-container.table-view-controller.-open .current-view-description
+  display block
+  overflow visible
+  text-overflow clip
+  -webkit-line-clamp unset
 
 .current-view-actions
   display none
