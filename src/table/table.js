@@ -221,20 +221,12 @@ export default function Table({
   )
 
   const on_table_state_change = useCallback(
-    ({
-      sort,
-      prefix_columns,
-      columns,
-      where,
-      rank_aggregation,
-      row_axes,
-      row_grain,
-      q,
-      scatter_plot_options,
-      disable_scatter_plot
-    }) => {
+    (next_table_state) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
+
+      let { where } = next_table_state
+      const { columns, row_axes } = next_table_state
 
       // cleanup state
 
@@ -277,18 +269,13 @@ export default function Table({
           view_name,
           view_username,
           view_description,
-          table_state: {
-            sort,
-            prefix_columns,
-            columns,
-            where,
-            rank_aggregation,
-            row_axes,
-            row_grain,
-            q,
-            scatter_plot_options,
-            disable_scatter_plot
-          }
+          // Preserve every field the caller passed -- including
+          // consumer-specific extras (e.g. parcels' coverage-shrinkage
+          // rank_aggregation_prior_weight / rank_aggregation_prior_mean) -- and
+          // override only the fields cleaned above. A whitelist rebuild here
+          // silently dropped any table_state key not enumerated, so those
+          // extras vanished on the first table interaction.
+          table_state: { ...next_table_state, where }
         },
         {
           view_state_changed: true
@@ -342,42 +329,22 @@ export default function Table({
     }
     const { view_id, view_name, view_description, view_username } =
       selected_view
-    const {
-      sort,
-      prefix_columns,
-      columns,
-      where,
-      rank_aggregation,
-      row_axes,
-      row_grain
-    } = saved_table_state
     on_view_change(
       {
         view_id,
         view_name,
         view_description,
         view_username,
-        table_state: {
-          sort,
-          prefix_columns,
-          columns,
-          where,
-          rank_aggregation,
-          row_axes,
-          row_grain
-        }
+        // Restore the full saved table_state, preserving consumer-specific
+        // extras (e.g. rank_aggregation_prior_weight / rank_aggregation_prior_mean)
+        // a whitelist rebuild would drop.
+        table_state: { ...saved_table_state }
       },
       {
         view_state_changed: true
       }
     )
-  }, [
-    table_state,
-    selected_view,
-    on_view_change,
-    on_revert_view,
-    saved_table_state
-  ])
+  }, [selected_view, on_view_change, on_revert_view, saved_table_state])
 
   const set_table_sort = useCallback(
     ({ column_id, desc, multi, column_index = 0 }) => {
