@@ -18,6 +18,14 @@
   // sync if the gutter ever needs to change.
   --rt-column-index-width 30px
 
+  // Opaque paint behind every row. Sticky cells inherit it, so columns
+  // scrolling underneath the pinned column can't bleed through, and any row
+  // recolor (hover, a consumer's row className) carries into that column for
+  // free. Recolor a row by overriding this variable or its background-color;
+  // either way the value MUST be fully opaque — a translucent one is what
+  // left the sticky column see-through on horizontal scroll to begin with.
+  --rt-row-surface $backgroundColor
+
   position relative
   padding-left 96px
   width fit-content
@@ -86,6 +94,7 @@
     display flex
     height 100%
     width fit-content
+    background-color var(--rt-row-surface)
 
     .cell
       white-space nowrap
@@ -109,10 +118,11 @@
         position sticky
         left 0
         z-index 1
-        // Opaque fill so columns scrolling underneath the pinned column don't
-        // bleed through. `inherit` resolved to the row's transparent background,
-        // leaving the sticky column see-through on horizontal scroll.
-        background-color $backgroundColor
+        // Follow the row's own surface so hover and consumer row classes carry
+        // into the pinned column. This only stays opaque because .row paints
+        // --rt-row-surface — inheriting a bare transparent row left the sticky
+        // column see-through on horizontal scroll.
+        background-color inherit
 
     .cell-content
       height 100%
@@ -129,7 +139,9 @@
 
     .row
       &:hover
-        background-color white
+        // Recolor the surface, not the row's background-color, so the sticky
+        // column inherits the hovered fill instead of staying on the base one.
+        --rt-row-surface white
 
   .header
     width fit-content
