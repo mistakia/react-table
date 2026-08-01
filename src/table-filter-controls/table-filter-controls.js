@@ -21,7 +21,8 @@ import {
   group_columns_into_tree_view,
   fuzzy_match,
   get_string_from_object,
-  use_wide_control_layout
+  use_wide_control_layout,
+  build_where_column_definitions
 } from '#src/utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '#src/constants.mjs'
 import { table_context } from '#src/table-context'
@@ -451,28 +452,23 @@ const TableFilterControls = ({
     set_filters_local_table_state({ ...filters_local_table_state, where: [] })
   }, [filters_local_table_state])
 
-  const local_table_state_where_columns = useMemo(() => {
-    const columns = []
-    for (const column of filters_local_table_state.where || []) {
-      const column_id = column.column_id || column.id || column.column_name
-      if (column_id) {
-        // TODO use key/value store
-        const column_data = all_columns.find((c) => c.column_id === column_id)
-        if (column_data) {
-          columns.push({
-            ...column_data,
-            selected_params: column.params || {}
-          })
-        }
-      }
-    }
-    return columns
-  }, [filters_local_table_state.where, all_columns])
+  // Positionally aligned with `filters_local_table_state.where` -- entry i may
+  // be null. Every index-keyed consumer below (where_index,
+  // selected_where_indexes, handle_remove_selected_filters) indexes into
+  // `where`, so this must not be compacted.
+  const local_table_state_where_columns = useMemo(
+    () =>
+      build_where_column_definitions(
+        filters_local_table_state.where,
+        all_columns
+      ),
+    [filters_local_table_state.where, all_columns]
+  )
 
   const has_selectable_where_columns = useMemo(() => {
     return local_table_state_where_columns.some(
       (column) =>
-        column.column_params && Object.keys(column.column_params).length
+        column && column.column_params && Object.keys(column.column_params).length
     )
   }, [local_table_state_where_columns])
 
@@ -611,6 +607,7 @@ const TableFilterControls = ({
                                   .map((column, index) => ({ column, index }))
                                   .filter(
                                     ({ column }) =>
+                                      column &&
                                       column.column_params &&
                                       Object.keys(column.column_params).length
                                   )
@@ -649,23 +646,29 @@ const TableFilterControls = ({
                 </div>
                 <div className='selected-columns-container'>
                   {(filters_local_table_state.where || []).map(
-                    (where_item, where_index) => (
-                      <FilterItem
-                        key={where_index}
-                        column_definition={
-                          local_table_state_where_columns[where_index]
-                        }
-                        table_state={filters_local_table_state}
-                        {...{
-                          where_index,
-                          selected_where_indexes,
-                          set_selected_where_indexes,
-                          bulk_edit_mode,
-                          local_table_state: filters_local_table_state,
-                          set_local_table_state: set_filters_local_table_state
-                        }}
-                      />
-                    )
+                    (where_item, where_index) => {
+                      const column_definition =
+                        local_table_state_where_columns[where_index]
+                      // A filter naming a column that is not in all_columns has
+                      // nothing to render a control from; skip it rather than
+                      // handing FilterItem a null definition to destructure.
+                      if (!column_definition) return null
+                      return (
+                        <FilterItem
+                          key={where_index}
+                          column_definition={column_definition}
+                          table_state={filters_local_table_state}
+                          {...{
+                            where_index,
+                            selected_where_indexes,
+                            set_selected_where_indexes,
+                            bulk_edit_mode,
+                            local_table_state: filters_local_table_state,
+                            set_local_table_state: set_filters_local_table_state
+                          }}
+                        />
+                      )
+                    }
                   )}
                 </div>
               </div>

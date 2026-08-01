@@ -19,6 +19,7 @@ export { default as levenstein_distance } from './levenstein-distance'
 export { default as group_parameters } from './group-parameters'
 export { default as generate_view_id } from './generate-view-id'
 export { default as copy_to_clipboard } from './copy-to-clipboard'
+export { default as build_where_column_definitions } from './build-where-column-definitions'
 export { parse_url_params_to_table_state } from './parse-url-params-to-table-state.mjs'
 
 // Validators
