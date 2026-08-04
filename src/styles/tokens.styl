@@ -53,6 +53,33 @@ $rt_button_hover_bg = #f0f0f0
 $rt_button_hover_bg_strong = #b3b3b3
 $rt_transition = 150ms ease
 
+// Layering. Every floating surface this lib renders draws its z-index from one
+// of these, and each is an offset from a single --rt-z-base so a consumer can
+// relocate the WHOLE lib into its own stacking scale with one declaration
+// rather than fighting seven separate numbers.
+//
+// The band is deliberately six units wide. A lib that squats on a wide range of
+// absolute values (this one used 1000 through 10000) forces the host app to
+// work around it; a tight band slots into any gap the host has spare.
+//
+// The default base of 1000 puts the entire lib BELOW MUI's modal layer (1300),
+// which is the safe default: a host's own dialogs cover the table rather than
+// the other way round. A host that wants the table modal above its chrome sets
+// --rt-z-base and gets the internal ordering for free.
+//
+// Ordering rule, learned the hard way: a surface that is only ever opened FROM
+// another surface belongs ABOVE everything that can open it. That is why
+// --rt-z-popper is the top rung and not one beside --rt-z-modal — poppers open
+// from inside the view modal, and at 1299 against a modal at 10000 they were
+// rendering behind their own host.
+$rt_z_base = 1000
+$rt_z_menu = 1001
+$rt_z_control = 1002
+$rt_z_overlay = 1003
+$rt_z_panel = 1004
+$rt_z_modal = 1005
+$rt_z_popper = 1006
+
 // Runtime CSS custom properties — consumers override these.
 :root
   --rt-border rgba(15, 23, 42, 0.14)
@@ -101,3 +128,20 @@ $rt_transition = 150ms ease
   --rt-button-hover-bg #f0f0f0
   --rt-button-hover-bg-strong #b3b3b3
   --rt-transition 150ms ease
+
+  // Layering — see the Stylus block above for the contract. Override
+  // --rt-z-base alone to move the whole lib; the offsets follow.
+  //
+  // Note these MUST be read as var(--rt-z-*) in component sources, never via
+  // the Stylus mirror, or a consumer's override cannot reach them. That is the
+  // one place this lib's usual "prefer the Stylus mirror" advice is inverted.
+  // Note also that --rt-z-base has to be overridden at :root, the same element
+  // these are declared on — a calc() in a custom property substitutes where it
+  // is DECLARED, so rebasing on a descendant scope silently does nothing.
+  --rt-z-base 1000
+  --rt-z-menu calc(var(--rt-z-base) + 1)
+  --rt-z-control calc(var(--rt-z-base) + 2)
+  --rt-z-overlay calc(var(--rt-z-base) + 3)
+  --rt-z-panel calc(var(--rt-z-base) + 4)
+  --rt-z-modal calc(var(--rt-z-base) + 5)
+  --rt-z-popper calc(var(--rt-z-base) + 6)
