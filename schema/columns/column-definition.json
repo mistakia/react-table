@@ -103,7 +103,7 @@
     },
     "fixed": {
       "type": "integer",
-      "description": "Number of decimal places to display for numeric values"
+      "description": "Number of decimal places to display for numeric values. May also be supplied as a function of the column instance's params, resolved per selected column (same form as reverse_percentiles)"
     },
     "reverse_percentiles": {
       "type": "boolean",

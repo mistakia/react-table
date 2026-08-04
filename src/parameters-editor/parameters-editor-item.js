@@ -50,6 +50,27 @@ const ParametersEditorItem = ({
     }
   }
 
+  const single_column_record =
+    records.length === 1 &&
+    records[0].kind === 'column' &&
+    records[0].column &&
+    records[0].column_index !== undefined &&
+    records[0].set_local_table_state
+
+  // The single-column handles are what let a control render the sibling-param
+  // override panel. They reach the built-in overrides filter as explicit props
+  // below; a custom `component` gets them through param_props so it can compose
+  // that same panel instead of reimplementing table-state writes. Absent a
+  // single column record (bulk edit, where-clause records) they are undefined
+  // and a control is expected to degrade to editing its own param only.
+  const single_column_props = single_column_record
+    ? {
+        column: records[0].column,
+        column_index: records[0].column_index,
+        set_local_table_state: records[0].set_local_table_state
+      }
+    : {}
+
   const param_props = {
     column_param_name: param_name,
     column_param_definition: param_definition,
@@ -62,17 +83,10 @@ const ParametersEditorItem = ({
   const render_content = () => {
     if (typeof param_definition.component === 'function') {
       const CustomComponent = param_definition.component
-      return <CustomComponent {...param_props} />
+      return <CustomComponent {...param_props} {...single_column_props} />
     }
 
     const { data_type } = param_definition
-
-    const single_column_record =
-      records.length === 1 &&
-      records[0].kind === 'column' &&
-      records[0].column &&
-      records[0].column_index !== undefined &&
-      records[0].set_local_table_state
 
     if (
       data_type === TABLE_DATA_TYPES.SELECT &&
@@ -82,9 +96,7 @@ const ParametersEditorItem = ({
       return (
         <ColumnParamSelectFilterWithOverrides
           {...param_props}
-          column={records[0].column}
-          column_index={records[0].column_index}
-          set_local_table_state={records[0].set_local_table_state}
+          {...single_column_props}
         />
       )
     }

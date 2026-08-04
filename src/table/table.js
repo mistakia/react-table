@@ -434,10 +434,20 @@ export default function Table({
           typeof column_def.reverse_percentiles === 'function'
             ? column_def.reverse_percentiles(column_params)
             : column_def.reverse_percentiles
+        // Decimal places can depend on the params of this column instance, not
+        // just the column id: the same measure rendered as a count wants an
+        // integer where the rate wants two places, and both can sit in one
+        // table. Resolved per instance for the same reason reverse_percentiles
+        // is, and a plain number still works unchanged.
+        const fixed =
+          typeof column_def.fixed === 'function'
+            ? column_def.fixed(column_params)
+            : column_def.fixed
         columns.push({
           ...column_def,
           index: starting_index,
-          reverse_percentiles
+          reverse_percentiles,
+          fixed
         })
         starting_index += 1
       }
