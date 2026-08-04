@@ -7,6 +7,7 @@ import ColumnParamRangeFilter from '#src/column-param-range-filter'
 import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
 import ColumnParamDateFilter from '#src/column-param-date-filter'
 import ColumnParamObjectPresetFilter from '#src/column-param-object-preset-filter'
+import { render_column_param_item } from '#src/column-controls-column-param-item'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const sanitize_value = (value) => {
@@ -97,6 +98,7 @@ const ParametersEditorItem = ({
         <ColumnParamSelectFilterWithOverrides
           {...param_props}
           {...single_column_props}
+          render_param_item={render_column_param_item}
         />
       )
     }

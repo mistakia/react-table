@@ -99,7 +99,11 @@ ColumnControlsColumnParamItem.propTypes = {
   row_axes: PropTypes.array
 }
 
-const render_column_param_item = ({ key, ...props }) => (
+// The renderer the override panel uses for each overridable sibling param. It
+// is exported because the panel is composed from more than one place and a
+// missing renderer is invisible: the panel still draws its group headers and
+// simply omits every control.
+export const render_column_param_item = ({ key, ...props }) => (
   <ColumnControlsColumnParamItem key={key} {...props} />
 )
 
