@@ -81,7 +81,19 @@ $rt_z_modal = 1005
 $rt_z_popper = 1006
 
 // Runtime CSS custom properties — consumers override these.
-:root
+//
+// Wrapped in :where() so the whole block carries ZERO specificity, which is
+// what makes "consumers override these" true rather than aspirational. This lib
+// ships its CSS through style-loader, so its stylesheet is injected into head at
+// runtime and its position relative to the host's own stylesheet is an accident
+// of module evaluation order. A plain `:root` here ties a consumer's `:root`
+// on specificity (0,1,0 each), so the winner would be decided by that accident —
+// and when the lib happened to be injected last, the consumer's override
+// silently did nothing. At zero specificity any consumer declaration wins
+// outright, whatever the order.
+//
+// Keep the :where(). Unwrapping it re-arms that coin flip for every token.
+:where(:root)
   --rt-border rgba(15, 23, 42, 0.14)
   --rt-border-subtle #e6e8eb
   --rt-divider #eef0f2

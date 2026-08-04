@@ -28,8 +28,18 @@ it.
 ## Token Contract
 
 The public theming API is a small set of CSS custom properties prefixed `--rt-`.
-Defaults are declared at `:root` from `src/styles/tokens.styl` and mirrored as
-Stylus variables for component sources.
+Defaults are declared from `src/styles/tokens.styl` and mirrored as Stylus
+variables for component sources.
+
+**The default block is `:where(:root)`, not `:root`, and that is load-bearing.**
+This lib ships its CSS through style-loader, so its stylesheet is injected into
+`<head>` at runtime and its position relative to the host's stylesheet is an
+accident of module evaluation order. A bare `:root` ties a consumer's `:root` on
+specificity (`0,1,0` each), which leaves that accident to pick the winner —
+measured, a consumer setting `--rt-z-base: 1500` got `1005` whenever this lib
+was injected last, with nothing reporting that the override had been discarded.
+`:where()` drops the block to zero specificity, so a consumer's declaration wins
+outright in either order. `yarn test` fails if the `:where()` is removed.
 
 | Token                  | Default                       | Usage                                      |
 | ---------------------- | ----------------------------- | ------------------------------------------ |

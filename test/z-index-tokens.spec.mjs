@@ -110,3 +110,23 @@ describe('z-index token contract', () => {
     ).to.deep.equal([])
   })
 })
+
+describe('token override posture', () => {
+  it('declares defaults at zero specificity so a consumer always wins', () => {
+    const source = fs.readFileSync(tokens_file, 'utf8')
+
+    // This lib injects its CSS at runtime through style-loader, so whether its
+    // stylesheet lands before or after the host's is an accident of module
+    // evaluation order. A bare `:root` would tie a consumer's `:root` on
+    // specificity and let that accident pick the winner — which is how a
+    // consumer override silently did nothing. :where() drops the block to zero
+    // specificity, so any consumer declaration wins regardless of order.
+    expect(
+      source,
+      'the token block must be :where(:root), not a bare :root'
+    ).to.match(/^:where\(:root\)$/m)
+    expect(source, 'a bare :root re-arms the ordering coin flip').to.not.match(
+      /^:root$/m
+    )
+  })
+})
