@@ -101,6 +101,15 @@ The default base of `1000` puts the entire lib below MUI's modal layer (`1300`),
 which is the safe default: a host's own dialogs cover the table rather than the
 reverse.
 
+A MUI control embedded in a lib surface — a `DatePicker` inside a filter popper —
+opens its own popup portaled to `document.body` at `theme.zIndex.modal` (`1300`).
+A host that rebases `--rt-z-base` above MUI's modal layer paints that popup below
+the surface it opened from (league runs `--rt-z-base: 1450`, so the date picker's
+calendar rendered behind its own input panel). Pin such a popup to the lib's
+scale, one rung above its opener, via the control's slot props rather than
+leaving it on the MUI default — the date filter does
+`slotProps={{ popper: { style: { zIndex: 'calc(var(--rt-z-popper) + 1)' } } }}`.
+
 ### Consumer override
 
 ```stylus
