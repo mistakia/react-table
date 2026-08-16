@@ -19,6 +19,24 @@ export default function ColumnParamDateFilter({
   const label = column_param_definition?.label || column_param_name
   const datepicker_props = column_param_definition?.datepicker_props || {}
   const default_label = column_param_definition?.default_label || ''
+  // The picker's calendar popup is a MUI surface pinned to theme.zIndex.modal
+  // (1300), but it opens FROM inside this filter's popper, which sits at
+  // --rt-z-popper. A host that rebases --rt-z-base above MUI's modal layer
+  // (this lib's documented use of the override) would otherwise render the
+  // calendar behind the input panel. Pin the popup to the lib's scale, one rung
+  // above the popper it opens from, so it tracks the host's rebase.
+  const datepicker_slot_props = datepicker_props.slotProps || {}
+  const datepicker_popper_style = {
+    ...(datepicker_slot_props.popper?.style || {}),
+    zIndex: 'calc(var(--rt-z-popper) + 1)'
+  }
+  const datepicker_merged_slot_props = {
+    ...datepicker_slot_props,
+    popper: {
+      ...datepicker_slot_props.popper,
+      style: datepicker_popper_style
+    }
+  }
   const [value, set_value] = useState(
     selected_param_values
       ? dayjs(selected_param_values)
@@ -69,6 +87,7 @@ export default function ColumnParamDateFilter({
             format='YYYY-MM-DD'
             renderInput={(params) => <input {...params} />}
             {...datepicker_props}
+            slotProps={datepicker_merged_slot_props}
           />
         </LocalizationProvider>
         {!is_default && (
