@@ -17,28 +17,40 @@ export default function ColumnParamSelectFilter({
   const label = column_param_definition?.label || column_param_name
   const single = is_single_select({ column_param_definition, row_axes })
   const default_value = column_param_definition?.default_value
-  const is_column_param_defined = Boolean(selected_param_values)
+
+  // selected_param_values is a list by contract, but a stored scalar (a legacy
+  // view, a malformed table_state) must render as that single value rather than
+  // crash the filter, which forEach/includes/some over the prop.
+  const normalized_param_values = Array.isArray(selected_param_values)
+    ? selected_param_values
+    : selected_param_values == null
+      ? null
+      : [selected_param_values]
+  const is_column_param_defined = Boolean(normalized_param_values)
 
   const [trigger_close, set_trigger_close] = useState(null)
   const [dynamic_values, set_dynamic_values] = useState({})
 
   useEffect(() => {
-    update_dynamic_values({ selected_param_values, set_dynamic_values })
+    update_dynamic_values({
+      selected_param_values: normalized_param_values,
+      set_dynamic_values
+    })
   }, [selected_param_values])
 
   const preset_values = create_preset_values({
     column_param_definition,
-    selected_param_values,
+    selected_param_values: normalized_param_values,
     mixed_state
   })
   const dynamic_filter_values = create_dynamic_values({
     column_param_definition,
-    selected_param_values,
+    selected_param_values: normalized_param_values,
     mixed_state
   })
   const static_values = create_static_values({
     column_param_definition,
-    selected_param_values,
+    selected_param_values: normalized_param_values,
     mixed_state
   })
   const all_filter_values = [
@@ -62,8 +74,8 @@ export default function ColumnParamSelectFilter({
       .map((it) => all_filter_values[it._orig_index]?.value)
       .filter((v) => v !== undefined)
       .flat(Infinity)
-    const existing = Array.isArray(selected_param_values)
-      ? selected_param_values
+    const existing = Array.isArray(normalized_param_values)
+      ? normalized_param_values
       : []
     handle_change([...new Set([...existing, ...filtered_values])])
   }
@@ -86,7 +98,7 @@ export default function ColumnParamSelectFilter({
       return handle_dynamic_select({
         index,
         all_filter_values,
-        selected_param_values,
+        selected_param_values: normalized_param_values,
         dynamic_values,
         handle_change,
         single
@@ -101,7 +113,7 @@ export default function ColumnParamSelectFilter({
       return handle_preset_select({
         index,
         all_filter_values,
-        selected_param_values,
+        selected_param_values: normalized_param_values,
         handle_change
       })
     }
@@ -109,7 +121,7 @@ export default function ColumnParamSelectFilter({
     handle_static_select({
       index,
       all_filter_values,
-      selected_param_values,
+      selected_param_values: normalized_param_values,
       all_selected,
       handle_change
     })
@@ -123,7 +135,7 @@ export default function ColumnParamSelectFilter({
     }))
 
     const new_values =
-      selected_param_values?.filter(
+      normalized_param_values?.filter(
         (v) => typeof v !== 'object' || v.dynamic_type !== dynamic_type
       ) || []
 
@@ -156,7 +168,7 @@ export default function ColumnParamSelectFilter({
     default_value,
     column_param_name,
     column_param_definition,
-    selected_param_values
+    selected_param_values: normalized_param_values
   })
 
   const value_groups = column_param_definition?.value_groups
