@@ -26,6 +26,10 @@
   // left the sticky column see-through on horizontal scroll to begin with.
   --rt-row-surface $backgroundColor
 
+  // Height of the footer row. The row-count metadata overlays that row rather
+  // than stacking under it, so it has to pull itself back up by exactly this.
+  --rt-footer-height 33px
+
   position relative
   padding-left 96px
   width fit-content
@@ -170,7 +174,7 @@
       border-top 1px solid $borderColor
 
   .footer
-    height 33px
+    height var(--rt-footer-height)
     width fit-content
     position sticky
     bottom 0
@@ -394,12 +398,16 @@
   border-top 1px solid rgba(0, 0, 0, 0.1)
   font-weight 500
   background-color $backgroundColor
-  position absolute
-  top 0
+  // Sticky rather than absolute: absolute pinned it to the footer row's own
+  // left edge, which scrolls away horizontally and took the row count with it.
+  // The negative margin pulls it back over the row it follows so it still
+  // overlays that row instead of stacking a second line under it.
+  position sticky
   left 0
+  margin-top calc(-1 * var(--rt-footer-height))
+  height var(--rt-footer-height)
+  width fit-content
   z-index 2
   display flex
   align-items center
   justify-content center
-  clear both
-  height 100%

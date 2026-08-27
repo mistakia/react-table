@@ -1,7 +1,14 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 
+import { get_string_from_object } from '#src/utils'
+import { table_context } from '#src/table-context'
+import AddColumnActionSpacer from '#src/add-column-action-spacer'
+
 const TableFooter = ({ column, header, width }) => {
+  const { sticky_left, is_sticky_column, table_state } =
+    useContext(table_context)
+
   const is_group_header = header.column.columns.length
 
   if (is_group_header) {
@@ -9,7 +16,7 @@ const TableFooter = ({ column, header, width }) => {
   }
 
   if (column.columnDef.id === 'add_column_action') {
-    return null
+    return <AddColumnActionSpacer {...{ table_state }} />
   }
 
   if (column.columnDef.id === 'column_index') {
@@ -20,12 +27,18 @@ const TableFooter = ({ column, header, width }) => {
     )
   }
 
+  // The footer pins with the same columns the header and body do -- left
+  // unpinned, its cells slide out from under the pinned columns on horizontal
+  // scroll and paint over them.
+  const is_sticky = is_sticky_column(column)
+
   return (
     <div
       {...{
-        className: 'cell',
+        className: get_string_from_object({ cell: true, sticky: is_sticky }),
         style: {
-          width
+          width,
+          left: sticky_left(column)
         }
       }}>
       <div className='cell-content'>

@@ -3,12 +3,14 @@ import PropTypes from 'prop-types'
 
 import { get_string_from_object, copy_to_clipboard } from '#src/utils'
 import { table_context } from '#src/table-context'
+import AddColumnActionSpacer from '#src/add-column-action-spacer'
 
 const TableCell = ({ getValue, column, row, table }) => {
-  const { sticky_left, is_sticky_column } = useContext(table_context)
+  const { sticky_left, is_sticky_column, table_state } =
+    useContext(table_context)
 
   if (column.columnDef.id === 'add_column_action') {
-    return <div className='cell add-column-action' />
+    return <AddColumnActionSpacer {...{ table_state }} />
   }
 
   if (column.columnDef.id === 'column_index') {

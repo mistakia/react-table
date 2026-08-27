@@ -5,6 +5,12 @@ export const MENU_CLOSE_TIMEOUT = 300
 // either changes, change the other.
 export const COLUMN_INDEX_WIDTH = 30
 
+// Width of the add-column control that trails every row. Every row kind --
+// each header row, the body, the footer -- must reserve it, or the rows end up
+// narrower than the scroll extent and sticky cells get clamped short of their
+// offsets at maximum horizontal scroll, sliding on top of each other.
+export const ADD_COLUMN_ACTION_WIDTH = 56
+
 // Contract between the share-link writer (`handle_shareable_link`) and any
 // URL-params parser. Each `table_state` key declares its serialization type,
 // which drives the empty-shape default: `[]` for array, `{}` for object,

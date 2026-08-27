@@ -22,9 +22,11 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 import { get_string_from_object } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
 import {
+  ADD_COLUMN_ACTION_WIDTH,
   TABLE_DATA_TYPES,
   OPERATOR_MENU_DEFAULT_VALUE
 } from '#src/constants.mjs'
+import AddColumnActionSpacer from '#src/add-column-action-spacer'
 import DataTypeIcon from '#src/data-type-icon'
 import { table_context } from '#src/table-context'
 
@@ -36,7 +38,9 @@ export function AddColumnAction({ set_column_controls_open, table_state }) {
   }
 
   return (
-    <div className='cell add-column-action'>
+    <div
+      className='cell add-column-action'
+      style={{ width: ADD_COLUMN_ACTION_WIDTH }}>
       <div className='cell-content'>
         <Tooltip
           title='Add Column'
@@ -296,8 +300,10 @@ const TableHeader = ({ header, column, table }) => {
   )
 
   if (header.column.columnDef.id === 'add_column_action') {
+    // Only the top header row draws the control, but every other row still
+    // reserves its width so all rows agree on a total.
     if (header.depth > 1) {
-      return null
+      return <AddColumnActionSpacer {...{ table_state }} />
     }
     return <AddColumnAction {...{ set_column_controls_open, table_state }} />
   }

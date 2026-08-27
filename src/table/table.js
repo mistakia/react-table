@@ -39,7 +39,7 @@ import {
   is_valid_table_state_structure
 } from '#src/utils'
 import { table_context } from '#src/table-context'
-import { COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
+import { ADD_COLUMN_ACTION_WIDTH, COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
 
 import '../styles/mui-unstyled-popper.styl'
@@ -522,7 +522,8 @@ export default function Table({
         row_axes_columns,
         ...grouped_columns,
         column_helper.display({
-          id: 'add_column_action'
+          id: 'add_column_action',
+          size: ADD_COLUMN_ACTION_WIDTH
         })
       ].filter(Boolean),
     [prefix_columns, row_axes_columns, grouped_columns]
@@ -1044,19 +1045,23 @@ export default function Table({
         )}
         {!is_loading && rows.length > 0 && (
           <div className='footer'>
-            {table.getFooterGroups().map((footerGroup, index) => (
-              <div key={index} className='row'>
-                {footerGroup.headers.map((footer, index) =>
-                  footer.isPlaceholder
-                    ? null
-                    : flexRender(footer.column.columnDef.footer, {
-                        key: index,
-                        ...footer.getContext(),
-                        width: footer.column.getSize()
-                      })
-                )}
-              </div>
-            ))}
+            {/* Only the leaf group, which TanStack returns first for footers.
+                The group rows above it hold nothing a footer renders -- every
+                cell in them is a group header or a placeholder, both of which
+                render null -- so they came out as empty rows that still took a
+                row's height each and pushed the row-count metadata below the
+                footer. */}
+            <div className='row'>
+              {table.getFooterGroups()[0]?.headers.map((footer, index) =>
+                footer.isPlaceholder
+                  ? null
+                  : flexRender(footer.column.columnDef.footer, {
+                      key: index,
+                      ...footer.getContext(),
+                      width: footer.column.getSize()
+                    })
+              )}
+            </div>
             {total_row_count && (
               <div className='table-footer-metadata'>
                 {data?.length < total_row_count
