@@ -140,9 +140,7 @@ export default function TableViewModal({
                       .filter((t) => t.source === 'user')
                       .map((t) => t.name)}
                     on_submit={(name) => on_add_user_tag(view.view_id, name)}
-                    on_remove={(name) =>
-                      on_remove_user_tag(view.view_id, name)
-                    }
+                    on_remove={(name) => on_remove_user_tag(view.view_id, name)}
                     placeholder='Add tag'
                   />
                 )}

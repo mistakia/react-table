@@ -472,16 +472,14 @@ const TableColumnControls = ({
         const scroll_left =
           window.pageXOffset || document.documentElement.scrollLeft
         const window_center_x = window.innerWidth / 2 + scroll_left
-        const is_split =
-          is_wide_layout && local_table_state_columns.length > 0
+        const is_split = is_wide_layout && local_table_state_columns.length > 0
         const element_width =
           window.innerWidth < 768
             ? 0.9 * window.innerWidth
             : is_split
-            ? Math.min(0.95 * window.innerWidth, 900)
-            : 0.6 * window.innerWidth
-        const element_center_x =
-          anchor_left + element_width / 2 + scroll_left
+              ? Math.min(0.95 * window.innerWidth, 900)
+              : 0.6 * window.innerWidth
+        const element_center_x = anchor_left + element_width / 2 + scroll_left
 
         const translate_x = window_center_x - element_center_x
 
@@ -720,224 +718,251 @@ const TableColumnControls = ({
             </div>
           </div>
         )}
-        {column_controls_open && (() => {
-          const is_wide_split = is_wide_layout && shown_column_items.length > 0
-          const picker_visible = all_columns_expanded || is_wide_split
-          return (
-          <div className='table-expanding-control-panels'>
-            {shown_column_items.length > 0 && (
-              <div className='table-expanding-control-pane -selected'>
-              <div
-                className='table-selected-filters-container'
-                style={{
-                  maxHeight: is_wide_split
-                    ? '100%'
-                    : all_columns_expanded
-                    ? '0'
-                    : '100%'
-                }}>
-                <div className='section-header'>
-                  <div style={{ display: 'flex', alignSelf: 'center' }}>
-                    Shown in table
-                  </div>
-                  <div style={{ display: 'flex' }}>
-                    {bulk_edit_mode && (
-                      <>
-                        {selected_column_indexes.length > 0 && (
-                          <>
-                            <ColumnControlsSelectedColumnsParameters
-                              selected_column_indexes={selected_column_indexes}
-                              local_table_state={local_table_state}
-                              local_table_state_columns={
-                                local_table_state_columns
-                              }
-                              set_local_table_state={set_local_table_state}
-                            />
+        {column_controls_open &&
+          (() => {
+            const is_wide_split =
+              is_wide_layout && shown_column_items.length > 0
+            const picker_visible = all_columns_expanded || is_wide_split
+            return (
+              <div className='table-expanding-control-panels'>
+                {shown_column_items.length > 0 && (
+                  <div className='table-expanding-control-pane -selected'>
+                    <div
+                      className='table-selected-filters-container'
+                      style={{
+                        maxHeight: is_wide_split
+                          ? '100%'
+                          : all_columns_expanded
+                            ? '0'
+                            : '100%'
+                      }}>
+                      <div className='section-header'>
+                        <div style={{ display: 'flex', alignSelf: 'center' }}>
+                          Shown in table
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                          {bulk_edit_mode && (
+                            <>
+                              {selected_column_indexes.length > 0 && (
+                                <>
+                                  <ColumnControlsSelectedColumnsParameters
+                                    selected_column_indexes={
+                                      selected_column_indexes
+                                    }
+                                    local_table_state={local_table_state}
+                                    local_table_state_columns={
+                                      local_table_state_columns
+                                    }
+                                    set_local_table_state={
+                                      set_local_table_state
+                                    }
+                                  />
+                                  <div
+                                    className='action'
+                                    ref={replace_column_anchor_ref}
+                                    onClick={() =>
+                                      set_replace_column_open(
+                                        !replace_column_open
+                                      )
+                                    }>
+                                    Replace Column
+                                  </div>
+                                  <ColumnPicker
+                                    open={replace_column_open}
+                                    anchor_el={
+                                      replace_column_anchor_ref.current
+                                    }
+                                    all_columns={available_columns}
+                                    on_select={handle_replace_selected_columns}
+                                    on_close={() =>
+                                      set_replace_column_open(false)
+                                    }
+                                  />
+                                  <div
+                                    className='action'
+                                    onClick={handle_duplicate_columns}>
+                                    Duplicate {selected_column_indexes.length}{' '}
+                                    column
+                                    {selected_column_indexes.length > 1
+                                      ? 's'
+                                      : ''}
+                                  </div>
+                                  <div
+                                    className='action'
+                                    onClick={() =>
+                                      set_selected_column_indexes([])
+                                    }>
+                                    Deselect All
+                                  </div>
+                                  <div
+                                    className='action -destructive'
+                                    onClick={handle_remove_selected_columns}>
+                                    Remove Selected
+                                  </div>
+                                </>
+                              )}
+                              {selected_column_indexes.length !==
+                                local_table_state_columns.length &&
+                                has_selectable_columns && (
+                                  <div
+                                    className='action'
+                                    onClick={() =>
+                                      set_selected_column_indexes(
+                                        local_table_state_columns.map(
+                                          (_, index) => index
+                                        )
+                                      )
+                                    }>
+                                    Select All
+                                  </div>
+                                )}
+                            </>
+                          )}
+                          {has_selectable_columns && (
                             <div
-                              className='action'
-                              ref={replace_column_anchor_ref}
-                              onClick={() =>
-                                set_replace_column_open(!replace_column_open)
-                              }>
-                              Replace Column
-                            </div>
-                            <ColumnPicker
-                              open={replace_column_open}
-                              anchor_el={replace_column_anchor_ref.current}
-                              all_columns={available_columns}
-                              on_select={handle_replace_selected_columns}
-                              on_close={() => set_replace_column_open(false)}
-                            />
-                            <div
-                              className='action'
-                              onClick={handle_duplicate_columns}>
-                              Duplicate {selected_column_indexes.length} column
-                              {selected_column_indexes.length > 1 ? 's' : ''}
-                            </div>
-                            <div
-                              className='action'
-                              onClick={() => set_selected_column_indexes([])}>
-                              Deselect All
-                            </div>
-                            <div
-                              className='action -destructive'
-                              onClick={handle_remove_selected_columns}>
-                              Remove Selected
-                            </div>
-                          </>
-                        )}
-                        {selected_column_indexes.length !==
-                          local_table_state_columns.length &&
-                          has_selectable_columns && (
-                            <div
-                              className='action'
-                              onClick={() =>
-                                set_selected_column_indexes(
-                                  local_table_state_columns.map(
-                                    (_, index) => index
-                                  )
-                                )
-                              }>
-                              Select All
+                              className={get_string_from_object({
+                                action: true,
+                                'action-toggle': true,
+                                '-active': bulk_edit_mode
+                              })}
+                              onClick={() => {
+                                if (bulk_edit_mode) {
+                                  set_selected_column_indexes([])
+                                }
+                                set_bulk_edit_mode(!bulk_edit_mode)
+                              }}>
+                              {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
                             </div>
                           )}
-                      </>
-                    )}
-                    {has_selectable_columns && (
-                      <div
-                        className={get_string_from_object({
-                          action: true,
-                          'action-toggle': true,
-                          '-active': bulk_edit_mode
-                        })}
-                        onClick={() => {
-                          if (bulk_edit_mode) {
-                            set_selected_column_indexes([])
-                          }
-                          set_bulk_edit_mode(!bulk_edit_mode)
-                        }}>
-                        {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
-                      </div>
-                    )}
-                    {!bulk_edit_mode &&
-                      local_table_state_columns.length > 0 && (
-                        <div
-                          className='action -destructive'
-                          onClick={set_all_columns_hidden}>
-                          Remove All
+                          {!bulk_edit_mode &&
+                            local_table_state_columns.length > 0 && (
+                              <div
+                                className='action -destructive'
+                                onClick={set_all_columns_hidden}>
+                                Remove All
+                              </div>
+                            )}
                         </div>
-                      )}
+                      </div>
+                      <div className='selected-columns-container'>
+                        <DndContext
+                          sensors={sensors}
+                          modifiers={[restrictToVerticalAxis]}
+                          onDragEnd={handle_drag_end}>
+                          <SortableContext items={shown_column_items}>
+                            {shown_column_items.map((column, column_index) => (
+                              <ColumnControlsSelectedColumn
+                                key={`${column.column_id}-${column_index}`}
+                                {...{
+                                  all_columns,
+                                  column,
+                                  set_column_hidden_by_index,
+                                  set_local_table_state,
+                                  column_index,
+                                  selected_column_indexes,
+                                  set_selected_column_indexes,
+                                  bulk_edit_mode,
+                                  has_active_where: Boolean(
+                                    active_where_index[column.column_id]
+                                  ),
+                                  row_axes: local_table_state.row_axes || []
+                                }}
+                              />
+                            ))}
+                          </SortableContext>
+                        </DndContext>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className='selected-columns-container'>
-                  <DndContext
-                    sensors={sensors}
-                    modifiers={[restrictToVerticalAxis]}
-                    onDragEnd={handle_drag_end}>
-                    <SortableContext items={shown_column_items}>
-                      {shown_column_items.map((column, column_index) => (
-                        <ColumnControlsSelectedColumn
-                          key={`${column.column_id}-${column_index}`}
-                          {...{
-                            all_columns,
-                            column,
-                            set_column_hidden_by_index,
-                            set_local_table_state,
-                            column_index,
-                            selected_column_indexes,
-                            set_selected_column_indexes,
-                            bulk_edit_mode,
-                            has_active_where: Boolean(
-                              active_where_index[column.column_id]
-                            ),
-                            row_axes: local_table_state.row_axes || []
-                          }}
+                )}
+                <div className='table-expanding-control-pane -available'>
+                  <div className='section-header available-columns'>
+                    <div style={{ display: 'flex', alignSelf: 'center' }}>
+                      {available_columns.length} Available Columns
+                    </div>
+                    <div
+                      className='action -mode-toggle'
+                      onClick={() =>
+                        set_all_columns_expanded(!all_columns_expanded)
+                      }>
+                      {all_columns_expanded
+                        ? 'Minimize'
+                        : 'Show Available Columns'}
+                    </div>
+                  </div>
+                  {picker_visible && (
+                    <>
+                      <div className='rt-search-input'>
+                        <TextField
+                          variant='outlined'
+                          size='small'
+                          margin='none'
+                          fullWidth
+                          id='filter'
+                          label='Search columns'
+                          name='filter'
+                          autoComplete='off'
+                          value={filter_text_input}
+                          onChange={handle_filter_change}
+                          inputRef={filter_input_ref}
                         />
-                      ))}
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              </div>
-              </div>
-            )}
-            <div className='table-expanding-control-pane -available'>
-            <div className='section-header available-columns'>
-              <div style={{ display: 'flex', alignSelf: 'center' }}>
-                {available_columns.length} Available Columns
-              </div>
-              <div
-                className='action -mode-toggle'
-                onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
-                {all_columns_expanded ? 'Minimize' : 'Show Available Columns'}
-              </div>
-            </div>
-            {picker_visible && (
-              <>
-                <div className='rt-search-input'>
-                  <TextField
-                    variant='outlined'
-                    size='small'
-                    margin='none'
-                    fullWidth
-                    id='filter'
-                    label='Search columns'
-                    name='filter'
-                    autoComplete='off'
-                    value={filter_text_input}
-                    onChange={handle_filter_change}
-                    inputRef={filter_input_ref}
-                  />
-                </div>
-                <div className='column-controls-body'>
-                  <div className='column-category-container'>
-                    {(loaded_all
-                      ? filtered_and_sorted_columns
-                      : visible_tree_view_columns
-                    ).map((item, index) => (
-                      <div key={index}>
-                        {filter_text_input ? (
-                          <ColumnControlsTableColumnItem
-                            key={item.column_id}
-                            column={item}
-                            is_visible={Boolean(
-                              shown_column_index[item.column_id]
-                            )}
-                            {...{ set_column_visible, set_column_hidden_by_id }}
-                          />
-                        ) : item.columns ? (
-                          <CategoryTree
-                            category={item}
-                            open_categories={open_categories}
-                            toggle_category={toggle_category}
-                            render_leaf={render_leaf}
-                          />
-                        ) : (
-                          <ColumnControlsTableColumnItem
-                            key={item.column_id}
-                            column={item}
-                            is_visible={Boolean(
-                              shown_column_index[item.column_id]
-                            )}
-                            {...{ set_column_visible, set_column_hidden_by_id }}
-                          />
+                      </div>
+                      <div className='column-controls-body'>
+                        <div className='column-category-container'>
+                          {(loaded_all
+                            ? filtered_and_sorted_columns
+                            : visible_tree_view_columns
+                          ).map((item, index) => (
+                            <div key={index}>
+                              {filter_text_input ? (
+                                <ColumnControlsTableColumnItem
+                                  key={item.column_id}
+                                  column={item}
+                                  is_visible={Boolean(
+                                    shown_column_index[item.column_id]
+                                  )}
+                                  {...{
+                                    set_column_visible,
+                                    set_column_hidden_by_id
+                                  }}
+                                />
+                              ) : item.columns ? (
+                                <CategoryTree
+                                  category={item}
+                                  open_categories={open_categories}
+                                  toggle_category={toggle_category}
+                                  render_leaf={render_leaf}
+                                />
+                              ) : (
+                                <ColumnControlsTableColumnItem
+                                  key={item.column_id}
+                                  column={item}
+                                  is_visible={Boolean(
+                                    shown_column_index[item.column_id]
+                                  )}
+                                  {...{
+                                    set_column_visible,
+                                    set_column_hidden_by_id
+                                  }}
+                                />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        {!loaded_all && (
+                          <div
+                            className='table-column-controls-load-all-columns'
+                            onClick={load_remaining_columns}>
+                            Load Remaining Columns
+                          </div>
                         )}
                       </div>
-                    ))}
-                  </div>
-                  {!loaded_all && (
-                    <div
-                      className='table-column-controls-load-all-columns'
-                      onClick={load_remaining_columns}>
-                      Load Remaining Columns
-                    </div>
+                    </>
                   )}
                 </div>
-              </>
-            )}
-            </div>
-          </div>
-          )
-        })()}
+              </div>
+            )
+          })()}
       </div>
     </ClickAwayListener>
   )

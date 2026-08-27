@@ -46,7 +46,10 @@ export default function ColumnParamOverrideSection({
       if (exclude_param_names.includes(name)) continue
       if (definition.hidden) continue
       const groups = definition.groups || []
-      if (groups.length > 0 && groups.every((g) => exclude_groups.includes(g))) {
+      if (
+        groups.length > 0 &&
+        groups.every((g) => exclude_groups.includes(g))
+      ) {
         continue
       }
       result[name] = definition
@@ -196,17 +199,16 @@ export default function ColumnParamOverrideSection({
                   {group_name !== 'Ungrouped' && (
                     <div className='column-param-group-title'>{group_name}</div>
                   )}
-                  {params.map(
-                    ([column_param_name, column_param_definition]) =>
-                      render_param_item({
-                        key: column_param_name,
-                        column: override_column,
-                        set_local_table_state: handle_override_state_change,
-                        column_index,
-                        column_param_name,
-                        column_param_definition,
-                        row_axes
-                      })
+                  {params.map(([column_param_name, column_param_definition]) =>
+                    render_param_item({
+                      key: column_param_name,
+                      column: override_column,
+                      set_local_table_state: handle_override_state_change,
+                      column_index,
+                      column_param_name,
+                      column_param_definition,
+                      row_axes
+                    })
                   )}
                 </div>
               )

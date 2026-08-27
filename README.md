@@ -24,11 +24,11 @@ Operators (whitelisted per type): `=`, `!=`, `>`, `>=`, `<`, `<=`, `LIKE`, `NOT 
 
 ## Search Modes
 
-| Adapter id | Where filtering runs                            | Returns                                             |
-| ---------- | ----------------------------------------------- | --------------------------------------------------- |
-| `client`   | In-memory in the browser                        | `client_filter` predicate plus inline highlights    |
-| `where`    | Server-side via the existing `where` clause     | `state_patch.where`                                 |
-| custom     | Anywhere — register via `register_search_adapter` | Adapter-defined                                     |
+| Adapter id | Where filtering runs                              | Returns                                          |
+| ---------- | ------------------------------------------------- | ------------------------------------------------ |
+| `client`   | In-memory in the browser                          | `client_filter` predicate plus inline highlights |
+| `where`    | Server-side via the existing `where` clause       | `state_patch.where`                              |
+| custom     | Anywhere — register via `register_search_adapter` | Adapter-defined                                  |
 
 ## Security & Validation
 

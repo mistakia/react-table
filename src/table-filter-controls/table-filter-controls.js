@@ -251,17 +251,15 @@ const TableFilterControls = ({
         const scroll_left =
           window.pageXOffset || document.documentElement.scrollLeft
         const window_center_x = window.innerWidth / 2 + scroll_left
-        const has_filters =
-          (filters_local_table_state.where || []).length > 0
+        const has_filters = (filters_local_table_state.where || []).length > 0
         const is_split = is_wide_layout && has_filters
         const element_width =
           window.innerWidth < 768
             ? 0.9 * window.innerWidth
             : is_split
-            ? Math.min(0.95 * window.innerWidth, 1100)
-            : 0.6 * window.innerWidth
-        const element_center_x =
-          anchor_left + element_width / 2 + scroll_left
+              ? Math.min(0.95 * window.innerWidth, 1100)
+              : 0.6 * window.innerWidth
+        const element_center_x = anchor_left + element_width / 2 + scroll_left
 
         const translate_x = window_center_x - element_center_x
 
@@ -468,7 +466,9 @@ const TableFilterControls = ({
   const has_selectable_where_columns = useMemo(() => {
     return local_table_state_where_columns.some(
       (column) =>
-        column && column.column_params && Object.keys(column.column_params).length
+        column &&
+        column.column_params &&
+        Object.keys(column.column_params).length
     )
   }, [local_table_state_where_columns])
 
@@ -527,228 +527,258 @@ const TableFilterControls = ({
             </div>
           </div>
         )}
-        {filter_controls_open && (() => {
-          const has_filters = (filters_local_table_state.where || []).length > 0
-          const is_wide_split = is_wide_layout && has_filters
-          const picker_visible = all_columns_expanded || is_wide_split
-          return (
-          <>
-            {seedable_where_rows.length > 0 && (
-              <div
-                className='filter-seed-ribbon'
-                title={seedable_where_info.names.join(', ')}>
-                <span className='filter-seed-ribbon-text'>
-                  <span className='filter-seed-ribbon-lead'>
-                    Add filter row
-                    {seedable_where_rows.length === 1 ? '' : 's'} for visible
-                    parameterized column
-                    {seedable_where_rows.length === 1 ? '' : 's'}:
-                  </span>{' '}
-                  <span className='filter-seed-ribbon-names'>
-                    {seedable_where_info.summary}
-                  </span>
-                </span>
-                <button
-                  type='button'
-                  className='filter-seed-ribbon-action'
-                  onClick={handle_add_seedable_rows}>
-                  {seedable_where_info.button_label}
-                </button>
-              </div>
-            )}
-            <div className='table-expanding-control-panels'>
-            {has_filters && (
-              <div className='table-expanding-control-pane -selected'>
-              <div
-                className='table-selected-filters-container'
-                style={{
-                  maxHeight: is_wide_split
-                    ? '100%'
-                    : all_columns_expanded
-                    ? '0'
-                    : '100%'
-                }}>
-                <div className='section-header'>
-                  <div style={{ display: 'flex', alignSelf: 'center' }}>
-                    Selected Filters
+        {filter_controls_open &&
+          (() => {
+            const has_filters =
+              (filters_local_table_state.where || []).length > 0
+            const is_wide_split = is_wide_layout && has_filters
+            const picker_visible = all_columns_expanded || is_wide_split
+            return (
+              <>
+                {seedable_where_rows.length > 0 && (
+                  <div
+                    className='filter-seed-ribbon'
+                    title={seedable_where_info.names.join(', ')}>
+                    <span className='filter-seed-ribbon-text'>
+                      <span className='filter-seed-ribbon-lead'>
+                        Add filter row
+                        {seedable_where_rows.length === 1 ? '' : 's'} for
+                        visible parameterized column
+                        {seedable_where_rows.length === 1 ? '' : 's'}:
+                      </span>{' '}
+                      <span className='filter-seed-ribbon-names'>
+                        {seedable_where_info.summary}
+                      </span>
+                    </span>
+                    <button
+                      type='button'
+                      className='filter-seed-ribbon-action'
+                      onClick={handle_add_seedable_rows}>
+                      {seedable_where_info.button_label}
+                    </button>
                   </div>
-                  <div style={{ display: 'flex' }}>
-                    {bulk_edit_mode && has_selectable_where_columns && (
-                      <>
-                        <FilterControlsSelectedColumnsParameters
-                          local_table_state={filters_local_table_state}
-                          set_local_table_state={set_filters_local_table_state}
-                          selected_where_indexes={selected_where_indexes}
-                          local_table_state_where_columns={
-                            local_table_state_where_columns
-                          }
-                        />
-                        {selected_where_indexes.length > 0 && (
-                          <div
-                            className='action'
-                            onClick={() => set_selected_where_indexes([])}>
-                            Deselect All
+                )}
+                <div className='table-expanding-control-panels'>
+                  {has_filters && (
+                    <div className='table-expanding-control-pane -selected'>
+                      <div
+                        className='table-selected-filters-container'
+                        style={{
+                          maxHeight: is_wide_split
+                            ? '100%'
+                            : all_columns_expanded
+                              ? '0'
+                              : '100%'
+                        }}>
+                        <div className='section-header'>
+                          <div style={{ display: 'flex', alignSelf: 'center' }}>
+                            Selected Filters
                           </div>
-                        )}
-                        {selected_where_indexes.length > 0 && (
-                          <div
-                            className='action -destructive'
-                            onClick={handle_remove_selected_filters}>
-                            Remove Selected
+                          <div style={{ display: 'flex' }}>
+                            {bulk_edit_mode && has_selectable_where_columns && (
+                              <>
+                                <FilterControlsSelectedColumnsParameters
+                                  local_table_state={filters_local_table_state}
+                                  set_local_table_state={
+                                    set_filters_local_table_state
+                                  }
+                                  selected_where_indexes={
+                                    selected_where_indexes
+                                  }
+                                  local_table_state_where_columns={
+                                    local_table_state_where_columns
+                                  }
+                                />
+                                {selected_where_indexes.length > 0 && (
+                                  <div
+                                    className='action'
+                                    onClick={() =>
+                                      set_selected_where_indexes([])
+                                    }>
+                                    Deselect All
+                                  </div>
+                                )}
+                                {selected_where_indexes.length > 0 && (
+                                  <div
+                                    className='action -destructive'
+                                    onClick={handle_remove_selected_filters}>
+                                    Remove Selected
+                                  </div>
+                                )}
+                                {selected_where_indexes.length !==
+                                  local_table_state_where_columns.length && (
+                                  <div
+                                    className='action'
+                                    onClick={() =>
+                                      set_selected_where_indexes(
+                                        local_table_state_where_columns
+                                          .map((column, index) => ({
+                                            column,
+                                            index
+                                          }))
+                                          .filter(
+                                            ({ column }) =>
+                                              column &&
+                                              column.column_params &&
+                                              Object.keys(column.column_params)
+                                                .length
+                                          )
+                                          .map(({ index }) => index)
+                                      )
+                                    }>
+                                    Select All
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {has_selectable_where_columns && (
+                              <div
+                                className={get_string_from_object({
+                                  action: true,
+                                  'action-toggle': true,
+                                  '-active': bulk_edit_mode
+                                })}
+                                onClick={() => {
+                                  if (bulk_edit_mode) {
+                                    set_selected_where_indexes([])
+                                  }
+                                  set_bulk_edit_mode(!bulk_edit_mode)
+                                }}>
+                                {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
+                              </div>
+                            )}
+                            {!bulk_edit_mode && (
+                              <div
+                                className='action -destructive'
+                                onClick={handle_remove_all_filters}>
+                                Remove All
+                              </div>
+                            )}
                           </div>
-                        )}
-                        {selected_where_indexes.length !==
-                          local_table_state_where_columns.length && (
-                          <div
-                            className='action'
-                            onClick={() =>
-                              set_selected_where_indexes(
-                                local_table_state_where_columns
-                                  .map((column, index) => ({ column, index }))
-                                  .filter(
-                                    ({ column }) =>
-                                      column &&
-                                      column.column_params &&
-                                      Object.keys(column.column_params).length
-                                  )
-                                  .map(({ index }) => index)
+                        </div>
+                        <div className='selected-columns-container'>
+                          {(filters_local_table_state.where || []).map(
+                            (where_item, where_index) => {
+                              const column_definition =
+                                local_table_state_where_columns[where_index]
+                              // A filter naming a column that is not in all_columns has
+                              // nothing to render a control from; skip it rather than
+                              // handing FilterItem a null definition to destructure.
+                              if (!column_definition) return null
+                              return (
+                                <FilterItem
+                                  key={where_index}
+                                  column_definition={column_definition}
+                                  table_state={filters_local_table_state}
+                                  {...{
+                                    where_index,
+                                    selected_where_indexes,
+                                    set_selected_where_indexes,
+                                    bulk_edit_mode,
+                                    local_table_state:
+                                      filters_local_table_state,
+                                    set_local_table_state:
+                                      set_filters_local_table_state
+                                  }}
+                                />
                               )
-                            }>
-                            Select All
+                            }
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className='table-expanding-control-pane -available'>
+                    <div className='section-header available-columns'>
+                      <div style={{ display: 'flex', alignSelf: 'center' }}>
+                        {all_columns.length} Available Filters
+                      </div>
+                      <div
+                        className='action -mode-toggle'
+                        onClick={() =>
+                          set_all_columns_expanded(!all_columns_expanded)
+                        }>
+                        {all_columns_expanded
+                          ? 'Minimize'
+                          : 'Show Available Filters'}
+                      </div>
+                    </div>
+                    {picker_visible && (
+                      <>
+                        <div className='rt-search-input'>
+                          <TextField
+                            variant='outlined'
+                            size='small'
+                            margin='none'
+                            fullWidth
+                            id='filter'
+                            label='Search columns'
+                            name='filter'
+                            autoComplete='off'
+                            value={filter_text_input}
+                            onChange={(e) =>
+                              set_filter_text_input(e.target.value)
+                            }
+                            inputRef={filter_input_ref}
+                          />
+                        </div>
+                        <div
+                          className='column-controls-body'
+                          style={{ overflow: 'auto' }}>
+                          <div className='column-category-container'>
+                            {filtered_and_sorted_columns.map((item, index) => (
+                              <div key={index}>
+                                {filter_text_input ? (
+                                  <FilterControlItem
+                                    key={item.column_id}
+                                    column_item={item}
+                                    is_visible={Boolean(
+                                      shown_column_index[item.column_id]
+                                    )}
+                                    table_state={filters_local_table_state}
+                                    on_table_state_change={(
+                                      new_table_state
+                                    ) => {
+                                      set_filters_local_table_state(
+                                        new_table_state
+                                      )
+                                    }}
+                                  />
+                                ) : item.columns ? (
+                                  <CategoryTree
+                                    category={item}
+                                    open_categories={open_categories}
+                                    toggle_category={toggle_category}
+                                    render_leaf={render_leaf}
+                                  />
+                                ) : (
+                                  <FilterControlItem
+                                    key={item.column_id}
+                                    column_item={item}
+                                    is_visible={Boolean(
+                                      shown_column_index[item.column_id]
+                                    )}
+                                    table_state={filters_local_table_state}
+                                    on_table_state_change={(
+                                      new_table_state
+                                    ) => {
+                                      set_filters_local_table_state(
+                                        new_table_state
+                                      )
+                                    }}
+                                  />
+                                )}
+                              </div>
+                            ))}
                           </div>
-                        )}
+                        </div>
                       </>
                     )}
-                    {has_selectable_where_columns && (
-                      <div
-                        className={get_string_from_object({
-                          action: true,
-                          'action-toggle': true,
-                          '-active': bulk_edit_mode
-                        })}
-                        onClick={() => {
-                          if (bulk_edit_mode) {
-                            set_selected_where_indexes([])
-                          }
-                          set_bulk_edit_mode(!bulk_edit_mode)
-                        }}>
-                        {bulk_edit_mode ? 'Done' : 'Bulk Edit'}
-                      </div>
-                    )}
-                    {!bulk_edit_mode && (
-                      <div
-                        className='action -destructive'
-                        onClick={handle_remove_all_filters}>
-                        Remove All
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className='selected-columns-container'>
-                  {(filters_local_table_state.where || []).map(
-                    (where_item, where_index) => {
-                      const column_definition =
-                        local_table_state_where_columns[where_index]
-                      // A filter naming a column that is not in all_columns has
-                      // nothing to render a control from; skip it rather than
-                      // handing FilterItem a null definition to destructure.
-                      if (!column_definition) return null
-                      return (
-                        <FilterItem
-                          key={where_index}
-                          column_definition={column_definition}
-                          table_state={filters_local_table_state}
-                          {...{
-                            where_index,
-                            selected_where_indexes,
-                            set_selected_where_indexes,
-                            bulk_edit_mode,
-                            local_table_state: filters_local_table_state,
-                            set_local_table_state: set_filters_local_table_state
-                          }}
-                        />
-                      )
-                    }
-                  )}
-                </div>
-              </div>
-              </div>
-            )}
-            <div className='table-expanding-control-pane -available'>
-            <div className='section-header available-columns'>
-              <div style={{ display: 'flex', alignSelf: 'center' }}>
-                {all_columns.length} Available Filters
-              </div>
-              <div
-                className='action -mode-toggle'
-                onClick={() => set_all_columns_expanded(!all_columns_expanded)}>
-                {all_columns_expanded ? 'Minimize' : 'Show Available Filters'}
-              </div>
-            </div>
-            {picker_visible && (
-              <>
-                <div className='rt-search-input'>
-                  <TextField
-                    variant='outlined'
-                    size='small'
-                    margin='none'
-                    fullWidth
-                    id='filter'
-                    label='Search columns'
-                    name='filter'
-                    autoComplete='off'
-                    value={filter_text_input}
-                    onChange={(e) => set_filter_text_input(e.target.value)}
-                    inputRef={filter_input_ref}
-                  />
-                </div>
-                <div className='column-controls-body' style={{ overflow: 'auto' }}>
-                  <div className='column-category-container'>
-                    {filtered_and_sorted_columns.map((item, index) => (
-                      <div key={index}>
-                        {filter_text_input ? (
-                          <FilterControlItem
-                            key={item.column_id}
-                            column_item={item}
-                            is_visible={Boolean(
-                              shown_column_index[item.column_id]
-                            )}
-                            table_state={filters_local_table_state}
-                            on_table_state_change={(new_table_state) => {
-                              set_filters_local_table_state(new_table_state)
-                            }}
-                          />
-                        ) : item.columns ? (
-                          <CategoryTree
-                            category={item}
-                            open_categories={open_categories}
-                            toggle_category={toggle_category}
-                            render_leaf={render_leaf}
-                          />
-                        ) : (
-                          <FilterControlItem
-                            key={item.column_id}
-                            column_item={item}
-                            is_visible={Boolean(
-                              shown_column_index[item.column_id]
-                            )}
-                            table_state={filters_local_table_state}
-                            on_table_state_change={(new_table_state) => {
-                              set_filters_local_table_state(new_table_state)
-                            }}
-                          />
-                        )}
-                      </div>
-                    ))}
                   </div>
                 </div>
               </>
-            )}
-            </div>
-            </div>
-          </>
-          )
-        })()}
+            )
+          })()}
       </div>
     </ClickAwayListener>
   )

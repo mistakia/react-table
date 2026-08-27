@@ -112,8 +112,8 @@ const TableMenu = ({
   }
   const is_saved_table = Boolean(
     selected_view.view_id &&
-      selected_view.saved_table_state &&
-      selected_view.user_id
+    selected_view.saved_table_state &&
+    selected_view.user_id
   )
 
   const handle_click = () => {

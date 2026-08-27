@@ -27,8 +27,7 @@ export default function FilterBase({
   return (
     <ClickAwayListener
       onClickAway={() => set_visible(false)}
-      mouseEvent='onMouseDown'
-    >
+      mouseEvent='onMouseDown'>
       <div>
         <div
           className='table-filter-item'

@@ -29,7 +29,8 @@ function TagInput({
   )
   const trimmed = query.trim()
   const can_create = Boolean(
-    trimmed && !suggestions.some((s) => s.toLowerCase() === trimmed.toLowerCase())
+    trimmed &&
+    !suggestions.some((s) => s.toLowerCase() === trimmed.toLowerCase())
   )
   const total_options = matches.length + (can_create ? 1 : 0)
 
@@ -108,7 +109,16 @@ function TagInput({
         }
       }
     },
-    [open, total_options, focused_index, matches, can_create, trimmed, toggle_tag, on_submit]
+    [
+      open,
+      total_options,
+      focused_index,
+      matches,
+      can_create,
+      trimmed,
+      toggle_tag,
+      on_submit
+    ]
   )
 
   const dropdown = open

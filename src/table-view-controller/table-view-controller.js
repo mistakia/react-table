@@ -230,10 +230,7 @@ const TableViewController = ({
     const desired_left = (window.innerWidth - element_width) / 2
     const min_left = margin
     const max_left = window.innerWidth - element_width - margin
-    const clamped_left = Math.max(
-      min_left,
-      Math.min(max_left, desired_left)
-    )
+    const clamped_left = Math.max(min_left, Math.min(max_left, desired_left))
     el.style.transform = `translateX(${clamped_left - rect.left}px)`
   }, [view_controls_open])
 
@@ -351,8 +348,8 @@ const TableViewController = ({
         on_toggle_favorite,
         is_favorited: Boolean(
           favorite_view_ids &&
-            typeof favorite_view_ids.has === 'function' &&
-            favorite_view_ids.has(view.view_id)
+          typeof favorite_view_ids.has === 'function' &&
+          favorite_view_ids.has(view.view_id)
         )
       }}
     />
@@ -367,8 +364,8 @@ const TableViewController = ({
   }, [current_view, tags_by_view_id, auto_tags_map])
   const is_favorited = Boolean(
     favorite_view_ids &&
-      typeof favorite_view_ids.has === 'function' &&
-      favorite_view_ids.has(selected_view.view_id)
+    typeof favorite_view_ids.has === 'function' &&
+    favorite_view_ids.has(selected_view.view_id)
   )
   const can_edit_current =
     Boolean(current_view && current_view.is_editable) && !disable_edit_view
@@ -703,11 +700,11 @@ const TableViewController = ({
               tag_suggestions,
               can_edit_tags: Boolean(
                 !disable_edit_view &&
-                  selected_edit_view &&
-                  selected_edit_view.view_username &&
-                  selected_edit_view.view_username === table_username &&
-                  on_add_user_tag &&
-                  on_remove_user_tag
+                selected_edit_view &&
+                selected_edit_view.view_username &&
+                selected_edit_view.view_username === table_username &&
+                on_add_user_tag &&
+                on_remove_user_tag
               ),
               on_add_user_tag,
               on_remove_user_tag

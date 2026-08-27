@@ -33,7 +33,10 @@ export const use_confirm_click = ({ on_confirm } = {}) => {
       if (on_confirm_ref.current) on_confirm_ref.current()
       return
     }
-    timer_ref.current = setTimeout(() => set_confirming(false), CONFIRM_TIMEOUT_MS)
+    timer_ref.current = setTimeout(
+      () => set_confirming(false),
+      CONFIRM_TIMEOUT_MS
+    )
     set_confirming(true)
   }, [set_confirming])
 

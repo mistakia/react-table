@@ -283,7 +283,9 @@ const TableRankAggregationControls = ({
                   <Autocomplete
                     size='small'
                     options={rank_aggregation_presets}
-                    getOptionLabel={(option) => option.label || option.preset_id}
+                    getOptionLabel={(option) =>
+                      option.label || option.preset_id
+                    }
                     isOptionEqualToValue={(option, value) =>
                       option.preset_id === value.preset_id
                     }

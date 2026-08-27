@@ -107,7 +107,9 @@ function ViewItem({
               'table-view-item-username': true,
               '-placeholder': has_no_username
             })}>
-            <span className='table-view-item-username-initial' aria-hidden='true'>
+            <span
+              className='table-view-item-username-initial'
+              aria-hidden='true'>
               {username_initial}
             </span>
             <span className='table-view-item-username-text'>

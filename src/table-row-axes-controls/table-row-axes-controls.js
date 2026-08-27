@@ -134,7 +134,9 @@ const TableRowAxesControls = ({
   }, [local_table_state, table_state])
 
   const supported_row_axes = useMemo(() => {
-    const items = table_state_columns.flatMap((column) => column.row_axes).filter(Boolean)
+    const items = table_state_columns
+      .flatMap((column) => column.row_axes)
+      .filter(Boolean)
     return [...new Set(items)]
   }, [table_state_columns])
 
@@ -170,8 +172,8 @@ const TableRowAxesControls = ({
             </div>
           </div>
         )}
-        {row_axes_controls_open && (
-          supported_row_axes.length ? (
+        {row_axes_controls_open &&
+          (supported_row_axes.length ? (
             <div className='table-expanding-control-input-container'>
               <Autocomplete
                 multiple
@@ -212,12 +214,9 @@ const TableRowAxesControls = ({
             </div>
           ) : (
             <div className='table-row-axes-controls-no-row-axes'>
-              <Alert severity='info'>
-                {no_row_axes_available_label}
-              </Alert>
+              <Alert severity='info'>{no_row_axes_available_label}</Alert>
             </div>
-          )
-        )}
+          ))}
       </div>
     </ClickAwayListener>
   )

@@ -38,7 +38,10 @@ const TableSegmentedSelect = ({
           )
           if (option.tooltip) {
             return (
-              <Tooltip key={option.value} title={option.tooltip} placement='top'>
+              <Tooltip
+                key={option.value}
+                title={option.tooltip}
+                placement='top'>
                 {node}
               </Tooltip>
             )

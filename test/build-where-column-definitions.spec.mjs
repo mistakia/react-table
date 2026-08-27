@@ -90,9 +90,9 @@ describe('build_where_column_definitions', () => {
   })
 
   it('returns an empty array for a missing or empty where', () => {
-    expect(build_where_column_definitions(undefined, all_columns)).to.deep.equal(
-      []
-    )
+    expect(
+      build_where_column_definitions(undefined, all_columns)
+    ).to.deep.equal([])
     expect(build_where_column_definitions([], all_columns)).to.deep.equal([])
   })
 })

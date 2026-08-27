@@ -15,7 +15,7 @@ function classify_view(view, table_username, favorite_view_ids) {
       ? favorite_view_ids.has(view.view_id)
       : Boolean(
           typeof favorite_view_ids.includes === 'function' &&
-            favorite_view_ids.includes(view.view_id)
+          favorite_view_ids.includes(view.view_id)
         ))
 
   const is_mine =
