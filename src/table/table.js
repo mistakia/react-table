@@ -33,6 +33,8 @@ import {
   get_scroll_parent,
   throttle_leading_edge,
   group_columns_by_groups,
+  use_scroll_parent_width,
+  resolve_sticky_column_ids,
   validate_table_state,
   is_valid_table_state_structure
 } from '#src/utils'
@@ -190,6 +192,7 @@ export default function Table({
     ? controlled_set_filter_controls_open
     : internal_set_filter_controls_open
   const table_container_ref = useRef()
+  const scroll_parent_width = use_scroll_parent_width(table_container_ref)
   const [column_controls_open, set_column_controls_open] = useState(false)
   const [filters_local_table_state, set_filters_local_table_state] =
     useState(table_state)
@@ -745,9 +748,27 @@ export default function Table({
     return sticky_columns.map((col) => col.getSize())
   }, [sticky_columns, table.getState().columnSizingInfo])
 
+  // Pinning is only worth its width while it leaves room for the data it is
+  // pinned beside; the budget decides how much of the declared-sticky set the
+  // current viewport can afford. Depends on sticky_column_sizes so a resize of
+  // a pinned column re-runs admission.
+  const sticky_column_ids = useMemo(
+    () =>
+      resolve_sticky_column_ids({
+        sticky_columns,
+        container_width: scroll_parent_width
+      }),
+    [sticky_columns, sticky_column_sizes, scroll_parent_width]
+  )
+
+  const is_sticky_column = useCallback(
+    (column) => sticky_column_ids.has(column.id),
+    [sticky_column_ids]
+  )
+
   const sticky_left = useCallback(
     (column) => {
-      if (!column.columnDef.sticky) return 0
+      if (!sticky_column_ids.has(column.id)) return 0
 
       let total_width = 0
       for (const col of sticky_columns) {
@@ -757,7 +778,7 @@ export default function Table({
 
       return total_width
     },
-    [sticky_columns, sticky_column_sizes]
+    [sticky_columns, sticky_column_sizes, sticky_column_ids]
   )
 
   const set_selected_scatter_column = useCallback(
@@ -817,6 +838,7 @@ export default function Table({
         all_columns,
         table_username,
         sticky_left,
+        is_sticky_column,
         sticky_columns,
         sticky_column_sizes,
         disable_edit_view,

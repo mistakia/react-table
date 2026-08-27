@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Sticky-column width budget: pinned columns past 50% of the scroll container's
+  visible width render unpinned, so a wide prefix set no longer covers a narrow
+  viewport entirely. The first pinned column is always kept.
+
 - AJV JSON Schema validation for table state with SQL injection prevention
 - `validate_table_state`, `validate_where_clause`, `validate_sort_array`, `validate_columns_array` functions
 - `disable_scatter_plot`, `disable_column_controls`, `disable_multi_sort` table state options

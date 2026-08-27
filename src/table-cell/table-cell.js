@@ -5,7 +5,7 @@ import { get_string_from_object, copy_to_clipboard } from '#src/utils'
 import { table_context } from '#src/table-context'
 
 const TableCell = ({ getValue, column, row, table }) => {
-  const { sticky_left } = useContext(table_context)
+  const { sticky_left, is_sticky_column } = useContext(table_context)
 
   if (column.columnDef.id === 'add_column_action') {
     return <div className='cell add-column-action' />
@@ -34,6 +34,9 @@ const TableCell = ({ getValue, column, row, table }) => {
     )
   }, [column, table])
 
+  // Declared sticky is the intent; the table's width budget decides whether it
+  // is honored on this viewport.
+  const is_sticky = is_sticky_column(column)
   const sticky_left_value = sticky_left(column)
 
   const { sort } = table.getState()
@@ -65,7 +68,7 @@ const TableCell = ({ getValue, column, row, table }) => {
           className: get_string_from_object({
             cell: true,
             sorted: is_sorted,
-            sticky: column.columnDef.sticky
+            sticky: is_sticky
           }),
           style: {
             width: column.getSize(),
@@ -168,7 +171,7 @@ const TableCell = ({ getValue, column, row, table }) => {
           cell: true,
           sorted: is_sorted,
           group_end: is_group_end,
-          sticky: column.columnDef.sticky
+          sticky: is_sticky
         }),
         style: {
           width: column.getSize(),

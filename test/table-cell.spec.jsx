@@ -53,6 +53,7 @@ const render_cell = async ({ value, columnDef = {}, percentiles = {} }) => {
   const row = { index: 0, original: { stat: value } }
   const context_value = {
     sticky_left: () => 0,
+    is_sticky_column: () => false,
     enable_duplicate_column_ids: false,
     percentiles
   }

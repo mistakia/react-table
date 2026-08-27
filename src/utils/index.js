@@ -5,6 +5,11 @@ export { get_scroll_parent } from './get-scroll-parent'
 export { debounce } from './debounce'
 export { throttle_leading_edge } from './throttle-leading-edge'
 export { use_count_children } from './use-count-children'
+export { default as use_scroll_parent_width } from './use-scroll-parent-width'
+export {
+  default as resolve_sticky_column_ids,
+  STICKY_WIDTH_BUDGET_RATIO
+} from './resolve-sticky-column-ids'
 export {
   default as use_wide_control_layout,
   WIDE_CONTROL_LAYOUT_MIN_WIDTH

@@ -68,6 +68,7 @@ const TableHeader = ({ header, column, table }) => {
     set_column_hidden_by_index,
     set_filters_local_table_state,
     sticky_left,
+    is_sticky_column,
     selected_scatter_columns,
     set_selected_scatter_column,
     enable_duplicate_column_ids
@@ -275,6 +276,9 @@ const TableHeader = ({ header, column, table }) => {
     !is_grouped
   const width = header.getSize()
 
+  // Declared sticky is the intent; the table's width budget decides whether it
+  // is honored on this viewport.
+  const is_sticky = is_sticky_column(column)
   const sticky_left_value = sticky_left(column)
 
   const column_state_params =
@@ -352,7 +356,7 @@ const TableHeader = ({ header, column, table }) => {
               sorted: is_sorted,
               group_end: is_group_end,
               border_bottom: !header.isPlaceholder,
-              sticky: column.columnDef.sticky
+              sticky: is_sticky
             }),
             colSpan: header.colSpan,
             ref: anchor_el,
