@@ -62,6 +62,10 @@ src/
 }
 ```
 
+**Pinned columns are capped by a width budget, so a `prefix_columns` entry is a REQUEST to pin, not a guarantee.** `prefix_columns` render sticky only while the running total stays under `STICKY_WIDTH_BUDGET_RATIO` (half) of the scroll container's measured width; the rest render unpinned and scroll normally, re-resolved on resize. The first one is always pinned. A consumer seeing a column unpin itself on a phone is looking at this and not at a bug — five prefix columns come to roughly 470px, which covers a 390px viewport entirely and leaves no width in which any data column can be scrolled into view. The admission rule is `src/utils/resolve-sticky-column-ids.js`, unit-tested at `test/resolve-sticky-column-ids.spec.mjs`.
+
+**Every row kind must reserve the trailing add-column control's width** (`ADD_COLUMN_ACTION_WIDTH`, via `AddColumnActionSpacer`). A row that skips it comes out narrower than the scroll extent, and a sticky cell cannot be pushed past its own row's right edge — at maximum horizontal scroll the trailing pinned columns then clamp short of their offsets and slide on top of each other, hiding a column outright.
+
 **Row-grain control:** Pass `row_grain_options` (an array of `{ value, label }`) and `on_row_grain_change` (callback) to the `Table` component to render a `TableSegmentedSelect` switch in the toolbar. The widget is generic -- consumers supply both the values and the display labels. Active value reads from `table_state.row_grain[0]`. Consumers that don't pass `row_grain_options` see no toggle and incur no cost.
 
 **Row-axes control:** The `TableRowAxesControls` widget renders when any selected column declares a non-empty `row_axes` array on its column definition. Pass `disable_row_axes` to suppress it entirely. Pass `row_axes_label` (default `'Row axes'`) and `no_row_axes_available_label` (default `'No row axes available for selected columns'`) to control the button label and the empty-state message. Consumers can pass domain-specific copy (e.g. `row_axes_label="Splits"`) without touching the widget code.
@@ -133,8 +137,18 @@ npm install @mistakia/react-table
 import Table from '@mistakia/react-table'
 
 const all_columns = {
-  name: { column_id: 'name', header_label: 'Name', accessorKey: 'name', data_type: 2 }, // TEXT
-  age:  { column_id: 'age',  header_label: 'Age',  accessorKey: 'age',  data_type: 1 }  // NUMBER
+  name: {
+    column_id: 'name',
+    header_label: 'Name',
+    accessorKey: 'name',
+    data_type: 2
+  }, // TEXT
+  age: {
+    column_id: 'age',
+    header_label: 'Age',
+    accessorKey: 'age',
+    data_type: 1
+  } // NUMBER
 }
 
 const table_state = {
@@ -144,14 +158,19 @@ const table_state = {
 }
 
 function MyTable({ data }) {
-  return <Table data={data} all_columns={all_columns} table_state={table_state} />
+  return (
+    <Table data={data} all_columns={all_columns} table_state={table_state} />
+  )
 }
 ```
 
 ### Validation API
 
 ```javascript
-import { validate_table_state, validate_where_clause } from '@mistakia/react-table'
+import {
+  validate_table_state,
+  validate_where_clause
+} from '@mistakia/react-table'
 
 const result = validate_table_state(table_state)
 if (!result.valid) console.error(result.errors)
@@ -192,7 +211,7 @@ View configuration selects the adapter:
 
 ```javascript
 selected_view = {
-  search: { type: 'where',  column_id: 'title' }                       // server-side ILIKE
+  search: { type: 'where', column_id: 'title' } // server-side ILIKE
   // or:  { type: 'client', fields: ['title', 'description'], key_field: 'id' }
   // or:  { type: 'my_backend', endpoint: '/api/search' }
 }
@@ -208,7 +227,8 @@ selected_view = {
 import HighlightedText from 'react-table/src/search/highlighted-text.js'
 
 const TitleCell = ({ row, table }) => {
-  const highlights = table?.options?.meta?.row_highlights?.[row.original.base_uri]
+  const highlights =
+    table?.options?.meta?.row_highlights?.[row.original.base_uri]
   const ranges = highlights?.cell_ranges?.title || []
   return <HighlightedText text={row.original.title} ranges={ranges} />
 }
