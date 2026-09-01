@@ -14,6 +14,7 @@ import FilterListIcon from '@mui/icons-material/FilterList'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
+import WarningAmberIcon from '@mui/icons-material/WarningAmber'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
 import CheckBoxIcon from '@mui/icons-material/CheckBox'
@@ -75,7 +76,8 @@ const TableHeader = ({ header, column, table }) => {
     is_sticky_column,
     selected_scatter_columns,
     set_selected_scatter_column,
-    enable_duplicate_column_ids
+    enable_duplicate_column_ids,
+    columns_with_no_data
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -162,6 +164,11 @@ const TableHeader = ({ header, column, table }) => {
   const accessor_path = enable_duplicate_column_ids
     ? `${column.columnDef.accessorKey}_${column_index}`
     : column.columnDef.id
+
+  // Every loaded row was null for this column. Distinct from a column of
+  // zeroes, which the reader cannot tell apart from it in the cells alone —
+  // the usual cause is a param combination the source cannot satisfy.
+  const has_no_data = Boolean(columns_with_no_data?.has(accessor_path))
 
   const handle_sort_ascending = useCallback(
     () =>
@@ -394,6 +401,15 @@ const TableHeader = ({ header, column, table }) => {
                   {column.columnDef.header_label}
                   {!is_grouped && param_suffix ? ` · ${param_suffix}` : ''}
                 </div>
+              )}
+              {has_no_data && !header.isPlaceholder && (
+                <Tooltip
+                  title='No data — every loaded row is empty for this column. Check the column parameters: the source may have nothing for this combination.'
+                  placement='top'>
+                  <div className='header-no-data-icon'>
+                    <WarningAmberIcon />
+                  </div>
+                </Tooltip>
               )}
               {is_sorted && column_sort_direction === 'asc' && (
                 <div className='header-sort-icon'>

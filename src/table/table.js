@@ -35,6 +35,7 @@ import {
   group_columns_by_groups,
   use_scroll_parent_width,
   resolve_sticky_column_ids,
+  find_columns_with_no_data,
   validate_table_state,
   is_valid_table_state_structure
 } from '#src/utils'
@@ -544,6 +545,14 @@ export default function Table({
     return client_filter(data)
   }, [data, client_filter])
 
+  // Keys that came back null on every loaded row. A column of nothing reads
+  // exactly like a column of zeroes at a glance, so the header marks it rather
+  // than leaving the reader to infer it from the cells.
+  const columns_with_no_data = useMemo(
+    () => find_columns_with_no_data(filtered_data),
+    [filtered_data]
+  )
+
   const table = useReactTable({
     columns: table_columns,
     data: filtered_data,
@@ -827,6 +836,7 @@ export default function Table({
       value={{
         enable_duplicate_column_ids,
         percentiles,
+        columns_with_no_data,
         table_state,
         on_table_state_change,
         set_column_controls_open,

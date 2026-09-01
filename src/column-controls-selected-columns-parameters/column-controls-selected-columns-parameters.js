@@ -1,16 +1,20 @@
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useContext, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import Popper from '@mui/material/Popper'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 
 import ParametersEditor from '#src/parameters-editor'
+import { resolve_column_params } from '#src/utils'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
+import { table_context } from '#src/table-context'
 
 import './column-controls-selected-columns-parameters.styl'
 
 const build_records = (
   selected_column_indexes,
   local_table_state,
-  set_local_table_state
+  set_local_table_state,
+  all_columns
 ) =>
   selected_column_indexes
     .map((index) => {
@@ -23,6 +27,9 @@ const build_records = (
         kind: 'column',
         column_id,
         get_value: (param_name) => current_params[param_name],
+        // The whole param set, so a control can resolve which values its
+        // SIBLINGS currently admit rather than offering the context-free list.
+        get_params: () => current_params,
         update: (param_name, value) =>
           set_local_table_state((prev) => ({
             ...prev,
@@ -32,9 +39,18 @@ const build_records = (
                 typeof column === 'string' ? column : column.column_id
               const cur_params =
                 typeof column === 'string' ? {} : column.params || {}
+              // Re-resolve after the edit: changing one param can make a
+              // SIBLING's value unreachable (market_type -> selection_type),
+              // and a stale sibling matches no rows rather than erroring.
+              const { params: next_params } = resolve_column_params({
+                column_params: all_columns?.[cur_id]?.column_params,
+                params: { ...cur_params, [param_name]: value },
+                data_type_select: TABLE_DATA_TYPES.SELECT,
+                fill_unset: false
+              })
               return {
                 column_id: cur_id,
-                params: { ...cur_params, [param_name]: value }
+                params: next_params
               }
             })
           }))
@@ -50,6 +66,7 @@ export default function ColumnControlsSelectedColumnsParameters({
 }) {
   const [visible, set_visible] = useState(false)
   const anchor_ref = useRef(null)
+  const { all_columns } = useContext(table_context)
 
   const total_params_count = useMemo(() => {
     const names = new Set()
@@ -67,9 +84,15 @@ export default function ColumnControlsSelectedColumnsParameters({
       build_records(
         selected_column_indexes,
         local_table_state,
-        set_local_table_state
+        set_local_table_state,
+        all_columns
       ),
-    [selected_column_indexes, local_table_state.columns, set_local_table_state]
+    [
+      selected_column_indexes,
+      local_table_state.columns,
+      set_local_table_state,
+      all_columns
+    ]
   )
 
   if (total_params_count === 0) return null

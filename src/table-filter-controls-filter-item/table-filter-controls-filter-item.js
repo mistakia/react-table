@@ -31,7 +31,7 @@ import {
   OPERATOR_MENU_DEFAULT_VALUE,
   OPERATOR_MENU_OPTIONS
 } from '#src/constants.mjs'
-import { get_string_from_object } from '#src/utils'
+import { get_string_from_object, resolve_column_params } from '#src/utils'
 import Checkbox from '@mui/material/Checkbox'
 
 const FilterItemOperator = ({
@@ -373,20 +373,38 @@ export default function FilterItem({
         kind: 'where',
         column_id,
         get_value: (param_name) => where_item.params?.[param_name],
+        // The whole param set, so a control can resolve which values its
+        // SIBLINGS currently admit rather than offering the context-free list.
+        get_params: () => where_item.params || {},
         update: (param_name, value) =>
           set_local_table_state((prev) => ({
             ...prev,
             where: (prev.where || []).map((row, i) => {
               if (i !== where_index) return row
+              // Re-resolve after the edit: changing one param can make a
+              // SIBLING's value unreachable (market_type -> selection_type),
+              // and a stale sibling matches no rows rather than erroring.
+              const { params: next_params } = resolve_column_params({
+                column_params: column_definition.column_params,
+                params: { ...(row.params || {}), [param_name]: value },
+                data_type_select: TABLE_DATA_TYPES.SELECT,
+                fill_unset: false
+              })
               return {
                 ...row,
-                params: { ...(row.params || {}), [param_name]: value }
+                params: next_params
               }
             })
           }))
       }
     ],
-    [where_index, column_id, where_item, set_local_table_state]
+    [
+      where_index,
+      column_id,
+      where_item,
+      set_local_table_state,
+      column_definition
+    ]
   )
 
   const handle_create_filter = useCallback(

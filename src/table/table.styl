@@ -205,8 +205,17 @@
   .header-sort-icon
     margin-left 4px
 
+  .header-no-data-icon
+    margin-left 4px
+    display flex
+    align-items center
+    // Muted rather than alarming: an empty column is worth noticing, not worth
+    // reading as an error.
+    color rgba(0, 0, 0, 0.38)
+
   .header-icon
   .header-sort-icon
+  .header-no-data-icon
     svg
       position relative
       height 0.9em

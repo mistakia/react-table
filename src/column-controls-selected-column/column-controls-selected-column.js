@@ -11,7 +11,8 @@ import Tooltip from '@mui/material/Tooltip'
 import CloseIcon from '@mui/icons-material/Close'
 import FilterListIcon from '@mui/icons-material/FilterList'
 
-import { get_string_from_object } from '#src/utils'
+import { get_string_from_object, resolve_column_params } from '#src/utils'
+import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 import DataTypeIcon from '#src/data-type-icon'
 import ColumnPicker from '#src/column-picker'
 import ParametersEditor from '#src/parameters-editor'
@@ -84,21 +85,35 @@ const ColumnControlsSelectedColumn = React.memo(
           column_index,
           set_local_table_state,
           get_value: (param_name) => column.selected_params?.[param_name],
+          // The whole param set, so a control can resolve which values its
+          // SIBLINGS currently admit rather than offering the context-free list.
+          get_params: () => column.selected_params || {},
           update: (param_name, value) =>
-            set_local_table_state((prev) => ({
-              ...prev,
-              columns: [
-                ...prev.columns.slice(0, column_index),
-                {
-                  column_id: column.column_id,
-                  params: {
-                    ...(column.selected_params || {}),
-                    [param_name]: value
-                  }
+            set_local_table_state((prev) => {
+              // Re-resolve after the edit: changing one param can make a
+              // SIBLING's value unreachable (market_type -> selection_type),
+              // and a stale sibling matches no rows rather than erroring.
+              const { params: next_params } = resolve_column_params({
+                column_params: column.column_params,
+                params: {
+                  ...(column.selected_params || {}),
+                  [param_name]: value
                 },
-                ...prev.columns.slice(column_index + 1)
-              ]
-            }))
+                data_type_select: TABLE_DATA_TYPES.SELECT,
+                fill_unset: false
+              })
+              return {
+                ...prev,
+                columns: [
+                  ...prev.columns.slice(0, column_index),
+                  {
+                    column_id: column.column_id,
+                    params: next_params
+                  },
+                  ...prev.columns.slice(column_index + 1)
+                ]
+              }
+            })
         }
       ],
       [column, column_index, set_local_table_state]

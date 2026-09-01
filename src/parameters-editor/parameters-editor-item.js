@@ -8,6 +8,7 @@ import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
 import ColumnParamDateFilter from '#src/column-param-date-filter'
 import ColumnParamObjectPresetFilter from '#src/column-param-object-preset-filter'
 import { render_column_param_item } from '#src/column-controls-column-param-item'
+import { resolve_param_values } from '#src/utils'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const sanitize_value = (value) => {
@@ -72,9 +73,28 @@ const ParametersEditorItem = ({
       }
     : {}
 
+  // A param's admissible values can depend on its SIBLINGS (`selection_type`
+  // admits OVER/UNDER for an over/under market and YES/NO for a yes/no one), so
+  // the control is handed the set resolved against the record's current params
+  // rather than the context-free declaration. Only meaningful for a single
+  // record — under bulk edit the records can disagree on the siblings, so the
+  // static list stands and the update path still repairs whatever it produces.
+  const resolved_values =
+    records.length === 1 && typeof records[0].get_params === 'function'
+      ? resolve_param_values({
+          param_definition,
+          params: records[0].get_params()
+        })
+      : param_definition.values
+
+  const resolved_param_definition =
+    resolved_values === param_definition.values
+      ? param_definition
+      : { ...param_definition, values: resolved_values }
+
   const param_props = {
     column_param_name: param_name,
-    column_param_definition: param_definition,
+    column_param_definition: resolved_param_definition,
     selected_param_values,
     handle_change,
     mixed_state: !is_equal,

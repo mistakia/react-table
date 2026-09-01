@@ -27,7 +27,8 @@ import {
   fuzzy_match,
   group_columns_into_tree_view,
   get_string_from_object,
-  use_wide_control_layout
+  use_wide_control_layout,
+  resolve_column_params
 } from '#src/utils'
 import { table_context } from '#src/table-context'
 import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '#src/constants.mjs'
@@ -190,45 +191,12 @@ const TableColumnControls = ({
       let new_column = column_id
 
       if (column_definition && column_definition.column_params) {
-        const default_params = {}
-
-        // First pass: collect static defaults
-        for (const [param_key, param_value] of Object.entries(
-          column_definition.column_params
-        )) {
-          if (
-            param_value.default_value !== undefined &&
-            param_value.default_value !== null
-          ) {
-            switch (param_value.data_type) {
-              case TABLE_DATA_TYPES.SELECT:
-                default_params[param_key] = [param_value.default_value]
-                break
-              default:
-                default_params[param_key] = param_value.default_value
-            }
-          }
-        }
-
-        // Second pass: apply dynamic defaults (get_default_value)
-        // These can override static defaults based on other param values
-        for (const [param_key, param_value] of Object.entries(
-          column_definition.column_params
-        )) {
-          if (typeof param_value.get_default_value === 'function') {
-            const dynamic_default =
-              param_value.get_default_value(default_params)
-            if (dynamic_default !== undefined && dynamic_default !== null) {
-              switch (param_value.data_type) {
-                case TABLE_DATA_TYPES.SELECT:
-                  default_params[param_key] = [dynamic_default]
-                  break
-                default:
-                  default_params[param_key] = dynamic_default
-              }
-            }
-          }
-        }
+        // Same resolution the param editor runs after every edit, so a column
+        // cannot be BORN holding a combination editing it would have repaired.
+        const { params: default_params } = resolve_column_params({
+          column_params: column_definition.column_params,
+          data_type_select: TABLE_DATA_TYPES.SELECT
+        })
 
         if (Object.keys(default_params).length > 0) {
           new_column = {
