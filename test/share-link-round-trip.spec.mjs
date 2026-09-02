@@ -50,7 +50,8 @@ describe('share-link round trip', () => {
       view_id: 'abc',
       view_name: 'My View',
       view_description: 'desc',
-      view_search_column_id: 'col1'
+      view_search_column_id: 'col1',
+      query_id: 'query-a'
     }
 
     const params = serialize({ table_state, view_fields })
@@ -58,6 +59,33 @@ describe('share-link round trip', () => {
 
     expect(parsed.table_state).to.deep.equal(table_state)
     expect(parsed.view_fields).to.deep.equal(view_fields)
+  })
+
+  it('carries a query-backed view across the round trip, and loses it without the key', () => {
+    // The sharp edge of the five representations. A query-backed view's columns
+    // are ad-hoc aliases that mean nothing to the registry, so a share link that
+    // dropped query_id would resolve into a registry view carrying ids matching
+    // nothing -- an empty table with no error anywhere.
+    const table_state = { columns: ['player_name', 'points'] }
+    const view_fields = { view_id: 'v1', query_id: 'query-a' }
+
+    const params = serialize({ table_state, view_fields })
+    expect(params.get('query_id')).to.equal('query-a')
+
+    const parsed = parse_url_params_to_table_state(params)
+    expect(parsed.view_fields.query_id).to.equal('query-a')
+    // And it stays OUT of table_state, which is a pure display contract.
+    expect(parsed.table_state.query_id).to.equal(undefined)
+
+    // The negative control: strip the one key and the reference is gone, which
+    // is what a schema that did not declare it would do on every share.
+    params.delete('query_id')
+    const stripped = parse_url_params_to_table_state(params)
+    expect(stripped.view_fields.query_id).to.equal('')
+    expect(stripped.table_state.columns).to.deep.equal([
+      'player_name',
+      'points'
+    ])
   })
 
   it('omits empty-shape array/object/string from the URL but always emits boolean', () => {
@@ -105,7 +133,8 @@ describe('share-link round trip', () => {
       view_id: '',
       view_name: '',
       view_description: '',
-      view_search_column_id: ''
+      view_search_column_id: '',
+      query_id: ''
     })
   })
 

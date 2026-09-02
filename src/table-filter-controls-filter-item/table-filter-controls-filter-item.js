@@ -39,7 +39,14 @@ const FilterItemOperator = ({
   handle_operator_change,
   data_type
 }) => {
-  const available_operators = DATA_TYPE_OPERATORS[data_type]
+  // DATA_TYPE_OPERATORS does not key every data type, and an unkeyed one used to
+  // be harmless: table-filter-controls returned null on a registry miss, so the
+  // column simply had no filter UI. Once ad-hoc query-backed columns are merged
+  // into all_columns the definition IS found, this renders, and a bare
+  // `.map()` on the undefined throws -- the merge is what converts a benign
+  // no-op into a crash. An empty menu is the honest degradation: the column is
+  // there, and nothing can be filtered on it.
+  const available_operators = DATA_TYPE_OPERATORS[data_type] || []
   return (
     <div className='filter-item-left-operator'>
       <FormControl size='small' className='filter-item-operator-control'>

@@ -35,7 +35,20 @@ export const SHARE_LINK_URL_SCHEMA = {
     scatter_plot_options: 'object',
     disable_scatter_plot: 'boolean'
   },
-  view: ['view_id', 'view_name', 'view_description', 'view_search_column_id']
+  // `query_id` is a VIEW key, not a table_state key, and that placement is the
+  // whole point rather than a filing decision. A query-backed view's columns
+  // are ad-hoc aliases that mean nothing to the registry, so a share link that
+  // dropped the reference would resolve into a registry view carrying ids
+  // matching nothing -- an empty table with no error, which is the dominant
+  // correctness risk this domain names. It crosses as ONE scalar by the same
+  // route view_id already takes; the statement itself never enters a URL.
+  view: [
+    'view_id',
+    'view_name',
+    'view_description',
+    'view_search_column_id',
+    'query_id'
+  ]
 }
 
 export const TABLE_DATA_TYPES = {

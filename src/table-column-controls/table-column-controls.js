@@ -146,14 +146,34 @@ const TableColumnControls = ({
   const is_wide_layout = use_wide_control_layout(column_controls_open)
 
   const current_row_grain = (table_state.row_grain || [])[0] || null
+
+  // A query-backed view's columns are the aliases ONE statement projects, and
+  // there is no join key between such a result set and a registry column -- the
+  // registry column has nothing to join ON. Every other control still works,
+  // because sort, filter, paginate, reorder, remove and resize all ride the
+  // outer wrap around the statement; this is the single one that cannot.
+  //
+  // The marker comes from the merged descriptors rather than from a flag on
+  // table_state, because table_state is a pure display contract and must not
+  // learn that SQL exists.
+  const is_query_backed_view = useMemo(
+    () => all_columns.some((column) => column && column.is_query_backed),
+    [all_columns]
+  )
+
   const available_columns = useMemo(() => {
+    // Offer only the statement's own aliases, so a column removed from the view
+    // can still be put back and nothing is offered that the add would refuse.
+    if (is_query_backed_view) {
+      return all_columns.filter((column) => column && column.is_query_backed)
+    }
     if (!current_row_grain) return all_columns
     return all_columns.filter((column) => {
       const grains = column && column.row_grains
       if (!Array.isArray(grains) || grains.length === 0) return true
       return grains.includes(current_row_grain)
     })
-  }, [all_columns, current_row_grain])
+  }, [all_columns, current_row_grain, is_query_backed_view])
 
   const local_table_state_columns = useMemo(() => {
     const columns = []
@@ -188,6 +208,15 @@ const TableColumnControls = ({
       const column_definition = all_columns.find(
         (col) => col.column_id === column_id
       )
+
+      // The control, not the filtered picker above it. The picker stops the
+      // column being OFFERED; this stops it being added by a keyboard path, a
+      // stale render or a future caller, and it is the check the server-side
+      // save refusal mirrors.
+      if (is_query_backed_view && !column_definition?.is_query_backed) {
+        return
+      }
+
       let new_column = column_id
 
       if (column_definition && column_definition.column_params) {
@@ -212,7 +241,7 @@ const TableColumnControls = ({
         sort: (prev.sort || []).length ? prev.sort : [{ column_id, desc: true }]
       }))
     },
-    [all_columns, table_state]
+    [all_columns, table_state, is_query_backed_view]
   )
 
   const set_column_hidden_by_index = useCallback(
@@ -858,6 +887,13 @@ const TableColumnControls = ({
                         : 'Show Available Columns'}
                     </div>
                   </div>
+                  {picker_visible && is_query_backed_view && (
+                    <div className='column-controls-query-backed-notice'>
+                      This view is built from a query, so it can only show the
+                      columns that query returns. Sorting, filtering, reordering
+                      and resizing all still work.
+                    </div>
+                  )}
                   {picker_visible && (
                     <>
                       <div className='rt-search-input'>
