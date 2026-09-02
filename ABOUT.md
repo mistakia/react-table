@@ -21,12 +21,17 @@ observations:
     scalar when is_single is set and [min, max] when it is not. A research round conflated the two
     and prescribed `single` plus enable_multi_on_split for a RANGE param, which is incoherent —
     enable_multi_on_split is read only when `single` is truthy and plays no part in RANGE.
+  - >-
+    [gotcha] 2026-09-02 Nothing importing ParametersEditorItem is unit-testable: it pulls
+    column-param-date-filter, which needs the uninstalled @mui/x-date-pickers peer dep, so mocha
+    dies on MODULE_NOT_FOUND naming the date filter rather than the component under test. Extract
+    presentational pieces to their own module to test them.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-02T01:36:33.759Z'
+updated_at: '2026-09-02T02:42:46.220Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
