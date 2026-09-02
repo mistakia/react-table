@@ -10,6 +10,7 @@ import CallSplitIcon from '@mui/icons-material/CallSplit'
 import Alert from '@mui/material/Alert'
 
 import { get_string_from_object } from '#src/utils'
+import resolve_row_axis_conflicts from '#src/utils/resolve-row-axis-conflicts.js'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
 import './table-row-axes-controls.styl'
@@ -140,6 +141,34 @@ const TableRowAxesControls = ({
     return [...new Set(items)]
   }, [table_state_columns])
 
+  // An axis the selected columns offer but cannot SHARE, because they key its
+  // rows on different quantities. The option stays in the list and stays
+  // deselectable by its chip -- what changes is that it can no longer be turned
+  // ON, and that the panel says which columns disagree. Removing it from
+  // `supported_row_axes` instead would hide the one fact the user needs.
+  const row_axis_conflicts = useMemo(
+    () => resolve_row_axis_conflicts({ table_state_columns }),
+    [table_state_columns]
+  )
+
+  const column_title_of = useCallback(
+    (column_id) =>
+      table_state_columns.find((column) => column.column_id === column_id)
+        ?.column_title || column_id,
+    [table_state_columns]
+  )
+
+  // Only for an axis the user currently has ON: a conflict on an axis nobody
+  // selected is a combination they have not asked for, and the disabled option
+  // already says so without spending the panel on it.
+  const active_row_axis_conflicts = useMemo(
+    () =>
+      (local_table_state.row_axes || []).filter(
+        (axis) => row_axis_conflicts[axis]
+      ),
+    [local_table_state.row_axes, row_axis_conflicts]
+  )
+
   return (
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
@@ -182,6 +211,10 @@ const TableRowAxesControls = ({
                 value={local_table_state.row_axes}
                 openOnFocus
                 getOptionLabel={(option) => option}
+                getOptionDisabled={(option) =>
+                  Boolean(row_axis_conflicts[option]) &&
+                  !(local_table_state.row_axes || []).includes(option)
+                }
                 onChange={(event, new_value) => {
                   set_local_table_state((prev_table_state) => ({
                     ...prev_table_state,
@@ -211,6 +244,29 @@ const TableRowAxesControls = ({
                   />
                 )}
               />
+              {active_row_axis_conflicts.map((axis) => (
+                <Alert
+                  key={axis}
+                  severity='warning'
+                  className='table-row-axes-controls-conflict'>
+                  <div>
+                    {`These columns cannot share the ${axis} split, because its rows are keyed on a value and they do not measure the same thing:`}
+                  </div>
+                  <ul>
+                    {row_axis_conflicts[axis].groups.map((group) => (
+                      <li key={group.domain}>
+                        {`${group.column_ids
+                          .map(column_title_of)
+                          .join(', ')} — ${group.domain}`}
+                      </li>
+                    ))}
+                  </ul>
+                  <div>
+                    Remove the columns on one side, or put each group in its own
+                    view.
+                  </div>
+                </Alert>
+              ))}
             </div>
           ) : (
             <div className='table-row-axes-controls-no-row-axes'>

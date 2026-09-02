@@ -15,6 +15,9 @@
 //     an axis is answerable can depend on the params -- a betting column can
 //     only offer the line axis when its market posts a ladder of lines, and an
 //     axis the server would refuse must not reach the picker
+//   - row_axis_domain: for an axis whose rows are keyed on a VALUE, what that
+//     column's values are OF, so two columns offering the same axis can be
+//     found to mean different things by it. See resolve-row-axis-conflicts.js
 export default function resolve_table_state_columns({
   table_state = {},
   all_columns = {}
@@ -39,7 +42,8 @@ export default function resolve_table_state_columns({
         column_params
       ),
       fixed: resolve_field(column_def.fixed, column_params),
-      row_axes: resolve_field(column_def.row_axes, column_params)
+      row_axes: resolve_field(column_def.row_axes, column_params),
+      row_axis_domain: resolve_field(column_def.row_axis_domain, column_params)
     })
     starting_index += 1
   }
