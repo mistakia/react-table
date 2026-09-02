@@ -35,6 +35,7 @@ import {
   group_columns_by_groups,
   use_scroll_parent_width,
   resolve_sticky_column_ids,
+  resolve_table_state_columns,
   find_columns_with_no_data,
   validate_table_state,
   is_valid_table_state_structure
@@ -422,42 +423,12 @@ export default function Table({
     [table_state, on_table_state_change]
   )
 
-  const table_state_columns = useMemo(() => {
-    let starting_index = (table_state.prefix_columns || []).length
-    const columns = []
-    for (const column of table_state.columns || []) {
-      const column_id =
-        typeof column === 'string'
-          ? column
-          : column.column_id || column.id || column.column_name
-      const column_def = column_id && all_columns[column_id]
-      if (column_def) {
-        const column_params =
-          typeof column === 'string' ? {} : column.params || {}
-        const reverse_percentiles =
-          typeof column_def.reverse_percentiles === 'function'
-            ? column_def.reverse_percentiles(column_params)
-            : column_def.reverse_percentiles
-        // Decimal places can depend on the params of this column instance, not
-        // just the column id: the same measure rendered as a count wants an
-        // integer where the rate wants two places, and both can sit in one
-        // table. Resolved per instance for the same reason reverse_percentiles
-        // is, and a plain number still works unchanged.
-        const fixed =
-          typeof column_def.fixed === 'function'
-            ? column_def.fixed(column_params)
-            : column_def.fixed
-        columns.push({
-          ...column_def,
-          index: starting_index,
-          reverse_percentiles,
-          fixed
-        })
-        starting_index += 1
-      }
-    }
-    return columns
-  }, [table_state.columns, table_state.prefix_columns, all_columns])
+  // Deps are the two table_state fields the resolver reads, not table_state
+  // itself, which changes identity on every unrelated state edit.
+  const table_state_columns = useMemo(
+    () => resolve_table_state_columns({ table_state, all_columns }),
+    [table_state.columns, table_state.prefix_columns, all_columns]
+  )
 
   const grouped_columns = useMemo(
     () => group_columns_by_groups(table_state_columns, table_state.columns),

@@ -14,6 +14,7 @@ export {
   default as use_wide_control_layout,
   WIDE_CONTROL_LAYOUT_MIN_WIDTH
 } from './use-wide-control-layout'
+export { default as resolve_table_state_columns } from './resolve-table-state-columns'
 export { default as group_columns_by_groups } from './group-columns-by-groups'
 export { default as group_columns_into_tree_view } from './group-columns-into-tree-view'
 export { default as use_trace_update } from './use-trace-update'
