@@ -26,12 +26,23 @@ observations:
     column-param-date-filter, which needs the uninstalled @mui/x-date-pickers peer dep, so mocha
     dies on MODULE_NOT_FOUND naming the date filter rather than the component under test. Extract
     presentational pieces to their own module to test them.
+  - >-
+    [decision] 2026-09-02 Arity must NOT be enforced uniformly in is_param_value_admissible: judge
+    `is_single` and never `single`. An inadmissible value is overwritten with the default, not
+    flagged, so repair is only safe where the verdict is permanent. `is_single` qualifies (static
+    declaration property; initialize_value in column-param-range-filter.js returns a stored array
+    unchanged since an array is non-null, so a scalar slider gets a pair and that shape reaches the
+    server). `single` does not: enable_multi_on_split admits a list while a matching row axis is
+    active, and table-row-axes-controls.js:188 writes row_axes without re-resolving params, so
+    judging it means turning a split off and editing any sibling DESTROYS the stored list with no
+    way back. Census over league's 193 saved views and 6,411 param instances: the `single` rule
+    would reset 9 legitimate values across 5 views and repair 0.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-02T02:42:46.220Z'
+updated_at: '2026-09-02T02:53:18.140Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
