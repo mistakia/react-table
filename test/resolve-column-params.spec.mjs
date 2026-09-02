@@ -41,6 +41,24 @@ const betting_column_params = {
   }
 }
 
+// The two arity fields, which are NOT interchangeable: `single` caps a SELECT
+// param's list at one element, `is_single` makes a RANGE param a scalar rather
+// than a [min, max] pair.
+const single_year = {
+  data_type: data_type_select,
+  values: [2022, 2023, 2024, 2025, 2026],
+  default_value: 2026,
+  single: true
+}
+
+const single_year_offset = {
+  data_type: TABLE_DATA_TYPES.RANGE,
+  min: -30,
+  max: 30,
+  default_value: 0,
+  is_single: true
+}
+
 describe('resolve_column_params', function () {
   describe('adding a column', function () {
     it('fills every declared default', function () {
@@ -210,6 +228,72 @@ describe('resolve_column_params', function () {
           value: undefined
         })
       ).to.equal(true)
+    })
+  })
+
+  describe('arity', function () {
+    it('rejects a pair on an `is_single` RANGE param', function () {
+      // A RANGE param declares no `values`, so membership alone returns true
+      // for every one of them and would never reach this.
+      expect(
+        is_param_value_admissible({
+          param_definition: single_year_offset,
+          params: {},
+          value: [0, 3]
+        })
+      ).to.equal(false)
+    })
+
+    it('accepts a scalar on an `is_single` RANGE param', function () {
+      expect(
+        is_param_value_admissible({
+          param_definition: single_year_offset,
+          params: {},
+          value: 0
+        })
+      ).to.equal(true)
+    })
+
+    it('accepts a pair on a RANGE param that is not `is_single`', function () {
+      // The control: only `is_single` moved, so a check that stopped judging
+      // shape would fail here.
+      expect(
+        is_param_value_admissible({
+          param_definition: { ...single_year_offset, is_single: false },
+          params: {},
+          value: [0, 3]
+        })
+      ).to.equal(true)
+    })
+
+    it('repairs a pair stored on an `is_single` RANGE param', function () {
+      const { params, reset_param_names } = resolve_column_params({
+        column_params: { year_offset: single_year_offset },
+        params: { year_offset: [0, 3] },
+        data_type_select,
+        fill_unset: false
+      })
+
+      expect(reset_param_names).to.eql(['year_offset'])
+      expect(params.year_offset).to.equal(0)
+    })
+
+    it('LEAVES a multi-value list on a `single` SELECT param alone', function () {
+      // `single` is deliberately not judged. Its verdict depends on the active
+      // row axes via enable_multi_on_split, and the row-axes control writes
+      // row_axes without re-resolving params — so judging it here would destroy
+      // a legitimate multi-year list the moment the user turned the split off
+      // and edited any sibling. The census found 9 such stored values across 5
+      // league saved views and 0 genuinely broken ones.
+      const { params, reset_param_names } = resolve_column_params({
+        column_params: { year: single_year },
+        params: { year: [2022, 2023, 2024, 2025, 2026] },
+        data_type_select,
+        fill_unset: false
+      })
+
+      expect(reset_param_names).to.eql([])
+      expect(params.year).to.eql([2022, 2023, 2024, 2025, 2026])
     })
   })
 })

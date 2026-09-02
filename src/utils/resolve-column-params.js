@@ -49,21 +49,56 @@ export const resolve_param_default = ({ param_definition, params }) => {
   return param_definition.default_value
 }
 
+// Is the held value the SHAPE the definition can store?
+//
+// Only `is_single` is judged here, and the omission of the other arity field is
+// deliberate. A param has two, they are not interchangeable, and only one of
+// them describes a permanent defect:
+//
+//   `is_single` is RANGE-only and shape-bearing — a scalar rather than a
+//   [min, max] pair. It is a static property of the declaration, so an array
+//   stored against it is wrong now and can never become right. The user cannot
+//   fix it either: `initialize_value` in `column-param-range-filter.js` returns
+//   a stored array unchanged (an array is non-null), so a scalar slider is
+//   handed a pair and that shape reaches the server.
+//
+//   `single` is SELECT-only and LENGTH-only — SELECT stores a list either way.
+//   It is NOT judged here, because its verdict is reversible: a param naming an
+//   active row axis in `enable_multi_on_split` admits a list on that split, and
+//   the row-axes control writes `row_axes` without re-resolving params
+//   (`table-row-axes-controls.js:188`). Judging it would mean that turning a
+//   split off and then editing any sibling param DESTROYS the stored list —
+//   replaced by the default, with no way back when the split returns. The
+//   symptom it would fix is that a single-select shows element zero, which is
+//   cosmetic, non-destructive, and re-pickable. Repairing costs more than the
+//   bug. (Census, 2026-09-02: this rule would have reset 9 legitimate stored
+//   values across 5 league saved views and repaired nothing.)
+const is_param_value_shape_admissible = ({ param_definition, value }) =>
+  !param_definition.is_single || !Array.isArray(value)
+
 // Is the currently-held value still satisfiable under the current siblings?
-// A param with no declared value set cannot be judged, so it is left alone —
-// this only ever fires where a param states which values it admits.
+// A param with no declared value set cannot be judged on MEMBERSHIP, so it is
+// left alone there — but shape is judged from the definition alone, which is
+// what lets a RANGE param (which declares no `values` at all) be judged.
 export const is_param_value_admissible = ({
   param_definition,
   params,
   value
 }) => {
-  const admissible = resolve_param_values({ param_definition, params })
-  if (!Array.isArray(admissible) || admissible.length === 0) return true
-
   const held = to_list(value)
   // An unset param is not "inadmissible" — it is unset, and the caller decides
   // whether to fill it. Only a value the user can see is judged here.
   if (held.length === 0) return true
+
+  // Shape before membership: a RANGE param declares no `values` at all, so the
+  // membership test below returns true for every one of them and would never
+  // reach a pair stored where a scalar belongs.
+  if (!is_param_value_shape_admissible({ param_definition, value })) {
+    return false
+  }
+
+  const admissible = resolve_param_values({ param_definition, params })
+  if (!Array.isArray(admissible) || admissible.length === 0) return true
 
   return held.every((entry) => admissible.includes(entry))
 }
