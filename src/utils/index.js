@@ -33,6 +33,10 @@ export {
   resolve_param_default,
   is_param_value_admissible
 } from './resolve-column-params'
+export {
+  default as resolve_param_definition_across_records,
+  CONFLICT_REASONS
+} from './resolve-param-definition-across-records'
 export { parse_url_params_to_table_state } from './parse-url-params-to-table-state.mjs'
 
 // Validators
