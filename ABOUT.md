@@ -7,12 +7,26 @@ description: >-
 base_uri: user:repository/active/react-table/ABOUT.md
 created_at: '2026-05-13T18:02:40.823Z'
 entity_id: 5e8cb2fe-45b5-4026-b7c7-ecbeb0d4a921
+observations:
+  - >-
+    [gotcha] 2026-09-02 A column param has TWO arity fields and they are not interchangeable:
+    `single` is SELECT-only, read by is_single_select at
+    src/column-param-select-filter/column-param-select-filter.js:195-205 and modulated by
+    enable_multi_on_split, while `is_single` is RANGE-only, read at
+    src/column-param-range-filter/column-param-range-filter.js:114. Only the second changes stored
+    SHAPE — store_value at src/utils/resolve-column-params.js:71-72 array-wraps every SELECT value
+    regardless of `single` (confirmed: `year` is an array in 893 of 894 stored occurrences across
+    113 saved-view columns, including on single:true columns), so a `single` divergence changes
+    allowed LENGTH, whereas initialize_value at column-param-range-filter.js:127-131 returns a
+    scalar when is_single is set and [min, max] when it is not. A research round conflated the two
+    and prescribed `single` plus enable_multi_on_split for a RANGE param, which is incoherent —
+    enable_multi_on_split is read only when `single` is truthy and plays no part in RANGE.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-05-13T18:02:40.823Z'
+updated_at: '2026-09-02T01:36:33.759Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
