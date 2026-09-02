@@ -205,11 +205,13 @@ export const resolve_param_definition_across_records = ({
 } = {}) => {
   if (!entries.length) return { param_definition: null, conflict: null }
 
-  // A single record is already consistent with itself, and all-agree collapses
-  // to the same definition, so nothing about single-column editing changes.
-  if (entries.length === 1) {
-    return { param_definition: entries[0].param_definition, conflict: null }
-  }
+  // A single record takes the same path as the rest rather than short-circuiting
+  // on its own definition. It has to: the single-record case is where
+  // `resolve_param_values` earns its keep, resolving a `get_values` param
+  // against that record's current siblings. Returning the raw declaration here
+  // would undo that and reintroduce the unreachable-value bug for one column.
+  // The structural checks below are no-ops on one entry, so a lone record can
+  // never refuse.
 
   for (const field of CONTROL_SHAPE_FIELDS) {
     const groups = group_entries_by_field({ entries, field })

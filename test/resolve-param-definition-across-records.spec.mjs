@@ -47,16 +47,56 @@ describe('resolve_param_definition_across_records', function () {
       expect(conflict).to.equal(null)
     })
 
-    it('returns a single record definition unchanged', function () {
+    it('never refuses on a single record', function () {
       const entry = make_entry({
         column_id: 'player_games_played',
         data_type: TABLE_DATA_TYPES.SELECT,
-        values: [2024, 2025]
+        values: [2024, 2025],
+        default_value: 2025
       })
       const { param_definition, conflict } =
         resolve_param_definition_across_records({ entries: [entry] })
-      expect(param_definition).to.equal(entry.param_definition)
       expect(conflict).to.equal(null)
+      expect(param_definition.values).to.eql([2024, 2025])
+      expect(param_definition.default_value).to.equal(2025)
+    })
+
+    // A single record does NOT short-circuit on its raw declaration: this is
+    // exactly where resolve_param_values matters, and skipping it would
+    // reintroduce the unreachable-value bug for one column.
+    it('resolves get_values for a single record against its own siblings', function () {
+      const { param_definition } = resolve_param_definition_across_records({
+        entries: [
+          make_entry({
+            column_id: 'player_game_prop_line_from_betting_markets',
+            params: { market_type: 'ANYTIME_TOUCHDOWN' },
+            data_type: TABLE_DATA_TYPES.SELECT,
+            values: ['OVER', 'UNDER', 'YES', 'NO'],
+            get_values: (params) =>
+              params.market_type === 'ANYTIME_TOUCHDOWN'
+                ? ['YES', 'NO']
+                : ['OVER', 'UNDER']
+          })
+        ]
+      })
+      expect(param_definition.values).to.eql(['YES', 'NO'])
+    })
+
+    // The same reason the editor no longer keeps a records.length === 1
+    // fallback: an inadmissible default must not survive to the control.
+    it('drops a single record default its own siblings exclude', function () {
+      const { param_definition } = resolve_param_definition_across_records({
+        entries: [
+          make_entry({
+            column_id: 'player_game_prop_line_from_betting_markets',
+            params: { market_type: 'ANYTIME_TOUCHDOWN' },
+            data_type: TABLE_DATA_TYPES.SELECT,
+            default_value: 'OVER',
+            get_values: () => ['YES', 'NO']
+          })
+        ]
+      })
+      expect(param_definition.default_value).to.equal(undefined)
     })
   })
 

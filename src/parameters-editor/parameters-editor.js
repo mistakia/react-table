@@ -5,7 +5,8 @@ import TextField from '@mui/material/TextField'
 import {
   fuzzy_match,
   group_parameters,
-  get_string_from_object
+  get_string_from_object,
+  resolve_param_definition_across_records
 } from '#src/utils'
 import { table_context } from '#src/table-context'
 
@@ -17,6 +18,21 @@ const collect_records_with_definitions = (records, all_columns) =>
     record,
     definition: all_columns[record.column_id]
   }))
+
+// The refusal names columns the way the bulk-edit checkbox list does —
+// `column-controls-selected-column.js` renders `column_title || column_id` in
+// the `.column-name` div of the row carrying the checkbox, so a user reading
+// the message can find the row to untick. `header_label` is deliberately not
+// used: it appears only in the table header grid and on scatter-plot axes.
+const attach_column_titles = ({ conflict, all_columns }) => ({
+  ...conflict,
+  groups: conflict.groups.map((group) => ({
+    ...group,
+    column_titles: group.column_ids.map(
+      (column_id) => all_columns[column_id]?.column_title || column_id
+    )
+  }))
+})
 
 export default function ParametersEditor({
   records,
@@ -34,43 +50,53 @@ export default function ParametersEditor({
     }
   }, [inline])
 
-  const supporting_records_by_param = useMemo(() => {
-    const map = new Map()
+  // One resolution per parameter name, derived from EVERY record that declares
+  // it. Resolving by click order is the defect this replaces: the first-ticked
+  // column used to decide the offered values, the default, and the arity for
+  // every other column the write would touch.
+  const resolved_params = useMemo(() => {
+    const entries_by_param = new Map()
     for (const { record, definition } of collect_records_with_definitions(
       records,
       all_columns
     )) {
-      const param_names = Object.keys(definition?.column_params || {})
-      for (const name of param_names) {
-        if (!map.has(name)) map.set(name, [])
-        map.get(name).push(record)
-      }
-    }
-    return map
-  }, [records, all_columns])
-
-  const param_definitions = useMemo(() => {
-    const defs = {}
-    for (const { definition } of collect_records_with_definitions(
-      records,
-      all_columns
-    )) {
-      for (const [name, def] of Object.entries(
+      for (const [name, param_definition] of Object.entries(
         definition?.column_params || {}
       )) {
-        if (!defs[name]) defs[name] = def
+        if (!entries_by_param.has(name)) entries_by_param.set(name, [])
+        entries_by_param.get(name).push({ record, param_definition })
       }
     }
-    return defs
+
+    const resolved = new Map()
+    for (const [name, entries] of entries_by_param) {
+      const { param_definition, conflict } =
+        resolve_param_definition_across_records({ entries })
+
+      resolved.set(name, {
+        records: entries.map((entry) => entry.record),
+        param_definition,
+        conflict: conflict && attach_column_titles({ conflict, all_columns }),
+        // Grouping and the label come from the first declaration even when the
+        // parameter is refused, since a refusal still renders in its group.
+        display_definition: param_definition || entries[0].param_definition,
+        // `hidden` is not offered at all, so a refusal there cannot mislead
+        // anyone — nothing can be written through a control that never renders.
+        hidden: entries.some(({ param_definition: def }) => Boolean(def.hidden))
+      })
+    }
+    return resolved
   }, [records, all_columns])
 
   const visible_params = useMemo(
     () =>
-      Object.entries(param_definitions).filter(
-        ([name, def]) =>
-          !def.hidden && (!search_text || fuzzy_match(search_text, name))
-      ),
-    [param_definitions, search_text]
+      [...resolved_params.entries()]
+        .filter(
+          ([name, resolved]) =>
+            !resolved.hidden && (!search_text || fuzzy_match(search_text, name))
+        )
+        .map(([name, resolved]) => [name, resolved.display_definition]),
+    [resolved_params, search_text]
   )
 
   const sections = useMemo(() => {
@@ -78,7 +104,7 @@ export default function ParametersEditor({
       const shared = []
       const all = []
       for (const [name, def] of visible_params) {
-        const supporting = supporting_records_by_param.get(name) || []
+        const supporting = resolved_params.get(name)?.records || []
         if (supporting.length === records.length) {
           shared.push([name, def])
         } else {
@@ -91,12 +117,7 @@ export default function ParametersEditor({
       ]
     }
     return [{ key: 'flat', title: null, params: visible_params }]
-  }, [
-    show_sections,
-    records.length,
-    visible_params,
-    supporting_records_by_param
-  ])
+  }, [show_sections, records.length, visible_params, resolved_params])
 
   const root_class = get_string_from_object({
     'parameters-editor': true,
@@ -138,9 +159,10 @@ export default function ParametersEditor({
                     {params.map(([name, def]) => (
                       <ParametersEditorItem
                         key={name}
-                        records={supporting_records_by_param.get(name) || []}
+                        records={resolved_params.get(name)?.records || []}
                         param_name={name}
                         param_definition={def}
+                        conflict={resolved_params.get(name)?.conflict || null}
                         row_axes={row_axes}
                       />
                     ))}
