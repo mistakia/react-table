@@ -110,6 +110,27 @@ scale, one rung above its opener, via the control's slot props rather than
 leaving it on the MUI default — the date filter does
 `slotProps={{ popper: { style: { zIndex: 'calc(var(--rt-z-popper) + 1)' } } }}`.
 
+### Escaping the consumer's overflow
+
+An expanding control (column, filter, row-axes) opens to a viewport-sized panel
+centered on the WINDOW, which only survives while every ancestor between the
+panel and the viewport has visible overflow. That holds for a full-page table
+container and for nothing else, so `position: absolute` clipped the managers to
+a sliver in any smaller consumer container — measured in league's selected
+player drawer, where the table lives inside a scrolling tab panel.
+
+`use_expanding_control_anchor` (`src/utils/use-expanding-control-anchor.js`,
+`test/use-expanding-control-anchor.spec.jsx`) therefore pins the panel `fixed`
+while it is open, at the closed slot's viewport coordinates, and carries the
+centering in `translateX` so the open animation is unchanged. It also caps the
+panel's height to the space below the anchor and flips it upward when that
+space is too small.
+
+The standard caveat applies: an ancestor carrying `transform`, `filter`,
+`contain` or `will-change` becomes the containing block and the escape stops
+working. MUI's `Drawer` clears its slide transform once the sheet settles,
+which is why the drawer case holds.
+
 ### Consumer override
 
 ```stylus

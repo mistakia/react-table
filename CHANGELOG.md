@@ -14,6 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The column, filter and row-axes managers open as `fixed` surfaces anchored to
+  their button, so an ancestor with non-visible overflow no longer clips them.
+  They previously only rendered fully inside a full-page scroll container; in
+  any smaller consumer container they opened as a clipped sliver. Their height
+  is also capped to the viewport and flipped upward when there is no room below
 - The footer row pins with the same columns as the header and body, and the
   row-count metadata stays at the left edge on horizontal scroll
 - Every row kind reserves the trailing add-column control's width, so rows no

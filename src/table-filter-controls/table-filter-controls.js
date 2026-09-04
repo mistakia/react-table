@@ -22,6 +22,7 @@ import {
   fuzzy_match,
   get_string_from_object,
   use_wide_control_layout,
+  use_expanding_control_anchor,
   build_where_column_definitions
 } from '#src/utils'
 import { OPERATOR_MENU_DEFAULT_VALUE } from '#src/constants.mjs'
@@ -151,9 +152,6 @@ const TableFilterControls = ({
       JSON.stringify(filters_local_table_state) !== JSON.stringify(table_state),
     [filters_local_table_state, table_state]
   )
-  const container_ref = useRef(null)
-  const [transform, set_transform] = useState('')
-
   const is_wide_layout = use_wide_control_layout(filter_controls_open)
 
   const shown_column_index = useMemo(() => {
@@ -239,45 +237,31 @@ const TableFilterControls = ({
     set_all_columns_expanded
   ])
 
+  // Kept in sync with the `-open` / `-wide-mode` widths in
+  // table-expanding-control-container.styl and table-filter-controls.styl.
+  const open_width = useMemo(() => {
+    const viewport_width = typeof window === 'undefined' ? 0 : window.innerWidth
+    if (viewport_width < 768) return 0.9 * viewport_width
+    const has_filters = (filters_local_table_state.where || []).length > 0
+    return is_wide_layout && has_filters
+      ? Math.min(0.95 * viewport_width, 1100)
+      : 0.6 * viewport_width
+  }, [is_wide_layout, filters_local_table_state])
+
+  const { container_ref, anchor_style } = use_expanding_control_anchor({
+    is_open: filter_controls_open,
+    is_closing: menu_closing,
+    open_width
+  })
+
   useEffect(() => {
-    if (filter_controls_open) {
-      if (container_ref.current) {
-        const el = container_ref.current
-        const rect = el.getBoundingClientRect()
-        const current_tx = parseFloat(
-          (el.style.transform || '').match(/-?[\d.]+/)?.[0] || '0'
-        )
-        const anchor_left = rect.left - current_tx
-        const scroll_left =
-          window.pageXOffset || document.documentElement.scrollLeft
-        const window_center_x = window.innerWidth / 2 + scroll_left
-        const has_filters = (filters_local_table_state.where || []).length > 0
-        const is_split = is_wide_layout && has_filters
-        const element_width =
-          window.innerWidth < 768
-            ? 0.9 * window.innerWidth
-            : is_split
-              ? Math.min(0.95 * window.innerWidth, 1100)
-              : 0.6 * window.innerWidth
-        const element_center_x = anchor_left + element_width / 2 + scroll_left
-
-        const translate_x = window_center_x - element_center_x
-
-        set_transform(`translateX(${translate_x}px)`)
-      }
-    } else {
-      set_transform('translateX(0px)')
-
+    if (!filter_controls_open) {
       if (filter_input_ref.current) {
         filter_input_ref.current.blur()
       }
       set_filter_text_input('')
     }
-  }, [
-    filter_controls_open,
-    is_wide_layout,
-    (filters_local_table_state.where || []).length
-  ])
+  }, [filter_controls_open])
 
   useEffect(() => {
     if (all_columns_expanded) {
@@ -487,7 +471,7 @@ const TableFilterControls = ({
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
         ref={container_ref}
-        style={{ transform }}
+        style={anchor_style || undefined}
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'filter-controls-container': true,

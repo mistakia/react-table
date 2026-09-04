@@ -9,7 +9,10 @@ import CheckBoxIcon from '@mui/icons-material/CheckBox'
 import CallSplitIcon from '@mui/icons-material/CallSplit'
 import Alert from '@mui/material/Alert'
 
-import { get_string_from_object } from '#src/utils'
+import {
+  get_string_from_object,
+  use_expanding_control_anchor
+} from '#src/utils'
 import resolve_row_axis_conflicts from '#src/utils/resolve-row-axis-conflicts.js'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
@@ -29,8 +32,19 @@ const TableRowAxesControls = ({
   const [local_table_state, set_local_table_state] = useState(table_state)
   const [closing, set_closing] = useState(false)
   const filter_input_ref = useRef(null)
-  const container_ref = useRef(null)
-  const [transform, set_transform] = useState('')
+
+  // Kept in sync with the `-open` width in table-row-axes-controls.styl.
+  const open_width = useMemo(() => {
+    const viewport_width = typeof window === 'undefined' ? 0 : window.innerWidth
+    return viewport_width < 768 ? 0.9 * viewport_width : 200
+  }, [])
+
+  const { container_ref, anchor_style } = use_expanding_control_anchor({
+    is_open: row_axes_controls_open,
+    is_closing: closing,
+    open_width
+  })
+
   // update local_table_state on table_state change
   useEffect(() => {
     set_local_table_state(table_state)
@@ -56,27 +70,6 @@ const TableRowAxesControls = ({
     }
 
     was_menu_open.current = row_axes_controls_open
-  }, [row_axes_controls_open])
-
-  useEffect(() => {
-    if (row_axes_controls_open) {
-      if (container_ref.current) {
-        const original_rect = container_ref.current.getBoundingClientRect()
-        const scroll_left =
-          window.pageXOffset || document.documentElement.scrollLeft
-        const window_center_x = window.innerWidth / 2 + scroll_left
-        const element_width =
-          window.innerWidth < 768 ? 0.9 * window.innerWidth : 200
-        const element_center_x =
-          original_rect.left + element_width / 2 + scroll_left
-
-        const translate_x = window_center_x - element_center_x
-
-        set_transform(`translateX(${translate_x}px)`)
-      }
-    } else {
-      set_transform('')
-    }
   }, [row_axes_controls_open])
 
   const handle_close = useCallback(() => {
@@ -173,7 +166,7 @@ const TableRowAxesControls = ({
     <ClickAwayListener onClickAway={handle_click_away}>
       <div
         ref={container_ref}
-        style={{ transform }}
+        style={anchor_style || undefined}
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'table-row-axes-controls': true,

@@ -28,6 +28,7 @@ import {
   group_columns_into_tree_view,
   get_string_from_object,
   use_wide_control_layout,
+  use_expanding_control_anchor,
   resolve_column_params
 } from '#src/utils'
 import { table_context } from '#src/table-context'
@@ -136,9 +137,6 @@ const TableColumnControls = ({
   )
   const [loaded_all, set_loaded_all] = useState(false)
   const filter_input_ref = useRef(null)
-
-  const container_ref = useRef(null)
-  const [transform, set_transform] = useState('')
 
   const [replace_column_open, set_replace_column_open] = useState(false)
   const replace_column_anchor_ref = useRef(null)
@@ -457,35 +455,22 @@ const TableColumnControls = ({
     }
   }, [all_columns_expanded])
 
-  useEffect(() => {
-    if (column_controls_open) {
-      if (container_ref.current) {
-        const el = container_ref.current
-        const rect = el.getBoundingClientRect()
-        const current_tx = parseFloat(
-          (el.style.transform || '').match(/-?[\d.]+/)?.[0] || '0'
-        )
-        const anchor_left = rect.left - current_tx
-        const scroll_left =
-          window.pageXOffset || document.documentElement.scrollLeft
-        const window_center_x = window.innerWidth / 2 + scroll_left
-        const is_split = is_wide_layout && local_table_state_columns.length > 0
-        const element_width =
-          window.innerWidth < 768
-            ? 0.9 * window.innerWidth
-            : is_split
-              ? Math.min(0.95 * window.innerWidth, 900)
-              : 0.6 * window.innerWidth
-        const element_center_x = anchor_left + element_width / 2 + scroll_left
+  // Kept in sync with the `-open` / `-wide-mode` widths in
+  // table-expanding-control-container.styl and table-column-controls.styl.
+  const open_width = useMemo(() => {
+    const viewport_width = typeof window === 'undefined' ? 0 : window.innerWidth
+    if (viewport_width < 768) return 0.9 * viewport_width
+    const is_split = is_wide_layout && local_table_state_columns.length > 0
+    return is_split
+      ? Math.min(0.95 * viewport_width, 900)
+      : 0.6 * viewport_width
+  }, [is_wide_layout, local_table_state_columns.length])
 
-        const translate_x = window_center_x - element_center_x
-
-        set_transform(`translateX(${translate_x}px)`)
-      }
-    } else {
-      set_transform('translateX(0px)')
-    }
-  }, [column_controls_open, is_wide_layout, local_table_state_columns.length])
+  const { container_ref, anchor_style } = use_expanding_control_anchor({
+    is_open: column_controls_open,
+    is_closing: closing,
+    open_width
+  })
 
   const handle_menu_toggle = useCallback(() => {
     if (column_controls_open) {
@@ -683,7 +668,7 @@ const TableColumnControls = ({
     <ClickAwayListener onClickAway={handle_click_away} mouseEvent='onMouseDown'>
       <div
         ref={container_ref}
-        style={{ transform }}
+        style={anchor_style || undefined}
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'table-column-controls': true,
