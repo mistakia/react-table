@@ -37,12 +37,16 @@ observations:
     judging it means turning a split off and editing any sibling DESTROYS the stored list with no
     way back. Census over league's 193 saved views and 6,411 param instances: the `single` rule
     would reset 9 legitimate values across 5 views and repair 0.
+  - >-
+    [gotcha] 2026-09-04 table/table.styl alone uses $rt_* without importing styles/tokens.styl, so a
+    consumer injecting its own stylus variables silently drops the .table-empty-state padding, color
+    and font-size (measured 0px in league); add the tokens import.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-02T02:53:18.140Z'
+updated_at: '2026-09-04T07:36:45.060Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
