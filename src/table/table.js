@@ -141,6 +141,7 @@ export default function Table({
   filter_controls_open: controlled_filter_controls_open,
   set_filter_controls_open: controlled_set_filter_controls_open,
   controls_extension = null,
+  empty_state = null,
   clear_local_cache = null,
   row_grain_options = null,
   on_row_grain_change = null,
@@ -1021,6 +1022,14 @@ export default function Table({
             </div>
           )}
         </div>
+        {/* The body and footer both render only on a non-empty row set, so
+            without this slot an empty table is a header over blank page with
+            nothing saying why. The lib supplies the placement and leaves the
+            copy to the consumer -- what an empty result MEANS is a consumer
+            question (no columns picked yet, no rows matched, no access). */}
+        {!is_loading && rows.length === 0 && empty_state && (
+          <div className='table-empty-state'>{empty_state}</div>
+        )}
         {!is_loading && rows.length > 0 && (
           <div className='body'>{row_items}</div>
         )}
@@ -1128,6 +1137,7 @@ Table.propTypes = {
   filter_controls_open: PropTypes.bool,
   set_filter_controls_open: PropTypes.func,
   controls_extension: PropTypes.node,
+  empty_state: PropTypes.node,
   clear_local_cache: PropTypes.func,
   row_grain_options: PropTypes.arrayOf(
     PropTypes.shape({

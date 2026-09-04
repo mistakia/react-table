@@ -1,3 +1,16 @@
+.table-empty-state
+  // Sticky-left for the same reason as .table-footer-metadata below: the table
+  // is a horizontal scroll container, so a statically positioned child scrolls
+  // away with the columns and an empty-state message would be off screen at any
+  // non-zero scroll offset -- which is indistinguishable from rendering nothing.
+  position sticky
+  left 0
+  width fit-content
+  max-width 100%
+  padding $rt_space_xl $rt_space_lg
+  color $rt_text_muted
+  font-size $rt_font_size_md
+
 .table-loading-container
   display flex
   align-items center
