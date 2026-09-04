@@ -22,11 +22,6 @@ observations:
     and prescribed `single` plus enable_multi_on_split for a RANGE param, which is incoherent —
     enable_multi_on_split is read only when `single` is truthy and plays no part in RANGE.
   - >-
-    [gotcha] 2026-09-02 Nothing importing ParametersEditorItem is unit-testable: it pulls
-    column-param-date-filter, which needs the uninstalled @mui/x-date-pickers peer dep, so mocha
-    dies on MODULE_NOT_FOUND naming the date filter rather than the component under test. Extract
-    presentational pieces to their own module to test them.
-  - >-
     [decision] 2026-09-02 Arity must NOT be enforced uniformly in is_param_value_admissible: judge
     `is_single` and never `single`. An inadmissible value is overwritten with the default, not
     flagged, so repair is only safe where the verdict is permanent. `is_single` qualifies (static
@@ -41,12 +36,16 @@ observations:
     [gotcha] 2026-09-04 table/table.styl alone uses $rt_* without importing styles/tokens.styl, so a
     consumer injecting its own stylus variables silently drops the .table-empty-state padding, color
     and font-size (measured 0px in league); add the tokens import.
+  - >-
+    [fix] 2026-09-04 Table mounts in a spec now — test/helpers/stub-uninstalled-peers.js stubs the
+    uninstalled @mui/x-date-pickers and highcharts peers. Not for a spec that exercises either
+    surface.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-04T07:36:45.060Z'
+updated_at: '2026-09-04T22:53:40.405Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
