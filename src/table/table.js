@@ -537,6 +537,24 @@ export default function Table({
 
   const rows = useMemo(() => table.getRowModel().rows, [filtered_data])
 
+  // A view nobody has picked a column for yet. Prefix columns still resolve --
+  // consumers seed them on a new view -- so the header row is NOT empty in this
+  // case: it draws a ruled strip of Name / Team / Pos labels over blank page,
+  // above an empty state whose whole job is to say the view has no columns. The
+  // header answers a question about data that is not there.
+  const has_selected_columns = table_state_columns.length > 0
+  const is_view_empty = !has_selected_columns && rows.length === 0
+
+  // Whether saving is a real offer. `is_table_state_changed` is true whenever
+  // there is no saved state at all, so on a fresh empty view it puts a green
+  // Save in the toolbar for a view holding nothing -- the loudest control on
+  // screen, attached to the one action with no effect worth having. Saved
+  // columns count too: emptying a saved view is a change worth reverting, and
+  // gating on the CURRENT columns alone would strand the user with no Reset.
+  const has_saved_columns = Boolean(saved_table_state?.columns?.length)
+  const is_view_state_saveable =
+    is_table_state_changed && (has_selected_columns || has_saved_columns)
+
   const fetch_more_on_bottom_reached = useCallback(
     (container_ref) => {
       if (container_ref) {
@@ -855,10 +873,10 @@ export default function Table({
                 on_toggle_favorite,
                 on_add_user_tag,
                 on_remove_user_tag,
-                on_save_current_view: is_table_state_changed
+                on_save_current_view: is_view_state_saveable
                   ? save_table_state_change
                   : undefined,
-                on_reset_current_view: is_table_state_changed
+                on_reset_current_view: is_view_state_saveable
                   ? discard_table_state_changes
                   : undefined
               }}
@@ -948,7 +966,7 @@ export default function Table({
                   />
                 )}
               <div className='table-top-lead-buttons-container'>
-                {is_table_state_changed && (
+                {is_view_state_saveable && (
                   <>
                     {Boolean(saved_table_state) && (
                       <div
@@ -1015,7 +1033,7 @@ export default function Table({
             </div>
           )}
         <div className='header'>
-          {header_items}
+          {!is_view_empty && header_items}
           {(effective_is_fetching_more || is_loading) && (
             <div className='table-loading-container'>
               <LinearProgress />
