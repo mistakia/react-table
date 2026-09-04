@@ -110,6 +110,31 @@ describe('table empty view', () => {
     ).to.have.length(1)
   })
 
+  it('marks the column control for attention while no column is selected', async () => {
+    const container = await render_table({
+      data: [],
+      table_state: { columns: [], prefix_columns: ['player_name'] }
+    })
+
+    expect(
+      container.querySelectorAll('.table-column-controls.-attention')
+    ).to.have.length(1)
+  })
+
+  it('drops the attention cue once a column is selected', async () => {
+    const container = await render_table({
+      data: [],
+      table_state: { columns: ['player_points'], prefix_columns: [] }
+    })
+
+    expect(container.querySelectorAll('.table-column-controls')).to.have.length(
+      1
+    )
+    expect(
+      container.querySelectorAll('.table-column-controls.-attention')
+    ).to.have.length(0)
+  })
+
   it('keeps the reset action after every column is removed from a saved view', async () => {
     const container = await render_table({
       data: [],

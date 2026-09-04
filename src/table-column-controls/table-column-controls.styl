@@ -108,3 +108,38 @@
   color $rt_text_muted
   font-size 12px
   line-height 1.4
+
+// THE EMPTY-VIEW CUE. A table with no columns has one next step and five
+// identical grey words in its control strip, so the one that takes the step
+// says so.
+//
+// THREE PULSES, THEN A STEADY COLOUR, and the pair is the whole design: an
+// animation that never stops stops reading as an invitation and starts reading
+// as an error indicator, while one that leaves nothing behind is missed
+// entirely by anyone who looked away for two seconds. The class comes off the
+// moment a column is committed, so the pulses replay if the view is emptied
+// again.
+.table-column-controls.-attention:not(.-open)
+  .table-expanding-control-button
+    color $rt_accent_text
+    animation rt_column_controls_attention 1600ms ease-in-out 3
+
+    // Restated because this block outranks the base button's own :hover, and a
+    // control that does not answer the pointer reads as decoration.
+    &:hover
+      color $rt_accent
+
+@keyframes rt_column_controls_attention
+  0%
+    box-shadow 0 0 0 0 $rt_accent_subtle
+  50%
+    box-shadow 0 0 0 6px $rt_accent_subtle
+  100%
+    box-shadow 0 0 0 0 $rt_accent_subtle
+
+// The steady colour still carries the cue without motion, so nothing is lost
+// for a reader who has asked the OS not to animate.
+@media (prefers-reduced-motion: reduce)
+  .table-column-controls.-attention:not(.-open)
+    .table-expanding-control-button
+      animation none

@@ -141,6 +141,11 @@ const TableColumnControls = ({
   const [replace_column_open, set_replace_column_open] = useState(false)
   const replace_column_anchor_ref = useRef(null)
 
+  // Read off the COMMITTED table state rather than local_table_state: a user
+  // ticking the first column inside the open panel has not applied it yet, and
+  // the cue must not flicker back on when they close without applying.
+  const has_selected_columns = Boolean(table_state?.columns?.length)
+
   const is_wide_layout = use_wide_control_layout(column_controls_open)
 
   const current_row_grain = (table_state.row_grain || [])[0] || null
@@ -672,6 +677,11 @@ const TableColumnControls = ({
         className={get_string_from_object({
           'table-expanding-control-container': true,
           'table-column-controls': true,
+          // A view with no columns has exactly one thing to do next, and this
+          // is the control that does it -- sitting in a strip of four other
+          // controls that all look the same. Suppressed while open, where the
+          // user has plainly already found it.
+          '-attention': !column_controls_open && !has_selected_columns,
           '-open': column_controls_open,
           '-closing': closing,
           '-wide-mode':
