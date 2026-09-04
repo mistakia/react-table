@@ -872,15 +872,24 @@ const TableColumnControls = ({
                     <div style={{ display: 'flex', alignSelf: 'center' }}>
                       {available_columns.length} Available Columns
                     </div>
-                    <div
-                      className='action -mode-toggle'
-                      onClick={() =>
-                        set_all_columns_expanded(!all_columns_expanded)
-                      }>
-                      {all_columns_expanded
-                        ? 'Minimize'
-                        : 'Show Available Columns'}
-                    </div>
+                    {/* NARROW LAYOUT ONLY, where the two panes stack and
+                        collapsing the picker is the only way to see your
+                        selection without scrolling past every available
+                        column. Wide layout shows both panes side by side, so
+                        there the control did nothing worth doing -- and with
+                        no columns selected it did something actively wrong,
+                        since the selected pane does not render at all then and
+                        minimizing left an open panel containing only this
+                        header. */}
+                    {!is_wide_layout && (
+                      <div
+                        className='action'
+                        onClick={() =>
+                          set_all_columns_expanded(!all_columns_expanded)
+                        }>
+                        {all_columns_expanded ? 'Hide' : 'Show'}
+                      </div>
+                    )}
                   </div>
                   {picker_visible && is_query_backed_view && (
                     <div className='column-controls-query-backed-notice'>

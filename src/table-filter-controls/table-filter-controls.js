@@ -677,15 +677,17 @@ const TableFilterControls = ({
                       <div style={{ display: 'flex', alignSelf: 'center' }}>
                         {all_columns.length} Available Filters
                       </div>
-                      <div
-                        className='action -mode-toggle'
-                        onClick={() =>
-                          set_all_columns_expanded(!all_columns_expanded)
-                        }>
-                        {all_columns_expanded
-                          ? 'Minimize'
-                          : 'Show Available Filters'}
-                      </div>
+                      {/* Narrow layout only -- same reasoning as the column
+                          controls' copy of this toggle. */}
+                      {!is_wide_layout && (
+                        <div
+                          className='action'
+                          onClick={() =>
+                            set_all_columns_expanded(!all_columns_expanded)
+                          }>
+                          {all_columns_expanded ? 'Hide' : 'Show'}
+                        </div>
+                      )}
                     </div>
                     {picker_visible && (
                       <>
