@@ -105,3 +105,20 @@ describe('TableCell null rendering', () => {
     expect(container.querySelector('.cell').style.backgroundColor).to.equal('')
   })
 })
+
+describe('TableCell justify_content', () => {
+  it('applies columnDef.justify_content as the cell inline justify-content', async () => {
+    const container = await render_cell({
+      value: 'a long play description',
+      columnDef: { justify_content: 'flex-start' }
+    })
+    expect(container.querySelector('.cell').style.justifyContent).to.equal(
+      'flex-start'
+    )
+  })
+
+  it('sets no inline justify-content without a declaration (the .cell rule centers)', async () => {
+    const container = await render_cell({ value: 'text' })
+    expect(container.querySelector('.cell').style.justifyContent).to.equal('')
+  })
+})

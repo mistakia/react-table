@@ -50,6 +50,14 @@ const TableCell = ({ getValue, column, row, table }) => {
     )
   )
 
+  // Cells center by default, via the .cell stylesheet rule. A column can opt
+  // out per cell by declaring `justify_content`, a CSS justify-content value
+  // (e.g. 'flex-start' for left-aligned text). The inline style wins over the
+  // rule; when a column declares nothing, nothing is set and the rule applies.
+  const justify_content_style = column.columnDef.justify_content
+    ? { justifyContent: column.columnDef.justify_content }
+    : null
+
   let value
 
   if (column.columnDef.is_split) {
@@ -74,7 +82,8 @@ const TableCell = ({ getValue, column, row, table }) => {
           }),
           style: {
             width: column.getSize(),
-            left: sticky_left_value
+            left: sticky_left_value,
+            ...(justify_content_style || {})
           }
         }}>
         <Component {...{ row, column, column_index, value, table }} />
@@ -178,7 +187,8 @@ const TableCell = ({ getValue, column, row, table }) => {
         style: {
           width: column.getSize(),
           left: sticky_left_value,
-          backgroundColor: color
+          backgroundColor: color,
+          ...(justify_content_style || {})
         },
         onClick: handle_click
       }}>

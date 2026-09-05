@@ -20,6 +20,10 @@ The hook is called with `{ value, row, column, column_index, table }` and its re
 
 This differs from `column.columnDef.component`, which replaces rendering for every value (not just null) and bypasses all default formatting.
 
+## Per-column alignment (`justify_content`)
+
+Cells center by default, via `justify-content: center` on the `.cell` rulesheet rule. A column may declare `justify_content` on its column definition (a CSS `justify-content` value, e.g. `'flex-start'` for left-aligned text); the cell then sets it inline, which overrides the rulesheet for that column only. Columns that declare nothing are unchanged. Applied on both the default text cell and a custom `component` cell.
+
 ## Related
 
 - `../table/table.js` — wires `table.options.meta` (including `render_null` and `row_highlights`).
