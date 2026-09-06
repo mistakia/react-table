@@ -463,21 +463,26 @@ const TableHeader = ({ header, column, table }) => {
             <div className='header-text header-description'>{description}</div>
           )}
           <div style={{ paddingTop: '6px', paddingBottom: '6px' }}>
-            {/* can not remove split columns from here */}
-            {Boolean(column.columnDef.column_id) && (
-              <div className='header-menu-item'>
-                <div
-                  className='header-menu-item-button'
-                  onClick={() =>
-                    set_column_hidden_by_index(table_state_columns_index)
-                  }>
-                  <div className='header-menu-item-icon'>
-                    <VisibilityOffIcon />
+            {/* can not remove split columns from here. A prefix column also
+                carries a column_id but lives in table_state.prefix_columns, so
+                the index resolver above can only answer -1 for it — offering
+                removal handed -1 to a splice-by-index removal, which read an
+                undefined slot and threw. */}
+            {Boolean(column.columnDef.column_id) &&
+              table_state_columns_index !== -1 && (
+                <div className='header-menu-item'>
+                  <div
+                    className='header-menu-item-button'
+                    onClick={() =>
+                      set_column_hidden_by_index(table_state_columns_index)
+                    }>
+                    <div className='header-menu-item-icon'>
+                      <VisibilityOffIcon />
+                    </div>
+                    <div>Remove column</div>
                   </div>
-                  <div>Remove column</div>
                 </div>
-              </div>
-            )}
+              )}
             {is_sortable && (
               <>
                 <div className='header-menu-item'>

@@ -407,6 +407,13 @@ export default function Table({
     (index) => {
       const columns = [...(table_state.columns || [])]
 
+      // Nothing to remove. Callers resolve the index by findIndex over
+      // table_state.columns, so a column that is not in it (a prefix column)
+      // arrives as -1, which splice would read as the LAST column.
+      if (index < 0 || index >= columns.length) {
+        return
+      }
+
       // Remove that column_id from sort
       const column_to_hide = columns[index]
       const column_id_to_hide =
