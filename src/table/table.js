@@ -37,6 +37,7 @@ import {
   resolve_sticky_column_ids,
   resolve_table_state_columns,
   find_columns_with_no_data,
+  build_new_view,
   validate_table_state,
   is_valid_table_state_structure
 } from '#src/utils'
@@ -562,6 +563,26 @@ export default function Table({
   const is_view_state_saveable =
     is_table_state_changed && (has_selected_columns || has_saved_columns)
 
+  // Creating a view is only on offer from a view that EXISTS. A view with no
+  // saved state has never been persisted -- it is itself the new view, and
+  // offering to start another from it says nothing about what the button does
+  // and leaves an untouched draft behind. Consumers set saved_table_state when
+  // a view is saved and leave it null until then.
+  const is_selected_view_saved = saved_table_state != null
+  const handle_create_new_view = useCallback(() => {
+    on_view_change(
+      build_new_view({ table_username, new_view_prefix_columns }),
+      {
+        view_state_changed: true,
+        is_new_view: true
+      }
+    )
+  }, [on_view_change, table_username, new_view_prefix_columns])
+  const on_create_new_view =
+    disable_create_view || !is_selected_view_saved
+      ? undefined
+      : handle_create_new_view
+
   const fetch_more_on_bottom_reached = useCallback(
     (container_ref) => {
       if (container_ref) {
@@ -871,9 +892,8 @@ export default function Table({
                 views: enriched_views,
                 on_view_change,
                 delete_view,
-                disable_create_view,
                 disable_edit_view,
-                new_view_prefix_columns,
+                on_create_new_view,
                 favorite_view_ids,
                 tags_by_view_id,
                 derive_auto_tags,
@@ -923,6 +943,22 @@ export default function Table({
                   aria_label={row_grain_label || 'Row grain'}
                 />
               )}
+            {/* In the toolbar rather than beside the current-view card.
+                Creating a view is not an action ON the view you are looking at,
+                and every control that is one lives in that card. Here it flows
+                in the same row as Columns and Filters, wraps with them on a
+                narrow viewport, and carries their treatment via .rt-button. */}
+            {on_create_new_view && (
+              <button
+                type='button'
+                className='rt-button table-new-view-button'
+                onClick={on_create_new_view}>
+                <span className='rt-button-glyph' aria-hidden='true'>
+                  +
+                </span>
+                New view
+              </button>
+            )}
             <div
               className={get_string_from_object({
                 'table-controls-container': true,

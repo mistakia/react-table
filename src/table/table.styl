@@ -289,6 +289,13 @@
   justify-content center
   width fit-content
   gap 8px
+  // Wrap so a narrow viewport drops trailing items onto their own line instead
+  // of pushing the fixed-width control strip off screen. Nothing wraps at
+  // desktop widths, where the row has room.
+  flex-wrap wrap
+
+  .table-new-view-button
+    flex 0 0 auto
 
 // Closed-state slot geometry for the expanding controls (column / filter /
 // row-axes / rank-agg) and the absolutely-positioned save/discard buttons.

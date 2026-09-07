@@ -38,9 +38,11 @@ const TableViewController = ({
   views = [],
   on_view_change,
   delete_view,
-  disable_create_view = false,
   disable_edit_view = false,
-  new_view_prefix_columns = [],
+  // Absent when creating a view is not on offer -- the consumer disabled it, or
+  // the selected view has never been saved. Table decides; this component only
+  // renders the affordance.
+  on_create_new_view,
   // New optional organization props — all default to undefined (legacy mode)
   favorite_view_ids,
   tags_by_view_id,
@@ -144,34 +146,8 @@ const TableViewController = ({
     set_input_value('')
   }
 
-  // A new view is built from a fixed template, never from the current view.
-  // Spreading selected_view here carried whatever else the consumer had
-  // attached to it -- search config, editability, dirty flags -- which made
-  // "new" quietly mean "a copy of this one". Starting from the current view is
-  // what Duplicate is for.
   const handle_add_click = () => {
-    on_view_change(
-      {
-        view_id: generate_view_id(),
-        view_name: 'New view',
-        view_username: table_username || 'system',
-        view_description: 'New view description',
-        saved_table_state: null,
-        table_state: {
-          prefix_columns: new_view_prefix_columns,
-          columns: [],
-          sort: [],
-          where: []
-        }
-      },
-      {
-        view_state_changed: true,
-        is_new_view: true
-      }
-    )
-    // The button sits outside the ClickAwayListener, so a click while the
-    // panel is open would close it anyway -- but close explicitly rather than
-    // depending on that ordering.
+    on_create_new_view()
     if (view_controls_open) handle_menu_toggle()
   }
 
@@ -421,333 +397,304 @@ const TableViewController = ({
   }
 
   return (
-    <div
-      className={get_string_from_object({
-        'table-view-controller-container': true,
-        // The card overlays the button when expanded, so the outer button
-        // stands down and the panel header carries creation instead.
-        '-panel-open': view_controls_open || closing
-      })}>
-      {/* The card is position:absolute so it can expand over the page without
-          reflowing anything, which means nothing can flow after it. This slot
-          reserves its collapsed footprint, so the New view button beside it is
-          an ordinary flex sibling rather than a hand-computed offset. */}
-      <div className='table-view-controller-slot'>
-        <ClickAwayListener onClickAway={handle_click_away}>
+    <div className='table-view-controller-container'>
+      <ClickAwayListener onClickAway={handle_click_away}>
+        <div
+          ref={container_ref}
+          className={get_string_from_object({
+            'table-expanding-control-container': true,
+            'table-view-controller': true,
+            '-open': view_controls_open,
+            '-closing': closing,
+            '-with-org': has_org_props
+          })}>
           <div
-            ref={container_ref}
-            className={get_string_from_object({
-              'table-expanding-control-container': true,
-              'table-view-controller': true,
-              '-open': view_controls_open,
-              '-closing': closing,
-              '-with-org': has_org_props
-            })}>
-            <div
-              onClick={handle_menu_toggle}
-              className='table-expanding-control-button'>
-              <label className='table-expanding-control-label'>
-                Current View
-              </label>
-              <div className='current-view-info'>
-                <div className='current-view-title-row'>
-                  <div className='current-view-title'>{title}</div>
-                  {current_view && (
-                    <div
-                      className='current-view-actions'
-                      onClick={(e) => e.stopPropagation()}>
-                      {on_toggle_favorite && (
-                        <Tooltip
-                          title={
-                            is_favorited
-                              ? 'Remove from favorites'
-                              : 'Add to favorites'
-                          }
-                          placement='top'
-                          enterDelay={700}>
+            onClick={handle_menu_toggle}
+            className='table-expanding-control-button'>
+            <label className='table-expanding-control-label'>
+              Current View
+            </label>
+            <div className='current-view-info'>
+              <div className='current-view-title-row'>
+                <div className='current-view-title'>{title}</div>
+                {current_view && (
+                  <div
+                    className='current-view-actions'
+                    onClick={(e) => e.stopPropagation()}>
+                    {on_toggle_favorite && (
+                      <Tooltip
+                        title={
+                          is_favorited
+                            ? 'Remove from favorites'
+                            : 'Add to favorites'
+                        }
+                        placement='top'
+                        enterDelay={700}>
+                        <IconButton
+                          size='small'
+                          className={get_string_from_object({
+                            'cva-btn': true,
+                            '-favorite': true,
+                            '-active': is_favorited
+                          })}
+                          onClick={stop(() =>
+                            on_toggle_favorite(
+                              current_view.view_id,
+                              is_favorited
+                            )
+                          )}>
+                          {is_favorited ? (
+                            <StarIcon fontSize='small' />
+                          ) : (
+                            <StarBorderIcon fontSize='small' />
+                          )}
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {on_toggle_favorite &&
+                      (on_reset_current_view || on_save_current_view) && (
+                        <span className='cva-divider' aria-hidden='true' />
+                      )}
+                    {on_reset_current_view && (
+                      <Tooltip
+                        title='Reset to saved state'
+                        placement='top'
+                        enterDelay={700}>
+                        <span>
+                          <IconButton
+                            size='small'
+                            className='cva-btn'
+                            onClick={stop(on_reset_current_view)}
+                            disabled={!is_table_state_changed}>
+                            <UndoIcon fontSize='small' />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    )}
+                    {on_save_current_view && (
+                      <Tooltip
+                        title={save_tooltip}
+                        placement='top'
+                        enterDelay={700}>
+                        <span>
                           <IconButton
                             size='small'
                             className={get_string_from_object({
                               'cva-btn': true,
-                              '-favorite': true,
-                              '-active': is_favorited
+                              '-primary': true
                             })}
-                            onClick={stop(() =>
-                              on_toggle_favorite(
-                                current_view.view_id,
-                                is_favorited
-                              )
-                            )}>
-                            {is_favorited ? (
-                              <StarIcon fontSize='small' />
-                            ) : (
-                              <StarBorderIcon fontSize='small' />
-                            )}
+                            onClick={stop(on_save_current_view)}
+                            disabled={!can_save}>
+                            <SaveIcon fontSize='small' />
                           </IconButton>
-                        </Tooltip>
-                      )}
-                      {on_toggle_favorite &&
-                        (on_reset_current_view || on_save_current_view) && (
-                          <span className='cva-divider' aria-hidden='true' />
-                        )}
-                      {on_reset_current_view && (
-                        <Tooltip
-                          title='Reset to saved state'
-                          placement='top'
-                          enterDelay={700}>
-                          <span>
-                            <IconButton
-                              size='small'
-                              className='cva-btn'
-                              onClick={stop(on_reset_current_view)}
-                              disabled={!is_table_state_changed}>
-                              <UndoIcon fontSize='small' />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {on_save_current_view && (
-                        <Tooltip
-                          title={save_tooltip}
-                          placement='top'
-                          enterDelay={700}>
-                          <span>
-                            <IconButton
-                              size='small'
-                              className={get_string_from_object({
-                                'cva-btn': true,
-                                '-primary': true
-                              })}
-                              onClick={stop(on_save_current_view)}
-                              disabled={!can_save}>
-                              <SaveIcon fontSize='small' />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {(on_toggle_favorite ||
-                        on_reset_current_view ||
-                        on_save_current_view) && (
-                        <span className='cva-divider' aria-hidden='true' />
-                      )}
-                      {can_edit_current && (
-                        <Tooltip
-                          title='Edit view details'
-                          placement='top'
-                          enterDelay={700}>
-                          <IconButton
-                            size='small'
-                            className='cva-btn'
-                            onClick={stop(() => {
-                              set_selected_edit_view(current_view)
-                              set_edit_view_modal_open(true)
-                            })}>
-                            <EditIcon fontSize='small' />
-                          </IconButton>
-                        </Tooltip>
-                      )}
+                        </span>
+                      </Tooltip>
+                    )}
+                    {(on_toggle_favorite ||
+                      on_reset_current_view ||
+                      on_save_current_view) && (
+                      <span className='cva-divider' aria-hidden='true' />
+                    )}
+                    {can_edit_current && (
                       <Tooltip
-                        title='Duplicate view'
+                        title='Edit view details'
                         placement='top'
                         enterDelay={700}>
                         <IconButton
                           size='small'
                           className='cva-btn'
-                          onClick={stop(handle_duplicate_current)}>
-                          <ContentCopyIcon fontSize='small' />
+                          onClick={stop(() => {
+                            set_selected_edit_view(current_view)
+                            set_edit_view_modal_open(true)
+                          })}>
+                          <EditIcon fontSize='small' />
                         </IconButton>
                       </Tooltip>
-                      {can_edit_current && (
-                        <Tooltip
-                          title={
-                            is_delete_confirming
-                              ? 'Click again to confirm'
-                              : 'Delete view'
-                          }
-                          placement='top'
-                          enterDelay={700}>
-                          <IconButton
-                            size='small'
-                            className={get_string_from_object({
-                              'cva-btn': true,
-                              '-destructive': true,
-                              '-confirming': is_delete_confirming
-                            })}
-                            onClick={stop(handle_delete_click)}>
-                            <DeleteIcon fontSize='small' />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </div>
-                  )}
-                </div>
-                {description && (
-                  <div className='current-view-description'>{description}</div>
-                )}
-                {view_controls_open && current_view && (
-                  <>
-                    {(current_tags.length > 0 || can_edit_tags) && (
-                      <div
-                        className='current-view-tags'
-                        onClick={(e) => e.stopPropagation()}>
-                        {current_tags.map((tag) => (
-                          <TagChip
-                            key={`${tag.source}-${tag.name}`}
-                            name={tag.name}
-                            source={tag.source}
-                            on_remove={
-                              can_edit_tags && tag.source === 'user'
-                                ? () =>
-                                    on_remove_user_tag(
-                                      current_view.view_id,
-                                      tag.name
-                                    )
-                                : undefined
-                            }
-                          />
-                        ))}
-                        {can_edit_tags && (
-                          <TagInput
-                            suggestions={tag_suggestions}
-                            existing_tag_names={current_tags
-                              .filter((t) => t.source === 'user')
-                              .map((t) => t.name)}
-                            on_submit={(name) =>
-                              on_add_user_tag(current_view.view_id, name)
-                            }
-                            on_remove={(name) =>
-                              on_remove_user_tag(current_view.view_id, name)
-                            }
-                            placeholder='Add tag'
-                          />
-                        )}
-                      </div>
                     )}
-                  </>
+                    <Tooltip
+                      title='Duplicate view'
+                      placement='top'
+                      enterDelay={700}>
+                      <IconButton
+                        size='small'
+                        className='cva-btn'
+                        onClick={stop(handle_duplicate_current)}>
+                        <ContentCopyIcon fontSize='small' />
+                      </IconButton>
+                    </Tooltip>
+                    {can_edit_current && (
+                      <Tooltip
+                        title={
+                          is_delete_confirming
+                            ? 'Click again to confirm'
+                            : 'Delete view'
+                        }
+                        placement='top'
+                        enterDelay={700}>
+                        <IconButton
+                          size='small'
+                          className={get_string_from_object({
+                            'cva-btn': true,
+                            '-destructive': true,
+                            '-confirming': is_delete_confirming
+                          })}
+                          onClick={stop(handle_delete_click)}>
+                          <DeleteIcon fontSize='small' />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </div>
                 )}
               </div>
-              <div className='current-view-username'>{username}</div>
-            </div>
-
-            {view_controls_open && (
-              <div className='table-view-controls'>
-                <div
-                  className={get_string_from_object({
-                    'table-view-body': true,
-                    '-with-rail': has_org_props,
-                    '-with-authors':
-                      has_org_props && active_section === 'authors'
-                  })}>
-                  {has_org_props && (
-                    <ViewOrganizationRail
-                      active_section={active_section}
-                      on_section_change={set_active_section}
-                      counts={counts}
-                      all_tags={all_visible_tags}
-                      active_tag_filters={active_tag_filters}
-                      on_toggle_tag_filter={handle_toggle_tag_filter}
-                      on_clear_tag_filters={() =>
-                        set_active_tag_filters(new Set())
-                      }
-                    />
-                  )}
-
-                  {active_section === 'authors' && (
-                    <div className='tvc-author-column'>
-                      <div className='tvc-author-column-header'>Author</div>
-                      <div className='tvc-author-column-list'>
-                        {author_list.map(([author, count]) => (
-                          <button
-                            key={author}
-                            type='button'
-                            className={get_string_from_object({
-                              'tvc-author-column-item': true,
-                              '-active': author === selected_author
-                            })}
-                            onClick={() => set_selected_author(author)}>
-                            <span className='tvc-author-column-name'>
-                              {author}
-                            </span>
-                            <span className='tvc-author-column-count'>
-                              {count}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className='table-view-main'>
-                    <div className='table-view-header'>
-                      <TextField
-                        size='small'
-                        label='Filter Views'
-                        placeholder='Filter views'
-                        value={input_value}
-                        onChange={handle_input_change}
-                        autoComplete='off'
-                        inputRef={input_ref}
-                      />
-                      {!disable_create_view && (
-                        <button
-                          type='button'
-                          className='rt-button table-view-header-new-view-button'
-                          onClick={handle_add_click}>
-                          <span className='rt-button-glyph' aria-hidden='true'>
-                            +
-                          </span>
-                          New view
-                        </button>
+              {description && (
+                <div className='current-view-description'>{description}</div>
+              )}
+              {view_controls_open && current_view && (
+                <>
+                  {(current_tags.length > 0 || can_edit_tags) && (
+                    <div
+                      className='current-view-tags'
+                      onClick={(e) => e.stopPropagation()}>
+                      {current_tags.map((tag) => (
+                        <TagChip
+                          key={`${tag.source}-${tag.name}`}
+                          name={tag.name}
+                          source={tag.source}
+                          on_remove={
+                            can_edit_tags && tag.source === 'user'
+                              ? () =>
+                                  on_remove_user_tag(
+                                    current_view.view_id,
+                                    tag.name
+                                  )
+                              : undefined
+                          }
+                        />
+                      ))}
+                      {can_edit_tags && (
+                        <TagInput
+                          suggestions={tag_suggestions}
+                          existing_tag_names={current_tags
+                            .filter((t) => t.source === 'user')
+                            .map((t) => t.name)}
+                          on_submit={(name) =>
+                            on_add_user_tag(current_view.view_id, name)
+                          }
+                          on_remove={(name) =>
+                            on_remove_user_tag(current_view.view_id, name)
+                          }
+                          placeholder='Add tag'
+                        />
                       )}
                     </div>
-                    <div className='table-view-list' ref={list_ref}>
-                      {list_items}
+                  )}
+                </>
+              )}
+            </div>
+            <div className='current-view-username'>{username}</div>
+          </div>
+
+          {view_controls_open && (
+            <div className='table-view-controls'>
+              <div
+                className={get_string_from_object({
+                  'table-view-body': true,
+                  '-with-rail': has_org_props,
+                  '-with-authors': has_org_props && active_section === 'authors'
+                })}>
+                {has_org_props && (
+                  <ViewOrganizationRail
+                    active_section={active_section}
+                    on_section_change={set_active_section}
+                    counts={counts}
+                    all_tags={all_visible_tags}
+                    active_tag_filters={active_tag_filters}
+                    on_toggle_tag_filter={handle_toggle_tag_filter}
+                    on_clear_tag_filters={() =>
+                      set_active_tag_filters(new Set())
+                    }
+                  />
+                )}
+
+                {active_section === 'authors' && (
+                  <div className='tvc-author-column'>
+                    <div className='tvc-author-column-header'>Author</div>
+                    <div className='tvc-author-column-list'>
+                      {author_list.map(([author, count]) => (
+                        <button
+                          key={author}
+                          type='button'
+                          className={get_string_from_object({
+                            'tvc-author-column-item': true,
+                            '-active': author === selected_author
+                          })}
+                          onClick={() => set_selected_author(author)}>
+                          <span className='tvc-author-column-name'>
+                            {author}
+                          </span>
+                          <span className='tvc-author-column-count'>
+                            {count}
+                          </span>
+                        </button>
+                      ))}
                     </div>
+                  </div>
+                )}
+
+                <div className='table-view-main'>
+                  <div className='table-view-header'>
+                    <TextField
+                      size='small'
+                      label='Filter Views'
+                      placeholder='Filter views'
+                      value={input_value}
+                      onChange={handle_input_change}
+                      autoComplete='off'
+                      inputRef={input_ref}
+                    />
+                    {on_create_new_view && (
+                      <button
+                        type='button'
+                        className='rt-button table-view-header-new-view-button'
+                        onClick={handle_add_click}>
+                        <span className='rt-button-glyph' aria-hidden='true'>
+                          +
+                        </span>
+                        New view
+                      </button>
+                    )}
+                  </div>
+                  <div className='table-view-list' ref={list_ref}>
+                    {list_items}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            <TableViewModal
-              {...{
-                view: selected_edit_view,
-                edit_view_modal_open,
-                set_edit_view_modal_open,
-                on_view_change,
-                tags_by_view_id,
-                auto_tags_map,
-                tag_suggestions,
-                can_edit_tags: Boolean(
-                  !disable_edit_view &&
-                  selected_edit_view &&
-                  selected_edit_view.view_username &&
-                  selected_edit_view.view_username === table_username &&
-                  on_add_user_tag &&
-                  on_remove_user_tag
-                ),
-                on_add_user_tag,
+          <TableViewModal
+            {...{
+              view: selected_edit_view,
+              edit_view_modal_open,
+              set_edit_view_modal_open,
+              on_view_change,
+              tags_by_view_id,
+              auto_tags_map,
+              tag_suggestions,
+              can_edit_tags: Boolean(
+                !disable_edit_view &&
+                selected_edit_view &&
+                selected_edit_view.view_username &&
+                selected_edit_view.view_username === table_username &&
+                on_add_user_tag &&
                 on_remove_user_tag
-              }}
-            />
-          </div>
-        </ClickAwayListener>
-      </div>
-
-      {/* Deliberately a sibling of the current-view card, not a child of it.
-          Inside the card it read as an action ON the current view, alongside
-          favorite / save / edit / duplicate / delete, and its only label was a
-          delayed tooltip. */}
-      {!disable_create_view && (
-        <button
-          type='button'
-          className='rt-button table-view-new-view-button'
-          onClick={handle_add_click}>
-          <span className='rt-button-glyph' aria-hidden='true'>
-            +
-          </span>
-          New view
-        </button>
-      )}
+              ),
+              on_add_user_tag,
+              on_remove_user_tag
+            }}
+          />
+        </div>
+      </ClickAwayListener>
     </div>
   )
 }
@@ -758,9 +705,8 @@ TableViewController.propTypes = {
   views: PropTypes.array,
   on_view_change: PropTypes.func.isRequired,
   delete_view: PropTypes.func.isRequired,
-  disable_create_view: PropTypes.bool,
   disable_edit_view: PropTypes.bool,
-  new_view_prefix_columns: PropTypes.array,
+  on_create_new_view: PropTypes.func,
   // Organization props (all optional)
   favorite_view_ids: PropTypes.object,
   tags_by_view_id: PropTypes.object,

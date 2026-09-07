@@ -6,45 +6,16 @@ $accent_color = #1976d2
 $rail_width = 160px
 $breakpoint_mobile = 768px
 
-$card_width = 30vw
-$card_min_width = 250px
-
 // ── Collapsed trigger button ──────────────────────────────────────────────────
-// A row of two things: the current-view card, and the New view button beside
-// it. The card is position:absolute so it can expand over the page without
-// reflowing its siblings, which means it contributes no size -- .table-view-
-// controller-slot reserves its collapsed footprint so the button can be an
-// ordinary flex sibling instead of an offset computed from the card's width.
 .table-view-controller-container
-  display flex
-  flex-direction row
-  align-items center
-  gap $rt_space_sm
   min-width 60vw
   max-width 90vw
   height $unopened_height
 
   @media (max-width: $breakpoint_mobile)
-    // Stacked, so the button gets the full width to be legible on a phone
-    // rather than competing with the card for a 390px viewport.
-    flex-direction column
-    align-items stretch
-    gap $rt_space_xs
     min-width 0
     max-width 100%
     width 100%
-    height auto
-
-  .table-view-controller-slot
-    position relative
-    flex 0 0 auto
-    width $card_width
-    min-width $card_min_width
-    height $unopened_height
-
-    @media (max-width: $breakpoint_mobile)
-      width 100%
-      min-width 0
 
   .table-expanding-control-button
     height $unopened_height
@@ -61,30 +32,15 @@ $card_min_width = 250px
       font-size 8px
       color rgba(0, 0, 0, 0.6)
 
-// ── New view button ───────────────────────────────────────────────────────────
-// A sibling of the current-view card rather than a control inside it: creating
-// a view is not an action on the view you are looking at. Visual treatment
-// comes entirely from .rt-button, so it reads as one of the same set as the
-// Columns and Filters triggers.
-.table-view-new-view-button
-  flex 0 0 auto
-  align-self center
-
-  @media (max-width: $breakpoint_mobile)
-    align-self flex-start
-
-// The expanded card overlays this position, so creation moves into the panel
-// header while it is open.
-.table-view-controller-container.-panel-open .table-view-new-view-button
-  display none
-
-// Collapsed, the card fills the slot that reserves its footprint -- the slot
-// owns the size so the two cannot drift apart. The -open rule below replaces
-// this with the expanded panel's own dimensions.
 .table-expanding-control-container.table-view-controller
   height $unopened_height
   max-height $unopened_height
-  width 100%
+  min-width 250px
+  width 30vw
+
+  @media (max-width: $breakpoint_mobile)
+    width 100%
+    min-width 0
 
 .table-view-controller:not(.-open)
   border 1px solid $borderColor
