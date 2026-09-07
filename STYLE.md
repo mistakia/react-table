@@ -175,11 +175,16 @@ the Stylus mirror.** A mirror is substituted at build time, so a consumer's
 
 ## Buttons
 
-Three patterns, all neutral:
+Three patterns, all neutral. The shared implementations live in
+`src/styles/button.styl`, which `src/table/table.js` imports once — reach for a
+class from there rather than restating padding, radius, border and hover in a
+component styl.
 
-- **Toolbar / ghost**: transparent background, `transparent` resting border;
-  hover reveals `--rt-border` + `--rt-bg-hover`. `aria-pressed` / `.active`
-  state uses the same border + background as hover.
+- **Toolbar / ghost** — `.rt-button`, with `.rt-button-glyph` for a leading
+  `+` / `×`: transparent background, `transparent` resting border; hover reveals
+  `--rt-border` + `--rt-bg-hover`. `aria-pressed` / `.active` state uses the
+  same border + background as hover. This is the treatment the column and filter
+  triggers present, so a button carrying it reads as one of that set.
 - **Subtle (modal cancel, add-row)**: subtle bg, `--rt-border` resting, hover
   `--rt-bg-hover-strong`.
 - **Primary action (modal save)**: `--rt-bg-subtle` background, full

@@ -6,26 +6,45 @@ $accent_color = #1976d2
 $rail_width = 160px
 $breakpoint_mobile = 768px
 
-// The collapsed card is absolutely positioned, so nothing can flow after it.
-// The New view button beside it is placed off the same two numbers -- keep the
-// card's width rule and $card_footprint in agreement.
 $card_width = 30vw
 $card_min_width = 250px
-$card_footprint = s('max(%s, %s)', $card_width, $card_min_width)
 
 // ── Collapsed trigger button ──────────────────────────────────────────────────
+// A row of two things: the current-view card, and the New view button beside
+// it. The card is position:absolute so it can expand over the page without
+// reflowing its siblings, which means it contributes no size -- .table-view-
+// controller-slot reserves its collapsed footprint so the button can be an
+// ordinary flex sibling instead of an offset computed from the card's width.
 .table-view-controller-container
-  position relative
+  display flex
+  flex-direction row
+  align-items center
+  gap $rt_space_sm
   min-width 60vw
   max-width 90vw
   height $unopened_height
 
   @media (max-width: $breakpoint_mobile)
+    // Stacked, so the button gets the full width to be legible on a phone
+    // rather than competing with the card for a 390px viewport.
+    flex-direction column
+    align-items stretch
+    gap $rt_space_xs
     min-width 0
     max-width 100%
     width 100%
-    // Card plus the New view button stacked beneath it.
-    height ($unopened_height + 44px)
+    height auto
+
+  .table-view-controller-slot
+    position relative
+    flex 0 0 auto
+    width $card_width
+    min-width $card_min_width
+    height $unopened_height
+
+    @media (max-width: $breakpoint_mobile)
+      width 100%
+      min-width 0
 
   .table-expanding-control-button
     height $unopened_height
@@ -44,36 +63,28 @@ $card_footprint = s('max(%s, %s)', $card_width, $card_min_width)
 
 // ── New view button ───────────────────────────────────────────────────────────
 // A sibling of the current-view card rather than a control inside it: creating
-// a view is not an action on the view you are looking at. Absolutely positioned
-// because the card it sits beside is, so there is no flow to join.
-.table-view-new-view-button.MuiButton-root
-  position absolute
-  top 28px // vertically centres against the 80px card, which starts at top 4px
-  left $card_footprint
-  margin-left 12px
-  white-space nowrap
-  text-transform none
-  z-index 2
+// a view is not an action on the view you are looking at. Visual treatment
+// comes entirely from .rt-button, so it reads as one of the same set as the
+// Columns and Filters triggers.
+.table-view-new-view-button
+  flex 0 0 auto
+  align-self center
 
   @media (max-width: $breakpoint_mobile)
-    top ($unopened_height + 8px)
-    left 0
-    margin-left 0
+    align-self flex-start
 
-// The expanded panel overlays this position, so creation moves into the panel
+// The expanded card overlays this position, so creation moves into the panel
 // header while it is open.
-.table-view-controller-container.-panel-open .table-view-new-view-button.MuiButton-root
+.table-view-controller-container.-panel-open .table-view-new-view-button
   display none
 
+// Collapsed, the card fills the slot that reserves its footprint -- the slot
+// owns the size so the two cannot drift apart. The -open rule below replaces
+// this with the expanded panel's own dimensions.
 .table-expanding-control-container.table-view-controller
   height $unopened_height
   max-height $unopened_height
-  min-width $card_min_width
-  width $card_width
-
-  @media (max-width: $breakpoint_mobile)
-    width 100%
-    min-width 0
+  width 100%
 
 .table-view-controller:not(.-open)
   border 1px solid $borderColor
@@ -688,10 +699,8 @@ $card_footprint = s('max(%s, %s)', $card_width, $card_min_width)
     flex 1
     min-width 0
 
-  .table-view-header-new-view-button.MuiButton-root
+  .table-view-header-new-view-button
     flex 0 0 auto
-    white-space nowrap
-    text-transform none
 
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item

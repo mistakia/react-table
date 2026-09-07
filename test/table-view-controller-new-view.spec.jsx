@@ -105,8 +105,18 @@ describe('TableViewController — new view', () => {
 
     const button = container.querySelector('.table-view-new-view-button')
     expect(button).to.not.equal(null)
-    // The label must be readable without hovering for a tooltip.
-    expect(button.textContent).to.equal('New view')
+    // A native button on the lib's shared .rt-button treatment, not a MUI one
+    // -- see STYLE.md. The class is what makes it match the Columns and
+    // Filters triggers, so assert on it rather than on the rendered CSS.
+    expect(button.tagName).to.equal('BUTTON')
+    expect(button.classList.contains('rt-button')).to.equal(true)
+    expect(button.className).to.not.match(/Mui/)
+    // The label must be readable without hovering for a tooltip. The leading
+    // glyph is aria-hidden, so it is decoration rather than part of the name.
+    expect(button.textContent).to.equal('+New view')
+    expect(
+      button.querySelector('.rt-button-glyph').getAttribute('aria-hidden')
+    ).to.equal('true')
     // And it must not sit inside the card, whose other controls all act on the
     // view currently selected.
     expect(
@@ -172,7 +182,9 @@ describe('TableViewController — new view', () => {
       '.table-view-header-new-view-button'
     )
     expect(panel_button).to.not.equal(null)
-    expect(panel_button.textContent).to.equal('New view')
+    expect(panel_button.tagName).to.equal('BUTTON')
+    expect(panel_button.classList.contains('rt-button')).to.equal(true)
+    expect(panel_button.textContent).to.equal('+New view')
 
     await act(async () => panel_button.click())
     expect(container.querySelector('.table-view-list')).to.equal(null)
