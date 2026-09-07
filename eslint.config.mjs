@@ -3,6 +3,8 @@ import babelParser from '@babel/eslint-parser'
 import neostandard from 'neostandard'
 import react from 'eslint-plugin-react'
 
+import local from './eslint-rules/no-key-in-jsx-spread.mjs'
+
 export default [
   {
     ignores: ['dist/**/*', '.yarn/**/*']
@@ -30,7 +32,9 @@ export default [
     settings: {
       react: { version: 'detect' }
     },
+    plugins: { local },
     rules: {
+      'local/no-key-in-jsx-spread': 'error',
       camelcase: 'off',
       curly: 'off',
       '@stylistic/indent': 'off',
