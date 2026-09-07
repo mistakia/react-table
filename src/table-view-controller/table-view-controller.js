@@ -9,6 +9,7 @@ import PropTypes from 'prop-types'
 import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
+import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import AddIcon from '@mui/icons-material/Add'
 import StarIcon from '@mui/icons-material/Star'
@@ -145,10 +146,14 @@ const TableViewController = ({
     set_input_value('')
   }
 
+  // A new view is built from a fixed template, never from the current view.
+  // Spreading selected_view here carried whatever else the consumer had
+  // attached to it -- search config, editability, dirty flags -- which made
+  // "new" quietly mean "a copy of this one". Starting from the current view is
+  // what Duplicate is for.
   const handle_add_click = () => {
     on_view_change(
       {
-        ...selected_view,
         view_id: generate_view_id(),
         view_name: 'New view',
         view_username: table_username || 'system',
@@ -166,8 +171,9 @@ const TableViewController = ({
         is_new_view: true
       }
     )
-    // Reachable from the collapsed header as well as from inside the panel,
-    // so only close what is actually open.
+    // The button sits outside the ClickAwayListener, so a click while the
+    // panel is open would close it anyway -- but close explicitly rather than
+    // depending on that ordering.
     if (view_controls_open) handle_menu_toggle()
   }
 
@@ -417,7 +423,13 @@ const TableViewController = ({
   }
 
   return (
-    <div className='table-view-controller-container'>
+    <div
+      className={get_string_from_object({
+        'table-view-controller-container': true,
+        // The card overlays the button when expanded, so the outer button
+        // stands down and the panel header carries creation instead.
+        '-panel-open': view_controls_open || closing
+      })}>
       <ClickAwayListener onClickAway={handle_click_away}>
         <div
           ref={container_ref}
@@ -437,17 +449,6 @@ const TableViewController = ({
             <div className='current-view-info'>
               <div className='current-view-title-row'>
                 <div className='current-view-title'>{title}</div>
-                {!disable_create_view && (
-                  <Tooltip title='New view' placement='top' enterDelay={700}>
-                    <IconButton
-                      size='small'
-                      className='cva-btn -new-view'
-                      aria-label='New view'
-                      onClick={stop(handle_add_click)}>
-                      <AddIcon fontSize='small' />
-                    </IconButton>
-                  </Tooltip>
-                )}
                 {current_view && (
                   <div
                     className='current-view-actions'
@@ -683,6 +684,17 @@ const TableViewController = ({
                       autoComplete='off'
                       inputRef={input_ref}
                     />
+                    {!disable_create_view && (
+                      <Button
+                        variant='outlined'
+                        size='small'
+                        className='table-view-header-new-view-button'
+                        aria-label='New view'
+                        startIcon={<AddIcon fontSize='small' />}
+                        onClick={handle_add_click}>
+                        New view
+                      </Button>
+                    )}
                   </div>
                   <div className='table-view-list' ref={list_ref}>
                     {list_items}
@@ -715,6 +727,22 @@ const TableViewController = ({
           />
         </div>
       </ClickAwayListener>
+
+      {/* Deliberately a sibling of the current-view card, not a child of it.
+          Inside the card it read as an action ON the current view, alongside
+          favorite / save / edit / duplicate / delete, and its only label was a
+          delayed tooltip. */}
+      {!disable_create_view && (
+        <Button
+          variant='outlined'
+          size='small'
+          className='table-view-new-view-button'
+          aria-label='New view'
+          startIcon={<AddIcon fontSize='small' />}
+          onClick={handle_add_click}>
+          New view
+        </Button>
+      )}
     </div>
   )
 }

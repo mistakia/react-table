@@ -63,7 +63,11 @@ const VIEWS = [
     view_name: 'All Players',
     view_username: 'alice',
     view_description: 'Basic player table',
-    table_state: { columns: ['player_name'], sort: [], where: [] }
+    table_state: { columns: ['player_name'], sort: [], where: [] },
+    // Consumer-attached fields a new view must NOT inherit.
+    search: { type: 'client', fields: ['player_name'], key_field: 'pid' },
+    is_editable: true,
+    is_table_state_changed: true
   }
 ]
 
@@ -94,11 +98,22 @@ const render_controller = async (props = {}) => {
   return container
 }
 
-describe('TableViewController — one-click new view', () => {
-  it('renders the new view button while a view is shown and the panel is closed', async () => {
+describe('TableViewController — new view', () => {
+  it('renders a labelled new view button outside the current-view card', async () => {
     const container = await render_controller()
     expect(container.querySelector('.table-view-list')).to.equal(null)
-    expect(container.querySelector('.cva-btn.-new-view')).to.not.equal(null)
+
+    const button = container.querySelector('.table-view-new-view-button')
+    expect(button).to.not.equal(null)
+    // The label must be readable without hovering for a tooltip.
+    expect(button.textContent).to.equal('New view')
+    // And it must not sit inside the card, whose other controls all act on the
+    // view currently selected.
+    expect(
+      container
+        .querySelector('.table-expanding-control-button')
+        .contains(button)
+    ).to.equal(false)
   })
 
   it('creates a fresh empty view seeded with the new-view prefix columns', async () => {
@@ -107,7 +122,9 @@ describe('TableViewController — one-click new view', () => {
       on_view_change: (view, params) => calls.push({ view, params })
     })
 
-    await act(async () => container.querySelector('.cva-btn.-new-view').click())
+    await act(async () =>
+      container.querySelector('.table-view-new-view-button').click()
+    )
 
     expect(calls.length).to.equal(1)
     const { view, params } = calls[0]
@@ -120,25 +137,57 @@ describe('TableViewController — one-click new view', () => {
     expect(view.table_state.prefix_columns).to.deep.equal(['player_name'])
   })
 
+  it('inherits nothing from the selected view', async () => {
+    const calls = []
+    const container = await render_controller({
+      on_view_change: (view, params) => calls.push({ view, params })
+    })
+
+    await act(async () =>
+      container.querySelector('.table-view-new-view-button').click()
+    )
+
+    const { view } = calls[0]
+    expect(view.search).to.equal(undefined)
+    expect(view.is_editable).to.equal(undefined)
+    expect(view.is_table_state_changed).to.equal(undefined)
+  })
+
   it('leaves the panel closed when creating from the collapsed header', async () => {
     const container = await render_controller()
-    await act(async () => container.querySelector('.cva-btn.-new-view').click())
+    await act(async () =>
+      container.querySelector('.table-view-new-view-button').click()
+    )
     expect(container.querySelector('.table-view-list')).to.equal(null)
   })
 
-  it('closes the panel when creating from the open panel', async () => {
+  it('offers creation inside the open panel, and closes it on create', async () => {
     const container = await render_controller()
     await act(async () =>
       container.querySelector('.table-expanding-control-button').click()
     )
     expect(container.querySelector('.table-view-list')).to.not.equal(null)
 
-    await act(async () => container.querySelector('.cva-btn.-new-view').click())
+    const panel_button = container.querySelector(
+      '.table-view-header-new-view-button'
+    )
+    expect(panel_button).to.not.equal(null)
+    expect(panel_button.textContent).to.equal('New view')
+
+    await act(async () => panel_button.click())
     expect(container.querySelector('.table-view-list')).to.equal(null)
   })
 
-  it('omits the button when create is disabled', async () => {
+  it('omits both buttons when create is disabled', async () => {
     const container = await render_controller({ disable_create_view: true })
-    expect(container.querySelector('.cva-btn.-new-view')).to.equal(null)
+    expect(container.querySelector('.table-view-new-view-button')).to.equal(
+      null
+    )
+    await act(async () =>
+      container.querySelector('.table-expanding-control-button').click()
+    )
+    expect(
+      container.querySelector('.table-view-header-new-view-button')
+    ).to.equal(null)
   })
 })

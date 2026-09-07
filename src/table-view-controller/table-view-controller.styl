@@ -6,8 +6,16 @@ $accent_color = #1976d2
 $rail_width = 160px
 $breakpoint_mobile = 768px
 
+// The collapsed card is absolutely positioned, so nothing can flow after it.
+// The New view button beside it is placed off the same two numbers -- keep the
+// card's width rule and $card_footprint in agreement.
+$card_width = 30vw
+$card_min_width = 250px
+$card_footprint = s('max(%s, %s)', $card_width, $card_min_width)
+
 // ── Collapsed trigger button ──────────────────────────────────────────────────
 .table-view-controller-container
+  position relative
   min-width 60vw
   max-width 90vw
   height $unopened_height
@@ -16,6 +24,8 @@ $breakpoint_mobile = 768px
     min-width 0
     max-width 100%
     width 100%
+    // Card plus the New view button stacked beneath it.
+    height ($unopened_height + 44px)
 
   .table-expanding-control-button
     height $unopened_height
@@ -32,11 +42,34 @@ $breakpoint_mobile = 768px
       font-size 8px
       color rgba(0, 0, 0, 0.6)
 
+// ── New view button ───────────────────────────────────────────────────────────
+// A sibling of the current-view card rather than a control inside it: creating
+// a view is not an action on the view you are looking at. Absolutely positioned
+// because the card it sits beside is, so there is no flow to join.
+.table-view-new-view-button.MuiButton-root
+  position absolute
+  top 28px // vertically centres against the 80px card, which starts at top 4px
+  left $card_footprint
+  margin-left 12px
+  white-space nowrap
+  text-transform none
+  z-index 2
+
+  @media (max-width: $breakpoint_mobile)
+    top ($unopened_height + 8px)
+    left 0
+    margin-left 0
+
+// The expanded panel overlays this position, so creation moves into the panel
+// header while it is open.
+.table-view-controller-container.-panel-open .table-view-new-view-button.MuiButton-root
+  display none
+
 .table-expanding-control-container.table-view-controller
   height $unopened_height
   max-height $unopened_height
-  min-width 250px
-  width 30vw
+  min-width $card_min_width
+  width $card_width
 
   @media (max-width: $breakpoint_mobile)
     width 100%
@@ -645,9 +678,20 @@ $breakpoint_mobile = 768px
 .table-view-header
   border-bottom 1px solid $borderColor
   display flex
-  flex-direction column
+  flex-direction row
+  align-items center
+  gap 8px
   width 100%
   padding 8px
+
+  .MuiTextField-root
+    flex 1
+    min-width 0
+
+  .table-view-header-new-view-button.MuiButton-root
+    flex 0 0 auto
+    white-space nowrap
+    text-transform none
 
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
@@ -849,24 +893,6 @@ $breakpoint_mobile = 768px
       align-items center
       gap 12px
       min-width 0
-
-    // Always visible, open or collapsed: starting a new view is one click from
-    // whatever view is on screen, and does not go through the panel.
-    .cva-btn.-new-view.MuiIconButton-root
-      width 24px
-      height 24px
-      padding 0
-      flex 0 0 auto
-      border-radius 4px
-      color $rt_accent
-      background rgba(15, 23, 42, 0.03)
-      border 1px solid rgba(15, 23, 42, 0.08)
-
-      .MuiSvgIcon-root
-        font-size 16px
-
-      &:hover
-        background rgba(15, 23, 42, 0.07)
 
     .current-view-title
       font-weight bold
