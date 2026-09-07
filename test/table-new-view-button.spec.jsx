@@ -110,6 +110,10 @@ describe('new view button', () => {
         .querySelector('.table-search-and-controls-container')
         .contains(button)
     ).to.equal(true)
+    // Directly after the ellipsis menu, at the head of the row.
+    expect(
+      button.previousElementSibling.classList.contains('table-menu-container')
+    ).to.equal(true)
     expect(
       container
         .querySelector('.table-view-controller-container')
