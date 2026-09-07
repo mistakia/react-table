@@ -166,7 +166,9 @@ const TableViewController = ({
         is_new_view: true
       }
     )
-    handle_menu_toggle()
+    // Reachable from the collapsed header as well as from inside the panel,
+    // so only close what is actually open.
+    if (view_controls_open) handle_menu_toggle()
   }
 
   const handle_toggle_tag_filter = (tag_name) => {
@@ -435,6 +437,17 @@ const TableViewController = ({
             <div className='current-view-info'>
               <div className='current-view-title-row'>
                 <div className='current-view-title'>{title}</div>
+                {!disable_create_view && (
+                  <Tooltip title='New view' placement='top' enterDelay={700}>
+                    <IconButton
+                      size='small'
+                      className='cva-btn -new-view'
+                      aria-label='New view'
+                      onClick={stop(handle_add_click)}>
+                      <AddIcon fontSize='small' />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 {current_view && (
                   <div
                     className='current-view-actions'
@@ -674,16 +687,6 @@ const TableViewController = ({
                   <div className='table-view-list' ref={list_ref}>
                     {list_items}
                   </div>
-                  {!disable_create_view && (
-                    <div className='table-view-footer'>
-                      <div
-                        className='table-view-add-button'
-                        onClick={handle_add_click}>
-                        <AddIcon />
-                        Add view
-                      </div>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>

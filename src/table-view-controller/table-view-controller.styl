@@ -649,9 +649,6 @@ $breakpoint_mobile = 768px
   width 100%
   padding 8px
 
-.table-view-footer
-  border-top 1px solid $borderColor
-
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
   display flex
@@ -852,6 +849,24 @@ $breakpoint_mobile = 768px
       align-items center
       gap 12px
       min-width 0
+
+    // Always visible, open or collapsed: starting a new view is one click from
+    // whatever view is on screen, and does not go through the panel.
+    .cva-btn.-new-view.MuiIconButton-root
+      width 24px
+      height 24px
+      padding 0
+      flex 0 0 auto
+      border-radius 4px
+      color $rt_accent
+      background rgba(15, 23, 42, 0.03)
+      border 1px solid rgba(15, 23, 42, 0.08)
+
+      .MuiSvgIcon-root
+        font-size 16px
+
+      &:hover
+        background rgba(15, 23, 42, 0.07)
 
     .current-view-title
       font-weight bold
