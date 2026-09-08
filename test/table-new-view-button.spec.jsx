@@ -18,6 +18,7 @@ const all_columns = {
 }
 
 const TABLE_STATE = { columns: ['player_name'], sort: [], where: [] }
+const EMPTY_TABLE_STATE = { columns: [], sort: [], where: [] }
 
 const SELECTED_VIEW = {
   view_id: 'view-1',
@@ -121,9 +122,22 @@ describe('new view button', () => {
     ).to.equal(false)
   })
 
-  it('is hidden on a view that has never been saved', async () => {
-    const container = await render_table({ saved_table_state: null })
+  it('is hidden on an untouched draft -- no saved state and no columns', async () => {
+    const container = await render_table({
+      saved_table_state: null,
+      table_state: EMPTY_TABLE_STATE
+    })
     expect(container.querySelector('.table-new-view-button')).to.equal(null)
+  })
+
+  // The gate asks whether this is an untouched draft, NOT whether it has been
+  // persisted. A consumer can hold a view the user built and never saved --
+  // league restores one from localStorage with no server row behind it -- and
+  // gating on saved_table_state alone withheld the button for the whole life of
+  // that page, stranding the user on a view they could not start over from.
+  it('is shown on an unsaved view that carries columns', async () => {
+    const container = await render_table({ saved_table_state: null })
+    expect(container.querySelector('.table-new-view-button')).to.not.equal(null)
   })
 
   it('is hidden when the consumer disables view creation', async () => {
@@ -184,8 +198,13 @@ describe('new view button', () => {
     expect(panel_button.textContent).to.equal('+New view')
   })
 
-  it('withholds the panel button on a view that has never been saved', async () => {
-    const container = await render_table({ saved_table_state: null })
+  // Both surfaces read the one `on_create_new_view` gate, so the draft rule
+  // holds in the panel without a second condition to keep in step.
+  it('withholds the panel button on an untouched draft', async () => {
+    const container = await render_table({
+      saved_table_state: null,
+      table_state: EMPTY_TABLE_STATE
+    })
     await act(async () =>
       container
         .querySelector('.table-view-controller .table-expanding-control-button')

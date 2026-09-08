@@ -563,12 +563,19 @@ export default function Table({
   const is_view_state_saveable =
     is_table_state_changed && (has_selected_columns || has_saved_columns)
 
-  // Creating a view is only on offer from a view that EXISTS. A view with no
-  // saved state has never been persisted -- it is itself the new view, and
-  // offering to start another from it says nothing about what the button does
-  // and leaves an untouched draft behind. Consumers set saved_table_state when
-  // a view is saved and leave it null until then.
-  const is_selected_view_saved = saved_table_state != null
+  // Creating a view is withheld from an UNTOUCHED DRAFT, and that is the whole
+  // rule. A view holding nothing already IS the new view, so offering to start
+  // another from it says nothing about what the button does and leaves an empty
+  // draft behind.
+  //
+  // Gating on `saved_table_state != null` alone said "has been persisted", which
+  // is a different question and got the stranding case backwards. A consumer can
+  // restore a view the user built and never saved -- league keeps one in
+  // localStorage and hydrates it before (or without) any server list, so
+  // saved_table_state stays null for the life of the page. That view carries the
+  // user's real columns, it is emphatically not the new view, and the old gate
+  // withheld the one control that would let them start over.
+  const is_untouched_draft = saved_table_state == null && !has_selected_columns
   const handle_create_new_view = useCallback(() => {
     on_view_change(
       build_new_view({ table_username, new_view_prefix_columns }),
@@ -579,7 +586,7 @@ export default function Table({
     )
   }, [on_view_change, table_username, new_view_prefix_columns])
   const on_create_new_view =
-    disable_create_view || !is_selected_view_saved
+    disable_create_view || is_untouched_draft
       ? undefined
       : handle_create_new_view
 
