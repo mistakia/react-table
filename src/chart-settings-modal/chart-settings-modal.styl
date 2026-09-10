@@ -1,0 +1,142 @@
+@import '../styles/tokens'
+
+// Chrome for a chart's settings form. Moved here from the scatter plot's
+// stylesheet, where every `.modal-*` rule was already declared at the top level
+// and therefore global -- a second chart reusing the class names would have
+// rendered correctly only while the scatter plot's stylesheet happened to be
+// loaded, which is load order no component can assert.
+
+.chart-settings-modal-overlay
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  background-color $rt_bg_overlay
+  display flex
+  justify-content center
+  align-items center
+  z-index var(--rt-z-panel)
+
+.chart-settings-modal
+  background-color $rt_bg
+  border-radius $rt_radius_lg
+  width 520px
+  max-width 95vw
+  max-height 85vh
+  display flex
+  flex-direction column
+  box-shadow $rt_shadow_overlay
+  border 1px solid $rt_border_subtle
+
+.modal-header
+  display flex
+  align-items center
+  justify-content space-between
+  padding $rt_space_lg $rt_space_xl
+  border-bottom 1px solid $rt_border_subtle
+
+  .modal-title
+    margin 0
+    font-size 16px
+    font-weight 600
+    color $rt_text
+    letter-spacing -0.005em
+
+  .modal-close-btn
+    background none
+    border 1px solid transparent
+    border-radius $rt_radius_sm
+    font-size 20px
+    cursor pointer
+    color $rt_text_muted
+    line-height 1
+    padding 2px 8px
+    transition border-color $rt_transition, background-color $rt_transition, color $rt_transition
+
+    &:hover
+      color $rt_text
+      border-color $rt_border
+      background-color $rt_bg_hover
+
+.modal-body
+  padding $rt_space_lg $rt_space_xl
+  overflow-y auto
+  flex 1
+
+.modal-section
+  margin-bottom $rt_space_lg
+
+  &:last-child
+    margin-bottom 0
+
+.modal-section-label
+  display block
+  font-size $rt_font_size_sm
+  font-weight 600
+  color $rt_text_muted
+  text-transform uppercase
+  letter-spacing 0.05em
+  margin-bottom 6px
+
+.modal-text-input,
+.modal-textarea,
+.modal-select
+  width 100%
+  box-sizing border-box
+  padding 7px 10px
+  border 1px solid $rt_border
+  border-radius $rt_radius_sm
+  background-color $rt_bg
+  color $rt_text
+  font-size $rt_font_size
+  font-family inherit
+  transition border-color $rt_transition, box-shadow $rt_transition
+
+  &::placeholder
+    color $rt_text_disabled
+
+  &:hover:not(:focus)
+    border-color rgba(0, 0, 0, 0.4)
+
+  &:focus
+    outline none
+    border-color $rt_text
+    box-shadow 0 0 0 3px rgba(0, 0, 0, 0.06)
+
+.modal-textarea
+  resize vertical
+  min-height 64px
+  line-height 1.4
+
+.modal-footer
+  display flex
+  justify-content flex-end
+  gap $rt_space_sm
+  padding $rt_space_lg $rt_space_xl
+  border-top 1px solid $rt_border_subtle
+  background-color $rt_bg_subtle
+  border-radius 0 0 $rt_radius_lg $rt_radius_lg
+
+.modal-btn
+  padding 6px 16px
+  border 1px solid $rt_border
+  border-radius $rt_radius
+  font-size $rt_font_size_md
+  font-family inherit
+  cursor pointer
+  background-color $rt_bg
+  color $rt_text
+  transition background-color $rt_transition, border-color $rt_transition
+
+  &:hover
+    background-color $rt_bg_hover
+
+.modal-btn-save
+  background-color $rt_bg_subtle
+  border-color rgba(0, 0, 0, 0.5)
+  font-weight 600
+
+  &:hover
+    background-color $rt_bg_hover_strong
+    border-color $rt_text

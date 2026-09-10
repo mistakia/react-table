@@ -241,8 +241,15 @@ export default function Table({
     [slice_size]
   )
 
+  // `change_params` rides along to the consumer untouched. The only member it
+  // needs to understand today is `is_display_only_change`, which says the
+  // change altered how the CURRENT rows are drawn and not which rows they are
+  // -- a chart's orientation, its title, its axis labels. The state still has
+  // to persist (Save, the URL, browser history all read it), so this is not
+  // `view_state_changed: false`; it is a narrower claim beside it, and a
+  // consumer that ignores it behaves exactly as before.
   const on_table_state_change = useCallback(
-    (next_table_state) => {
+    (next_table_state, change_params = {}) => {
       const { view_id, view_name, view_username, view_description } =
         selected_view
 
@@ -299,7 +306,8 @@ export default function Table({
           table_state: { ...next_table_state, where }
         },
         {
-          view_state_changed: true
+          view_state_changed: true,
+          ...change_params
         }
       )
     },
@@ -1198,10 +1206,13 @@ export default function Table({
           get_scatter_point_label_suffix={get_scatter_point_label_suffix}
           scatter_plot_options={table_state.scatter_plot_options || {}}
           on_scatter_plot_options_change={(next_options) =>
-            on_table_state_change({
-              ...table_state,
-              scatter_plot_options: next_options
-            })
+            on_table_state_change(
+              {
+                ...table_state,
+                scatter_plot_options: next_options
+              },
+              { is_display_only_change: true }
+            )
           }
           is_scatter_plot_point_label_enabled={
             is_scatter_plot_point_label_enabled
@@ -1220,10 +1231,13 @@ export default function Table({
           footer_text={bar_chart_footer_text}
           bar_chart_options={table_state.bar_chart_options || {}}
           on_bar_chart_options_change={(next_options) =>
-            on_table_state_change({
-              ...table_state,
-              bar_chart_options: next_options
-            })
+            on_table_state_change(
+              {
+                ...table_state,
+                bar_chart_options: next_options
+              },
+              { is_display_only_change: true }
+            )
           }
           on_close={close_bar_chart}
         />

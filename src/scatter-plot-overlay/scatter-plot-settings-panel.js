@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import ChartSettingsModal from '../chart-settings-modal'
 import './scatter-plot-settings-panel.styl'
 
 const ScatterPlotToolbar = ({
@@ -324,132 +325,102 @@ const ScatterPlotSettingsModal = ({
   }
 
   return (
-    <div
-      className='scatter-plot-settings-modal-overlay'
-      role='dialog'
-      aria-modal='true'
-      aria-label='Scatter plot settings'>
-      <div className='scatter-plot-settings-modal'>
-        <div className='modal-header'>
-          <h3 className='modal-title'>Scatter plot settings</h3>
-          <button
-            className='modal-close-btn'
-            onClick={handle_cancel}
-            type='button'
-            aria-label='Close settings'>
-            &times;
-          </button>
-        </div>
-        <div className='modal-body'>
-          <div className='modal-section'>
-            <label className='modal-section-label' htmlFor='custom-title-input'>
-              Custom title
-            </label>
-            <input
-              id='custom-title-input'
-              className='modal-text-input'
-              type='text'
-              maxLength={200}
-              value={custom_title}
-              onChange={handle_custom_title_change}
-              placeholder='Leave blank to use computed title'
-            />
-          </div>
-
-          <div className='modal-section'>
-            <label
-              className='modal-section-label'
-              htmlFor='custom-subtitle-input'>
-              Custom subtitle
-            </label>
-            <textarea
-              id='custom-subtitle-input'
-              className='modal-textarea'
-              maxLength={200}
-              value={custom_subtitle}
-              onChange={handle_custom_subtitle_change}
-              placeholder='Leave blank to use computed subtitle'
-              rows={3}
-            />
-          </div>
-
-          <div className='modal-section'>
-            <label
-              className='modal-section-label'
-              htmlFor='custom-x-axis-title-input'>
-              X axis title
-            </label>
-            <input
-              id='custom-x-axis-title-input'
-              className='modal-text-input'
-              type='text'
-              maxLength={200}
-              value={custom_x_axis_title}
-              onChange={handle_custom_x_axis_title_change}
-              placeholder='Leave blank to use computed X axis title'
-            />
-          </div>
-
-          <div className='modal-section'>
-            <label
-              className='modal-section-label'
-              htmlFor='custom-y-axis-title-input'>
-              Y axis title
-            </label>
-            <input
-              id='custom-y-axis-title-input'
-              className='modal-text-input'
-              type='text'
-              maxLength={200}
-              value={custom_y_axis_title}
-              onChange={handle_custom_y_axis_title_change}
-              placeholder='Leave blank to use computed Y axis title'
-            />
-          </div>
-
-          <div className='modal-section'>
-            <label className='modal-section-label'>Reference lines</label>
-            <ReferenceLinesEditor
-              lines={ref_lines}
-              on_lines_change={handle_ref_lines_change}
-            />
-          </div>
-
-          <div className='modal-section'>
-            <label className='modal-section-label' htmlFor='font-family-select'>
-              Font family
-            </label>
-            <select
-              id='font-family-select'
-              className='modal-select'
-              value={font_family}
-              onChange={handle_font_family_change}>
-              <option value=''>Default</option>
-              <option value='sans-serif'>Sans-serif</option>
-              <option value='serif'>Serif</option>
-              <option value='monospace'>Monospace</option>
-              <option value='Helvetica, Arial'>Helvetica, Arial</option>
-              <option value='Georgia'>Georgia</option>
-              <option value='Courier New'>Courier New</option>
-            </select>
-          </div>
-        </div>
-        <div className='modal-footer'>
-          <button
-            className='modal-btn modal-btn-cancel'
-            onClick={handle_cancel}
-            type='button'>
-            Cancel
-          </button>
-          <button
-            className='modal-btn modal-btn-save'
-            onClick={handle_save}
-            type='button'>
-            Save
-          </button>
-        </div>
+    <ChartSettingsModal
+      title='Scatter plot settings'
+      class_name='scatter-plot-settings-modal'
+      on_save={handle_save}
+      on_cancel={handle_cancel}>
+      <div className='modal-section'>
+        <label className='modal-section-label' htmlFor='custom-title-input'>
+          Custom title
+        </label>
+        <input
+          id='custom-title-input'
+          className='modal-text-input'
+          type='text'
+          maxLength={200}
+          value={custom_title}
+          onChange={handle_custom_title_change}
+          placeholder='Leave blank to use computed title'
+        />
       </div>
-    </div>
+
+      <div className='modal-section'>
+        <label className='modal-section-label' htmlFor='custom-subtitle-input'>
+          Custom subtitle
+        </label>
+        <textarea
+          id='custom-subtitle-input'
+          className='modal-textarea'
+          maxLength={200}
+          value={custom_subtitle}
+          onChange={handle_custom_subtitle_change}
+          placeholder='Leave blank to use computed subtitle'
+          rows={3}
+        />
+      </div>
+
+      <div className='modal-section'>
+        <label
+          className='modal-section-label'
+          htmlFor='custom-x-axis-title-input'>
+          X axis title
+        </label>
+        <input
+          id='custom-x-axis-title-input'
+          className='modal-text-input'
+          type='text'
+          maxLength={200}
+          value={custom_x_axis_title}
+          onChange={handle_custom_x_axis_title_change}
+          placeholder='Leave blank to use computed X axis title'
+        />
+      </div>
+
+      <div className='modal-section'>
+        <label
+          className='modal-section-label'
+          htmlFor='custom-y-axis-title-input'>
+          Y axis title
+        </label>
+        <input
+          id='custom-y-axis-title-input'
+          className='modal-text-input'
+          type='text'
+          maxLength={200}
+          value={custom_y_axis_title}
+          onChange={handle_custom_y_axis_title_change}
+          placeholder='Leave blank to use computed Y axis title'
+        />
+      </div>
+
+      <div className='modal-section'>
+        <label className='modal-section-label'>Reference lines</label>
+        <ReferenceLinesEditor
+          lines={ref_lines}
+          on_lines_change={handle_ref_lines_change}
+        />
+      </div>
+
+      <div className='modal-section'>
+        <label className='modal-section-label' htmlFor='font-family-select'>
+          Font family
+        </label>
+        <select
+          id='font-family-select'
+          className='modal-select'
+          value={font_family}
+          onChange={handle_font_family_change}>
+          <option value=''>Default</option>
+          <option value='sans-serif'>Sans-serif</option>
+          <option value='serif'>Serif</option>
+          <option value='monospace'>Monospace</option>
+          <option value='Helvetica, Arial'>Helvetica, Arial</option>
+          <option value='Georgia'>Georgia</option>
+          <option value='Courier New'>Courier New</option>
+        </select>
+      </div>
+    </ChartSettingsModal>
   )
 }
 

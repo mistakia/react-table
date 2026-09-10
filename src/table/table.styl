@@ -363,7 +363,13 @@
     background-color rgb(230, 247, 255)
     color rgb(14, 103, 178)
     border 1px solid rgb(144, 202, 249)
-    width 100px
+    // A FLOOR, not a fixed width, and the text may not wrap to reach it. At a
+    // hard 100px this box fitted "Show Plot" and nothing longer: "Show Bar
+    // Chart" wrapped to two lines inside a 28px-high flex row and spilled out
+    // of the button. The floor keeps the two buttons matching when both are
+    // short, which is what the fixed width was there for.
+    min-width 100px
+    white-space nowrap
 
   &.save
     color white
