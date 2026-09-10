@@ -180,8 +180,7 @@
               "type": "object",
               "properties": {
                 "getValue": {
-                  "type": "function",
-                  "description": "Function to get the cell value: () => any"
+                  "description": "Function to get the cell value: () => any. Left untyped because JSON Schema has no function type and this member is a runtime callback, never serialized"
                 },
                 "row": {
                   "type": "object",
