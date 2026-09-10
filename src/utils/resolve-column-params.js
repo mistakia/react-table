@@ -76,6 +76,32 @@ export const resolve_param_default = ({ param_definition, params }) => {
 const is_param_value_shape_admissible = ({ param_definition, value }) =>
   !param_definition.is_single || !Array.isArray(value)
 
+// A SELECT param holds two KINDS of entry, and each is declared in its own
+// place. A static entry is a member of `values` / `get_values(params)`; a
+// dynamic entry is an object `{dynamic_type, value?}` naming an option from
+// `dynamic_values`, resolved to concrete values downstream. They never appear
+// in the same declared list, so a dynamic entry judged against `values` fails
+// membership for every param that declares any static values at all —
+// `nfl_week_id`, `single_nfl_week_id`, `year`, `week`, `single_week` in league.
+// Selecting "Last N NFL Weeks" then produced an inadmissible value, which
+// `resolve_column_params` immediately overwrote with `default_value`, so the
+// option snapped back to Current Year REG Weeks the instant it was picked and
+// read as a control that will not select. The default is itself a dynamic
+// value, which is what made it look like only SOME options were broken.
+const is_dynamic_entry = (entry) =>
+  Boolean(entry) && typeof entry === 'object' && Boolean(entry.dynamic_type)
+
+// A dynamic entry is judged on whether the definition still OFFERS that
+// dynamic_type. Undeclared means the option was retired (see
+// `single_nfl_week_id` dropping `current_year_reg_weeks`) or never existed: the
+// control cannot render it, so the user cannot see or re-pick it, and the
+// default is the only reachable state. `dynamic_values` is a static property of
+// the declaration, so unlike `single` that verdict cannot flip back.
+const is_dynamic_entry_admissible = ({ param_definition, entry }) =>
+  (param_definition.dynamic_values || []).some(
+    (dynamic_value) => dynamic_value.dynamic_type === entry.dynamic_type
+  )
+
 // Is the currently-held value still satisfiable under the current siblings?
 // A param with no declared value set cannot be judged on MEMBERSHIP, so it is
 // left alone there — but shape is judged from the definition alone, which is
@@ -98,9 +124,16 @@ export const is_param_value_admissible = ({
   }
 
   const admissible = resolve_param_values({ param_definition, params })
-  if (!Array.isArray(admissible) || admissible.length === 0) return true
+  const judge_static =
+    Array.isArray(admissible) && admissible.length > 0
+      ? (entry) => admissible.includes(entry)
+      : () => true
 
-  return held.every((entry) => admissible.includes(entry))
+  return held.every((entry) =>
+    is_dynamic_entry(entry)
+      ? is_dynamic_entry_admissible({ param_definition, entry })
+      : judge_static(entry)
+  )
 }
 
 const store_value = ({ param_definition, value, data_type_select }) =>

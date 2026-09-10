@@ -59,6 +59,24 @@ const single_year_offset = {
   is_single: true
 }
 
+// league's `nfl_week_id`: static week identifiers AND dynamic options, with a
+// dynamic value as the default. The default being dynamic is what disguised the
+// defect — a reset landed on a dynamic value, so the control looked like it
+// accepted some options and refused others.
+const nfl_week_id = {
+  data_type: data_type_select,
+  values: ['2025_REG_WEEK_1', '2025_REG_WEEK_2', '2025_REG_WEEK_3'],
+  default_value: { dynamic_type: 'current_year_reg_weeks' },
+  dynamic_values: [
+    { dynamic_type: 'current_year_reg_weeks' },
+    {
+      dynamic_type: 'last_n_nfl_weeks',
+      default_value: 5,
+      has_value_field: true
+    }
+  ]
+}
+
 describe('resolve_column_params', function () {
   describe('adding a column', function () {
     it('fills every declared default', function () {
@@ -228,6 +246,87 @@ describe('resolve_column_params', function () {
           value: undefined
         })
       ).to.equal(true)
+    })
+  })
+
+  describe('dynamic values', function () {
+    it('accepts a declared dynamic value on a param with static values', function () {
+      expect(
+        is_param_value_admissible({
+          param_definition: nfl_week_id,
+          params: {},
+          value: [{ dynamic_type: 'last_n_nfl_weeks', value: 5 }]
+        })
+      ).to.equal(true)
+    })
+
+    it('rejects a dynamic_type the definition no longer offers', function () {
+      // The control for the assertion above: only the dynamic_type moved, so a
+      // check that stopped judging membership would pass both.
+      expect(
+        is_param_value_admissible({
+          param_definition: nfl_week_id,
+          params: {},
+          value: [{ dynamic_type: 'retired_option', value: 5 }]
+        })
+      ).to.equal(false)
+    })
+
+    it('judges each entry by its own kind in a mixed list', function () {
+      expect(
+        is_param_value_admissible({
+          param_definition: nfl_week_id,
+          params: {},
+          value: [
+            { dynamic_type: 'last_n_nfl_weeks', value: 5 },
+            '2025_REG_WEEK_2'
+          ]
+        })
+      ).to.equal(true)
+
+      expect(
+        is_param_value_admissible({
+          param_definition: nfl_week_id,
+          params: {},
+          value: [
+            { dynamic_type: 'last_n_nfl_weeks', value: 5 },
+            '2099_REG_WEEK_9'
+          ]
+        })
+      ).to.equal(false)
+    })
+
+    it('LEAVES a freshly selected dynamic value in place', function () {
+      // The defect as the user met it: picking "Last N NFL Weeks" wrote a
+      // dynamic value, membership against `values` refused it, and the reset
+      // landed back on the dynamic default — so the option would not select.
+      const { params, reset_param_names } = resolve_column_params({
+        column_params: { nfl_week_id },
+        params: {
+          nfl_week_id: [{ dynamic_type: 'last_n_nfl_weeks', value: 5 }]
+        },
+        data_type_select,
+        fill_unset: false
+      })
+
+      expect(reset_param_names).to.eql([])
+      expect(params.nfl_week_id).to.eql([
+        { dynamic_type: 'last_n_nfl_weeks', value: 5 }
+      ])
+    })
+
+    it('still repairs an unsatisfiable static value on the same param', function () {
+      const { params, reset_param_names } = resolve_column_params({
+        column_params: { nfl_week_id },
+        params: { nfl_week_id: ['2099_REG_WEEK_9'] },
+        data_type_select,
+        fill_unset: false
+      })
+
+      expect(reset_param_names).to.eql(['nfl_week_id'])
+      expect(params.nfl_week_id).to.eql([
+        { dynamic_type: 'current_year_reg_weeks' }
+      ])
     })
   })
 
