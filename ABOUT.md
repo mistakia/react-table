@@ -40,12 +40,24 @@ observations:
     [fix] 2026-09-04 Table mounts in a spec now — test/helpers/stub-uninstalled-peers.js stubs the
     uninstalled @mui/x-date-pickers and highcharts peers. Not for a spec that exercises either
     surface.
+  - >-
+    [gotcha] 2026-09-10 The table state has TWO schema copies under one $id and they drift: the
+    published schema/state/table-state.json that consumers read, and the SCHEMAS['table-state']
+    object in src/validators/schema-resolver.mjs that the runtime validator actually compiles.
+    Editing one is never enough — test/table-state-schema-parity.spec.mjs now asserts their property
+    sets are equal.
+  - >-
+    [gotcha] 2026-09-10 schema/columns/column-definition.json is not a valid draft-07 schema — ajv
+    refuses to add it because a getValue property declares type "function". Inert today since
+    nothing loads the JSON schema files at runtime (schema-resolver.mjs bundles its own copies), but
+    it breaks any consumer that compiles the published schema set, and it breaks a naive walk of
+    schema/ in a test.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-04T22:53:40.405Z'
+updated_at: '2026-09-10T21:14:43.047Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
