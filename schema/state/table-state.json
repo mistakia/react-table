@@ -33,6 +33,11 @@
       "items": { "type": "string" },
       "description": "Array of column IDs to use as additional row-key axes (e.g. 'year', 'week')"
     },
+    "row_grain": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Single-element array naming what each row represents (e.g. ['player'] or ['team']). The row-grain control reads the active value from row_grain[0]; consumers define the values and supply them as row_grain_options."
+    },
     "subjects": {
       "type": "array",
       "items": { "type": "string" },
