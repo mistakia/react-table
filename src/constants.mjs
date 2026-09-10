@@ -18,10 +18,11 @@ export const ADD_COLUMN_ACTION_WIDTH = 56
 // here, nowhere else.
 //
 // Empty-shape skip rule: writer omits a key when its value equals the
-// empty-shape default, with one exception -- `disable_scatter_plot` is always
-// emitted regardless of value, because the in-page state may start at `true`
-// (saved view) before a user toggle to `false`, and skipping false would let
-// a stale `true` survive a round-trip via /u/<hash>.
+// empty-shape default, with one exception -- every `boolean` key is emitted
+// regardless of value, because the in-page state may start at `true` (saved
+// view) before a user toggle to `false`, and skipping false would let a stale
+// `true` survive a round-trip via /u/<hash>. The rule is keyed on the declared
+// TYPE, not on any particular key name.
 export const SHARE_LINK_URL_SCHEMA = {
   table_state: {
     columns: 'array',
@@ -33,7 +34,9 @@ export const SHARE_LINK_URL_SCHEMA = {
     q: 'string',
     rank_aggregation: 'object',
     scatter_plot_options: 'object',
-    disable_scatter_plot: 'boolean'
+    disable_scatter_plot: 'boolean',
+    bar_chart_options: 'object',
+    disable_bar_chart: 'boolean'
   },
   // `query_id` is a VIEW key, not a table_state key, and that placement is the
   // whole point rather than a filing decision. A query-backed view's columns

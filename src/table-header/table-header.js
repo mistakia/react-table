@@ -76,6 +76,8 @@ const TableHeader = ({ header, column, table }) => {
     is_sticky_column,
     selected_scatter_columns,
     set_selected_scatter_column,
+    selected_bar_chart_column,
+    set_selected_bar_chart_column,
     enable_duplicate_column_ids,
     columns_with_no_data
   } = useContext(table_context)
@@ -273,6 +275,22 @@ const TableHeader = ({ header, column, table }) => {
     table_state_columns_index,
     table_state
   ])
+
+  const handle_select_for_bar_chart = useCallback(() => {
+    set_selected_bar_chart_column({
+      composite_column_id,
+      column_id,
+      accessor_path
+    })
+  }, [
+    composite_column_id,
+    column_id,
+    accessor_path,
+    set_selected_bar_chart_column
+  ])
+
+  const is_selected_for_bar_chart =
+    selected_bar_chart_column?.composite_column_id === composite_column_id
 
   const is_selected_for_scatter_x =
     selected_scatter_columns.x === composite_column_id
@@ -639,6 +657,37 @@ const TableHeader = ({ header, column, table }) => {
                   <div className='header-text small'>
                     Select an X and Y column to generate a scatter plot. Once
                     both are selected, you can show the scatter plot.
+                  </div>
+                </>
+              )}
+            {data_type === TABLE_DATA_TYPES.NUMBER &&
+              !table_state.disable_bar_chart && (
+                <>
+                  <div className='header-menu-divider'></div>
+                  <div className='header-menu-item'>
+                    <div
+                      className={get_string_from_object({
+                        'header-menu-item-button': true,
+                        selected: is_selected_for_bar_chart
+                      })}
+                      onClick={handle_select_for_bar_chart}>
+                      <div className='header-menu-item-icon'>
+                        {is_selected_for_bar_chart ? (
+                          <CheckBoxIcon />
+                        ) : (
+                          <CheckBoxOutlineBlankIcon />
+                        )}
+                      </div>
+                      <div>
+                        {is_selected_for_bar_chart
+                          ? 'Unselect for bar chart'
+                          : 'Select for bar chart'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className='header-text small'>
+                    Ranks every row by this column as a bar chart. Only one
+                    column at a time.
                   </div>
                 </>
               )}

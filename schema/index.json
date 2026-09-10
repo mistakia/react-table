@@ -381,6 +381,98 @@
         "(format, tableState, options) => buildExportUrl({ format, filters: tableState.where, columns: tableState.columns, ...options })"
       ]
     },
+    "get_bar_chart_label": {
+      "type": "object",
+      "description": "Function returning the bar chart's x-axis label for a row. Bars are narrow and every row gets one, so this should return a short CODE rather than a full name.",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData) => string"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object for this bar"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string - The subject code shown beneath (or beside) this bar"
+        }
+      },
+      "default": "function() { return '' }",
+      "examples": [
+        "function(row) { return row.team_code; }",
+        "(row) => `${row.first_name.charAt(0)}.${row.last_name}`"
+      ]
+    },
+    "get_bar_chart_color": {
+      "type": "object",
+      "description": "Function returning a per-subject bar color. Returning null or undefined leaves the bar on the neutral series color, which keeps 'no color known' distinct from a subject whose color happens to be grey.",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: (row: RowData) => string | null"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object for this bar"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "string | null - A CSS color for this bar, or null to fall through to the series color"
+        }
+      },
+      "examples": [
+        "function(row) { return team_colors[row.team_code] || null; }"
+      ]
+    },
+    "get_bar_chart_image": {
+      "type": "object",
+      "description": "Function returning an image to ride on this bar's value end (above a positive bar, below a negative one). Return null for a row with no image; that bar simply draws bare.",
+      "properties": {
+        "function": {
+          "type": "string",
+          "description": "Function signature: ({ row: RowData, logo_size: number, total_rows: number }) => { url: string, width?: number, height?: number } | null"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "row": {
+              "$ref": "./models/row-data.json",
+              "description": "The data row object for this bar"
+            },
+            "logo_size": {
+              "type": "number",
+              "description": "The rendered size the chart intends to draw the image at"
+            },
+            "total_rows": {
+              "type": "number",
+              "description": "How many bars the chart is drawing, for sizing decisions"
+            }
+          }
+        },
+        "returns": {
+          "type": "string",
+          "description": "object | null - { url, width, height }, or null for no image"
+        }
+      },
+      "examples": [
+        "function({ row, logo_size }) { return { url: logo_url(row.team_code), width: logo_size, height: logo_size }; }"
+      ]
+    },
+    "bar_chart_footer_text": {
+      "type": "string",
+      "description": "Data provenance line rendered in the bar chart's footer (e.g. source and sample minimum). Absent means no footer."
+    },
     "get_scatter_point_label": {
       "type": "object",
       "description": "Function to generate labels for data points in scatter plot visualizations",

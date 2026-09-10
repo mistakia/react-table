@@ -62,6 +62,14 @@
     "scatter_plot_options": {
       "$ref": "./scatter-plot-options.json",
       "description": "Persisted scatter plot display options (colors, reference lines, toggles, custom text)"
+    },
+    "disable_bar_chart": {
+      "type": "boolean",
+      "description": "When true, disables the bar chart menu option in column headers"
+    },
+    "bar_chart_options": {
+      "$ref": "./bar-chart-options.json",
+      "description": "Persisted bar chart display options (orientation, average line, value labels, custom text)"
     }
   }
 }

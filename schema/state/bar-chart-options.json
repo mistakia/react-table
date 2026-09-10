@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/bar-chart-options.json",
+  "title": "BarChartOptions",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "orientation": {
+      "type": "string",
+      "enum": ["vertical", "horizontal"],
+      "default": "vertical",
+      "description": "Bar direction; vertical renders columns, horizontal renders bars"
+    },
+    "show_average_line": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, renders the dashed average reference line across the plot"
+    },
+    "show_value_labels": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, prints each bar's value as a label outside its value end"
+    },
+    "average_line_label": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Label drawn at the average reference line; defaults to 'Average'"
+    },
+    "value_decimals": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Fixed decimal places for value labels; absence derives them from the data's magnitude"
+    },
+    "custom_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom chart title; null means use the column's label"
+    },
+    "custom_subtitle": {
+      "type": ["string", "null"],
+      "maxLength": 1000,
+      "description": "Custom chart subtitle; null means no subtitle"
+    },
+    "custom_x_axis_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom title for the category (subject) axis; null means no title"
+    },
+    "custom_y_axis_title": {
+      "type": ["string", "null"],
+      "maxLength": 200,
+      "description": "Custom title for the value (metric) axis; null means use the column's label"
+    },
+    "font_family": {
+      "type": ["string", "null"],
+      "maxLength": 100,
+      "description": "Font family for chart text; null means Highcharts default"
+    }
+  }
+}

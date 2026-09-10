@@ -52,6 +52,15 @@ export function validate_where_item_security(where_item) {
   return { valid: errors.length === 0, errors }
 }
 
+// Per-chart display options are independent objects rather than one field
+// naming an active chart: which chart is OPEN is ephemeral UI state the table
+// holds locally, so table_state only ever carries how each chart should look.
+// Adding a chart type therefore adds a row here and nothing else.
+const CHART_OPTIONS_PROPS = ['scatter_plot_options', 'bar_chart_options']
+
+const is_plain_object = (value) =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
 export function is_valid_table_state_structure(table_state) {
   if (typeof table_state !== 'object' || table_state === null) {
     return false
@@ -73,6 +82,7 @@ export function is_valid_table_state_structure(table_state) {
 
   const boolean_props = [
     'disable_scatter_plot',
+    'disable_bar_chart',
     'disable_column_controls',
     'disable_multi_sort'
   ]
@@ -85,13 +95,13 @@ export function is_valid_table_state_structure(table_state) {
     }
   }
 
-  if (
-    table_state.scatter_plot_options !== undefined &&
-    (typeof table_state.scatter_plot_options !== 'object' ||
-      table_state.scatter_plot_options === null ||
-      Array.isArray(table_state.scatter_plot_options))
-  ) {
-    return false
+  for (const prop of CHART_OPTIONS_PROPS) {
+    if (
+      table_state[prop] !== undefined &&
+      !is_plain_object(table_state[prop])
+    ) {
+      return false
+    }
   }
 
   return true
@@ -107,6 +117,7 @@ export function create_safe_table_state(partial_state = {}) {
     row_grain: [],
     rank_aggregation: {},
     disable_scatter_plot: false,
+    disable_bar_chart: false,
     disable_column_controls: false,
     disable_multi_sort: false,
     ...partial_state
@@ -128,6 +139,7 @@ export function create_safe_table_state(partial_state = {}) {
 
   const boolean_props = [
     'disable_scatter_plot',
+    'disable_bar_chart',
     'disable_column_controls',
     'disable_multi_sort'
   ]
@@ -144,13 +156,9 @@ export function create_safe_table_state(partial_state = {}) {
     safe_state.rank_aggregation = {}
   }
 
-  if (safe_state.scatter_plot_options !== undefined) {
-    if (
-      typeof safe_state.scatter_plot_options !== 'object' ||
-      safe_state.scatter_plot_options === null ||
-      Array.isArray(safe_state.scatter_plot_options)
-    ) {
-      delete safe_state.scatter_plot_options
+  for (const prop of CHART_OPTIONS_PROPS) {
+    if (safe_state[prop] !== undefined && !is_plain_object(safe_state[prop])) {
+      delete safe_state[prop]
     }
   }
 

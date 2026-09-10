@@ -44,6 +44,7 @@ import {
 import { table_context } from '#src/table-context'
 import { ADD_COLUMN_ACTION_WIDTH, COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
+import BarChartOverlay from '#src/bar-chart-overlay/bar-chart-overlay'
 
 import '../styles/mui-unstyled-popper.styl'
 import '../styles/table-expanding-control-container.styl'
@@ -136,6 +137,10 @@ export default function Table({
   get_scatter_point_color = null,
   get_scatter_point_label_suffix = null,
   is_scatter_plot_point_label_enabled = () => true,
+  get_bar_chart_label = (row) => '',
+  get_bar_chart_image = null,
+  get_bar_chart_color = null,
+  bar_chart_footer_text = null,
   metadata = {},
   enable_validation_warnings = false,
   row_highlights = null,
@@ -207,6 +212,15 @@ export default function Table({
     y_column_id: null
   })
   const [show_scatter_plot, set_show_scatter_plot] = useState(false)
+  // A bar chart needs ONE column plus the row's own identity, so unlike the
+  // scatter plot's x/y pair this is a single selection, not an axis map.
+  const [selected_bar_chart_column, set_selected_bar_chart_column_state] =
+    useState({
+      composite_column_id: null,
+      column_id: null,
+      accessor_path: null
+    })
+  const [show_bar_chart, set_show_bar_chart] = useState(false)
   const [client_filter, set_client_filter] = useState(null)
   const [local_highlights, set_local_highlights] = useState(null)
 
@@ -856,6 +870,34 @@ export default function Table({
     set_show_scatter_plot(false)
   }, [])
 
+  // Clicking the already-selected column clears it, matching the scatter
+  // plot's toggle so one menu does not select and the other only ever set.
+  const set_selected_bar_chart_column = useCallback(
+    ({ composite_column_id, column_id, accessor_path }) => {
+      set_selected_bar_chart_column_state((prev) => {
+        if (prev.composite_column_id === composite_column_id) {
+          return {
+            composite_column_id: null,
+            column_id: null,
+            accessor_path: null
+          }
+        }
+        return { composite_column_id, column_id, accessor_path }
+      })
+    },
+    []
+  )
+
+  const open_bar_chart = useCallback(() => {
+    if (selected_bar_chart_column.composite_column_id) {
+      set_show_bar_chart(true)
+    }
+  }, [selected_bar_chart_column])
+
+  const close_bar_chart = useCallback(() => {
+    set_show_bar_chart(false)
+  }, [])
+
   return (
     <table_context.Provider
       value={{
@@ -881,7 +923,10 @@ export default function Table({
         get_export_api_url,
         selected_scatter_columns,
         set_selected_scatter_column,
-        open_scatter_plot
+        open_scatter_plot,
+        selected_bar_chart_column,
+        set_selected_bar_chart_column,
+        open_bar_chart
       }}>
       <div
         ref={table_container_ref}
@@ -1054,6 +1099,13 @@ export default function Table({
                     Show Plot
                   </div>
                 )}
+                {selected_bar_chart_column.composite_column_id && (
+                  <div
+                    className='table-top-lead-button show-plot'
+                    onClick={open_bar_chart}>
+                    Show Bar Chart
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1157,6 +1209,25 @@ export default function Table({
           on_close={close_scatter_plot}
         />
       )}
+      {show_bar_chart && (
+        <BarChartOverlay
+          data={data}
+          column={all_columns[selected_bar_chart_column.column_id]}
+          accessor_path={selected_bar_chart_column.accessor_path}
+          get_label={get_bar_chart_label}
+          get_image={get_bar_chart_image}
+          get_color={get_bar_chart_color}
+          footer_text={bar_chart_footer_text}
+          bar_chart_options={table_state.bar_chart_options || {}}
+          on_bar_chart_options_change={(next_options) =>
+            on_table_state_change({
+              ...table_state,
+              bar_chart_options: next_options
+            })
+          }
+          on_close={close_bar_chart}
+        />
+      )}
     </table_context.Provider>
   )
 }
@@ -1197,6 +1268,10 @@ Table.propTypes = {
   get_scatter_point_color: PropTypes.func,
   get_scatter_point_label_suffix: PropTypes.func,
   is_scatter_plot_point_label_enabled: PropTypes.func,
+  get_bar_chart_label: PropTypes.func,
+  get_bar_chart_image: PropTypes.func,
+  get_bar_chart_color: PropTypes.func,
+  bar_chart_footer_text: PropTypes.string,
   metadata: PropTypes.object,
   disable_row_axes: PropTypes.bool,
   row_axes_label: PropTypes.string,

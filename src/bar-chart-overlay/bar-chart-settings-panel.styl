@@ -1,0 +1,66 @@
+@import '../styles/tokens'
+
+// The toolbar control rules are scoped under .bar-chart-toolbar rather than
+// reusing the global .toolbar-btn the scatter panel declares. Same rules, but
+// self-contained: a consumer that mounts the bar chart without ever mounting
+// the scatter plot must not depend on the other panel's stylesheet having been
+// pulled in, and load order between two sibling styl files is not something a
+// component can assert.
+
+$bar_toolbar_control_height = 28px
+
+.bar-chart-toolbar
+  display flex
+  align-items center
+  gap $rt_space_xs + 2
+  flex-wrap wrap
+  padding $rt_space_sm 0
+  // Clear the absolutely-positioned close button (28px wide, 12px offset).
+  padding-right ($rt_space + 28px + $rt_space_sm)
+
+  .toolbar-btn
+    display inline-flex
+    align-items center
+    height $bar_toolbar_control_height
+    padding 0 12px
+    border 1px solid transparent
+    border-radius $rt_radius_sm
+    background-color transparent
+    color $rt_text
+    font-size $rt_font_size
+    font-family inherit
+    line-height 1
+    cursor pointer
+    transition border-color $rt_transition, background-color $rt_transition
+    white-space nowrap
+
+    &:hover
+      border-color $rt_border
+      background-color $rt_bg_hover
+
+    &.active
+      border-color $rt_border
+      background-color $rt_bg_hover
+
+  .toolbar-divider
+    display inline-block
+    width 1px
+    height ($bar_toolbar_control_height - 8px)
+    background-color $rt_border_subtle
+    margin 0 $rt_space_xs
+
+  // The two orientation buttons are one control, so they sit flush and share a
+  // single outline rather than reading as two independent toggles.
+  .bar-chart-orientation
+    display inline-flex
+    align-items center
+    border 1px solid $rt_border_subtle
+    border-radius $rt_radius_sm
+    overflow hidden
+
+    .toolbar-btn
+      border-radius 0
+      border-color transparent
+
+      & + .toolbar-btn
+        border-left 1px solid $rt_border_subtle

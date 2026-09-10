@@ -44,7 +44,9 @@ describe('share-link round trip', () => {
       q: 'mahomes',
       rank_aggregation: { weights: { a: 1.0 } },
       scatter_plot_options: { x: 'a', y: 'b' },
-      disable_scatter_plot: true
+      disable_scatter_plot: true,
+      bar_chart_options: { orientation: 'horizontal' },
+      disable_bar_chart: false
     }
     const view_fields = {
       view_id: 'abc',
@@ -99,7 +101,9 @@ describe('share-link round trip', () => {
         q: '',
         rank_aggregation: {},
         scatter_plot_options: {},
-        disable_scatter_plot: false
+        disable_scatter_plot: false,
+        bar_chart_options: {},
+        disable_bar_chart: false
       },
       view_fields: {}
     })
@@ -113,6 +117,8 @@ describe('share-link round trip', () => {
     expect(params.has('rank_aggregation')).to.equal(false)
     expect(params.has('scatter_plot_options')).to.equal(false)
     expect(params.get('disable_scatter_plot')).to.equal('false')
+    expect(params.has('bar_chart_options')).to.equal(false)
+    expect(params.get('disable_bar_chart')).to.equal('false')
   })
 
   it('parses empty URLSearchParams into empty-shape table_state and empty-string view_fields', () => {
@@ -127,7 +133,9 @@ describe('share-link round trip', () => {
       q: '',
       rank_aggregation: {},
       scatter_plot_options: {},
-      disable_scatter_plot: false
+      disable_scatter_plot: false,
+      bar_chart_options: {},
+      disable_bar_chart: false
     })
     expect(parsed.view_fields).to.deep.equal({
       view_id: '',

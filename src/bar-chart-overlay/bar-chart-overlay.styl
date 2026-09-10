@@ -1,0 +1,61 @@
+@import '../styles/tokens'
+
+.bar-chart-overlay
+  position fixed
+  top 0
+  left 0
+  right 0
+  bottom 0
+  background-color $rt_bg_overlay
+  display flex
+  justify-content center
+  align-items flex-start
+  padding $rt_space_xl 0
+  z-index var(--rt-z-overlay)
+  overflow-y auto
+
+  .bar-chart-container
+    background-color $rt_bg
+    padding $rt_space_xl
+    border-radius $rt_radius_lg
+    width 90%
+    height fit-content
+    position relative
+
+    // Value labels are drawn outside the bar end with crop and clipping off,
+    // so they must be allowed to paint over the plot border rather than be
+    // trimmed by an overflow rule on the container.
+    .highcharts-data-label
+      z-index 1
+
+    .highcharts-tooltip
+      z-index 2
+
+  .bar-chart-close-button
+    position absolute
+    top $rt_space
+    right $rt_space
+    z-index 1
+    width 28px
+    height 28px
+    display inline-flex
+    align-items center
+    justify-content center
+    background none
+    border 1px solid transparent
+    border-radius $rt_radius_sm
+    font-size 18px
+    line-height 1
+    color $rt_text_muted
+    cursor pointer
+    transition border-color $rt_transition, background-color $rt_transition
+
+    &:hover
+      border-color $rt_border
+      background-color $rt_bg_hover
+
+  .bar-chart-empty
+    padding $rt_space_xl 0
+    text-align center
+    color $rt_text_muted
+    font-size $rt_font_size_md

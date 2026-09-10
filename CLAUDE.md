@@ -86,6 +86,14 @@ src/
 
 **`selected_param_values` is a LIST, and a scalar is a data quirk the built-in filter now absorbs rather than a crash.** `ColumnParamSelectFilter` normalizes a non-null scalar to a one-element list at the top of the component (since 2026-08-19, `test/column-param-select-filter.spec.jsx`), so a stored scalar like `seas_type: "REG"` renders as that single value instead of throwing `selected_param_values?.forEach is not a function` inside a `useEffect` (which used to mean an error boundary and a blank page). A custom component composing the built-in filters for its OWN sub-fields must still wrap each scalar in a single-element array — the normalization lives in `ColumnParamSelectFilter`, not in the helpers a custom component calls directly — and pass `null` (not `[]`) when unset: `Boolean(selected_param_values)` is how a control decides the param is defined, and `[]` is truthy, so an empty array styles the chip as though it held a value. Nothing else catches this short of rendering the control — it survives lint, the webpack build, and any test that only asserts emitted SQL.
 
+**Bar chart:** `src/bar-chart-overlay/` renders one ranked bar per row for a single numeric column, reached from that column's header menu (`Select for bar chart`) and opened from the toolbar. It holds NO domain knowledge: the subject label, the bar colour and the image riding on each bar's value end all arrive as consumer-supplied resolvers (`get_bar_chart_label`, `get_bar_chart_color`, `get_bar_chart_image`), so nothing NFL-specific enters this repo. Persisted display options live in `table_state.bar_chart_options`; `disable_bar_chart` suppresses the menu entry.
+
+Two things the chart decides that a caller cannot override loosely. **Zero is kept, unlike the scatter plot, which drops it** — there a zero is an unplaced point clustering against an axis edge, here it is a rank, and dropping it silently renumbers every bar around it. And **the value axis always contains zero**: a ranked bar chart drawn from a non-zero floor overstates every difference on it, so single-signed data is padded away from a zero baseline rather than fitted to its own extremes.
+
+**A bar's value label is positioned per POINT, not on the series, and this is not a style preference.** `dataLabels.y` is one static number for a whole series, so the offset that lifts a positive bar's label clear of its logo drives a negative bar's label back down INTO its own bar, on top of the logo already there. `build_bar_chart_options` therefore attaches placement (`y`/`verticalAlign`, or `x`/`align` when horizontal) to each point while leaving the formatter, style and crop rules on the series. Caught only by rendering 32 real teams, 21 of them negative, in a browser — the option object looked correct and every unit assertion passed.
+
+The whole option object is built by a pure function (`src/bar-chart-overlay/bar-chart-options.js`) with no Highcharts import, which is what lets `test/bar-chart-overlay/` assert the chart's actual content — series data, plot lines, axis extremes, label formatting — rather than assert that a component mounted. **jsdom is not an oracle for this component**: it produces the right SVG elements but every path comes out `d="M 0 0"`, so bars and image markers never materialize.
+
 **Component Pattern:** Each component directory contains `index.js` (export) and `component-name.js` (implementation).
 
 **Performance:** Uses `@tanstack/react-virtual` for virtualization, `React.memo` for memoized rows/headers, and custom debounce/throttle utilities.
@@ -254,6 +262,7 @@ JSON Schema definitions live under `schema/`:
 
 - `schema/index.json` — component props
 - `schema/state/table-state.json` — table state
+- `schema/state/bar-chart-options.json` — bar chart display options
 - `schema/columns/column-definition.json` — column definition
 - `schema/base/table-data-types.json` — data type constants
 - `schema/base/table-operators.json` — filter operators

@@ -4,6 +4,8 @@ import addFormats from 'ajv-formats'
 // Bundled schemas for browser compatibility
 const SCATTER_PLOT_OPTIONS_SCHEMA_ID =
   'https://mistakia.github.io/react-table/schema/state/scatter-plot-options.json'
+const BAR_CHART_OPTIONS_SCHEMA_ID =
+  'https://mistakia.github.io/react-table/schema/state/bar-chart-options.json'
 
 const SCHEMAS = {
   'scatter-plot-options': {
@@ -34,6 +36,27 @@ const SCHEMAS = {
       },
       custom_title: { type: ['string', 'null'], maxLength: 200 },
       custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },
+      font_family: { type: ['string', 'null'], maxLength: 100 }
+    }
+  },
+  'bar-chart-options': {
+    $id: BAR_CHART_OPTIONS_SCHEMA_ID,
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      orientation: {
+        type: 'string',
+        enum: ['vertical', 'horizontal'],
+        default: 'vertical'
+      },
+      show_average_line: { type: 'boolean', default: true },
+      show_value_labels: { type: 'boolean', default: true },
+      average_line_label: { type: 'string', maxLength: 200 },
+      value_decimals: { type: 'integer', minimum: 0, maximum: 10 },
+      custom_title: { type: ['string', 'null'], maxLength: 200 },
+      custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },
+      custom_x_axis_title: { type: ['string', 'null'], maxLength: 200 },
+      custom_y_axis_title: { type: ['string', 'null'], maxLength: 200 },
       font_family: { type: ['string', 'null'], maxLength: 100 }
     }
   },
@@ -144,6 +167,10 @@ const SCHEMAS = {
       disable_multi_sort: { type: 'boolean' },
       scatter_plot_options: {
         $ref: SCATTER_PLOT_OPTIONS_SCHEMA_ID
+      },
+      disable_bar_chart: { type: 'boolean' },
+      bar_chart_options: {
+        $ref: BAR_CHART_OPTIONS_SCHEMA_ID
       }
     }
   }
