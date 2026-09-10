@@ -59,6 +59,20 @@ export const build_bar_chart_options = ({
     bar_chart_options.show_average_line !== false && average !== null
   const show_value_labels = bar_chart_options.show_value_labels !== false
 
+  // The average line runs across the CATEGORY axis, so its label sits at the
+  // start of that axis -- which on a ranked chart is where the longest bar is,
+  // in both orientations. Two things follow, and neither transfers from one
+  // orientation to the other.
+  //
+  // Highcharts rotates a plot-line label to 90 degrees when the line is
+  // vertical, which an inverted (horizontal-bar) chart makes it. The label then
+  // reads sideways down the top of the plot, across the longest bar. Rotation
+  // is pinned flat and the label moved to the FOOT of the line, past the
+  // shortest bar, which is the only end of a ranked axis with space on it.
+  const average_label_placement = is_horizontal
+    ? { align: 'left', verticalAlign: 'bottom', rotation: 0, x: 4, y: -6 }
+    : { align: 'left', verticalAlign: 'top', rotation: 0, x: 4, y: -4 }
+
   const average_plot_line = show_average_line
     ? [
         {
@@ -72,16 +86,17 @@ export const build_bar_chart_options = ({
           zIndex: 6,
           label: {
             text: bar_chart_options.average_line_label || 'Average',
-            align: 'left',
-            x: 4,
-            y: -4,
+            ...average_label_placement,
             style: {
               color: AVERAGE_LINE_COLOR,
               fontSize: `${BAR_LABEL_FONT_SIZE}px`,
-              // A halo, because the label sits at the left edge of the plot
+              // A halo, because the label sits at the end of the category axis
               // and a ranked chart puts its LONGEST bar exactly there. Dark
               // ink on a dark team colour was unreadable in the browser pass
-              // even with the line drawing correctly on top.
+              // even with the line drawing correctly on top. Kept after
+              // re-judging against the reference, whose own average label
+              // carries no halo only because its longest bar is nowhere near
+              // it -- that is a property of their data, not of the design.
               textOutline: '2px #ffffff'
             }
           }
@@ -110,6 +125,15 @@ export const build_bar_chart_options = ({
     max: axis_extremes.max,
     startOnTick: false,
     endOnTick: false,
+    // The grid is scenery, not data. Highcharts' default is a solid line at
+    // roughly one per 72px, which on a 760px plot draws thirteen rules behind
+    // the bars and competes with the two lines that MEAN something -- the zero
+    // baseline and the average. A dotted hairline at a wider interval leaves
+    // both of those the only solid horizontals on the chart.
+    gridLineColor: '#e8e8e8',
+    gridLineDashStyle: 'Dot',
+    tickPixelInterval: 90,
+    labels: { style: { fontSize: `${BAR_LABEL_FONT_SIZE}px` } },
     plotLines: [...zero_plot_line, ...average_plot_line]
   }
 
@@ -163,14 +187,21 @@ export const build_bar_chart_options = ({
       // declines; those fall through to this neutral ink.
       color: '#4a5568',
       borderWidth: 0,
+      // Square ends. Highcharts 12 rounds a column by default, and on this
+      // chart the rounding lands exactly where the value is read -- the bar's
+      // value end, under the logo riding on it, so a bar's tip reads short of
+      // where it stops. The reference's bars are square for the same reason.
+      borderRadius: 0,
       groupPadding: 0.05,
       pointPadding: 0.05,
       // Highcharts divides the plot width among the categories, so a result of
       // one or two rows draws a bar hundreds of pixels wide -- a shape that
       // reads as a filled panel rather than as a bar, and swamps the logo
-      // sitting on its end. Caps the degenerate case without touching a full
-      // 32-subject chart, whose bars are far narrower than this.
-      maxPointWidth: 90,
+      // sitting on its end. Tied to the logo because the logo is what the cap
+      // protects: a bar wide enough to lose the mark on its end has stopped
+      // being a bar. Far above the width a full 32-subject chart produces, so
+      // it binds only the degenerate case.
+      maxPointWidth: BAR_LOGO_SIZE * 3,
       dataLabels: {
         enabled: show_value_labels,
         // Outside the bar end, on both signs. `inside: false` plus `crop` and
@@ -216,7 +247,14 @@ export const build_bar_chart_options = ({
     chart: {
       type: is_horizontal ? 'bar' : 'column',
       height,
-      ...(font_family ? { style: { fontFamily: font_family } } : {})
+      // Highcharts writes its OWN font stack into the SVG, so a chart inside a
+      // styled app renders in Lucida Grande while every label around it is on
+      // the app's face -- the one divergence a consumer cannot fix from the
+      // outside, because no CSS on an ancestor reaches past an inline style.
+      // Defaulting to `inherit` hands the decision back to the page. An
+      // explicit `font_family` still wins, for an export that has to stand on
+      // its own away from the app's stylesheet.
+      style: { fontFamily: font_family || 'inherit' }
     },
     title: {
       text: bar_chart_options.custom_title || metric_label

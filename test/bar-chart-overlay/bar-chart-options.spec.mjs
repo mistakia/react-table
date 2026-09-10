@@ -3,7 +3,8 @@ import { expect } from 'chai'
 
 import {
   build_bar_chart_options,
-  AVERAGE_LINE_COLOR
+  AVERAGE_LINE_COLOR,
+  BAR_LOGO_SIZE
 } from '../../src/bar-chart-overlay/bar-chart-options.js'
 
 const epa_rows = [
@@ -252,6 +253,65 @@ describe('build_bar_chart_options', () => {
         bar_chart_options: { orientation: 'diagonal' }
       })
       expect(options.chart.type).to.equal('column')
+    })
+
+    // Highcharts rotates a plot-line label to 90 degrees when the line comes
+    // out vertical, which an inverted chart makes it -- the label then reads
+    // sideways down the top of the plot, over the longest bar. Pinned flat in
+    // both orientations, and moved to the foot of the line when horizontal.
+    it('keeps the average label flat and off the longest bar in both orientations', () => {
+      const label_of = (orientation) =>
+        build_bar_chart_options({
+          ...base_args,
+          bar_chart_options: { orientation }
+        }).yAxis.plotLines.find((line) => line.label?.text === 'Average').label
+
+      expect(label_of('vertical').rotation).to.equal(0)
+      expect(label_of('horizontal').rotation).to.equal(0)
+      // The end of the category axis with space on it is the top when the
+      // bars run up, and the bottom when they run across.
+      expect(label_of('vertical').verticalAlign).to.equal('top')
+      expect(label_of('horizontal').verticalAlign).to.equal('bottom')
+    })
+  })
+
+  describe('bar geometry', () => {
+    const series = bar_series_of(build_bar_chart_options(base_args))
+
+    // Highcharts 12 rounds a column by default, and the rounding lands on the
+    // bar's value end -- the one place on the bar a reader takes a measurement
+    // from, and the place the logo rides.
+    it('draws square bar ends', () => {
+      expect(series.borderRadius).to.equal(0)
+    })
+
+    it('caps bar width against the logo the cap exists to protect', () => {
+      expect(series.maxPointWidth).to.equal(BAR_LOGO_SIZE * 3)
+    })
+  })
+
+  describe('chrome', () => {
+    const options = build_bar_chart_options(base_args)
+
+    // Highcharts writes its own font stack inline, which no consumer
+    // stylesheet can reach past.
+    it('inherits the page font rather than imposing Highcharts default', () => {
+      expect(options.chart.style.fontFamily).to.equal('inherit')
+    })
+
+    it('honours an explicit font family over inheritance', () => {
+      const custom = build_bar_chart_options({
+        ...base_args,
+        bar_chart_options: { font_family: 'IBM Plex Mono' }
+      })
+      expect(custom.chart.style.fontFamily).to.equal('IBM Plex Mono')
+    })
+
+    // The zero baseline and the average are the two horizontals that MEAN
+    // something; a solid default grid at one rule per 72px competes with both.
+    it('sets the value grid back to a sparse hairline', () => {
+      expect(options.yAxis.gridLineDashStyle).to.equal('Dot')
+      expect(options.yAxis.tickPixelInterval).to.be.greaterThan(72)
     })
   })
 
