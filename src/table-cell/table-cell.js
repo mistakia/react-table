@@ -41,7 +41,11 @@ const TableCell = ({ getValue, column, row, table }) => {
   const is_sticky = is_sticky_column(column)
   const sticky_left_value = sticky_left(column)
 
-  const { sort } = table.getState()
+  // `sort` is an optional table_state key, so it can be absent (e.g. a
+  // browser-snapshot restore that predates a default). The header reads
+  // `table_state.sort || []`; read it the same way rather than calling
+  // `.find` on an undefined sort.
+  const sort = (table.getState() || {}).sort || []
   const is_sorted = Boolean(
     sort.find(
       (s) =>
