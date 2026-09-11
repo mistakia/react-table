@@ -38,6 +38,11 @@
       "default": "top",
       "description": "Which end of the ranking the row limit keeps"
     },
+    "reverse_category_axis": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, draws the ranking from the opposite end of the category axis; applies in both orientations"
+    },
     "value_decimals": {
       "type": "integer",
       "minimum": 0,

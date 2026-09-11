@@ -28,6 +28,7 @@ export const build_bar_chart_options = ({
   const orientation =
     bar_chart_options.orientation === 'horizontal' ? 'horizontal' : 'vertical'
   const is_horizontal = orientation === 'horizontal'
+  const reverse_category_axis = bar_chart_options.reverse_category_axis === true
 
   const rank_window =
     bar_chart_options.rank_window === 'bottom' ? 'bottom' : 'top'
@@ -161,6 +162,14 @@ export const build_bar_chart_options = ({
 
   const category_axis = {
     categories,
+    // Which end the ranking starts at. Highcharts already reverses the category
+    // axis BY DEFAULT on an inverted chart -- so that categories read downward
+    // from the top rather than up from the origin -- which is why the option
+    // cannot be passed straight through: the user asks for "the other way
+    // round", and what that means in Highcharts terms flips with `inverted`.
+    // One shared field rather than one per orientation, because "the ranking
+    // runs the other way" is the same request in both.
+    reversed: is_horizontal ? !reverse_category_axis : reverse_category_axis,
     title: { text: subject_label },
     // Every subject is labelled, as in the reference. Highcharts otherwise
     // thins category labels when they crowd, which on a ranked chart drops

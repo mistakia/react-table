@@ -61,6 +61,7 @@ const SCHEMAS = {
       average_line_label: { type: 'string', maxLength: 200 },
       row_limit: { type: ['integer', 'null'], minimum: 1, maximum: 1000 },
       rank_window: { type: 'string', enum: ['top', 'bottom'], default: 'top' },
+      reverse_category_axis: { type: 'boolean', default: false },
       value_decimals: { type: 'integer', minimum: 0, maximum: 10 },
       custom_title: { type: ['string', 'null'], maxLength: 200 },
       custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },

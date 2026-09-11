@@ -462,6 +462,52 @@ describe('build_bar_chart_options', () => {
     })
   })
 
+  // Highcharts reverses the category axis by default on an inverted chart, so
+  // the same user-facing request -- run the ranking the other way -- has to be
+  // written as a different `reversed` value in each orientation. Passing the
+  // option straight through turns these four into two right and two wrong.
+  describe('category axis direction', () => {
+    const reversed_for = ({ orientation, reverse_category_axis }) =>
+      build_bar_chart_options({
+        ...base_args,
+        bar_chart_options: { orientation, reverse_category_axis }
+      }).xAxis.reversed
+
+    it('runs the ranking up from the origin by default when vertical', () => {
+      expect(reversed_for({ orientation: 'vertical' })).to.equal(false)
+    })
+
+    it('runs the ranking down from the top by default when horizontal', () => {
+      expect(reversed_for({ orientation: 'horizontal' })).to.equal(true)
+    })
+
+    it('flips the vertical chart when reversed', () => {
+      expect(
+        reversed_for({ orientation: 'vertical', reverse_category_axis: true })
+      ).to.equal(true)
+    })
+
+    it('flips the horizontal chart when reversed', () => {
+      expect(
+        reversed_for({ orientation: 'horizontal', reverse_category_axis: true })
+      ).to.equal(false)
+    })
+
+    it('treats anything other than true as not reversed', () => {
+      // The field defaults to OFF, so absence and an explicit false mean the
+      // same thing -- unlike row_limit, where absence is a third state.
+      expect(
+        reversed_for({ orientation: 'vertical', reverse_category_axis: false })
+      ).to.equal(false)
+      expect(
+        reversed_for({
+          orientation: 'vertical',
+          reverse_category_axis: undefined
+        })
+      ).to.equal(false)
+    })
+  })
+
   describe('tooltip', () => {
     it('names the subject and formats the value at chart precision', () => {
       const options = build_bar_chart_options(base_args)

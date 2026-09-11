@@ -206,8 +206,33 @@ const BarChartSettingsPanel = ({
   const show_average_line = bar_chart_options.show_average_line !== false
   const show_value_labels = bar_chart_options.show_value_labels !== false
 
+  const reverse_category_axis = bar_chart_options.reverse_category_axis === true
+
   const set_orientation = (next) =>
     on_change({ ...bar_chart_options, orientation: next })
+
+  const toggle_reverse = () =>
+    on_change({
+      ...bar_chart_options,
+      // Defaults to OFF, so absence and false mean the same thing and the
+      // toggle can write a plain boolean -- unlike the two below.
+      reverse_category_axis: !reverse_category_axis
+    })
+
+  // Which ends the ranking runs between depends on the orientation, so the
+  // button says what the NEXT click does rather than carrying one label that is
+  // wrong in one of the two modes. Phrased as where the HIGHEST value lands,
+  // not as where the ranking "starts": a reader cannot tell whether a ranking
+  // starts at its first bar or at its top rank, and on this chart those are
+  // opposite ends.
+  const reverse_title =
+    orientation === 'horizontal'
+      ? reverse_category_axis
+        ? 'Put the highest value at the bottom'
+        : 'Put the highest value at the top'
+      : reverse_category_axis
+        ? 'Put the highest value on the right'
+        : 'Put the highest value on the left'
 
   const toggle = (key) =>
     on_change({
@@ -236,6 +261,13 @@ const BarChartSettingsPanel = ({
           Horizontal
         </button>
       </div>
+      <button
+        type='button'
+        className={`toolbar-btn${reverse_category_axis ? ' active' : ''}`}
+        onClick={toggle_reverse}
+        title={reverse_title}>
+        Reverse
+      </button>
       <span className='toolbar-divider' aria-hidden='true' />
       <BarChartRowsPanel
         bar_chart_options={bar_chart_options}
