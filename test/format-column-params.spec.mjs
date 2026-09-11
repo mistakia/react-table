@@ -527,6 +527,56 @@ describe('format_column_params - format_value override', () => {
     expect(received_def?.extra).to.equal('meta')
   })
 
+  // THE SIBLING-AWARENESS CONTRACT. An override's label can depend on the
+  // column's OTHER params -- a rate output chip names its denominator's scope
+  // from the play filters sitting next to it -- so the whole params object is
+  // forwarded, not just this param's value.
+  it('passes the whole column params object to format_value', () => {
+    let received_column_params
+    const column_def = {
+      column_params: {
+        output: {
+          label: 'Output',
+          format_value: ({ value, column_params }) => {
+            received_column_params = column_params
+            return String(value)
+          }
+        },
+        man_zone: { label: 'Man Zone' }
+      }
+    }
+    format_column_params({
+      column_def,
+      column_state_params: { output: 'rate', man_zone: ['MAN_COVERAGE'] }
+    })
+    expect(received_column_params).to.deep.equal({
+      output: 'rate',
+      man_zone: ['MAN_COVERAGE']
+    })
+  })
+
+  // THE CONTROL. An override that ignores the new argument renders exactly what
+  // it rendered before -- forwarding a sibling must not change any existing
+  // label.
+  it('leaves an override that ignores column_params unchanged', () => {
+    const column_def = {
+      column_params: {
+        custom: {
+          label: 'C',
+          format_value: ({ value }) => `custom:${value}`
+        },
+        sibling: { label: 'S' }
+      }
+    }
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { custom: 7, sibling: ['x'] },
+        variant: 'long'
+      })
+    ).to.equal('C: custom:7, S: x')
+  })
+
   it('engine computes is_default for override values', () => {
     const column_def = {
       column_params: {

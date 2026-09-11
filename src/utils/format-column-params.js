@@ -2,9 +2,18 @@ import dayjs from 'dayjs'
 
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
-// Per-param override hook: `param_def.format_value({ value, def, variant }) =>
-// string`. When defined, the engine delegates value rendering to the override
-// and computes `is_default` itself. The active `variant` ('short' | 'long') is
+// Per-param override hook: `param_def.format_value({ value, def, variant,
+// column_params }) => string`. When defined, the engine delegates value
+// rendering to the override and computes `is_default` itself.
+//
+// `column_params` is the whole params object of the column instance being
+// rendered, not just this param's value, because a param's label can depend on
+// its SIBLINGS: a rate output chip reads "Per Team Pass Play" under two
+// different denominators -- every play, or only the plays the column's own
+// filters select -- and those are two different numbers under one name unless
+// the label can see the filters. Overrides that ignore it render identically.
+//
+// The active `variant` ('short' | 'long') is
 // forwarded so an override can render a terse chip label and a descriptive long
 // label from the same value (e.g. year_offset: `prior+` vs `prior year onward`);
 // overrides that ignore it render identically in both variants. The is_default
@@ -37,7 +46,13 @@ export function format_column_params({
 
   for (const [param_key, value] of Object.entries(column_state_params)) {
     const param_def = param_defs[param_key] || {}
-    const render = build_param_render({ param_key, value, param_def, variant })
+    const render = build_param_render({
+      param_key,
+      value,
+      param_def,
+      variant,
+      column_params: column_state_params
+    })
     if (render) renders.push(render)
   }
 
@@ -59,7 +74,13 @@ export function format_column_params({
     .join(' · ')
 }
 
-function build_param_render({ param_key, value, param_def, variant }) {
+function build_param_render({
+  param_key,
+  value,
+  param_def,
+  variant,
+  column_params
+}) {
   // Skip gate: null/undefined and empty arrays produce no render.
   // Bare 0 and false pass through (fixes legacy falsy-gate bugs).
   if (value == null) return null
@@ -74,7 +95,12 @@ function build_param_render({ param_key, value, param_def, variant }) {
     render = {
       param_key,
       key_label,
-      value_label: param_def.format_value({ value, def: param_def, variant }),
+      value_label: param_def.format_value({
+        value,
+        def: param_def,
+        variant,
+        column_params
+      }),
       is_default: matches_default(value, param_def.default_value)
     }
   } else {
