@@ -9,6 +9,11 @@ import { build_bar_chart_options } from './bar-chart-options.js'
 import 'highcharts/modules/exporting'
 import 'highcharts/modules/offline-exporting'
 
+// How long a freshly mounted chart takes to grow its bars in. Long enough to
+// read as a build rather than a flash, short enough that flipping orientation
+// does not feel like waiting on the chart.
+export const BAR_CHART_MOUNT_ANIMATION_MS = 500
+
 // A ranked bar chart of one numeric column against each row's own identity.
 //
 // Nothing here knows what a row IS. Subject label, bar colour and the image
@@ -84,6 +89,18 @@ const BarChartOverlay = ({
             chart_instance_ref.current = this
           }
         }
+      },
+      // The builder stays animation-free on purpose: it is a pure function of
+      // the table state, and anything reading geometry back out of a chart
+      // rendered straight from its output would otherwise race the transition
+      // and get mid-flight numbers. Growth is a property of MOUNTING a chart,
+      // which only this component knows about, so it is layered on here.
+      plotOptions: {
+        ...built.plotOptions,
+        series: {
+          ...built.plotOptions.series,
+          animation: { duration: BAR_CHART_MOUNT_ANIMATION_MS }
+        }
       }
     }
   }, [
@@ -98,6 +115,17 @@ const BarChartOverlay = ({
   ])
 
   const is_empty = chart_options.custom.is_empty
+
+  // Flipping orientation is a different CHART, not a new shape for this one.
+  // highcharts-react-official applies any changed options object with
+  // chart.update(options, true, true), so without a key Highcharts transitions
+  // the LIVE bars across the inversion and the whole plot appears to rotate.
+  // Keying the mount to orientation throws the old chart away instead, and the
+  // replacement runs its own build animation: a column series grows up from the
+  // zero baseline, a bar series out from the side. Every other option change
+  // keeps the update path, where morphing is the right behaviour.
+  const orientation =
+    local_options.orientation === 'horizontal' ? 'horizontal' : 'vertical'
 
   const handle_backdrop_click = (event) => {
     if (event.target === event.currentTarget) on_close()
@@ -127,7 +155,11 @@ const BarChartOverlay = ({
             No rows with a value for this column.
           </div>
         ) : (
-          <HighchartsReact highcharts={Highcharts} options={chart_options} />
+          <HighchartsReact
+            key={orientation}
+            highcharts={Highcharts}
+            options={chart_options}
+          />
         )}
       </div>
     </div>
