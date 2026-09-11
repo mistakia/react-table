@@ -139,7 +139,7 @@ const ColumnParamObjectPresetFilter = ({
       const live = counts[serialize_preset_signature(preset.value)]
       if (typeof live === 'number') return live
     }
-    return typeof preset.n === 'number' ? preset.n : null
+    return null
   }
 
   const preset_section = preset_values.length > 0 && (
