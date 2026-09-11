@@ -577,6 +577,61 @@ describe('format_column_params - format_value override', () => {
     ).to.equal('C: custom:7, S: x')
   })
 
+  // A param's `param_override_config` claims two sibling keys, and neither is a
+  // declared param -- so rendering them falls through to the SELECT default and
+  // emits "[object Object]" for the override beside a bare "true" for the
+  // toggle, next to the owning chip that already states their effect.
+  it('suppresses the keys a sibling param_override_config owns', () => {
+    const column_def = {
+      column_params: {
+        output: {
+          label: 'Output',
+          format_value: ({ value }) => `Per ${value}`,
+          param_override_config: {
+            toggle_param: 'output_match_column_params',
+            override_param: 'output_column_params'
+          }
+        },
+        man_zone: { label: 'Man Zone' }
+      }
+    }
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: {
+          output: 'Play',
+          man_zone: ['MAN'],
+          output_match_column_params: true,
+          output_column_params: { man_zone: ['MAN'] }
+        }
+      })
+    ).to.equal('Per Play · MAN')
+  })
+
+  // THE CONTROL. Suppression is keyed on a sibling CLAIMING the name, not on
+  // the name itself -- with no override config declared the same keys render as
+  // the ordinary params they then are.
+  it('renders those same keys when no param declares an override config', () => {
+    const column_def = {
+      column_params: {
+        output: {
+          label: 'Output',
+          format_value: ({ value }) => `Per ${value}`
+        },
+        output_match_column_params: { label: 'Match', data_type: 4 }
+      }
+    }
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: {
+          output: 'Play',
+          output_match_column_params: true
+        }
+      })
+    ).to.equal('Per Play · YES')
+  })
+
   it('engine computes is_default for override values', () => {
     const column_def = {
       column_params: {

@@ -42,9 +42,11 @@ export function format_column_params({
   }
 
   const param_defs = column_def?.column_params || {}
+  const owned_by_a_sibling = collect_override_config_keys(param_defs)
   const renders = []
 
   for (const [param_key, value] of Object.entries(column_state_params)) {
+    if (owned_by_a_sibling.has(param_key)) continue
     const param_def = param_defs[param_key] || {}
     const render = build_param_render({
       param_key,
@@ -72,6 +74,25 @@ export function format_column_params({
         : r.value_label
     )
     .join(' · ')
+}
+
+// A param declaring `param_override_config` OWNS the two keys that config
+// names: the toggle and the override it seeds. Those are the panel's
+// bookkeeping, not filters the user set, and the owning param's own label is
+// where their effect is already stated -- a rate chip reading
+// "Per Team Pass Play (man_zone only)" has said everything the override says.
+// Rendered on their own they are worse than redundant: neither is a declared
+// param, so the engine falls through to the SELECT default and an override
+// object comes out as "[object Object]" beside a bare "true".
+function collect_override_config_keys(param_defs) {
+  const keys = new Set()
+  for (const param_def of Object.values(param_defs || {})) {
+    const config = param_def?.param_override_config
+    if (!config) continue
+    if (config.toggle_param) keys.add(config.toggle_param)
+    if (config.override_param) keys.add(config.override_param)
+  }
+  return keys
 }
 
 function build_param_render({
