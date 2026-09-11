@@ -1,13 +1,24 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import ChartSettingsModal from '../chart-settings-modal'
+import { DEFAULT_BAR_CHART_ROW_LIMIT } from './bar-chart-data.js'
 import './bar-chart-settings-panel.styl'
 
 const MAX_TEXT_LENGTH = 200
+// Matches the published schema's maximum. A larger value is not refused by the
+// chart, it is refused by validate_table_state on save, which surfaces as a
+// view that will not persist rather than as a rejected field.
+const MAX_ROW_LIMIT = 1000
 
-// Everything the persisted options schema carries that is TEXT or precision.
-// Orientation and the two visibility toggles stay on the toolbar, where they
-// are one click rather than a modal round trip.
+// Everything the persisted options schema carries that is TEXT, precision, or
+// the size and end of the rank window. Orientation and the two visibility
+// toggles stay on the toolbar, where they are one click rather than a modal
+// round trip.
+//
+// The row cap is reachable ONLY from here, and that is deliberate: the chart's
+// subtitle already states "Top 40 of 500 rows" whenever the cap binds, so the
+// reader is told what they are looking at before they are offered the control
+// that changes it.
 //
 // `font_family` is deliberately absent, though the schema still accepts it.
 // The chart now inherits the page's face by default, which is the app's own
@@ -29,6 +40,14 @@ const BarChartSettingsModal = ({ bar_chart_options, on_change, on_close }) => {
   const [average_line_label, set_average_line_label] = React.useState(
     bar_chart_options.average_line_label || ''
   )
+  const [row_limit, set_row_limit] = React.useState(
+    bar_chart_options.row_limit == null
+      ? ''
+      : String(bar_chart_options.row_limit)
+  )
+  const [rank_window, set_rank_window] = React.useState(
+    bar_chart_options.rank_window === 'bottom' ? 'bottom' : 'top'
+  )
   // Held as a STRING while editing so the field can be emptied. Coerced on
   // save; a number in state makes clearing the input read as 0 decimals, which
   // silently rounds every label to an integer.
@@ -40,6 +59,14 @@ const BarChartSettingsModal = ({ bar_chart_options, on_change, on_close }) => {
 
   const text_handler = (setter) => (event) =>
     setter(event.target.value.slice(0, MAX_TEXT_LENGTH))
+
+  const handle_row_limit_change = (event) => {
+    const next = event.target.value
+    if (next === '') return set_row_limit('')
+    if (!/^\d{1,4}$/.test(next)) return
+    if (Number(next) < 1 || Number(next) > MAX_ROW_LIMIT) return
+    set_row_limit(next)
+  }
 
   const handle_value_decimals_change = (event) => {
     const next = event.target.value
@@ -63,6 +90,11 @@ const BarChartSettingsModal = ({ bar_chart_options, on_change, on_close }) => {
     set_or_delete('custom_y_axis_title', custom_y_axis_title.trim() || null)
     set_or_delete('custom_x_axis_title', custom_x_axis_title.trim() || null)
     set_or_delete('average_line_label', average_line_label.trim() || null)
+    set_or_delete('row_limit', row_limit === '' ? null : Number(row_limit))
+    // 'top' is the default, so it is written as ABSENCE rather than as the
+    // string. Persisting the default would make every saved view carry a field
+    // it never chose, and a later change of default could not reach them.
+    set_or_delete('rank_window', rank_window === 'bottom' ? 'bottom' : null)
     set_or_delete(
       'value_decimals',
       value_decimals === '' ? null : Number(value_decimals)
@@ -157,6 +189,35 @@ const BarChartSettingsModal = ({ bar_chart_options, on_change, on_close }) => {
           onChange={text_handler(set_average_line_label)}
           placeholder='Average'
         />
+      </div>
+
+      <div className='modal-section'>
+        <label className='modal-section-label' htmlFor='bar-row-limit-input'>
+          Bars to draw
+        </label>
+        <input
+          id='bar-row-limit-input'
+          className='modal-text-input'
+          type='text'
+          inputMode='numeric'
+          value={row_limit}
+          onChange={handle_row_limit_change}
+          placeholder={`Leave blank for ${DEFAULT_BAR_CHART_ROW_LIMIT}`}
+        />
+      </div>
+
+      <div className='modal-section'>
+        <label className='modal-section-label' htmlFor='bar-rank-window-input'>
+          Which end of the ranking
+        </label>
+        <select
+          id='bar-rank-window-input'
+          className='modal-select'
+          value={rank_window}
+          onChange={(event) => set_rank_window(event.target.value)}>
+          <option value='top'>Top — highest values</option>
+          <option value='bottom'>Bottom — lowest values</option>
+        </select>
       </div>
 
       <div className='modal-section'>

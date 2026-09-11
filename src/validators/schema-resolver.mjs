@@ -36,6 +36,13 @@ const SCHEMAS = {
       },
       custom_title: { type: ['string', 'null'], maxLength: 200 },
       custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },
+      // Present in the published file and written by the scatter plot's own
+      // settings modal, but missing here until 2026-09-11: with
+      // additionalProperties false, setting either axis title made the WHOLE
+      // table state invalid, so the view would not save. Caught by extending
+      // the parity spec past table-state.
+      custom_x_axis_title: { type: ['string', 'null'], maxLength: 200 },
+      custom_y_axis_title: { type: ['string', 'null'], maxLength: 200 },
       font_family: { type: ['string', 'null'], maxLength: 100 }
     }
   },
@@ -52,6 +59,8 @@ const SCHEMAS = {
       show_average_line: { type: 'boolean', default: true },
       show_value_labels: { type: 'boolean', default: true },
       average_line_label: { type: 'string', maxLength: 200 },
+      row_limit: { type: 'integer', minimum: 1, maximum: 1000 },
+      rank_window: { type: 'string', enum: ['top', 'bottom'], default: 'top' },
       value_decimals: { type: 'integer', minimum: 0, maximum: 10 },
       custom_title: { type: ['string', 'null'], maxLength: 200 },
       custom_subtitle: { type: ['string', 'null'], maxLength: 1000 },

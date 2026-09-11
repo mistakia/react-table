@@ -29,6 +29,9 @@ export const build_bar_chart_options = ({
     bar_chart_options.orientation === 'horizontal' ? 'horizontal' : 'vertical'
   const is_horizontal = orientation === 'horizontal'
 
+  const rank_window =
+    bar_chart_options.rank_window === 'bottom' ? 'bottom' : 'top'
+
   const derived = derive_bar_chart_data({
     data,
     accessor_path,
@@ -36,7 +39,10 @@ export const build_bar_chart_options = ({
     get_color,
     get_image,
     logo_size: BAR_LOGO_SIZE,
-    value_decimals_override: bar_chart_options.value_decimals ?? null
+    value_decimals_override: bar_chart_options.value_decimals ?? null,
+    row_limit: bar_chart_options.row_limit ?? null,
+    rank_window,
+    include_average_in_extremes: bar_chart_options.show_average_line !== false
   })
 
   const {
@@ -46,13 +52,26 @@ export const build_bar_chart_options = ({
     average,
     value_decimals,
     axis_extremes,
-    is_empty
+    is_empty,
+    total_row_count,
+    is_truncated,
+    scope_text
   } = derived
 
   const metric_base =
     column.short_label || column.header_label || column.name || 'Value'
   const metric_label = bar_chart_options.custom_y_axis_title || metric_base
   const subject_label = bar_chart_options.custom_x_axis_title || null
+
+  // The scope clause sits in the SUBTITLE, directly under the title, not in
+  // the credits line where the reference puts its sample minimum. A reader
+  // decides what a ranked chart is a chart OF before reading any bar, and a
+  // 10px note in the bottom-right corner is found after. It is appended to the
+  // consumer's own subtitle rather than replacing it, and there is no option
+  // that removes it -- a chart drawing 40 of 500 has to say so.
+  const subtitle_text = [bar_chart_options.custom_subtitle, scope_text]
+    .filter(Boolean)
+    .join(' — ')
 
   const font_family = bar_chart_options.font_family || null
   const show_average_line =
@@ -259,9 +278,9 @@ export const build_bar_chart_options = ({
     title: {
       text: bar_chart_options.custom_title || metric_label
     },
-    subtitle: bar_chart_options.custom_subtitle
+    subtitle: subtitle_text
       ? {
-          text: bar_chart_options.custom_subtitle,
+          text: subtitle_text,
           style: { fontSize: '10px', fontWeight: 'normal' }
         }
       : undefined,
@@ -305,6 +324,10 @@ export const build_bar_chart_options = ({
     custom: {
       is_empty,
       row_count: bar_points.length,
+      total_row_count,
+      is_truncated,
+      scope_text,
+      rank_window,
       average,
       value_decimals
     }

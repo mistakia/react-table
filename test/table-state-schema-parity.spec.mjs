@@ -14,12 +14,36 @@ import { validate_table_state } from '../src/validators/index.mjs'
 // property sets are asserted equal rather than each maintained by hand.
 
 const test_dir = path.dirname(fileURLToPath(import.meta.url))
-const published_schema = JSON.parse(
-  fs.readFileSync(
-    path.join(test_dir, '../schema/state/table-state.json'),
-    'utf8'
+const read_published = (file_name) =>
+  JSON.parse(
+    fs.readFileSync(path.join(test_dir, '../schema/state', file_name), 'utf8')
   )
-)
+
+const published_schema = read_published('table-state.json')
+
+// Every state schema that exists in both copies, not just table-state. The
+// chart option schemas are the same hazard in a worse position: a field added
+// to the published file alone validates in a spec that reads the file, and is
+// then REJECTED at runtime by the bundled validator as an additional property
+// -- so the option silently fails to persist while the component honours it
+// in-session, which reads as a save bug rather than as schema drift.
+const PAIRED_STATE_SCHEMAS = [
+  ['table-state', 'table-state.json'],
+  ['bar-chart-options', 'bar-chart-options.json'],
+  ['scatter-plot-options', 'scatter-plot-options.json']
+]
+
+describe('state schema parity', () => {
+  for (const [schema_name, file_name] of PAIRED_STATE_SCHEMAS) {
+    it(`${schema_name} published file and bundled validator agree`, () => {
+      const published = read_published(file_name)
+      expect(published.$id).to.equal(SCHEMAS[schema_name].$id)
+      expect(Object.keys(published.properties).sort()).to.deep.equal(
+        Object.keys(SCHEMAS[schema_name].properties).sort()
+      )
+    })
+  }
+})
 
 describe('table-state schema', () => {
   it('published file and bundled validator declare the same $id', () => {

@@ -28,6 +28,48 @@ export const sort_bar_rows = ({ rows, accessor_path, get_label }) =>
     return String(get_label(a) ?? '').localeCompare(String(get_label(b) ?? ''))
   })
 
+// How many bars a chart draws when the caller has not said. Above every
+// team-grain set a sports consumer produces -- 32 subjects reads exactly like
+// the reference and must not be silently clipped by a cap meant for a
+// different problem -- and low enough that a 500-row player result stops being
+// a solid smear of overlapping logos and a diagonal band of category labels.
+export const DEFAULT_BAR_CHART_ROW_LIMIT = 40
+
+// Which END of the ranking survives the cap. Rows arrive sorted ascending, so
+// the best values are at the TAIL: `top` keeps the tail, `bottom` the head.
+// Nothing here elides a middle. A ranked bar chart with a gap in its axis
+// invites the reader to compare two bars that are not adjacent in rank, which
+// is the one thing this chart type is supposed to make impossible.
+export const select_rank_window = ({
+  rows,
+  row_limit = null,
+  rank_window = 'top'
+}) => {
+  const limit =
+    Number.isInteger(row_limit) && row_limit > 0
+      ? row_limit
+      : DEFAULT_BAR_CHART_ROW_LIMIT
+  if (rows.length <= limit) return rows
+  return rank_window === 'bottom'
+    ? rows.slice(0, limit)
+    : rows.slice(rows.length - limit)
+}
+
+// A truncated ranked chart that does not say it is truncated misleads worse
+// than a crowded one: every bar is still true, and the SET is a lie. So this
+// is derived from the counts rather than taken from the caller, carries no
+// option to suppress it, and comes back null in the only case where silence is
+// honest -- nothing was dropped.
+export const build_scope_text = ({
+  drawn_count,
+  total_count,
+  rank_window = 'top'
+}) => {
+  if (drawn_count >= total_count) return null
+  const end = rank_window === 'bottom' ? 'Bottom' : 'Top'
+  return `${end} ${drawn_count} of ${total_count} rows`
+}
+
 export const compute_average = (values) => {
   if (!values.length) return null
   return values.reduce((sum, value) => sum + value, 0) / values.length
@@ -110,11 +152,27 @@ export const build_logo_points = ({
 // The zero baseline is forced into range whenever the data is single-signed:
 // a ranked bar chart drawn from a non-zero floor overstates every difference
 // on it, which is the single most common way this chart type misleads.
-export const compute_axis_extremes = ({ values, padding_ratio = 0.18 }) => {
+//
+// `include_value` forces one further value into range, and it exists for the
+// average on a TRUNCATED chart. The extremes are fitted to the bars actually
+// drawn, and a top-40 window of a 500-row set sits entirely on one side of the
+// full set's average -- so an axis fitted to the bars alone puts the average
+// line off the plot, where Highcharts simply does not draw it. A reference
+// line that silently disappears is worse than no reference line.
+export const compute_axis_extremes = ({
+  values,
+  padding_ratio = 0.18,
+  include_value = null
+}) => {
   if (!values.length) return { min: null, max: null }
 
-  const data_min = Math.min(...values)
-  const data_max = Math.max(...values)
+  const in_range =
+    include_value == null || !isFinite(include_value)
+      ? values
+      : [...values, Number(include_value)]
+
+  const data_min = Math.min(...in_range)
+  const data_max = Math.max(...in_range)
 
   const floor = Math.min(0, data_min)
   const ceiling = Math.max(0, data_max)
@@ -144,16 +202,36 @@ export const derive_bar_chart_data = ({
   get_color = null,
   get_image = null,
   logo_size = 28,
-  value_decimals_override = null
+  value_decimals_override = null,
+  row_limit = null,
+  rank_window = 'top',
+  include_average_in_extremes = true
 }) => {
   const filtered = filter_bar_rows({ data, accessor_path })
-  const rows = sort_bar_rows({ rows: filtered, accessor_path, get_label })
+  const ranked = sort_bar_rows({ rows: filtered, accessor_path, get_label })
+  const rows = select_rank_window({ rows: ranked, row_limit, rank_window })
   const values = rows.map((row) => Number(row[accessor_path]))
+
+  // Over every row that MATCHED, not over the window that got drawn. The
+  // average of the top 40 of 500 is a number about the top 40, and a line
+  // labelled "Average" running through a chart of the best subjects is read as
+  // the population's average by everyone who looks at it. Truncating the
+  // subjects must not truncate what they are being compared against.
+  const average = compute_average(
+    ranked.map((row) => Number(row[accessor_path]))
+  )
 
   return {
     rows,
     values,
     is_empty: rows.length === 0,
+    total_row_count: ranked.length,
+    is_truncated: rows.length < ranked.length,
+    scope_text: build_scope_text({
+      drawn_count: rows.length,
+      total_count: ranked.length,
+      rank_window
+    }),
     categories: rows.map((row) => String(get_label(row) ?? '')),
     bar_points: build_bar_points({
       rows,
@@ -167,12 +245,15 @@ export const derive_bar_chart_data = ({
       get_image,
       logo_size
     }),
-    average: compute_average(values),
+    average,
     value_decimals: resolve_value_decimals({
       values,
       override: value_decimals_override
     }),
-    axis_extremes: compute_axis_extremes({ values }),
+    axis_extremes: compute_axis_extremes({
+      values,
+      include_value: include_average_in_extremes ? average : null
+    }),
     has_negative_values: values.some((value) => value < 0)
   }
 }
