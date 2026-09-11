@@ -59,11 +59,19 @@ describe('bar chart row window', () => {
     })
 
     it('falls back to the default limit for a missing or unusable value', () => {
-      for (const row_limit of [null, undefined, 0, -5, 2.5, '10']) {
+      for (const row_limit of [undefined, 0, -5, 2.5, '10']) {
         expect(
           select_rank_window({ rows: many_rows, row_limit })
         ).to.have.length(DEFAULT_BAR_CHART_ROW_LIMIT)
       }
+    })
+
+    // The third state, and the one that lets a panel offer "All" without
+    // writing today's row count into a saved view.
+    it('draws every row for an explicit null', () => {
+      expect(
+        select_rank_window({ rows: many_rows, row_limit: null })
+      ).to.have.length(500)
     })
   })
 
@@ -170,10 +178,22 @@ describe('bar chart row window', () => {
     // limit above the row count, which is not a suppression -- it is the chart
     // no longer being truncated.
     it('drops the clause only when the chart is no longer truncated', () => {
-      const uncapped = build({ row_limit: 500 })
-      expect(uncapped.subtitle).to.equal(undefined)
-      expect(uncapped.custom.is_truncated).to.equal(false)
-      expect(uncapped.custom.row_count).to.equal(500)
+      for (const uncapped of [
+        build({ row_limit: 500 }),
+        build({ row_limit: null })
+      ]) {
+        expect(uncapped.subtitle).to.equal(undefined)
+        expect(uncapped.custom.is_truncated).to.equal(false)
+        expect(uncapped.custom.row_count).to.equal(500)
+      }
+    })
+
+    // The absent case and the explicit-null case must not collapse onto each
+    // other on the way through the builder: `?? null` there would turn every
+    // default chart into an uncapped one.
+    it('keeps absent distinct from an explicit null', () => {
+      expect(build().custom.row_count).to.equal(DEFAULT_BAR_CHART_ROW_LIMIT)
+      expect(build({ row_limit: null }).custom.row_count).to.equal(500)
     })
 
     it('carries the window onto custom for the component and its callers', () => {

@@ -40,11 +40,19 @@ export const DEFAULT_BAR_CHART_ROW_LIMIT = 40
 // Nothing here elides a middle. A ranked bar chart with a gap in its axis
 // invites the reader to compare two bars that are not adjacent in rank, which
 // is the one thing this chart type is supposed to make impossible.
+//
+// `row_limit` has THREE states, not two, and the third is what lets a panel
+// offer "All" honestly. Absent means the default. An explicit `null` means no
+// cap at all. A positive integer means that many. The alternative -- writing
+// today's row count as the limit -- freezes a saved view at the size its data
+// happened to be, so a view that later returns more silently starts truncating
+// again under a control the user set to "everything".
 export const select_rank_window = ({
   rows,
-  row_limit = null,
+  row_limit,
   rank_window = 'top'
 }) => {
+  if (row_limit === null) return rows
   const limit =
     Number.isInteger(row_limit) && row_limit > 0
       ? row_limit
@@ -203,7 +211,7 @@ export const derive_bar_chart_data = ({
   get_image = null,
   logo_size = 28,
   value_decimals_override = null,
-  row_limit = null,
+  row_limit,
   rank_window = 'top',
   include_average_in_extremes = true
 }) => {

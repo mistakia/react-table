@@ -27,10 +27,10 @@
       "description": "Label drawn at the average reference line; defaults to 'Average'"
     },
     "row_limit": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "minimum": 1,
       "maximum": 1000,
-      "description": "How many bars to draw from the ranked set; absence means the component default"
+      "description": "How many bars to draw from the ranked set; absence means the component default and null means draw every row"
     },
     "rank_window": {
       "type": "string",

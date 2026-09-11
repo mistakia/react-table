@@ -115,6 +115,8 @@ const BarChartOverlay = ({
         </button>
         <BarChartSettingsPanel
           bar_chart_options={local_options}
+          row_count={chart_options.custom.row_count}
+          total_row_count={chart_options.custom.total_row_count}
           on_change={handle_options_change}
           on_download_png={handle_download_png}
         />

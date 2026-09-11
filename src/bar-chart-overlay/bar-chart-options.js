@@ -40,7 +40,10 @@ export const build_bar_chart_options = ({
     get_image,
     logo_size: BAR_LOGO_SIZE,
     value_decimals_override: bar_chart_options.value_decimals ?? null,
-    row_limit: bar_chart_options.row_limit ?? null,
+    // Passed through UNCOALESCED. `?? null` here would collapse the absent
+    // case onto the explicit-null case and turn every default chart into an
+    // uncapped one.
+    row_limit: bar_chart_options.row_limit,
     rank_window,
     include_average_in_extremes: bar_chart_options.show_average_line !== false
   })

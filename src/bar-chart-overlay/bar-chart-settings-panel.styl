@@ -49,9 +49,10 @@ $bar_toolbar_control_height = 28px
     background-color $rt_border_subtle
     margin 0 $rt_space_xs
 
-  // The two orientation buttons are one control, so they sit flush and share a
-  // single outline rather than reading as two independent toggles.
-  .bar-chart-orientation
+  // A segmented pair -- Vertical/Horizontal, Top/Bottom -- is ONE control, so
+  // the buttons sit flush and share a single outline rather than reading as two
+  // independent toggles.
+  .bar-chart-segmented
     display inline-flex
     align-items center
     border 1px solid $rt_border_subtle
@@ -64,3 +65,87 @@ $bar_toolbar_control_height = 28px
 
       & + .toolbar-btn
         border-left 1px solid $rt_border_subtle
+
+  // Anchored to its own button rather than to the toolbar, so it stays under
+  // the control that opened it however the toolbar wraps. The toolbar is a
+  // wrapping flex row, and a popover positioned against the row would drift
+  // to the wrong control the moment the chart got narrow enough to wrap.
+  .bar-chart-rows
+    position relative
+    display inline-flex
+
+  .bar-chart-rows-popover
+    position absolute
+    top ($bar_toolbar_control_height + 4px)
+    left 0
+    z-index var(--rt-z-panel)
+    min-width 260px
+    padding $rt_space_lg
+    background-color $rt_bg
+    border 1px solid $rt_border_subtle
+    border-radius $rt_radius_lg
+    box-shadow $rt_shadow_overlay
+    text-align left
+
+  .bar-chart-rows-readout
+    margin 0 0 $rt_space_lg
+    font-size $rt_font_size_sm
+    color $rt_text_muted
+    line-height 1.4
+
+  .bar-chart-rows-field
+    display flex
+    align-items center
+    flex-wrap wrap
+    gap $rt_space_xs
+    margin-bottom $rt_space_lg
+
+    &:last-child
+      margin-bottom 0
+
+  .bar-chart-rows-label
+    display block
+    width 100%
+    font-size $rt_font_size_sm
+    font-weight 600
+    color $rt_text_muted
+    text-transform uppercase
+    letter-spacing 0.05em
+    margin-bottom 2px
+
+  .bar-chart-rows-presets
+    display inline-flex
+    align-items center
+    border 1px solid $rt_border_subtle
+    border-radius $rt_radius_sm
+    overflow hidden
+
+    .toolbar-btn
+      border-radius 0
+      border-color transparent
+      padding 0 10px
+
+      & + .toolbar-btn
+        border-left 1px solid $rt_border_subtle
+
+  .bar-chart-rows-input
+    height $bar_toolbar_control_height
+    width 64px
+    padding 0 8px
+    border 1px solid $rt_border_subtle
+    border-radius $rt_radius_sm
+    background-color $rt_bg
+    color $rt_text
+    font-size $rt_font_size
+    font-family inherit
+
+  .bar-chart-rows-reset
+    margin-top $rt_space_lg
+    padding 0
+    border none
+    background none
+    color $rt_text_muted
+    font-size $rt_font_size_sm
+    font-family inherit
+    cursor pointer
+    text-decoration underline
