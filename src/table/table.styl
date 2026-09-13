@@ -286,7 +286,15 @@
 .table-search-and-controls-container
   display flex
   align-items center
-  justify-content center
+  // ONE LEFT EDGE, WHICH ONLY THE WRAPPED CASE EVER SEES. At a desktop width
+  // the row fits, the box hugs its content and there is no free space for an
+  // alignment to spend -- measured identical under `center` and `flex-start` at
+  // 900px and 1440px. Below 600px `.table-top-container` takes a fixed
+  // `calc(100vw - 16px)`, so the free space appears and `center` spent it on
+  // indenting every wrapped line by a different amount: the toolbar's first
+  // control sat 57px in from a table whose rows start at the screen edge, and
+  // the second line started somewhere else again.
+  justify-content flex-start
   width fit-content
   gap 8px
   // Wrap so a narrow viewport drops trailing items onto their own line instead
