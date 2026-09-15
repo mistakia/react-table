@@ -11,12 +11,6 @@ import './column-param-object-preset-filter.styl'
 
 const ANY_VALUE = '__any__'
 
-const serialize_preset_signature = (value_object) => {
-  if (!value_object || typeof value_object !== 'object') return ''
-  const sorted_keys = Object.keys(value_object).sort()
-  return sorted_keys.map((k) => `${k}:${value_object[k]}`).join(',')
-}
-
 const value_object_matches_preset = (value_object, preset_value) => {
   const preset_keys = Object.keys(preset_value)
   const value_keys = Object.keys(value_object)
@@ -46,8 +40,7 @@ const ColumnParamObjectPresetFilter = ({
   column_param_name,
   column_param_definition,
   selected_param_values,
-  handle_change = () => {},
-  counts = null
+  handle_change = () => {}
 }) => {
   const column_specs = column_param_definition.column_specs || []
   const preset_values = column_param_definition.preset_values || []
@@ -134,13 +127,14 @@ const ColumnParamObjectPresetFilter = ({
     emit([])
   }
 
-  const resolve_count = (preset) => {
-    if (counts) {
-      const live = counts[serialize_preset_signature(preset.value)]
-      if (typeof live === 'number') return live
-    }
-    return null
-  }
+  // The count rides on the preset itself, injected by the consumer's selector
+  // from the live param-option-counts response. There is no separate `counts`
+  // prop: `ParametersEditorItem` builds a fixed `param_props` shape and has no
+  // channel to pass one, so a prop-based count could never arrive. `n` is
+  // absent, not stale, when the consumer supplies no counts -- the static
+  // values were removed from the preset definitions themselves.
+  const resolve_count = (preset) =>
+    typeof preset.n === 'number' ? preset.n : null
 
   const preset_section = preset_values.length > 0 && (
     <div className='object-preset-preset-section'>
@@ -252,8 +246,7 @@ ColumnParamObjectPresetFilter.propTypes = {
   selected_param_values: PropTypes.oneOfType([
     PropTypes.array,
     PropTypes.object
-  ]),
-  counts: PropTypes.object
+  ])
 }
 
 export default ColumnParamObjectPresetFilter
