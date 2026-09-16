@@ -19,8 +19,8 @@ import {
   copy_to_clipboard as copy_text_to_clipboard
 } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
+import { build_share_link } from '#src/utils/build-share-link.mjs'
 import { table_context } from '#src/table-context'
-import { SHARE_LINK_URL_SCHEMA } from '#src/constants.mjs'
 
 import './table-menu.styl'
 
@@ -98,7 +98,8 @@ const TableMenu = ({
   reset_cache,
   clear_local_cache
 }) => {
-  const { shorten_url, get_export_api_url } = useContext(table_context)
+  const { shorten_url, share_link_pathname, get_export_api_url } =
+    useContext(table_context)
   const [is_open, set_is_open] = useState(false)
   const [link_state, set_link_state] = useState('Copy Link')
   const [use_zero_values, set_use_zero_values] = useState(false)
@@ -132,41 +133,13 @@ const TableMenu = ({
   }
 
   const handle_shareable_link = async () => {
-    const params = new URLSearchParams()
-
-    for (const [key, type] of Object.entries(
-      SHARE_LINK_URL_SCHEMA.table_state
-    )) {
-      const value = table_state?.[key]
-      if (type === 'array') {
-        if (Array.isArray(value) && value.length > 0) {
-          params.append(key, JSON.stringify(value))
-        }
-      } else if (type === 'object') {
-        if (
-          value &&
-          typeof value === 'object' &&
-          Object.keys(value).length > 0
-        ) {
-          params.append(key, JSON.stringify(value))
-        }
-      } else if (type === 'string') {
-        if (value) params.append(key, value)
-      } else if (type === 'boolean') {
-        // Always emit booleans -- saved-view state may default to `true`, and
-        // skipping `false` would let a stale `true` survive a round-trip.
-        params.append(key, String(Boolean(value)))
-      }
-    }
-
-    for (const key of SHARE_LINK_URL_SCHEMA.view) {
-      const value = selected_view?.[key]
-      if (value) params.append(key, value)
-    }
-
-    const shareable_link = `${window.location.origin}${
-      window.location.pathname
-    }?${params.toString()}`
+    const shareable_link = build_share_link({
+      table_state,
+      selected_view,
+      origin: window.location.origin,
+      current_pathname: window.location.pathname,
+      share_link_pathname
+    })
 
     if (shorten_url) {
       set_link_state('Generating Link')

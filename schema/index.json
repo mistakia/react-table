@@ -316,6 +316,11 @@
         "async (longUrl) => { const response = await fetch('/api/shorten', { method: 'POST', body: JSON.stringify({ url: longUrl }) }); return response.text(); }"
       ]
     },
+    "share_link_pathname": {
+      "type": "string",
+      "description": "The consumer route that READS table state out of a query string, used as the path of a copied share link. Declare this whenever the table also renders on routes that hydrate a stored record — a saved view, a shared generation, a resolved short link — because those ignore the query string on load, so a link built from the current path publishes the stored view rather than the one on screen. Omitted, the current path is used, which is correct for a consumer with a single table route.",
+      "examples": ["/data-views", "/plays"]
+    },
     "reset_cache": {
       "type": "object",
       "description": "Function to clear cached data and force fresh data loading",

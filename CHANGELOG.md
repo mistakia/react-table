@@ -14,6 +14,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- A copied share link names the route that READS a query string rather than the
+  route the user is standing on, via the new `share_link_pathname` prop. On a
+  consumer route that hydrates a stored record — a saved view, a shared
+  generation, a resolved short link — the query string is ignored on load, so a
+  link built from the current path published the stored view while carrying the
+  on-screen state in a query string no reader ever looked at. The copier saw one
+  view and every reader got another, with nothing on either side reporting the
+  discrepancy. Consumers that declare no route are unaffected
+
 - The column, filter and row-axes managers open as `fixed` surfaces anchored to
   their button, so an ancestor with non-visible overflow no longer clips them.
   They previously only rendered fully inside a full-page scroll container; in
