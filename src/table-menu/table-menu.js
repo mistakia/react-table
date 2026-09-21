@@ -16,7 +16,8 @@ import {
   export_csv,
   export_json,
   export_markdown,
-  copy_to_clipboard as copy_text_to_clipboard
+  copy_to_clipboard as copy_text_to_clipboard,
+  copy_deferred_text_to_clipboard
 } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
 import { build_share_link } from '#src/utils/build-share-link.mjs'
@@ -141,26 +142,48 @@ const TableMenu = ({
       share_link_pathname
     })
 
-    if (shorten_url) {
-      set_link_state('Generating Link')
-      try {
-        const response = await shorten_url(shareable_link)
-        const shortened_url = `${window.location.origin}${response.short_url}`
-        await copy_to_clipboard(shortened_url)
-        set_link_state('Copied Link')
-      } catch (error) {
-        console.error('shorten_url failed, falling back to long URL', error)
-        await copy_to_clipboard(shareable_link)
-        set_link_state('Copy Link Failed')
-      }
-    } else {
-      await copy_to_clipboard(shareable_link)
-      set_link_state('Copied Link')
+    if (!shorten_url) {
+      const ok = await copy_text_to_clipboard(shareable_link)
+      set_link_state(ok ? 'Copied Link' : 'Copy Link Failed')
+      setTimeout(() => set_link_state('Copy Link'), 2000)
+      return
     }
 
-    setTimeout(() => {
-      set_link_state('Copy Link')
-    }, 2000)
+    set_link_state('Generating Link')
+
+    // NOTHING MAY BE AWAITED BETWEEN THE CLICK AND THE CLIPBOARD CALL. The
+    // shortener is a network round trip, and awaiting it here spends the user
+    // activation Safari requires for a clipboard write -- so the promise goes
+    // to the clipboard rather than its value. It resolves to the long link on a
+    // shortener failure, because a rejection at that point can no longer be
+    // recovered into a copy.
+    let is_shortened = true
+    const link_promise = shorten_url(shareable_link).then(
+      (response) => `${window.location.origin}${response.short_url}`,
+      (error) => {
+        console.error('shorten_url failed, falling back to long URL', error)
+        is_shortened = false
+        return shareable_link
+      }
+    )
+
+    const ok = await copy_deferred_text_to_clipboard(link_promise)
+    if (!ok) {
+      console.error('Failed to copy text to clipboard')
+    }
+
+    // Three outcomes, three labels: the old code said `Copy Link Failed` for a
+    // fallback that copied fine, and `Copied Link` for a copy that never
+    // happened.
+    set_link_state(
+      !ok
+        ? 'Copy Link Failed'
+        : is_shortened
+          ? 'Copied Link'
+          : 'Copied Long Link'
+    )
+
+    setTimeout(() => set_link_state('Copy Link'), 2000)
   }
 
   const handle_zero_values_change = (event) => {
