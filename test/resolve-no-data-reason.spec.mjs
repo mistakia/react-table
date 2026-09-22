@@ -7,9 +7,10 @@ import {
   NO_DATA_SEASON_UNAVAILABLE
 } from '../src/utils/resolve-no-data-reason.js'
 
-// The header already warned on an empty column; only the WORDING was
-// cause-blind. These cover the three renders that matter and, more importantly,
-// the precedence between the two inputs -- which is where a plausible
+// This module is the single owner of whether the header warns AT ALL, not just
+// of the wording -- `table-header.js` renders its icon on a non-null return.
+// So a null here is a suppressed warning, and these cover both the wording and
+// the precedence between the two inputs, which is where a plausible
 // implementation goes wrong.
 
 describe('resolve_no_data_reason', () => {
@@ -45,10 +46,18 @@ describe('resolve_no_data_reason', () => {
     ).to.equal(null)
   })
 
-  // PRECEDENCE, and the case a plausible implementation gets wrong. The loaded
-  // rows win: a consumer's list says which columns it EXPECTS to be empty, and
-  // being wrong about one must not put a warning on a column full of values.
-  it('shows no warning when the consumer claims a populated column', () => {
+  // PRECEDENCE, and the case that was wrong in production for the whole time
+  // this feature shipped. An attributed season beats the loaded rows, because
+  // the two are independent facts rather than competing claims about the same
+  // one: publication cadence is a static property of the source, so a stray row
+  // does not make an unpublished season published.
+  //
+  // This is the ONLY assertion here that distinguishes the fixed resolver from
+  // the original -- every other case passes under both. Under the original it
+  // returned null, which is why the season wording never rendered once against
+  // the live database: every declaring column measured carried a few non-null
+  // rows in the unpublished season.
+  it('names the unpublished season even when stray rows populate the column', () => {
     expect(
       resolve_no_data_reason({
         has_no_data: false,
@@ -56,6 +65,19 @@ describe('resolve_no_data_reason', () => {
         season_unavailable_column_ids: new Set([
           'startable_games_from_seasonlogs_0'
         ])
+      })
+    ).to.equal(NO_DATA_SEASON_UNAVAILABLE)
+  })
+
+  // The other half of the precedence rule, and the reason this is a reordering
+  // rather than a removal. With no cause named there is nothing but the rows to
+  // go on, so a populated column still says nothing at all.
+  it('stays silent on a populated column the consumer did not attribute', () => {
+    expect(
+      resolve_no_data_reason({
+        has_no_data: false,
+        accessor_path: 'startable_games_from_seasonlogs_0',
+        season_unavailable_column_ids: new Set(['some_other_column_0'])
       })
     ).to.equal(null)
   })

@@ -178,6 +178,12 @@ const TableHeader = ({ header, column, table }) => {
   // WHY it is empty, when the consumer can attribute it. Keyed on the same
   // `accessor_path` as the emptiness check above, so a duplicated column's
   // instances are distinguished exactly as they are there.
+  //
+  // This is the SINGLE owner of whether a warning renders. The icon below keys
+  // off the returned title rather than off `has_no_data`, because the two can
+  // legitimately disagree: an unpublished season is attributable whatever the
+  // rows hold. Deciding the icon here and the wording there let the header
+  // suppress a cause the resolver had already named.
   const no_data_title = resolve_no_data_reason({
     has_no_data,
     accessor_path,
@@ -432,7 +438,7 @@ const TableHeader = ({ header, column, table }) => {
                   {!is_grouped && param_suffix ? ` · ${param_suffix}` : ''}
                 </div>
               )}
-              {has_no_data && !header.isPlaceholder && (
+              {no_data_title && !header.isPlaceholder && (
                 <Tooltip title={no_data_title} placement='top'>
                   <div className='header-no-data-icon'>
                     <WarningAmberIcon />
