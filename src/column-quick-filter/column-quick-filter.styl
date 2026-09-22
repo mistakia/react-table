@@ -1,0 +1,92 @@
+@import '../styles/variables.styl'
+@import '../styles/tokens.styl'
+
+.column-quick-filter
+  display flex
+  flex-direction column
+  gap $rt_space_sm
+  padding $rt_space_sm
+  border-bottom 1px solid $borderColor
+
+.column-quick-filter-row
+  display flex
+  gap $rt_space_sm
+  align-items center
+
+  .MuiTextField-root
+    flex 1
+    min-width 0
+
+  .MuiInputBase-root
+    font-size 13px
+
+.column-quick-filter-null-checks
+  justify-content flex-start
+
+.column-quick-filter-toggle
+  flex 1
+  text-align center
+  padding 0.25rem 0.5rem
+  border-radius $rt_radius_sm
+  border 1px solid $rt_border_subtle
+  background $rt_button_hover_bg
+  color $rt_text_muted
+  font-size 12px
+  cursor pointer
+  user-select none
+  transition background $rt_transition, color $rt_transition
+
+  &:hover
+    background $rt_button_hover_bg_strong
+    color $rt_text
+
+  &.selected
+    background $rt_accent_subtle
+    color $rt_text
+    font-weight 500
+
+.column-quick-filter-checkbox
+  display flex
+  align-items center
+  gap $rt_space_sm
+  font-size 13px
+  cursor pointer
+  user-select none
+  color $rt_text
+
+  .MuiCheckbox-root
+    padding 0
+
+  .MuiSvgIcon-root
+    width 16px
+    height 16px
+
+// Capped so a column with a large option set scrolls its own list rather than
+// growing the header popper past the viewport.
+.column-quick-filter-value-list
+  display flex
+  flex-direction column
+  gap $rt_space_xs
+  max-height 200px
+  overflow-y auto
+
+.column-quick-filter-note
+  font-size 11px
+  line-height 1.4
+  color $rt_text_muted
+
+.column-quick-filter-advanced
+  font-size 12px
+  color $rt_accent
+  cursor pointer
+  user-select none
+
+  &:hover
+    text-decoration underline
+
+// The header popper is sized for a list of menu items. A filter panel needs
+// room for two side-by-side inputs, so a popper carrying one opts into a
+// wider track rather than every menu getting the extra width.
+.header-popper.base-Popper-root.table-popper.has-column-quick-filter
+.header-popper.MuiPopper-root.table-popper.has-column-quick-filter
+  max-width 280px

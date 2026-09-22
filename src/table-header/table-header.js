@@ -29,6 +29,7 @@ import {
 } from '#src/constants.mjs'
 import AddColumnActionSpacer from '#src/add-column-action-spacer'
 import DataTypeIcon from '#src/data-type-icon'
+import ColumnQuickFilter from '#src/column-quick-filter'
 import { table_context } from '#src/table-context'
 
 import './table-header.styl'
@@ -462,7 +463,13 @@ const TableHeader = ({ header, column, table }) => {
       </ClickAwayListener>
       {!table_state?.disable_column_controls && (
         <Popper
-          className='table-popper header-popper'
+          className={get_string_from_object({
+            'table-popper': true,
+            'header-popper': true,
+            // The quick-filter panel needs room for two side-by-side inputs;
+            // the menu's own width is sized for a list of rows.
+            'has-column-quick-filter': Boolean(column.columnDef.column_id)
+          })}
           anchorEl={anchor_el.current}
           open={popper_open}
           placement='bottom'
@@ -597,16 +604,28 @@ const TableHeader = ({ header, column, table }) => {
             )}
             {/* TODO allow filters for split columns */}
             {Boolean(column.columnDef.column_id) && (
-              <div className='header-menu-item'>
-                <div
-                  className='header-menu-item-button'
-                  onClick={handle_open_filter}>
-                  <div className='header-menu-item-icon'>
-                    <FilterListIcon />
+              <>
+                <div className='header-menu-divider'></div>
+                <ColumnQuickFilter
+                  {...{
+                    column_id,
+                    column_index,
+                    data_type,
+                    params:
+                      table_state.columns?.[table_state_columns_index]?.params
+                  }}
+                />
+                <div className='header-menu-item'>
+                  <div
+                    className='header-menu-item-button'
+                    onClick={handle_open_filter}>
+                    <div className='header-menu-item-icon'>
+                      <FilterListIcon />
+                    </div>
+                    <div>Advanced filter</div>
                   </div>
-                  <div>Filter</div>
                 </div>
-              </div>
+              </>
             )}
             {data_type === TABLE_DATA_TYPES.NUMBER &&
               !table_state.disable_scatter_plot && (

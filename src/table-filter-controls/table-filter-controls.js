@@ -46,10 +46,16 @@ const FilterControlItem = React.memo(
       const index = where_param.findIndex(
         (item) => item.column_id === column_item.column_id
       )
-      where_param.splice(index, 1)
+      // Copy before splicing: where_param is table_state's own array, and
+      // mutating it in place corrupts the indexes four consumers read
+      // positionally. A miss must also be a no-op -- splice(-1, 1) removes the
+      // LAST filter, which is never what was asked for.
+      if (index === -1) return
+      const next_where = [...where_param]
+      next_where.splice(index, 1)
       on_table_state_change({
         ...table_state,
-        where: where_param
+        where: next_where
       })
     }, [table_state, on_table_state_change])
 

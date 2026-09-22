@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import Checkbox from '@mui/material/Checkbox'
 
 import { get_string_from_object } from '#src/utils'
+import { resolve_column_filter_state } from '#src/utils/column-filter-state.js'
 import FilterBase from '#src/filter-base'
 
 export default function TableQuickFilter({
@@ -13,9 +14,19 @@ export default function TableQuickFilter({
   const column_values = column.column_values || []
 
   const where_param = table_state.where || []
-  const where_param_index = where_param.findIndex((where_item) => {
-    return where_item.column_id === column.column_id
+  // Ownership is resolved through the same lens the header panel writes
+  // through. Matching on column_id alone made the two surfaces disagree about
+  // which row a duplicated column owns -- this widget would claim whichever
+  // row came first, including one the header had written for a different
+  // column instance or under a different operator.
+  const column_filter_state = resolve_column_filter_state({
+    where: where_param,
+    column_id: column.column_id
   })
+  const claimed_filter = column.single_select
+    ? column_filter_state.exact_value
+    : column_filter_state.value_set
+  const where_param_index = claimed_filter ? claimed_filter.where_index : -1
   const filter_where_param = where_param[where_param_index]
 
   // Helpers to extract value and label from column_value
