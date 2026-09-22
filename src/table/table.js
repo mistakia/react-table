@@ -126,6 +126,7 @@ export default function Table({
   style = {},
   percentiles = {},
   enable_duplicate_column_ids = false,
+  season_unavailable_column_ids,
   new_view_prefix_columns = [],
   shorten_url,
   share_link_pathname = null,
@@ -556,6 +557,16 @@ export default function Table({
     [filtered_data]
   )
 
+  // Optional, and deliberately only a REASON. The consumer supplies accessor
+  // keys it knows to be empty for an attributable cause -- a season its source
+  // has not published -- and the header uses it to pick the tooltip wording.
+  // Which columns are actually empty stays decided here, from the loaded rows,
+  // because no caller can see those.
+  const season_unavailable_keys = useMemo(
+    () => new Set(season_unavailable_column_ids || []),
+    [season_unavailable_column_ids]
+  )
+
   const table = useReactTable({
     columns: table_columns,
     data: filtered_data,
@@ -913,6 +924,7 @@ export default function Table({
         enable_duplicate_column_ids,
         percentiles,
         columns_with_no_data,
+        season_unavailable_column_ids: season_unavailable_keys,
         table_state,
         on_table_state_change,
         set_column_controls_open,
@@ -1273,6 +1285,10 @@ Table.propTypes = {
   saved_table_state: PropTypes.object,
   on_revert_view: PropTypes.func,
   enable_duplicate_column_ids: PropTypes.bool,
+  season_unavailable_column_ids: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.string),
+    PropTypes.instanceOf(Set)
+  ]),
   new_view_prefix_columns: PropTypes.array,
   shorten_url: PropTypes.func,
   share_link_pathname: PropTypes.string,

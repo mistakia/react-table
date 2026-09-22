@@ -22,6 +22,7 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank'
 
 import { get_string_from_object } from '#src/utils'
 import { format_column_params } from '#src/utils/format-column-params.js'
+import { resolve_no_data_reason } from '#src/utils/resolve-no-data-reason.js'
 import {
   ADD_COLUMN_ACTION_WIDTH,
   TABLE_DATA_TYPES,
@@ -80,7 +81,8 @@ const TableHeader = ({ header, column, table }) => {
     selected_bar_chart_column,
     set_selected_bar_chart_column,
     enable_duplicate_column_ids,
-    columns_with_no_data
+    columns_with_no_data,
+    season_unavailable_column_ids
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -172,6 +174,15 @@ const TableHeader = ({ header, column, table }) => {
   // zeroes, which the reader cannot tell apart from it in the cells alone —
   // the usual cause is a param combination the source cannot satisfy.
   const has_no_data = Boolean(columns_with_no_data?.has(accessor_path))
+
+  // WHY it is empty, when the consumer can attribute it. Keyed on the same
+  // `accessor_path` as the emptiness check above, so a duplicated column's
+  // instances are distinguished exactly as they are there.
+  const no_data_title = resolve_no_data_reason({
+    has_no_data,
+    accessor_path,
+    season_unavailable_column_ids
+  })
 
   const handle_sort_ascending = useCallback(
     () =>
@@ -422,9 +433,7 @@ const TableHeader = ({ header, column, table }) => {
                 </div>
               )}
               {has_no_data && !header.isPlaceholder && (
-                <Tooltip
-                  title='No data — every loaded row is empty for this column. Check the column parameters: the source may have nothing for this combination.'
-                  placement='top'>
+                <Tooltip title={no_data_title} placement='top'>
                   <div className='header-no-data-icon'>
                     <WarningAmberIcon />
                   </div>
