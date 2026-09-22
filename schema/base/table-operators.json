@@ -12,6 +12,8 @@
     "<=",
     "LIKE",
     "NOT LIKE",
+    "ILIKE",
+    "NOT ILIKE",
     "IN",
     "NOT IN",
     "IS NULL",

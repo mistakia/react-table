@@ -31,6 +31,11 @@ export {
   copy_deferred_text_to_clipboard
 } from './copy-to-clipboard'
 export { default as build_where_column_definitions } from './build-where-column-definitions'
+export {
+  resolve_column_filter_state,
+  apply_column_filter_state,
+  COLUMN_FILTER_SLOTS
+} from './column-filter-state'
 export { default as find_columns_with_no_data } from './find-columns-with-no-data'
 export {
   default as resolve_column_params,
