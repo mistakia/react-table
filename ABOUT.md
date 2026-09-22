@@ -51,12 +51,27 @@ observations:
     own copies — so an invalid published schema is inert until a consumer compiles the set.
     test/schema-files-compile.spec.mjs is the guard; it caught type:"function" in
     columns/column-definition.json.
+  - >-
+    [decision] 2026-09-22 BETWEEN was refused as a range operator and a range is expressed as two
+    where rows (>= plus <=): BETWEEN is absent from all five allowlists — client src/constants.mjs,
+    schema/base/table-operators.json, src/validators/security-patterns.mjs,
+    league/libs-server/validators.mjs (authoritative), and the narrower lists in
+    execute-generated-sql.mjs and get-plays-view-results.mjs — and
+    src/validators/table-state-validator.mjs:169 forbids array values on comparison operators, so it
+    would need a new operator CLASS rather than a new enum member, while two rows need nothing and
+    round-trip through the share-link URL today.
+  - >-
+    [gotcha] 2026-09-22 LIKE and ILIKE values are force-wrapped as '%value%' by
+    league/libs-server/data-views/where-string.mjs, so a caller cannot supply its own wildcards and
+    starts-with and ends-with are not expressible from any client surface. NOT ILIKE was missing
+    from that wrapping branch entirely until 2026-09-22, falling through to the generic comparison
+    and behaving as a does-not-equal — a silently wrong result set, not an error.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-10T21:17:03.099Z'
+updated_at: '2026-09-22T05:04:01.878Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
