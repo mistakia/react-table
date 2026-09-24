@@ -31,6 +31,9 @@ import {
   use_expanding_control_anchor,
   resolve_column_params
 } from '#src/utils'
+import remap_sort_for_column_change, {
+  remap_sort_for_removed_column_positions
+} from '#src/utils/remap-sort-for-column-change.js'
 import { table_context } from '#src/table-context'
 import { MENU_CLOSE_TIMEOUT, TABLE_DATA_TYPES } from '#src/constants.mjs'
 
@@ -250,12 +253,6 @@ const TableColumnControls = ({
   const set_column_hidden_by_index = useCallback(
     (table_state_columns_index) => {
       set_local_table_state((prev) => {
-        const column_to_hide = prev.columns[table_state_columns_index]
-        const column_id_to_hide =
-          typeof column_to_hide === 'string'
-            ? column_to_hide
-            : column_to_hide.column_id
-
         const columns = prev.columns.filter(
           (column, index) => index !== table_state_columns_index
         )
@@ -268,25 +265,14 @@ const TableColumnControls = ({
             )
         )
 
-        if (
-          columns.some(
-            (column) =>
-              typeof column !== 'string' &&
-              column.column_id === column_id_to_hide
-          )
-        ) {
-          return {
-            ...prev,
-            columns
-          }
-        }
-
         return {
           ...prev,
           columns,
-          sort: (prev.sort || []).filter(
-            (s) => s.column_id !== column_id_to_hide
-          )
+          sort: remap_sort_for_removed_column_positions({
+            sort: prev.sort,
+            previous_columns: prev.columns,
+            removed_positions: [table_state_columns_index]
+          })
         }
       })
     },
@@ -322,7 +308,11 @@ const TableColumnControls = ({
         return {
           ...prev,
           columns: new_columns,
-          sort: (prev.sort || []).filter((s) => s.column_id !== column_id)
+          sort: remap_sort_for_removed_column_positions({
+            sort: prev.sort,
+            previous_columns: prev.columns,
+            removed_positions: removed_indexes
+          })
         }
       })
     },
@@ -540,9 +530,21 @@ const TableColumnControls = ({
           old_index,
           new_index
         )
+        // Reordering two columns that share a column_id swaps their ordinals,
+        // so a sort left alone here would start applying to the other one.
         set_local_table_state({
           ...local_table_state,
-          columns: new_columns
+          columns: new_columns,
+          sort: remap_sort_for_column_change({
+            sort: local_table_state.sort,
+            previous_columns: local_table_state.columns,
+            next_columns: new_columns,
+            next_to_previous_index: arrayMove(
+              local_table_state.columns.map((_, index) => index),
+              old_index,
+              new_index
+            )
+          })
         })
       }
     },
@@ -613,17 +615,29 @@ const TableColumnControls = ({
     if (selected_column_indexes.length === 0) return
 
     const new_columns = [...local_table_state.columns]
+    // Mirrors every splice below, so the copies read as new entries (null) and
+    // an original that a copy pushed rightward keeps its sort.
+    const next_to_previous_index = local_table_state.columns.map(
+      (_, index) => index
+    )
     const last_selected_index = Math.max(...selected_column_indexes)
 
     const sorted_column_indexes = selected_column_indexes.sort((a, b) => b - a)
     sorted_column_indexes.forEach((index) => {
       const duplicate_column = new_columns[index]
       new_columns.splice(last_selected_index + 1, 0, duplicate_column)
+      next_to_previous_index.splice(last_selected_index + 1, 0, null)
     })
 
     set_local_table_state((prev_state) => ({
       ...prev_state,
-      columns: new_columns
+      columns: new_columns,
+      sort: remap_sort_for_column_change({
+        sort: prev_state.sort,
+        previous_columns: prev_state.columns,
+        next_columns: new_columns,
+        next_to_previous_index
+      })
     }))
     set_selected_column_indexes([])
   }
@@ -634,16 +648,20 @@ const TableColumnControls = ({
     )
     set_local_table_state({
       ...local_table_state,
-      columns: new_columns
+      columns: new_columns,
+      sort: remap_sort_for_removed_column_positions({
+        sort: local_table_state.sort,
+        previous_columns: local_table_state.columns,
+        removed_positions: selected_column_indexes
+      })
     })
     set_selected_column_indexes([])
   }
 
   const handle_replace_selected_columns = useCallback(
     (new_column) => {
-      set_local_table_state((prev) => ({
-        ...prev,
-        columns: prev.columns.map((col, index) => {
+      set_local_table_state((prev) => {
+        const columns = prev.columns.map((col, index) => {
           if (!selected_column_indexes.includes(index)) {
             return col
           }
@@ -662,7 +680,20 @@ const TableColumnControls = ({
               : {}
           }
         })
-      }))
+
+        // Positions are unchanged, but a replaced slot now holds a different
+        // column_id, so a sort over the column that was there has no subject.
+        return {
+          ...prev,
+          columns,
+          sort: remap_sort_for_column_change({
+            sort: prev.sort,
+            previous_columns: prev.columns,
+            next_columns: columns,
+            next_to_previous_index: prev.columns.map((_, index) => index)
+          })
+        }
+      })
       set_selected_column_indexes([])
       set_replace_column_open(false)
     },

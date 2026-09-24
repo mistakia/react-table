@@ -41,6 +41,7 @@ import {
   validate_table_state,
   is_valid_table_state_structure
 } from '#src/utils'
+import { remap_sort_for_removed_column_positions } from '#src/utils/remap-sort-for-column-change.js'
 import { table_context } from '#src/table-context'
 import { ADD_COLUMN_ACTION_WIDTH, COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
@@ -439,14 +440,13 @@ export default function Table({
         return
       }
 
-      // Remove that column_id from sort
-      const column_to_hide = columns[index]
-      const column_id_to_hide =
-        typeof column_to_hide === 'string'
-          ? column_to_hide
-          : column_to_hide.column_id
-      const table_sort = table_state.sort || []
-      const sort = table_sort.filter((s) => s.column_id !== column_id_to_hide)
+      // Carry the sort across the removal. Matching on column_id alone would
+      // also drop a sort belonging to another column that shares the id.
+      const sort = remap_sort_for_removed_column_positions({
+        sort: table_state.sort,
+        previous_columns: columns,
+        removed_positions: [index]
+      })
 
       // Remove the column by index
       columns.splice(index, 1)

@@ -10,6 +10,10 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 
 import './table-rank-aggregation-controls.styl'
 import { get_string_from_object } from '#src/utils'
+import {
+  get_column_id,
+  remap_sort_for_removed_column_positions
+} from '#src/utils/remap-sort-for-column-change.js'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
 const RankItem = React.memo(function RankItem({
@@ -36,11 +40,14 @@ const RankItem = React.memo(function RankItem({
         return
       }
 
-      const rank_param = table_state.rank_aggregation || []
-      rank_param[index].column_id = value.column_id
       on_table_state_change({
         ...table_state,
-        rank_aggregation: rank_param
+        rank_aggregation: (table_state.rank_aggregation || []).map(
+          (item, item_index) =>
+            item_index === index
+              ? { ...item, column_id: value.column_id }
+              : item
+        )
       })
     },
     [table_state, index, on_table_state_change]
@@ -51,34 +58,46 @@ const RankItem = React.memo(function RankItem({
       const value = Number(event.target.value)
       set_rank_weight(value)
 
-      const rank_param = table_state.rank_aggregation || []
-      rank_param[index].weight = value
       on_table_state_change({
         ...table_state,
-        rank_aggregation: rank_param
+        rank_aggregation: (table_state.rank_aggregation || []).map(
+          (item, item_index) =>
+            item_index === index ? { ...item, weight: value } : item
+        )
       })
     },
     [table_state, index, on_table_state_change]
   )
 
   const handle_remove_click = useCallback(() => {
-    const rank_param = table_state.rank_aggregation || []
-    rank_param.splice(index, 1)
+    // Copies rather than splices: the previous table_state is held by the undo
+    // history and by React's own identity checks, so mutating it in place
+    // destroys the state this change is supposed to be a step away from.
+    const previous_columns = table_state.columns || []
+    const rank_aggregation = (table_state.rank_aggregation || []).filter(
+      (item, item_index) => item_index !== index
+    )
 
-    const columns = table_state.columns || []
-    if (!rank_param.length) {
-      const rank_column_index = columns.findIndex(
-        (column) => column.column_id === 'rank_aggregation'
-      )
-      if (rank_column_index !== -1) {
-        columns.splice(rank_column_index, 1)
-      }
-    }
+    const removed_positions =
+      rank_aggregation.length === 0
+        ? previous_columns
+            .map((column, position) =>
+              get_column_id(column) === 'rank_aggregation' ? position : -1
+            )
+            .filter((position) => position !== -1)
+        : []
 
     on_table_state_change({
       ...table_state,
-      columns,
-      rank_aggregation: rank_param
+      columns: previous_columns.filter(
+        (column, position) => !removed_positions.includes(position)
+      ),
+      sort: remap_sort_for_removed_column_positions({
+        sort: table_state.sort,
+        previous_columns,
+        removed_positions
+      }),
+      rank_aggregation
     })
   }, [table_state, index, on_table_state_change])
 
@@ -166,7 +185,7 @@ const TableRankAggregationControls = ({
       const columns = [...(table_state.columns || [])]
       if (
         rank_param.length &&
-        !columns.find((column) => column.column_id === 'rank_aggregation')
+        !columns.some((column) => get_column_id(column) === 'rank_aggregation')
       ) {
         columns.unshift({
           column_id: 'rank_aggregation',
@@ -187,21 +206,26 @@ const TableRankAggregationControls = ({
   )
 
   const handle_add_click = useCallback(() => {
-    const rank_param = table_state.rank_aggregation || []
-    rank_param.push({
-      column_id: all_columns[0].column_id,
-      weight: 1
-    })
+    const rank_param = [
+      ...(table_state.rank_aggregation || []),
+      { column_id: all_columns[0].column_id, weight: 1 }
+    ]
 
-    const columns = table_state.columns || []
-    if (!columns.find((column) => column.column_id === 'rank_aggregation')) {
-      columns.unshift({
-        column_id: 'rank_aggregation',
-        accessorKey: 'rank_aggregation',
-        data_type: TABLE_DATA_TYPES.NUMBER,
-        header_label: 'Rank'
-      })
-    }
+    const previous_columns = table_state.columns || []
+    const has_rank_column = previous_columns.some(
+      (column) => get_column_id(column) === 'rank_aggregation'
+    )
+    const columns = has_rank_column
+      ? previous_columns
+      : [
+          {
+            column_id: 'rank_aggregation',
+            accessorKey: 'rank_aggregation',
+            data_type: TABLE_DATA_TYPES.NUMBER,
+            header_label: 'Rank'
+          },
+          ...previous_columns
+        ]
 
     on_table_state_change({
       ...table_state,
