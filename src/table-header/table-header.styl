@@ -7,6 +7,12 @@
   border-right none
   border-bottom none
 
+// Groups the header cell with its menu Popper for ClickAwayListener without
+// generating a box: .cell is a direct flex child of .row and positions sticky
+// against the scroll container, both of which a laid-out wrapper would break.
+.header-cell-container
+  display contents
+
 .header-popper.base-Popper-root.table-popper
 .header-popper.MuiPopper-root.table-popper
   max-width 160px
