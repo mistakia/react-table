@@ -77,12 +77,18 @@ observations:
     type worked normally. Fixed in src/utils/resolve-column-params.js by unwrapping each declared
     entry before the membership test, guarded by the 'object-form declared values' block in
     test/resolve-column-params.spec.mjs.
+  - >-
+    [gotcha] 2026-09-25 column-group.json declares a label field but nothing reads it:
+    group-columns-into-tree-view.js sets header to column_group_id and group-columns-by-groups.js
+    sets label to column_group_id, so every group header renders its raw SCREAMING_SNAKE id -- which
+    is why league picker categories read NFL_TEAM and AFTER_CATCH rather than prose. Honouring label
+    with an id fallback is small and is the prerequisite for any group name that must read as prose.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-25T02:08:06.634Z'
+updated_at: '2026-09-25T04:23:07.134Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
