@@ -102,6 +102,21 @@ const is_dynamic_entry_admissible = ({ param_definition, entry }) =>
     (dynamic_value) => dynamic_value.dynamic_type === entry.dynamic_type
   )
 
+// A declared static entry is EITHER a bare value or a `{value, label}` object
+// carrying display metadata (an icon, a group). Both forms are declared in the
+// same `values` list and the controls already unwrap them —
+// `create_static_values` in `column-param-select-filter.js` reads `.value` — so
+// a membership test against the raw list judges the object-form declaration
+// against the stored scalar and fails for every option the param offers. The
+// value the user picked was then overwritten with `default_value` on the same
+// edit, so an object-valued single-select with a default read as a control that
+// will not select anything but its default: league's Projection Source snapped
+// back to Average on every pick. Only `single` params with a default showed it —
+// a multi-select declares no default, and `resolve_column_params` leaves a param
+// alone when it has nothing to replace the value with.
+const to_declared_value = (entry) =>
+  entry && typeof entry === 'object' && 'value' in entry ? entry.value : entry
+
 // Is the currently-held value still satisfiable under the current siblings?
 // A param with no declared value set cannot be judged on MEMBERSHIP, so it is
 // left alone there — but shape is judged from the definition alone, which is
@@ -126,7 +141,8 @@ export const is_param_value_admissible = ({
   const admissible = resolve_param_values({ param_definition, params })
   const judge_static =
     Array.isArray(admissible) && admissible.length > 0
-      ? (entry) => admissible.includes(entry)
+      ? (entry) =>
+          admissible.some((declared) => to_declared_value(declared) === entry)
       : () => true
 
   return held.every((entry) =>

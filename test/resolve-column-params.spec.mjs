@@ -249,6 +249,54 @@ describe('resolve_column_params', function () {
     })
   })
 
+  describe('object-form declared values', function () {
+    // league's Projection Source: a single-select whose options carry display
+    // labels, so every declared entry is an object while the stored value is
+    // the bare source id.
+    const projection_source = {
+      data_type: data_type_select,
+      values: [
+        { value: 18, label: 'Average' },
+        { value: 3, label: 'ESPN' },
+        { value: 6, label: 'PFF' }
+      ],
+      default_value: 18,
+      single: true
+    }
+
+    it('accepts a value declared in `{value, label}` form', function () {
+      expect(
+        is_param_value_admissible({
+          param_definition: projection_source,
+          params: {},
+          value: [3]
+        })
+      ).to.equal(true)
+    })
+
+    it('still rejects a value no declared entry carries', function () {
+      expect(
+        is_param_value_admissible({
+          param_definition: projection_source,
+          params: {},
+          value: [99]
+        })
+      ).to.equal(false)
+    })
+
+    it('does not snap an object-form pick back to the default', function () {
+      const { params, reset_param_names } = resolve_column_params({
+        column_params: { sourceid: projection_source },
+        params: { sourceid: [3] },
+        data_type_select,
+        fill_unset: false
+      })
+
+      expect(params.sourceid).to.eql([3])
+      expect(reset_param_names).to.eql([])
+    })
+  })
+
   describe('dynamic values', function () {
     it('accepts a declared dynamic value on a param with static values', function () {
       expect(
