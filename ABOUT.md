@@ -66,12 +66,23 @@ observations:
     starts-with and ends-with are not expressible from any client surface. NOT ILIKE was missing
     from that wrapping branch entirely until 2026-09-22, falling through to the generic comparison
     and behaving as a does-not-equal — a silently wrong result set, not an error.
+  - >-
+    [gotcha] 2026-09-25 A SELECT param's declared values may be bare scalars OR {value, label}
+    objects, and is_param_value_admissible compared the stored scalar against the raw declared list
+    — so every object-form option failed membership and resolve_column_params overwrote the user's
+    pick with default_value on the same edit, making the control read as one that will not select.
+    Only single params carrying a default_value showed it, because a multi-select declares no
+    default and the resolver leaves a param alone when it has nothing to substitute; that is why
+    league's Projection Source snapped back to Average while object-form multi-selects like play
+    type worked normally. Fixed in src/utils/resolve-column-params.js by unwrapping each declared
+    entry before the membership test, guarded by the 'object-form declared values' block in
+    test/resolve-column-params.spec.mjs.
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
-updated_at: '2026-09-22T05:04:01.878Z'
+updated_at: '2026-09-25T02:08:06.634Z'
 user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
