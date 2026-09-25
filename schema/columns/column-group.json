@@ -25,6 +25,11 @@
       "type": "string",
       "description": "Optional description or tooltip text for the column group"
     },
+    "nest_only": {
+      "type": "boolean",
+      "description": "Whether this group may only appear nested inside another group. A column is otherwise indexed under every group it names, so a group that exists to subdivide a parent would also surface as a sibling of that parent at the root level. Set true to suppress the root-level copy.",
+      "default": false
+    },
     "collapsible": {
       "type": "boolean",
       "description": "Whether the column group can be collapsed/expanded",
