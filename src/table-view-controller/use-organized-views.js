@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 
 import { fuzzy_match } from '#src/utils/fuzzy-match.js'
 
+export const is_system_view = (view) =>
+  !view.view_username || view.view_username === 'system'
+
 /**
  * Classify a view into ownership sections.
  * A view can appear in multiple sections (e.g. favorites + mine).
@@ -23,7 +26,7 @@ function classify_view(view, table_username, favorite_view_ids) {
     view.view_username &&
     view.view_username === table_username
 
-  const is_system = !view.view_username || view.view_username === 'system'
+  const is_system = is_system_view(view)
 
   if (is_mine) sections.push('mine')
   if (is_fav) sections.push('favorites')

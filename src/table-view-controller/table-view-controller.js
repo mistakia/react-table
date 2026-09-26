@@ -28,7 +28,11 @@ import ViewOrganizationRail from './view-organization-rail'
 import TagChip from './tag-chip'
 import TagInput from './tag-input'
 import { use_auto_tags } from './use-auto-tags'
-import { use_organized_views, get_all_tags } from './use-organized-views'
+import {
+  use_organized_views,
+  get_all_tags,
+  is_system_view
+} from './use-organized-views'
 
 import './table-view-controller.styl'
 
@@ -51,7 +55,19 @@ const TableViewController = ({
   on_add_user_tag,
   on_remove_user_tag,
   on_save_current_view,
-  on_reset_current_view
+  on_reset_current_view,
+  // THE HOST'S OWN MAP OF ITS SYSTEM VIEWS, rendered in place of one flat row
+  // per view. A host with dozens of built-in views has a better organization
+  // for them than a list can give -- grouped by the question each answers --
+  // and a flat row per view repeats the same "system" owner and near-identical
+  // tags down the whole panel. Called with the panel's filter text, so one
+  // filter box serves both, and `close` for an entry that navigates.
+  //
+  // When supplied it owns the System section and closes out All; the system
+  // views leave the flat list, the author list and the tag cloud. Mark the
+  // current view's entry with aria-current="true" and the panel scrolls to it
+  // like a selected row.
+  render_system_views
 }) => {
   const { table_username, all_columns } = useContext(table_context)
   const [input_value, set_input_value] = React.useState('')
@@ -99,12 +115,13 @@ const TableViewController = ({
         : sections[active_section] || []
     const seen = new Map()
     for (const v of source_views) {
+      if (render_system_views && is_system_view(v)) continue
       for (const tag of v.tags || []) {
         if (!seen.has(tag.name)) seen.set(tag.name, tag)
       }
     }
     return Array.from(seen.values())
-  }, [filtered, sections, active_section])
+  }, [filtered, sections, active_section, render_system_views])
 
   // Autocomplete suggestions for TagInput: union of user tag names across all
   // views (so the user sees their existing tag vocabulary) plus auto/llm tag
@@ -230,7 +247,9 @@ const TableViewController = ({
     const do_scroll = () => {
       if (done) return
       done = true
-      const selected_el = list.querySelector('.table-view-item.-selected')
+      const selected_el = list.querySelector(
+        '.table-view-item.-selected, [aria-current="true"]'
+      )
       if (!selected_el) {
         list.scrollTop = 0
         return
@@ -274,6 +293,7 @@ const TableViewController = ({
     if (active_section !== 'authors') return []
     const counts = new Map()
     for (const v of filtered) {
+      if (render_system_views && is_system_view(v)) continue
       const author = v.view_username || 'system'
       counts.set(author, (counts.get(author) || 0) + 1)
     }
@@ -284,7 +304,7 @@ const TableViewController = ({
       if (b === 'system') return -1
       return a.localeCompare(b)
     })
-  }, [active_section, filtered, table_username])
+  }, [active_section, filtered, table_username, render_system_views])
 
   const [selected_author, set_selected_author] = React.useState(null)
 
@@ -304,15 +324,25 @@ const TableViewController = ({
   }, [active_section, author_list, table_username, selected_author])
 
   const display_views = React.useMemo(() => {
-    if (active_section === 'all') return filtered
+    const listed = render_system_views
+      ? (views) => views.filter((v) => !is_system_view(v))
+      : (views) => views
+    if (active_section === 'all') return listed(filtered)
     if (active_section === 'authors') {
       if (!selected_author) return []
-      return filtered.filter(
+      return listed(filtered).filter(
         (v) => (v.view_username || 'system') === selected_author
       )
     }
-    return sections[active_section] || []
-  }, [active_section, filtered, sections, selected_author])
+    return listed(sections[active_section] || [])
+  }, [active_section, filtered, sections, selected_author, render_system_views])
+
+  // The host map carries no tags, so an active tag filter hides it rather than
+  // showing every system view as though each matched.
+  const show_system_views =
+    Boolean(render_system_views) &&
+    (active_section === 'system' || active_section === 'all') &&
+    active_tag_filters.size === 0
 
   const list_items = display_views.map((view) => (
     <ViewItem
@@ -666,6 +696,16 @@ const TableViewController = ({
                   </div>
                   <div className='table-view-list' ref={list_ref}>
                     {list_items}
+                    {show_system_views && (
+                      <div className='table-view-system-views'>
+                        {render_system_views({
+                          filter_text: input_value,
+                          close: () => {
+                            if (view_controls_open) handle_menu_toggle()
+                          }
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -715,7 +755,8 @@ TableViewController.propTypes = {
   on_add_user_tag: PropTypes.func,
   on_remove_user_tag: PropTypes.func,
   on_save_current_view: PropTypes.func,
-  on_reset_current_view: PropTypes.func
+  on_reset_current_view: PropTypes.func,
+  render_system_views: PropTypes.func
 }
 
 export default React.memo(TableViewController)

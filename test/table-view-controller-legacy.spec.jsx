@@ -177,3 +177,61 @@ describe('TableViewController — legacy flat-list shape (no org props)', () => 
     expect(container.querySelector('.tvc-current-view-header')).to.equal(null)
   })
 })
+
+describe('TableViewController — host-rendered system views', () => {
+  const open_with = async (props) => {
+    const container = make_container()
+    await render(
+      wrap(
+        React.createElement(TableViewController, { ...legacy_props, ...props })
+      ),
+      container
+    )
+    await act(async () =>
+      container.querySelector('.table-expanding-control-button').click()
+    )
+    return container
+  }
+
+  it('renders the host map in place of one row per system view', async () => {
+    const container = await open_with({
+      render_system_views: () =>
+        React.createElement('div', { className: 'host-map' }, 'Map')
+    })
+    const rows = [...container.querySelectorAll('.table-view-item')]
+    expect(rows.map((row) => row.textContent).join(' ')).to.not.include(
+      'QB Stats'
+    )
+    expect(rows.length).to.equal(1)
+    expect(container.querySelector('.table-view-list .host-map')).to.not.equal(
+      null
+    )
+  })
+
+  it('hands the host the panel filter text', async () => {
+    let received
+    const container = await open_with({
+      render_system_views: ({ filter_text }) => {
+        received = filter_text
+        return null
+      }
+    })
+    const input = container.querySelector('.table-view-header input')
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value'
+      ).set
+      setter.call(input, 'qb')
+      input.dispatchEvent(new window.Event('input', { bubbles: true }))
+    })
+    expect(received).to.equal('qb')
+  })
+
+  it('lists system views as rows when the host supplies no map', async () => {
+    const container = await open_with({})
+    expect(container.querySelectorAll('.table-view-item').length).to.equal(
+      LEGACY_VIEWS.length
+    )
+  })
+})
