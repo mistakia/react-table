@@ -84,7 +84,9 @@ export function organize_views({
     tags_by_view_id
 
   const section_map = { mine: [], favorites: [], shared: [], system: [] }
-  const counts = { mine: 0, favorites: 0, shared: 0, system: 0 }
+  // `all` counts each view once. Summing the sections double-counted every
+  // favorite, since a favorite also sits in its ownership section.
+  const counts = { all: 0, mine: 0, favorites: 0, shared: 0, system: 0 }
 
   for (const view of views) {
     const all_tags = get_all_tags(view, tags_by_view_id, auto_tags_map)
@@ -105,6 +107,8 @@ export function organize_views({
 
     // Fuzzy filter
     if (filter_text && !fuzzy_match(filter_text, view_with_tags)) continue
+
+    counts.all++
 
     if (!has_org) {
       section_map.shared.push(view_with_tags)

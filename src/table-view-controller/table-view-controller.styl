@@ -80,16 +80,16 @@ $breakpoint_mobile = 768px
       padding 0
       gap 6px
 
-      .current-view-title-row
-        flex-wrap wrap
-        row-gap 6px
 
-  .current-view-tags
-    display flex
-    flex-wrap wrap
-    align-items center
-    gap 4px
-    padding-top 6px
+// The selected view's tags, in a popover off the card's tag action so they are
+// reachable whether or not the panel is open.
+.current-view-tags.MuiPaper-root
+  display flex
+  flex-wrap wrap
+  align-items center
+  gap 4px
+  padding 8px
+  max-width 360px
 
 // ── Body layout ──────────────────────────────────────────────────────────────
 // Mobile-first: stack rail above main vertically so neither pane is starved of
@@ -655,8 +655,23 @@ $breakpoint_mobile = 768px
     flex 1
     min-width 0
 
-  .table-view-header-new-view-button
-    flex 0 0 auto
+// One heading per section when All stacks them.
+.table-view-list-group
+  display flex
+  flex-direction column
+  gap 2px
+
+  & + .table-view-list-group
+    margin-top 12px
+
+.table-view-list-group-label
+  margin 0
+  padding 4px 12px
+  font-size 11px
+  font-weight 600
+  letter-spacing 0.06em
+  text-transform uppercase
+  color rgba(0, 0, 0, 0.54)
 
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
@@ -853,15 +868,19 @@ $breakpoint_mobile = 768px
     flex 1
     min-width 0
 
+    // The name, then every action on it beneath -- in both states, so the bar
+    // never squeezes a long name down to an ellipsis on a narrow screen.
     .current-view-title-row
       display flex
-      align-items center
-      gap 12px
+      flex-direction column
+      align-items flex-start
+      gap 4px
       min-width 0
 
     .current-view-title
       font-weight bold
       flex 0 1 auto
+      max-width 100%
       min-width 0
       overflow hidden
       text-overflow ellipsis
@@ -913,7 +932,7 @@ $breakpoint_mobile = 768px
   -webkit-line-clamp unset
 
 .current-view-actions
-  display none
+  display inline-flex
   align-items center
   flex-wrap wrap
   row-gap 2px
@@ -923,9 +942,6 @@ $breakpoint_mobile = 768px
   background rgba(15, 23, 42, 0.03)
   border 1px solid rgba(15, 23, 42, 0.08)
   border-radius 6px
-  opacity 0
-  transform translateY(-1px)
-  transition opacity 140ms ease, transform 140ms ease, box-shadow 140ms ease
 
   @media (max-width: $breakpoint_mobile)
     .cva-divider
@@ -962,7 +978,8 @@ $breakpoint_mobile = 768px
         background rgba(217, 145, 0, 0.12)
         color #b87600
 
-    &.-primary
+    // Not when disabled: a Save that cannot save must not wear the accent.
+    &.-primary:not(.Mui-disabled)
       color $accent_color
 
       &:hover:not(.Mui-disabled)
@@ -985,8 +1002,12 @@ $breakpoint_mobile = 768px
   50%
     box-shadow 0 0 0 4px rgba(209, 36, 47, 0)
 
-.table-expanding-control-container.table-view-controller.-open .current-view-actions
-  display inline-flex
-  opacity 1
-  transform translateY(0)
-  box-shadow 0 1px 2px rgba(15, 23, 42, 0.06)
+// Collapsed, the card holds just the view's name and every action the open
+// panel offers -- so acting on the view never costs opening the panel. The
+// description waits for the open state, which has room for all of it.
+.table-view-controller:not(.-open)
+  .current-view-info
+    padding-top 2px
+
+  .current-view-description
+    display none

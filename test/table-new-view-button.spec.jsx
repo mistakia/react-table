@@ -82,44 +82,29 @@ afterEach(async () => {
   _containers = []
 })
 
+const new_view_button = (container) =>
+  container.querySelector('.current-view-actions .cva-btn.-new-view')
+
 describe('new view button', () => {
-  it('renders in the toolbar, outside the current-view card', async () => {
+  // One home: the current-view card's action bar, which shows the same actions
+  // collapsed and open. The toolbar and the panel header each had a copy.
+  it('renders in the current-view card and nowhere else', async () => {
     const container = await render_table()
 
-    const button = container.querySelector('.table-new-view-button')
+    const button = new_view_button(container)
     expect(button).to.not.equal(null)
+    expect(button.getAttribute('aria-label')).to.equal('New view')
+    expect(container.querySelector('.table-new-view-button')).to.equal(null)
 
-    // A native button on the lib's shared ghost treatment, not a MUI one --
-    // see STYLE.md. The class is what makes it match the Columns and Filters
-    // triggers, so assert on it rather than on the rendered CSS.
-    expect(button.tagName).to.equal('BUTTON')
-    expect(button.classList.contains('rt-button')).to.equal(true)
-    expect(button.className).to.not.match(/Mui/)
-
-    // The label must be readable without hovering for a tooltip. The leading
-    // glyph is aria-hidden, so it is decoration rather than part of the name.
-    expect(button.textContent).to.equal('+New view')
-    expect(
-      button.querySelector('.rt-button-glyph').getAttribute('aria-hidden')
-    ).to.equal('true')
-
-    // It lives in the toolbar row, not in the card -- every control inside the
-    // card acts on the view currently selected, which is what made the old
-    // placement read as an action on that view.
-    expect(
+    await act(async () =>
       container
-        .querySelector('.table-search-and-controls-container')
-        .contains(button)
-    ).to.equal(true)
-    // Directly after the ellipsis menu, at the head of the row.
+        .querySelector('.table-view-controller .table-expanding-control-button')
+        .click()
+    )
+    expect(new_view_button(container)).to.not.equal(null)
     expect(
-      button.previousElementSibling.classList.contains('table-menu-container')
-    ).to.equal(true)
-    expect(
-      container
-        .querySelector('.table-view-controller-container')
-        .contains(button)
-    ).to.equal(false)
+      container.querySelector('.table-view-header-new-view-button')
+    ).to.equal(null)
   })
 
   it('is hidden on an untouched draft -- no saved state and no columns', async () => {
@@ -127,7 +112,7 @@ describe('new view button', () => {
       saved_table_state: null,
       table_state: EMPTY_TABLE_STATE
     })
-    expect(container.querySelector('.table-new-view-button')).to.equal(null)
+    expect(new_view_button(container)).to.equal(null)
   })
 
   // The gate asks whether this is an untouched draft, NOT whether it has been
@@ -137,12 +122,12 @@ describe('new view button', () => {
   // that page, stranding the user on a view they could not start over from.
   it('is shown on an unsaved view that carries columns', async () => {
     const container = await render_table({ saved_table_state: null })
-    expect(container.querySelector('.table-new-view-button')).to.not.equal(null)
+    expect(new_view_button(container)).to.not.equal(null)
   })
 
   it('is hidden when the consumer disables view creation', async () => {
     const container = await render_table({ disable_create_view: true })
-    expect(container.querySelector('.table-new-view-button')).to.equal(null)
+    expect(new_view_button(container)).to.equal(null)
   })
 
   it('creates a fresh view seeded with the new-view prefix columns', async () => {
@@ -151,9 +136,7 @@ describe('new view button', () => {
       on_view_change: (view, params) => calls.push({ view, params })
     })
 
-    await act(async () =>
-      container.querySelector('.table-new-view-button').click()
-    )
+    await act(async () => new_view_button(container).click())
 
     expect(calls.length).to.equal(1)
     const { view, params } = calls[0]
@@ -172,48 +155,17 @@ describe('new view button', () => {
       on_view_change: (view, params) => calls.push({ view, params })
     })
 
-    await act(async () =>
-      container.querySelector('.table-new-view-button').click()
-    )
+    await act(async () => new_view_button(container).click())
 
     const { view } = calls[0]
     expect(view.search).to.equal(undefined)
     expect(view.is_editable).to.equal(undefined)
   })
 
-  it('offers creation inside the open view panel too, on the same treatment', async () => {
+  // A click on a card action must not also toggle the panel it sits in.
+  it('does not open the panel when clicked on the collapsed card', async () => {
     const container = await render_table()
-    await act(async () =>
-      container
-        .querySelector('.table-view-controller .table-expanding-control-button')
-        .click()
-    )
-
-    const panel_button = container.querySelector(
-      '.table-view-header-new-view-button'
-    )
-    expect(panel_button).to.not.equal(null)
-    expect(panel_button.tagName).to.equal('BUTTON')
-    expect(panel_button.classList.contains('rt-button')).to.equal(true)
-    expect(panel_button.textContent).to.equal('+New view')
-  })
-
-  // Both surfaces read the one `on_create_new_view` gate, so the draft rule
-  // holds in the panel without a second condition to keep in step.
-  it('withholds the panel button on an untouched draft', async () => {
-    const container = await render_table({
-      saved_table_state: null,
-      table_state: EMPTY_TABLE_STATE
-    })
-    await act(async () =>
-      container
-        .querySelector('.table-view-controller .table-expanding-control-button')
-        .click()
-    )
-
-    expect(container.querySelector('.table-view-list')).to.not.equal(null)
-    expect(
-      container.querySelector('.table-view-header-new-view-button')
-    ).to.equal(null)
+    await act(async () => new_view_button(container).click())
+    expect(container.querySelector('.table-view-list')).to.equal(null)
   })
 })

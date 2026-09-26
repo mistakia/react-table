@@ -997,23 +997,6 @@ export default function Table({
                 clear_local_cache
               }}
             />
-            {/* Directly after the ellipsis menu, at the head of the toolbar.
-                Creating a view is not an action ON the view you are looking at,
-                and every control that is one lives in the current-view card --
-                so it stays out of that card entirely. Treatment comes from
-                .rt-button, the same one the Columns and Filters triggers
-                carry. */}
-            {on_create_new_view && (
-              <button
-                type='button'
-                className='rt-button table-new-view-button'
-                onClick={on_create_new_view}>
-                <span className='rt-button-glyph' aria-hidden='true'>
-                  +
-                </span>
-                New view
-              </button>
-            )}
             {selected_view.search && (
               <TableSearchInput
                 view_search_config={selected_view.search}

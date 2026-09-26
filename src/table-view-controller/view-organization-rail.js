@@ -25,7 +25,6 @@ function ViewOrganizationRail({
   const has_active_filters = Boolean(
     active_tag_filters && active_tag_filters.size > 0
   )
-  const total_count = Object.values(counts).reduce((sum, n) => sum + n, 0)
 
   const [tag_query, set_tag_query] = useState('')
   // Tag cloud is collapsed by default on mobile (rendered behind a "Tags"
@@ -46,9 +45,8 @@ function ViewOrganizationRail({
     <div className='tvc-rail'>
       <div className='tvc-rail-sections'>
         {SECTIONS.map(({ id, label }) => {
-          const count =
-            id === 'all' || id === 'authors' ? total_count : counts[id] || 0
-          if (id !== 'all' && id !== 'authors' && count === 0) return null
+          const count = counts[id] || 0
+          if (id !== 'all' && count === 0) return null
           return (
             <button
               key={id}
@@ -145,10 +143,12 @@ ViewOrganizationRail.propTypes = {
   active_section: PropTypes.string.isRequired,
   on_section_change: PropTypes.func.isRequired,
   counts: PropTypes.shape({
+    all: PropTypes.number,
     mine: PropTypes.number,
     favorites: PropTypes.number,
     shared: PropTypes.number,
-    system: PropTypes.number
+    system: PropTypes.number,
+    authors: PropTypes.number
   }),
   all_tags: PropTypes.arrayOf(
     PropTypes.shape({

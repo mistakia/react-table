@@ -17,6 +17,19 @@ const make_view = (overrides = {}) => ({
 
 // ── Sectioning ────────────────────────────────────────────────────────────────
 describe('organize_views — sectioning', () => {
+  // A favorite also sits in its ownership section, so summing the sections
+  // counted it twice.
+  it('counts each view once in all, favorites included', () => {
+    const mine = make_view({ view_username: 'alice' })
+    const other = make_view({ view_username: 'bob' })
+    const { counts } = organize_views({
+      views: [mine, other],
+      table_username: 'alice',
+      favorite_view_ids: new Set([mine.view_id])
+    })
+    expect(counts.all).to.equal(2)
+  })
+
   it('puts views owned by table_username into mine', () => {
     const view = make_view({ view_username: 'alice' })
     const { counts } = organize_views({

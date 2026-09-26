@@ -10,6 +10,9 @@ import { ClickAwayListener } from '@mui/base/ClickAwayListener'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
+import Popover from '@mui/material/Popover'
+import AddIcon from '@mui/icons-material/Add'
+import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined'
 import StarIcon from '@mui/icons-material/Star'
 import StarBorderIcon from '@mui/icons-material/StarBorder'
 import SaveIcon from '@mui/icons-material/Save'
@@ -63,10 +66,9 @@ const TableViewController = ({
   // tags down the whole panel. Called with the panel's filter text, so one
   // filter box serves both, and `close` for an entry that navigates.
   //
-  // When supplied it owns the System section and closes out All; the system
-  // views leave the flat list, the author list and the tag cloud. Mark the
-  // current view's entry with aria-current="true" and the panel scrolls to it
-  // like a selected row.
+  // When supplied it owns the System section, which the panel opens on, and
+  // sits between the reader's own views and everyone else's in All; the system
+  // views leave the flat list, the author list and the tag cloud.
   render_system_views
 }) => {
   const { table_username, all_columns } = useContext(table_context)
@@ -75,18 +77,24 @@ const TableViewController = ({
   const [edit_view_modal_open, set_edit_view_modal_open] = React.useState(false)
   const [view_controls_open, set_view_controls_open] = React.useState(false)
   const [closing, set_closing] = React.useState(false)
-  const [active_section, set_active_section] = React.useState('all')
+  const [tags_anchor_el, set_tags_anchor_el] = React.useState(null)
+
+  const has_org_props = Boolean(
+    table_username || favorite_view_ids || tags_by_view_id || derive_auto_tags
+  )
+
+  // A host map is the panel's front door: it answers "what can I look at" by
+  // question, where a flat list only answers "what exists". Without the rail
+  // there is no way back out of a section, so the flat list keeps All.
+  const [active_section, set_active_section] = React.useState(() =>
+    render_system_views && has_org_props ? 'system' : 'all'
+  )
   const [active_tag_filters, set_active_tag_filters] = React.useState(
     () => new Set()
   )
 
   const container_ref = useRef(null)
   const input_ref = useRef(null)
-  const list_ref = useRef(null)
-
-  const has_org_props = Boolean(
-    table_username || favorite_view_ids || tags_by_view_id || derive_auto_tags
-  )
 
   // Deterministic auto-tags per view — empty Map when derive_auto_tags is absent
   const auto_tags_map = use_auto_tags(
@@ -168,6 +176,12 @@ const TableViewController = ({
     if (view_controls_open) handle_menu_toggle()
   }
 
+  // The panel closing takes the tag popover with it; otherwise it would float
+  // anchored to a card that has just changed shape.
+  useEffect(() => {
+    set_tags_anchor_el(null)
+  }, [view_controls_open, selected_view.view_id])
+
   const handle_toggle_tag_filter = (tag_name) => {
     set_active_tag_filters((prev) => {
       const next = new Set(prev)
@@ -191,18 +205,19 @@ const TableViewController = ({
     [view_controls_open]
   )
 
-  // Escape key closes modal
+  // Escape closes the panel -- unless the tag popover is open, whose own
+  // Escape handling closes just the popover.
   useEffect(() => {
     const handle_key_down = (event) => {
       if (event.key === 'Escape' && view_controls_open) {
         handle_menu_toggle()
       }
     }
-    if (view_controls_open) {
+    if (view_controls_open && !tags_anchor_el) {
       document.addEventListener('keydown', handle_key_down)
     }
     return () => document.removeEventListener('keydown', handle_key_down)
-  }, [view_controls_open, handle_menu_toggle])
+  }, [view_controls_open, handle_menu_toggle, tags_anchor_el])
 
   // Center the panel horizontally relative to the viewport. The transform is
   // written directly to the DOM (rather than routed through React state) so
@@ -231,51 +246,6 @@ const TableViewController = ({
     const max_left = window.innerWidth - element_width - margin
     const clamped_left = Math.max(min_left, Math.min(max_left, desired_left))
     el.style.transform = `translateX(${clamped_left - rect.left}px)`
-  }, [view_controls_open])
-
-  // Scroll the list so the selected item is visible after the expand
-  // animation settles. The parent container animates width/height over 250ms;
-  // measuring offsets before that finishes scrolls to wrong positions.
-  // Listen for transitionend on the container instead of guessing with rAF.
-  useEffect(() => {
-    if (!view_controls_open) return
-    const container = container_ref.current
-    const list = list_ref.current
-    if (!container || !list) return
-
-    let done = false
-    const do_scroll = () => {
-      if (done) return
-      done = true
-      const selected_el = list.querySelector(
-        '.table-view-item.-selected, [aria-current="true"]'
-      )
-      if (!selected_el) {
-        list.scrollTop = 0
-        return
-      }
-      const list_rect = list.getBoundingClientRect()
-      const item_rect = selected_el.getBoundingClientRect()
-      const target =
-        list.scrollTop +
-        (item_rect.top - list_rect.top) -
-        list.clientHeight / 2 +
-        item_rect.height / 2
-      list.scrollTo({ top: Math.max(0, target), behavior: 'smooth' })
-    }
-
-    const handler = (e) => {
-      if (e.target !== container) return
-      if (e.propertyName !== 'height' && e.propertyName !== 'width') return
-      do_scroll()
-    }
-    container.addEventListener('transitionend', handler)
-    // Fallback in case the transition never fires (reduced-motion, etc.)
-    const fallback = setTimeout(do_scroll, 350)
-    return () => {
-      container.removeEventListener('transitionend', handler)
-      clearTimeout(fallback)
-    }
   }, [view_controls_open])
 
   const current_view = views.find((v) => v.view_id === selected_view.view_id)
@@ -344,7 +314,7 @@ const TableViewController = ({
     (active_section === 'system' || active_section === 'all') &&
     active_tag_filters.size === 0
 
-  const list_items = display_views.map((view) => (
+  const render_view_item = (view) => (
     <ViewItem
       key={view.view_id}
       {...{
@@ -365,7 +335,71 @@ const TableViewController = ({
         )
       }}
     />
-  ))
+  )
+
+  const system_views_node = show_system_views ? (
+    <div className='table-view-system-views'>
+      {render_system_views({
+        filter_text: input_value,
+        close: () => {
+          if (view_controls_open) handle_menu_toggle()
+        }
+      })}
+    </div>
+  ) : null
+
+  // All is every section stacked under its own heading, in the order a reader
+  // reaches for them: their own views, the system set, then everyone else's.
+  // One undifferentiated list put a platform's worth of other people's views
+  // ahead of the system map. Without the rail there are no sections to name,
+  // so the legacy shape stays one flat list.
+  const render_list = () => {
+    if (active_section !== 'all' || !has_org_props) {
+      return (
+        <>
+          {display_views.map(render_view_item)}
+          {system_views_node}
+        </>
+      )
+    }
+    const is_mine = (v) =>
+      Boolean(table_username) && v.view_username === table_username
+    const groups = [
+      {
+        id: 'mine',
+        label: 'Yours',
+        items: display_views.filter(is_mine)
+      },
+      {
+        id: 'system',
+        label: 'System',
+        items: display_views.filter((v) => !is_mine(v) && is_system_view(v)),
+        node: system_views_node
+      },
+      {
+        id: 'shared',
+        label: 'Shared',
+        items: display_views.filter((v) => !is_mine(v) && !is_system_view(v))
+      }
+    ]
+    return groups
+      .filter(({ items, node }) => items.length > 0 || node)
+      .map(({ id, label, items, node }) => (
+        <section key={id} className='table-view-list-group'>
+          <h3 className='table-view-list-group-label'>{label}</h3>
+          {items.map(render_view_item)}
+          {node}
+        </section>
+      ))
+  }
+
+  // What the rail counts is what the list shows. When the host renders its
+  // system views they leave the author list, so By author must not count them:
+  // for a reader with no saved views it read 44 and opened onto nothing.
+  const rail_counts = {
+    ...counts,
+    authors: counts.all - (render_system_views ? counts.system : 0)
+  }
 
   // Tag list, tag input, and action set for the selected view. Looked up
   // across the unfiltered views array so the chips stay visible regardless of
@@ -447,11 +481,11 @@ const TableViewController = ({
             <div className='current-view-info'>
               <div className='current-view-title-row'>
                 <div className='current-view-title'>{title}</div>
-                {current_view && (
+                {(current_view || on_create_new_view) && (
                   <div
                     className='current-view-actions'
                     onClick={(e) => e.stopPropagation()}>
-                    {on_toggle_favorite && (
+                    {current_view && on_toggle_favorite && (
                       <Tooltip
                         title={
                           is_favorited
@@ -462,6 +496,11 @@ const TableViewController = ({
                         enterDelay={700}>
                         <IconButton
                           size='small'
+                          aria-label={
+                            is_favorited
+                              ? 'Remove from favorites'
+                              : 'Add to favorites'
+                          }
                           className={get_string_from_object({
                             'cva-btn': true,
                             '-favorite': true,
@@ -481,11 +520,12 @@ const TableViewController = ({
                         </IconButton>
                       </Tooltip>
                     )}
-                    {on_toggle_favorite &&
+                    {current_view &&
+                      on_toggle_favorite &&
                       (on_reset_current_view || on_save_current_view) && (
                         <span className='cva-divider' aria-hidden='true' />
                       )}
-                    {on_reset_current_view && (
+                    {current_view && on_reset_current_view && (
                       <Tooltip
                         title='Reset to saved state'
                         placement='top'
@@ -493,6 +533,7 @@ const TableViewController = ({
                         <span>
                           <IconButton
                             size='small'
+                            aria-label='Reset to saved state'
                             className='cva-btn'
                             onClick={stop(on_reset_current_view)}
                             disabled={!is_table_state_changed}>
@@ -501,7 +542,7 @@ const TableViewController = ({
                         </span>
                       </Tooltip>
                     )}
-                    {on_save_current_view && (
+                    {current_view && on_save_current_view && (
                       <Tooltip
                         title={save_tooltip}
                         placement='top'
@@ -509,6 +550,7 @@ const TableViewController = ({
                         <span>
                           <IconButton
                             size='small'
+                            aria-label='Save current view'
                             className={get_string_from_object({
                               'cva-btn': true,
                               '-primary': true
@@ -520,58 +562,114 @@ const TableViewController = ({
                         </span>
                       </Tooltip>
                     )}
-                    {(on_toggle_favorite ||
-                      on_reset_current_view ||
-                      on_save_current_view) && (
-                      <span className='cva-divider' aria-hidden='true' />
+                    {current_view && (
+                      <>
+                        {(on_toggle_favorite ||
+                          on_reset_current_view ||
+                          on_save_current_view) && (
+                          <span className='cva-divider' aria-hidden='true' />
+                        )}
+                        {(current_tags.length > 0 || can_edit_tags) && (
+                          <Tooltip
+                            title={can_edit_tags ? 'Edit tags' : 'Tags'}
+                            placement='top'
+                            enterDelay={700}>
+                            <IconButton
+                              size='small'
+                              aria-label={can_edit_tags ? 'Edit tags' : 'Tags'}
+                              aria-haspopup='dialog'
+                              aria-expanded={Boolean(tags_anchor_el)}
+                              className={get_string_from_object({
+                                'cva-btn': true,
+                                '-tags': true,
+                                '-active': Boolean(tags_anchor_el)
+                              })}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                set_tags_anchor_el(e.currentTarget)
+                              }}>
+                              <LocalOfferOutlinedIcon fontSize='small' />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {can_edit_current && (
+                          <Tooltip
+                            title='Edit view details'
+                            placement='top'
+                            enterDelay={700}>
+                            <IconButton
+                              size='small'
+                              aria-label='Edit view details'
+                              className='cva-btn'
+                              onClick={stop(() => {
+                                set_selected_edit_view(current_view)
+                                set_edit_view_modal_open(true)
+                              })}>
+                              <EditIcon fontSize='small' />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip
+                          title='Duplicate view'
+                          placement='top'
+                          enterDelay={700}>
+                          <IconButton
+                            size='small'
+                            aria-label='Duplicate view'
+                            className='cva-btn'
+                            onClick={stop(handle_duplicate_current)}>
+                            <ContentCopyIcon fontSize='small' />
+                          </IconButton>
+                        </Tooltip>
+                        {can_edit_current && (
+                          <Tooltip
+                            title={
+                              is_delete_confirming
+                                ? 'Click again to confirm'
+                                : 'Delete view'
+                            }
+                            placement='top'
+                            enterDelay={700}>
+                            <IconButton
+                              size='small'
+                              aria-label={
+                                is_delete_confirming
+                                  ? 'Click again to confirm'
+                                  : 'Delete view'
+                              }
+                              className={get_string_from_object({
+                                'cva-btn': true,
+                                '-destructive': true,
+                                '-confirming': is_delete_confirming
+                              })}
+                              onClick={stop(handle_delete_click)}>
+                              <DeleteIcon fontSize='small' />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                      </>
                     )}
-                    {can_edit_current && (
-                      <Tooltip
-                        title='Edit view details'
-                        placement='top'
-                        enterDelay={700}>
-                        <IconButton
-                          size='small'
-                          className='cva-btn'
-                          onClick={stop(() => {
-                            set_selected_edit_view(current_view)
-                            set_edit_view_modal_open(true)
-                          })}>
-                          <EditIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
-                    )}
-                    <Tooltip
-                      title='Duplicate view'
-                      placement='top'
-                      enterDelay={700}>
-                      <IconButton
-                        size='small'
-                        className='cva-btn'
-                        onClick={stop(handle_duplicate_current)}>
-                        <ContentCopyIcon fontSize='small' />
-                      </IconButton>
-                    </Tooltip>
-                    {can_edit_current && (
-                      <Tooltip
-                        title={
-                          is_delete_confirming
-                            ? 'Click again to confirm'
-                            : 'Delete view'
-                        }
-                        placement='top'
-                        enterDelay={700}>
-                        <IconButton
-                          size='small'
-                          className={get_string_from_object({
-                            'cva-btn': true,
-                            '-destructive': true,
-                            '-confirming': is_delete_confirming
-                          })}
-                          onClick={stop(handle_delete_click)}>
-                          <DeleteIcon fontSize='small' />
-                        </IconButton>
-                      </Tooltip>
+                    {/* Creating a view acts on no view in particular, so it
+                        sits apart at the end rather than among the actions on
+                        the selected one. */}
+                    {on_create_new_view && (
+                      <>
+                        {current_view && (
+                          <span className='cva-divider' aria-hidden='true' />
+                        )}
+                        <Tooltip
+                          title='New view'
+                          placement='top'
+                          enterDelay={700}>
+                          <IconButton
+                            size='small'
+                            aria-label='New view'
+                            className='cva-btn -new-view'
+                            onClick={stop(handle_add_click)}>
+                            <AddIcon fontSize='small' />
+                          </IconButton>
+                        </Tooltip>
+                      </>
                     )}
                   </div>
                 )}
@@ -579,46 +677,44 @@ const TableViewController = ({
               {description && (
                 <div className='current-view-description'>{description}</div>
               )}
-              {view_controls_open && current_view && (
-                <>
-                  {(current_tags.length > 0 || can_edit_tags) && (
-                    <div
-                      className='current-view-tags'
-                      onClick={(e) => e.stopPropagation()}>
-                      {current_tags.map((tag) => (
-                        <TagChip
-                          key={`${tag.source}-${tag.name}`}
-                          name={tag.name}
-                          source={tag.source}
-                          on_remove={
-                            can_edit_tags && tag.source === 'user'
-                              ? () =>
-                                  on_remove_user_tag(
-                                    current_view.view_id,
-                                    tag.name
-                                  )
-                              : undefined
-                          }
-                        />
-                      ))}
-                      {can_edit_tags && (
-                        <TagInput
-                          suggestions={tag_suggestions}
-                          existing_tag_names={current_tags
-                            .filter((t) => t.source === 'user')
-                            .map((t) => t.name)}
-                          on_submit={(name) =>
-                            on_add_user_tag(current_view.view_id, name)
-                          }
-                          on_remove={(name) =>
-                            on_remove_user_tag(current_view.view_id, name)
-                          }
-                          placeholder='Add tag'
-                        />
-                      )}
-                    </div>
+              {current_view && (
+                <Popover
+                  open={Boolean(tags_anchor_el)}
+                  anchorEl={tags_anchor_el}
+                  onClose={() => set_tags_anchor_el(null)}
+                  onClick={(e) => e.stopPropagation()}
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                  transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                  slotProps={{ paper: { className: 'current-view-tags' } }}>
+                  {current_tags.map((tag) => (
+                    <TagChip
+                      key={`${tag.source}-${tag.name}`}
+                      name={tag.name}
+                      source={tag.source}
+                      on_remove={
+                        can_edit_tags && tag.source === 'user'
+                          ? () =>
+                              on_remove_user_tag(current_view.view_id, tag.name)
+                          : undefined
+                      }
+                    />
+                  ))}
+                  {can_edit_tags && (
+                    <TagInput
+                      suggestions={tag_suggestions}
+                      existing_tag_names={current_tags
+                        .filter((t) => t.source === 'user')
+                        .map((t) => t.name)}
+                      on_submit={(name) =>
+                        on_add_user_tag(current_view.view_id, name)
+                      }
+                      on_remove={(name) =>
+                        on_remove_user_tag(current_view.view_id, name)
+                      }
+                      placeholder='Add tag'
+                    />
                   )}
-                </>
+                </Popover>
               )}
             </div>
             <div className='current-view-username'>{username}</div>
@@ -636,7 +732,7 @@ const TableViewController = ({
                   <ViewOrganizationRail
                     active_section={active_section}
                     on_section_change={set_active_section}
-                    counts={counts}
+                    counts={rail_counts}
                     all_tags={all_visible_tags}
                     active_tag_filters={active_tag_filters}
                     on_toggle_tag_filter={handle_toggle_tag_filter}
@@ -682,31 +778,8 @@ const TableViewController = ({
                       autoComplete='off'
                       inputRef={input_ref}
                     />
-                    {on_create_new_view && (
-                      <button
-                        type='button'
-                        className='rt-button table-view-header-new-view-button'
-                        onClick={handle_add_click}>
-                        <span className='rt-button-glyph' aria-hidden='true'>
-                          +
-                        </span>
-                        New view
-                      </button>
-                    )}
                   </div>
-                  <div className='table-view-list' ref={list_ref}>
-                    {list_items}
-                    {show_system_views && (
-                      <div className='table-view-system-views'>
-                        {render_system_views({
-                          filter_text: input_value,
-                          close: () => {
-                            if (view_controls_open) handle_menu_toggle()
-                          }
-                        })}
-                      </div>
-                    )}
-                  </div>
+                  <div className='table-view-list'>{render_list()}</div>
                 </div>
               </div>
             </div>
