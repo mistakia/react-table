@@ -10,8 +10,13 @@
 // Groups the header cell with its menu Popper for ClickAwayListener without
 // generating a box: .cell is a direct flex child of .row and positions sticky
 // against the scroll container, both of which a laid-out wrapper would break.
+// It is still the cell's DOM parent, so it must pass the row's surface through:
+// a sticky cell paints `background-color inherit`, and inheriting from a
+// transparent wrapper left the pinned header cells see-through on horizontal
+// scroll, with the scrolled headers printing under NAME and TEAMS.
 .header-cell-container
   display contents
+  background-color inherit
 
 .header-popper.base-Popper-root.table-popper
 .header-popper.MuiPopper-root.table-popper
