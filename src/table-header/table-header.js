@@ -389,9 +389,23 @@ const TableHeader = ({ header, column, table }) => {
             className='cell-content'
             style={{
               textAlign: 'center',
-              paddingTop: '6px'
+              padding: '6px 4px 5px',
+              letterSpacing: '0.5px'
             }}>
-            {header.column.columnDef.header}
+            {/* The clamp sits on an inner box because overflow clips at the
+                padding edge: clamped on the padded cell, a third line showed
+                through the bottom padding. */}
+            <span
+              style={{
+                whiteSpace: 'normal',
+                overflowWrap: 'anywhere',
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical',
+                WebkitLineClamp: 2,
+                overflow: 'hidden'
+              }}>
+              {header.column.columnDef.header}
+            </span>
           </div>
         </Tooltip>
       </div>

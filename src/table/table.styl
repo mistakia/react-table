@@ -173,6 +173,20 @@
     .row
       height 24px
 
+      &.group-row
+        height auto
+        min-height 24px
+
+        // The add-column control rides in the top row and is taller than a
+        // band; it overflowed the fixed-height row unseen, and would now grow
+        // it instead.
+        .cell.add-column-action
+          height 24px
+          align-self flex-start
+          overflow visible
+          .cell-content
+            overflow visible
+
     .cell
       line-height 120%
       background-color $backgroundColor

@@ -872,3 +872,69 @@ describe('format_column_params - show_key_in_short', () => {
     expect(result).to.equal('Year + N: 0')
   })
 })
+
+describe('format_column_params - named presets', () => {
+  const down_number = {
+    label: 'Down',
+    show_key_in_short: true,
+    data_type: TABLE_DATA_TYPES.SELECT,
+    values: [1, 2, 3, 4],
+    preset_values: [
+      { label: 'Early Downs', values: [1, 2] },
+      { label: 'Late Downs', values: [3, 4] }
+    ]
+  }
+  const yard_line_100 = {
+    label: 'Yardline',
+    short_label: 'Yds to GL',
+    show_key_in_short: true,
+    data_type: TABLE_DATA_TYPES.RANGE,
+    min: 0,
+    max: 99,
+    preset_values: [{ label: 'Redzone', values: [0, 20] }]
+  }
+  const column_def = { column_params: { down_number, yard_line_100 } }
+
+  it('renders a select value matching a preset as the preset name', () => {
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { down_number: [3, 4] }
+      })
+    ).to.equal('Late Downs')
+  })
+
+  it('renders a range value matching a preset as the preset name, without the key', () => {
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { yard_line_100: [0, 20] }
+      })
+    ).to.equal('Redzone')
+  })
+
+  it('keeps the key form for a value that matches no preset', () => {
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { yard_line_100: [0, 10] }
+      })
+    ).to.equal('Yds to GL: <10')
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { down_number: [3] }
+      })
+    ).to.equal('Down: 3')
+  })
+
+  it('keeps the key in the long variant', () => {
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { down_number: [3, 4] },
+        variant: 'long'
+      })
+    ).to.equal('Down: Late Downs')
+  })
+})

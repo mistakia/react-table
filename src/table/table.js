@@ -85,8 +85,17 @@ MemoizedRow.propTypes = {
   row: PropTypes.object.isRequired
 }
 
+// A row of group bands may wrap to two lines: a band is as wide as the columns
+// under it, so a band over one column clipped its label at about six
+// characters, and a view repeating one column under several situations read
+// as identical bands. Leaf-header rows keep their fixed height.
 const MemoizedHeader = React.memo(({ headerGroup }) => (
-  <div className='row'>
+  <div
+    className={
+      headerGroup.headers.some((header) => header.column.columns.length)
+        ? 'row group-row'
+        : 'row'
+    }>
     {headerGroup.headers.map((header, index) => (
       <TableHeader key={index} {...header.getContext()} />
     ))}

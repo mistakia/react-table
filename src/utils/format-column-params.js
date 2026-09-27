@@ -112,6 +112,7 @@ function build_param_render({
   const show_key_in_short = Boolean(param_def?.show_key_in_short)
 
   let render
+  const preset = find_matching_preset({ value, param_def })
   if (typeof param_def?.format_value === 'function') {
     render = {
       param_key,
@@ -123,6 +124,18 @@ function build_param_render({
         column_params
       }),
       is_default: matches_default(value, param_def.default_value)
+    }
+  } else if (preset) {
+    // A value that IS a named preset reads as the preset's name: "Late Downs"
+    // rather than "3, 4", "Redzone" rather than "Yds to GL: <20". The name is
+    // the situation a reader recognises, and it needs no key to decode.
+    return {
+      param_key,
+      key_label,
+      value_label: preset.label,
+      is_default: matches_default(value, param_def.default_value),
+      short_key_label,
+      show_key_in_short: false
     }
   } else {
     switch (param_def?.data_type) {
@@ -152,6 +165,18 @@ function build_param_render({
   }
 
   return render && { ...render, short_key_label, show_key_in_short }
+}
+
+// A range or multi-select preset declares `values`, an object preset `value`.
+function find_matching_preset({ value, param_def }) {
+  for (const preset of param_def?.preset_values || []) {
+    if (!preset || !preset.label) continue
+    const preset_value = 'values' in preset ? preset.values : preset.value
+    if (preset_value !== undefined && deep_equal(value, preset_value)) {
+      return preset
+    }
+  }
+  return null
 }
 
 function render_range({ param_key, value, param_def, key_label }) {
