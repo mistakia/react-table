@@ -42,6 +42,7 @@ import {
   is_valid_table_state_structure
 } from '#src/utils'
 import { remap_sort_for_removed_column_positions } from '#src/utils/remap-sort-for-column-change.js'
+import get_row_axis_label from '#src/utils/get-row-axis-label.js'
 import { table_context } from '#src/table-context'
 import { ADD_COLUMN_ACTION_WIDTH, COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
@@ -548,7 +549,7 @@ export default function Table({
       columns.push(
         column_helper.display({
           id: row_axis,
-          header_label: row_axis,
+          header_label: get_row_axis_label({ row_axis, all_columns }),
           is_split: true,
           size: 70
         })
@@ -558,7 +559,7 @@ export default function Table({
       header: row_axes_label,
       columns
     })
-  }, [row_axes_key, row_axes_label])
+  }, [row_axes_key, row_axes_label, all_columns])
 
   const table_columns = useMemo(
     () =>
@@ -1122,6 +1123,7 @@ export default function Table({
                       table_state,
                       on_table_state_change,
                       table_state_columns,
+                      all_columns,
                       row_axes_label,
                       no_row_axes_available_label
                     }}

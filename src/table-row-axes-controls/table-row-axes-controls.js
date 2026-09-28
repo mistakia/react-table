@@ -14,6 +14,7 @@ import {
   use_expanding_control_anchor
 } from '#src/utils'
 import resolve_row_axis_conflicts from '#src/utils/resolve-row-axis-conflicts.js'
+import get_row_axis_label from '#src/utils/get-row-axis-label.js'
 import { MENU_CLOSE_TIMEOUT } from '#src/constants.mjs'
 
 import './table-row-axes-controls.styl'
@@ -25,6 +26,7 @@ const TableRowAxesControls = ({
   table_state,
   on_table_state_change,
   table_state_columns,
+  all_columns = {},
   row_axes_label = 'Row axes',
   no_row_axes_available_label = 'No row axes available for selected columns'
 }) => {
@@ -203,7 +205,9 @@ const TableRowAxesControls = ({
                 disableCloseOnSelect
                 value={local_table_state.row_axes}
                 openOnFocus
-                getOptionLabel={(option) => option}
+                getOptionLabel={(row_axis) =>
+                  get_row_axis_label({ row_axis, all_columns })
+                }
                 getOptionDisabled={(option) =>
                   Boolean(row_axis_conflicts[option]) &&
                   !(local_table_state.row_axes || []).includes(option)
@@ -275,6 +279,7 @@ TableRowAxesControls.propTypes = {
   table_state: PropTypes.object.isRequired,
   on_table_state_change: PropTypes.func.isRequired,
   table_state_columns: PropTypes.array.isRequired,
+  all_columns: PropTypes.object,
   row_axes_label: PropTypes.string,
   no_row_axes_available_label: PropTypes.string
 }
