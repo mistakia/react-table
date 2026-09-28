@@ -16,6 +16,16 @@ A virtualized React table built on TanStack/react-table and Material-UI. Renders
 - **Export** — CSV (RFC 4180 with quote escaping and CRLF), JSON (filename prefix + ISO timestamp), Markdown table (pipe escaping).
 - **Shareable state** — full table state (columns, sort, where, row axes, prefix columns, rank aggregation, scatter options, search query) is serialisable for URL sharing or persistence.
 
+## Row Click and Selection
+
+| Prop               | Type                 | Meaning                                                                                        |
+| ------------------ | -------------------- | ---------------------------------------------------------------------------------------------- |
+| `on_row_click`     | `(row_data) => void` | Called on a row click or Enter. When set, a plain cell click no longer copies; Alt-click does. |
+| `selected_row_ids` | `array`              | Controlled selection: the rows to mark `row--selected` and `aria-selected`.                    |
+| `get_row_id`       | `(row_data) => id`   | Maps row data to the id `selected_row_ids` holds. Defaults to `row_data.id`.                   |
+
+A table without `on_row_click` behaves as before: cells copy on click and rows take no focus.
+
 ## Data Types and Operators
 
 Data types: `NUMBER`, `TEXT`, `JSON`, `BOOLEAN`, `DATE`, `BINARY_UUID`, `SELECT`, `RANGE`, `OBJECT_PRESET`.
