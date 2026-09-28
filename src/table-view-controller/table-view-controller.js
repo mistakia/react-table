@@ -69,7 +69,15 @@ const TableViewController = ({
   // When supplied it owns the System section, which the panel opens on, and
   // sits between the reader's own views and everyone else's in All; the system
   // views leave the flat list, the author list and the tag cloud.
-  render_system_views
+  render_system_views,
+  // SECTIONS THE HOST LISTS ITSELF, for things a reader picks from that are
+  // not rows of `views` -- league's past agent runs are the case this exists
+  // for. Each is `{ id, label, count, render }`: the rail shows it beside the
+  // reader's own sections, and while it is active `render` owns the list area,
+  // called with the panel's filter text and `close` exactly as
+  // `render_system_views` is. `count` is optional; without one the rail shows
+  // the label alone rather than a zero that would read as empty.
+  extra_view_sections = []
 }) => {
   const { table_username, all_columns } = useContext(table_context)
   const [input_value, set_input_value] = React.useState('')
@@ -353,7 +361,19 @@ const TableViewController = ({
   // One undifferentiated list put a platform's worth of other people's views
   // ahead of the system map. Without the rail there are no sections to name,
   // so the legacy shape stays one flat list.
+  const active_extra_section = extra_view_sections.find(
+    ({ id }) => id === active_section
+  )
+
   const render_list = () => {
+    if (active_extra_section) {
+      return active_extra_section.render({
+        filter_text: input_value,
+        close: () => {
+          if (view_controls_open) handle_menu_toggle()
+        }
+      })
+    }
     if (active_section !== 'all' || !has_org_props) {
       return (
         <>
@@ -733,6 +753,7 @@ const TableViewController = ({
                     active_section={active_section}
                     on_section_change={set_active_section}
                     counts={rail_counts}
+                    extra_sections={extra_view_sections}
                     all_tags={all_visible_tags}
                     active_tag_filters={active_tag_filters}
                     on_toggle_tag_filter={handle_toggle_tag_filter}
@@ -829,7 +850,15 @@ TableViewController.propTypes = {
   on_remove_user_tag: PropTypes.func,
   on_save_current_view: PropTypes.func,
   on_reset_current_view: PropTypes.func,
-  render_system_views: PropTypes.func
+  render_system_views: PropTypes.func,
+  extra_view_sections: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      count: PropTypes.number,
+      render: PropTypes.func.isRequired
+    })
+  )
 }
 
 export default React.memo(TableViewController)

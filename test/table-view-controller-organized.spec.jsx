@@ -197,4 +197,49 @@ describe('TableViewController — organized panel', () => {
     expect(document.querySelector('.current-view-tags')).to.not.equal(null)
     expect(container.querySelector('.table-view-list')).to.equal(null)
   })
+  // A host section is not a row of `views`: the rail names it beside the
+  // reader's own sections, and while it is active the host owns the list,
+  // reading the same filter box as every other section.
+  it('lists a host section after Favorites and hands it the list and the filter', async () => {
+    const calls = []
+    const container = await mount({
+      favorite_view_ids: new Set(['mine-1']),
+      extra_view_sections: [
+        {
+          id: 'generated',
+          label: 'Generated',
+          render: ({ filter_text, close }) => {
+            calls.push({ filter_text, close })
+            return React.createElement(
+              'div',
+              { className: 'host-runs' },
+              'Runs'
+            )
+          }
+        }
+      ]
+    })
+    await open(container)
+    const labels = [
+      ...container.querySelectorAll('.tvc-rail-section-label')
+    ].map((l) => l.textContent)
+    expect(labels.indexOf('Generated')).to.equal(
+      labels.indexOf('Favorites') + 1
+    )
+    // No count supplied, so no badge -- not a zero that reads as empty.
+    const generated = [...container.querySelectorAll('.tvc-rail-section')].find(
+      (b) => b.textContent === 'Generated'
+    )
+    expect(generated.querySelector('.tvc-rail-section-count')).to.equal(null)
+
+    await act(async () => generated.click())
+    expect(container.querySelector('.table-view-list .host-runs')).to.not.equal(
+      null
+    )
+    expect(
+      container.querySelector('.table-view-list').textContent
+    ).to.not.include('Alice View')
+    expect(calls.at(-1).filter_text).to.equal('')
+    expect(calls.at(-1).close).to.be.a('function')
+  })
 })

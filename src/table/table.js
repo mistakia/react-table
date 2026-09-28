@@ -206,7 +206,8 @@ export default function Table({
   on_toggle_favorite,
   on_add_user_tag,
   on_remove_user_tag,
-  render_system_views
+  render_system_views,
+  extra_view_sections
 }) {
   useEffect(() => {
     if (!enable_validation_warnings || !table_state) return
@@ -1036,6 +1037,7 @@ export default function Table({
                 on_add_user_tag,
                 on_remove_user_tag,
                 render_system_views,
+                extra_view_sections,
                 on_save_current_view: is_view_state_saveable
                   ? save_table_state_change
                   : undefined,
@@ -1387,5 +1389,8 @@ Table.propTypes = {
   on_remove_user_tag: PropTypes.func,
   // The host's own rendering of the system views, in place of one flat row per
   // view. See TableViewController.
-  render_system_views: PropTypes.func
+  render_system_views: PropTypes.func,
+  // Sections the host lists itself in the view panel's rail, beside the
+  // reader's own. See TableViewController.
+  extra_view_sections: PropTypes.arrayOf(PropTypes.object)
 }

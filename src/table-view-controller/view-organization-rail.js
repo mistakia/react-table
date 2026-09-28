@@ -17,6 +17,7 @@ function ViewOrganizationRail({
   active_section,
   on_section_change,
   counts,
+  extra_sections,
   all_tags,
   active_tag_filters,
   on_toggle_tag_filter,
@@ -44,9 +45,18 @@ function ViewOrganizationRail({
   return (
     <div className='tvc-rail'>
       <div className='tvc-rail-sections'>
-        {SECTIONS.map(({ id, label }) => {
-          const count = counts[id] || 0
-          if (id !== 'all' && count === 0) return null
+        {SECTIONS.flatMap((section) =>
+          // The host's sections sit with the reader's own, after Favorites
+          // and ahead of everyone else's views.
+          section.id === 'favorites'
+            ? [
+                section,
+                ...extra_sections.map((extra) => ({ ...extra, extra: true }))
+              ]
+            : [section]
+        ).map(({ id, label, count: extra_count, extra }) => {
+          const count = extra ? extra_count : counts[id] || 0
+          if (!extra && id !== 'all' && count === 0) return null
           return (
             <button
               key={id}
@@ -57,7 +67,9 @@ function ViewOrganizationRail({
               })}
               onClick={() => on_section_change(id)}>
               <span className='tvc-rail-section-label'>{label}</span>
-              <span className='tvc-rail-section-count'>{count}</span>
+              {count !== undefined && count !== null && (
+                <span className='tvc-rail-section-count'>{count}</span>
+              )}
             </button>
           )
         })}
@@ -150,6 +162,13 @@ ViewOrganizationRail.propTypes = {
     system: PropTypes.number,
     authors: PropTypes.number
   }),
+  extra_sections: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      count: PropTypes.number
+    })
+  ),
   all_tags: PropTypes.arrayOf(
     PropTypes.shape({
       name: PropTypes.string.isRequired,
@@ -163,6 +182,7 @@ ViewOrganizationRail.propTypes = {
 
 ViewOrganizationRail.defaultProps = {
   counts: {},
+  extra_sections: [],
   all_tags: []
 }
 
