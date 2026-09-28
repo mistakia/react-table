@@ -56,6 +56,8 @@ import './table.styl'
 const is_mobile = window.innerWidth < 500
 const column_helper = createColumnHelper()
 const EMPTY_HIGHLIGHTS = Object.freeze({})
+// Module-level so the default keeps one identity across renders.
+const default_get_row_id = (row) => row.id
 const defaultColumn = {
   minWidth: 50,
   width: 150,
@@ -66,23 +68,52 @@ const defaultColumn = {
   sortType: 'alphanumericFalsyLast'
 }
 
+// A row is clickable only when the consumer passes `on_row_click`. Alt-click is
+// left to the cell, which copies its value, so the copy gesture survives on a
+// clickable table.
 const MemoizedRow = React.memo(
-  ({ row }) => (
-    <div className={`row ${row.original.className || ''}`}>
-      {row.getAllCells().map((cell) =>
-        flexRender(cell.column.columnDef.cell, {
-          key: cell.column.id,
-          ...cell.getContext()
-        })
-      )}
-    </div>
-  ),
-  (prevProps, nextProps) => prevProps.row.original === nextProps.row.original
+  ({ row, is_selected, on_row_click }) => {
+    const class_names = ['row', row.original.className || '']
+    if (on_row_click) class_names.push('row--clickable')
+    if (is_selected) class_names.push('row--selected')
+    const handle_click = on_row_click
+      ? (event) => {
+          if (event.altKey) return
+          on_row_click(row.original)
+        }
+      : undefined
+    const handle_key_down = on_row_click
+      ? (event) => {
+          if (event.key === 'Enter') on_row_click(row.original)
+        }
+      : undefined
+    return (
+      <div
+        className={class_names.join(' ')}
+        onClick={handle_click}
+        onKeyDown={handle_key_down}
+        tabIndex={on_row_click ? 0 : undefined}
+        aria-selected={on_row_click ? Boolean(is_selected) : undefined}>
+        {row.getAllCells().map((cell) =>
+          flexRender(cell.column.columnDef.cell, {
+            key: cell.column.id,
+            ...cell.getContext()
+          })
+        )}
+      </div>
+    )
+  },
+  (prevProps, nextProps) =>
+    prevProps.row.original === nextProps.row.original &&
+    prevProps.is_selected === nextProps.is_selected &&
+    prevProps.on_row_click === nextProps.on_row_click
 )
 
 MemoizedRow.displayName = 'MemoizedRow'
 MemoizedRow.propTypes = {
-  row: PropTypes.object.isRequired
+  row: PropTypes.object.isRequired,
+  is_selected: PropTypes.bool,
+  on_row_click: PropTypes.func
 }
 
 // A row of group bands may wrap to two lines: a band is as wide as the columns
@@ -156,6 +187,9 @@ export default function Table({
   metadata = {},
   enable_validation_warnings = false,
   row_highlights = null,
+  on_row_click = null,
+  selected_row_ids = null,
+  get_row_id = default_get_row_id,
   filter_controls_open: controlled_filter_controls_open,
   set_filter_controls_open: controlled_set_filter_controls_open,
   controls_extension = null,
@@ -550,8 +584,17 @@ export default function Table({
   )
 
   const table_meta = useMemo(
-    () => ({ row_highlights: effective_row_highlights }),
-    [effective_row_highlights]
+    () => ({
+      row_highlights: effective_row_highlights,
+      // Cells read this to hand a plain click to the row instead of copying.
+      has_row_click: Boolean(on_row_click)
+    }),
+    [effective_row_highlights, on_row_click]
+  )
+
+  const selected_row_id_set = useMemo(
+    () => new Set(selected_row_ids || []),
+    [selected_row_ids]
   )
 
   const filtered_data = useMemo(() => {
@@ -809,9 +852,16 @@ export default function Table({
   const row_items = useMemo(() => {
     return virtual_rows.map((virtual_row) => {
       const row = rows[virtual_row.index]
-      return <MemoizedRow key={virtual_row.index} row={row} />
+      return (
+        <MemoizedRow
+          key={virtual_row.index}
+          row={row}
+          is_selected={selected_row_id_set.has(get_row_id(row.original))}
+          on_row_click={on_row_click}
+        />
+      )
     })
-  }, [virtual_rows, rows])
+  }, [virtual_rows, rows, selected_row_id_set, get_row_id, on_row_click])
 
   // Depend on table_columns (not just `table`): TanStack returns a stable
   // `table` reference across re-renders, so a memo keyed only on `table`
@@ -1305,6 +1355,13 @@ Table.propTypes = {
   no_row_axes_available_label: PropTypes.string,
   enable_validation_warnings: PropTypes.bool,
   row_highlights: PropTypes.object,
+  // Called with the row's data on a click or Enter. When set, a plain click on
+  // a cell no longer copies its value; Alt-click still does.
+  on_row_click: PropTypes.func,
+  // Controlled selection: ids of the rows to mark selected, matched through
+  // get_row_id(row_data).
+  selected_row_ids: PropTypes.array,
+  get_row_id: PropTypes.func,
   filter_controls_open: PropTypes.bool,
   set_filter_controls_open: PropTypes.func,
   controls_extension: PropTypes.node,

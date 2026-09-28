@@ -111,15 +111,21 @@ const TableCell = ({ getValue, column, row, table }) => {
     value = value.toFixed(fixed_places)
   }
 
-  const handle_click = useCallback(() => {
-    if (value !== undefined && value !== null) {
-      copy_to_clipboard(`${value}`).then((ok) => {
-        if (!ok) {
-          console.error('Failed to copy text to clipboard')
-        }
-      })
-    }
-  }, [value])
+  const has_row_click = Boolean(table.options.meta?.has_row_click)
+  const handle_click = useCallback(
+    (event) => {
+      // On a clickable table a plain click belongs to the row; Alt copies.
+      if (has_row_click && !event?.altKey) return
+      if (value !== undefined && value !== null) {
+        copy_to_clipboard(`${value}`).then((ok) => {
+          if (!ok) {
+            console.error('Failed to copy text to clipboard')
+          }
+        })
+      }
+    },
+    [value, has_row_click]
+  )
 
   const is_grouped = Boolean(column.parent?.columns.length)
   const is_group_end =

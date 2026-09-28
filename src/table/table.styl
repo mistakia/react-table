@@ -160,6 +160,14 @@
         // column inherits the hovered fill instead of staying on the base one.
         --rt-row-surface white
 
+      &.row--clickable
+        cursor pointer
+
+      // Selected through the same surface variable, so the pinned column
+      // carries it too.
+      &.row--selected
+        --rt-row-surface $rt_accent_subtle
+
   .header
     width fit-content
     position sticky
