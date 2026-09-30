@@ -243,6 +243,27 @@ describe('apply_cluster_method', () => {
     })
   })
 
+  it('choosing natural tiers without a count starts at five', () => {
+    expect(
+      apply_cluster_method({
+        scatter_plot_options: { cluster_method: 'k_means' },
+        cluster_method: 'natural_breaks'
+      }).cluster_count
+    ).to.equal(5)
+    expect(
+      apply_cluster_method({
+        scatter_plot_options: { cluster_count: 3 },
+        cluster_method: 'natural_breaks'
+      }).cluster_count
+    ).to.equal(3)
+    expect(
+      apply_cluster_method({
+        scatter_plot_options: {},
+        cluster_method: 'k_means'
+      })
+    ).to.not.have.property('cluster_count')
+  })
+
   it('turning on keeps an existing color mode', () => {
     const next = apply_cluster_method({
       scatter_plot_options: { point_color_mode: 'team' },

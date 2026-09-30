@@ -29,6 +29,10 @@ export const CLUSTER_PALETTE = [
 
 export const MIN_CLUSTER_COUNT = 2
 export const MAX_CLUSTER_COUNT = 8
+// Silhouette scoring favors a coarse split in one dimension (two tiers on
+// age against rest-of-season points), so choosing natural tiers starts at a
+// fixed count; Auto stays one click away.
+export const DEFAULT_NATURAL_TIER_COUNT = 5
 
 const K_MEANS_SEED = 1
 
@@ -281,7 +285,8 @@ export const derive_scatter_clusters = ({
 /**
  * Next scatter_plot_options after choosing a cluster method from the toolbar.
  * Turning clustering on also shows regions and summary, and colors points by
- * cluster unless a color mode is already chosen; turning it off releases the
+ * cluster unless a color mode is already chosen; choosing natural tiers with
+ * no count set starts at DEFAULT_NATURAL_TIER_COUNT; turning it off releases the
  * cluster color mode so points do not fall back to an uncolored state.
  *
  * @param {object} params
@@ -301,6 +306,9 @@ export const apply_cluster_method = ({
   }
   const was_off = !scatter_plot_options.cluster_method
   next.cluster_method = cluster_method
+  if (cluster_method === 'natural_breaks' && next.cluster_count == null) {
+    next.cluster_count = DEFAULT_NATURAL_TIER_COUNT
+  }
   if (was_off) {
     next.show_cluster_regions = true
     next.show_cluster_summary = true
