@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mistakia.github.io/react-table/schema/state/chart-column-reference.json",
+  "title": "ChartColumnReference",
+  "description": "One charted column; an empty object means no column is selected, which is the shape a share link parses an absent reference into",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "column_id": {
+      "type": "string",
+      "description": "ID of the charted column"
+    },
+    "column_index": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Occurrence of the column among columns sharing its ID, as sort's column_index counts it"
+    }
+  }
+}

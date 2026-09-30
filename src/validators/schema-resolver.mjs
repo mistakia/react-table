@@ -6,8 +6,19 @@ const SCATTER_PLOT_OPTIONS_SCHEMA_ID =
   'https://mistakia.github.io/react-table/schema/state/scatter-plot-options.json'
 const BAR_CHART_OPTIONS_SCHEMA_ID =
   'https://mistakia.github.io/react-table/schema/state/bar-chart-options.json'
+const CHART_COLUMN_REFERENCE_SCHEMA_ID =
+  'https://mistakia.github.io/react-table/schema/state/chart-column-reference.json'
 
 const SCHEMAS = {
+  'chart-column-reference': {
+    $id: CHART_COLUMN_REFERENCE_SCHEMA_ID,
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      column_id: { type: 'string' },
+      column_index: { type: 'integer', minimum: 0, default: 0 }
+    }
+  },
   'scatter-plot-options': {
     $id: SCATTER_PLOT_OPTIONS_SCHEMA_ID,
     type: 'object',
@@ -198,10 +209,19 @@ const SCHEMAS = {
       scatter_plot_options: {
         $ref: SCATTER_PLOT_OPTIONS_SCHEMA_ID
       },
+      scatter_plot_columns: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          x: { $ref: CHART_COLUMN_REFERENCE_SCHEMA_ID },
+          y: { $ref: CHART_COLUMN_REFERENCE_SCHEMA_ID }
+        }
+      },
       disable_bar_chart: { type: 'boolean' },
       bar_chart_options: {
         $ref: BAR_CHART_OPTIONS_SCHEMA_ID
-      }
+      },
+      bar_chart_column: { $ref: CHART_COLUMN_REFERENCE_SCHEMA_ID }
     }
   }
 }

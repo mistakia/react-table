@@ -63,6 +63,15 @@
       "$ref": "./scatter-plot-options.json",
       "description": "Persisted scatter plot display options (colors, reference lines, toggles, custom text)"
     },
+    "scatter_plot_columns": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "x": { "$ref": "./chart-column-reference.json" },
+        "y": { "$ref": "./chart-column-reference.json" }
+      },
+      "description": "Columns selected as the scatter plot's X and Y axes; a reference to a column no longer in the view resolves to no axis"
+    },
     "disable_bar_chart": {
       "type": "boolean",
       "description": "When true, disables the bar chart menu option in column headers"
@@ -70,6 +79,10 @@
     "bar_chart_options": {
       "$ref": "./bar-chart-options.json",
       "description": "Persisted bar chart display options (orientation, average line, value labels, custom text)"
+    },
+    "bar_chart_column": {
+      "$ref": "./chart-column-reference.json",
+      "description": "Column selected for the ranked bar chart; a reference to a column no longer in the view resolves to no chart"
     }
   }
 }

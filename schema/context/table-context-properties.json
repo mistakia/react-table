@@ -200,53 +200,23 @@
     },
     "set_selected_scatter_column": {
       "type": "object",
-      "description": "Function to select columns for scatter plot visualization",
+      "description": "Function toggling a column occurrence as a scatter plot axis in table_state.scatter_plot_columns; selecting the current axis column clears it",
       "properties": {
         "function": {
           "type": "string",
-          "description": "Function signature: (axis: 'x' | 'y', columnId: string, columnParams?: object) => void"
-        },
-        "parameters": {
-          "type": "object",
-          "properties": {
-            "axis": {
-              "type": "string",
-              "enum": ["x", "y"],
-              "description": "Which axis to assign the column to (x or y)"
-            },
-            "columnId": {
-              "type": "string",
-              "description": "The ID of the column to use for this axis"
-            },
-            "columnParams": {
-              "type": "object",
-              "description": "Optional column parameters to apply for this scatter plot"
-            }
-          }
-        },
-        "returns": {
-          "type": "string",
-          "description": "void - No return value"
+          "description": "Function signature: ({ axis: 'x' | 'y', column_id: string, column_index: number }) => void"
         }
-      },
-      "examples": [
-        "function(axis, columnId, columnParams) { setScatterColumns(prev => ({ ...prev, [axis]: columnId, [axis + '_params']: columnParams })); }",
-        "(axis, columnId, params) => updateScatterPlot({ axis, columnId, params })"
-      ]
+      }
     },
-    "selected_scatter_columns": {
+    "set_selected_bar_chart_column": {
       "type": "object",
+      "description": "Function toggling a column occurrence as the bar chart column in table_state.bar_chart_column; selecting the current column clears it",
       "properties": {
-        "x": { "type": ["string", "null"] },
-        "y": { "type": ["string", "null"] },
-        "x_column_id": { "type": ["string", "null"] },
-        "y_column_id": { "type": ["string", "null"] },
-        "x_accessor_path": { "type": ["string", "null"] },
-        "y_accessor_path": { "type": ["string", "null"] },
-        "x_column_params": { "type": ["object", "null"] },
-        "y_column_params": { "type": ["object", "null"] }
-      },
-      "description": "Current scatter plot column selections"
+        "function": {
+          "type": "string",
+          "description": "Function signature: ({ column_id: string, column_index: number }) => void"
+        }
+      }
     }
   }
 }

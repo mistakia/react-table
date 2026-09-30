@@ -43,6 +43,10 @@ import {
 } from '#src/utils'
 import { remap_sort_for_removed_column_positions } from '#src/utils/remap-sort-for-column-change.js'
 import get_row_axis_label from '#src/utils/get-row-axis-label.js'
+import {
+  resolve_chart_column,
+  toggle_chart_column
+} from '#src/utils/resolve-chart-column.js'
 import { table_context } from '#src/table-context'
 import { ADD_COLUMN_ACTION_WIDTH, COLUMN_INDEX_WIDTH } from '#src/constants.mjs'
 import ScatterPlotOverlay from '#src/scatter-plot-overlay/scatter-plot-overlay'
@@ -254,21 +258,7 @@ export default function Table({
   const [column_controls_open, set_column_controls_open] = useState(false)
   const [filters_local_table_state, set_filters_local_table_state] =
     useState(table_state)
-  const [selected_scatter_columns, set_selected_scatter_columns] = useState({
-    x: null,
-    y: null,
-    x_column_id: null,
-    y_column_id: null
-  })
   const [show_scatter_plot, set_show_scatter_plot] = useState(false)
-  // A bar chart needs ONE column plus the row's own identity, so unlike the
-  // scatter plot's x/y pair this is a single selection, not an axis map.
-  const [selected_bar_chart_column, set_selected_bar_chart_column_state] =
-    useState({
-      composite_column_id: null,
-      column_id: null,
-      accessor_path: null
-    })
   const [show_bar_chart, set_show_bar_chart] = useState(false)
   const [client_filter, set_client_filter] = useState(null)
   const [local_highlights, set_local_highlights] = useState(null)
@@ -912,69 +902,78 @@ export default function Table({
     [sticky_columns, sticky_column_sizes, sticky_column_ids]
   )
 
+  // Chart columns live in table_state, not component state, so a saved view or
+  // share link reopens with its chart ready -- otherwise every persisted chart
+  // option is unreachable until the reader reselects columns by hand. Selecting
+  // one redraws rows already in hand, hence the display-only flag.
+  const leaf_column_defs = table
+    .getAllLeafColumns()
+    .map((leaf_column) => leaf_column.columnDef)
+  const resolve_table_chart_column = (reference) =>
+    resolve_chart_column({
+      reference,
+      leaf_column_defs,
+      table_state_columns: table_state.columns || [],
+      all_columns,
+      enable_duplicate_column_ids
+    })
+  const scatter_x = resolve_table_chart_column(
+    table_state.scatter_plot_columns?.x
+  )
+  const scatter_y = resolve_table_chart_column(
+    table_state.scatter_plot_columns?.y
+  )
+  const bar_chart = resolve_table_chart_column(table_state.bar_chart_column)
+
+  // Clicking the already-selected column clears it, in both charts.
   const set_selected_scatter_column = useCallback(
-    ({
-      axis,
-      composite_column_id,
-      column_id,
-      accessor_path,
-      column_params
-    }) => {
-      set_selected_scatter_columns((prev) => {
-        if (prev[axis] === composite_column_id) {
-          return {
-            ...prev,
-            [axis]: null,
-            [`${axis}_column_id`]: null,
-            [`${axis}_accessor_path`]: null,
-            [`${axis}_column_params`]: null
-          }
-        }
-        return {
-          ...prev,
-          [axis]: composite_column_id,
-          [`${axis}_column_id`]: column_id,
-          [`${axis}_accessor_path`]: accessor_path,
-          [`${axis}_column_params`]: column_params
-        }
-      })
+    ({ axis, column_id, column_index }) => {
+      const { [axis]: current, ...other_axes } =
+        table_state.scatter_plot_columns || {}
+      const next = toggle_chart_column(current, { column_id, column_index })
+      on_table_state_change(
+        {
+          ...table_state,
+          scatter_plot_columns: next
+            ? { ...other_axes, [axis]: next }
+            : other_axes
+        },
+        { is_display_only_change: true }
+      )
     },
-    [all_columns]
+    [table_state, on_table_state_change]
   )
 
   const open_scatter_plot = useCallback(() => {
-    if (selected_scatter_columns.x && selected_scatter_columns.y) {
+    if (scatter_x && scatter_y) {
       set_show_scatter_plot(true)
     }
-  }, [selected_scatter_columns])
+  }, [scatter_x, scatter_y])
 
   const close_scatter_plot = useCallback(() => {
     set_show_scatter_plot(false)
   }, [])
 
-  // Clicking the already-selected column clears it, matching the scatter
-  // plot's toggle so one menu does not select and the other only ever set.
   const set_selected_bar_chart_column = useCallback(
-    ({ composite_column_id, column_id, accessor_path }) => {
-      set_selected_bar_chart_column_state((prev) => {
-        if (prev.composite_column_id === composite_column_id) {
-          return {
-            composite_column_id: null,
-            column_id: null,
-            accessor_path: null
-          }
-        }
-        return { composite_column_id, column_id, accessor_path }
+    ({ column_id, column_index }) => {
+      const { bar_chart_column, ...other_state } = table_state
+      const next = toggle_chart_column(bar_chart_column, {
+        column_id,
+        column_index
       })
+      on_table_state_change(
+        next ? { ...other_state, bar_chart_column: next } : other_state,
+        { is_display_only_change: true }
+      )
     },
-    []
+    [table_state, on_table_state_change]
   )
 
   const open_bar_chart = useCallback(() => {
-    if (selected_bar_chart_column.composite_column_id) {
+    if (bar_chart) {
       set_show_bar_chart(true)
     }
-  }, [selected_bar_chart_column])
+  }, [bar_chart])
 
   const close_bar_chart = useCallback(() => {
     set_show_bar_chart(false)
@@ -1005,10 +1004,8 @@ export default function Table({
         sticky_column_sizes,
         disable_edit_view,
         get_export_api_url,
-        selected_scatter_columns,
         set_selected_scatter_column,
         open_scatter_plot,
-        selected_bar_chart_column,
         set_selected_bar_chart_column,
         open_bar_chart
       }}>
@@ -1162,14 +1159,14 @@ export default function Table({
                     )}
                   </>
                 )}
-                {selected_scatter_columns.x && selected_scatter_columns.y && (
+                {scatter_x && scatter_y && (
                   <div
                     className='table-top-lead-button show-plot'
                     onClick={open_scatter_plot}>
                     Show Plot
                   </div>
                 )}
-                {selected_bar_chart_column.composite_column_id && (
+                {bar_chart && (
                   <div
                     className='table-top-lead-button show-plot'
                     onClick={open_bar_chart}>
@@ -1253,15 +1250,15 @@ export default function Table({
           </div>
         )}
       </div>
-      {show_scatter_plot && (
+      {show_scatter_plot && scatter_x && scatter_y && (
         <ScatterPlotOverlay
           data={data}
-          x_column={all_columns[selected_scatter_columns.x_column_id]}
-          x_accessor_path={selected_scatter_columns.x_accessor_path}
-          x_column_params={selected_scatter_columns.x_column_params}
-          y_column={all_columns[selected_scatter_columns.y_column_id]}
-          y_accessor_path={selected_scatter_columns.y_accessor_path}
-          y_column_params={selected_scatter_columns.y_column_params}
+          x_column={scatter_x.column}
+          x_accessor_path={scatter_x.accessor_path}
+          x_column_params={scatter_x.column_params}
+          y_column={scatter_y.column}
+          y_accessor_path={scatter_y.accessor_path}
+          y_column_params={scatter_y.column_params}
           get_point_label={get_scatter_point_label}
           get_point_image={get_scatter_point_image}
           get_point_color={get_scatter_point_color}
@@ -1282,11 +1279,11 @@ export default function Table({
           on_close={close_scatter_plot}
         />
       )}
-      {show_bar_chart && (
+      {show_bar_chart && bar_chart && (
         <BarChartOverlay
           data={data}
-          column={all_columns[selected_bar_chart_column.column_id]}
-          accessor_path={selected_bar_chart_column.accessor_path}
+          column={bar_chart.column}
+          accessor_path={bar_chart.accessor_path}
           get_label={get_bar_chart_label}
           get_image={get_bar_chart_image}
           get_color={get_bar_chart_color}

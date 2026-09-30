@@ -32,6 +32,7 @@ import AddColumnActionSpacer from '#src/add-column-action-spacer'
 import DataTypeIcon from '#src/data-type-icon'
 import ColumnQuickFilter from '#src/column-quick-filter'
 import { table_context } from '#src/table-context'
+import { is_same_chart_column } from '#src/utils/resolve-chart-column.js'
 
 import './table-header.styl'
 
@@ -76,9 +77,7 @@ const TableHeader = ({ header, column, table }) => {
     set_filters_local_table_state,
     sticky_left,
     is_sticky_column,
-    selected_scatter_columns,
     set_selected_scatter_column,
-    selected_bar_chart_column,
     set_selected_bar_chart_column,
     enable_duplicate_column_ids,
     columns_with_no_data,
@@ -175,7 +174,6 @@ const TableHeader = ({ header, column, table }) => {
   const is_sortable = data_type !== TABLE_DATA_TYPES.JSON
 
   const column_id = column.columnDef.column_id
-  const composite_column_id = `${column_id}-${column_index}`
   const accessor_path = enable_duplicate_column_ids
     ? `${column.columnDef.accessorKey}_${column_index}`
     : column.columnDef.id
@@ -271,59 +269,30 @@ const TableHeader = ({ header, column, table }) => {
   ])
 
   const handle_select_for_scatter_x = useCallback(() => {
-    set_selected_scatter_column({
-      axis: 'x',
-      composite_column_id,
-      column_id,
-      accessor_path,
-      column_params: table_state.columns[table_state_columns_index]?.params
-    })
-  }, [
-    composite_column_id,
-    column_id,
-    accessor_path,
-    set_selected_scatter_column,
-    table_state_columns_index,
-    table_state
-  ])
+    set_selected_scatter_column({ axis: 'x', column_id, column_index })
+  }, [column_id, column_index, set_selected_scatter_column])
 
   const handle_select_for_scatter_y = useCallback(() => {
-    set_selected_scatter_column({
-      axis: 'y',
-      composite_column_id,
-      column_id,
-      accessor_path,
-      column_params: table_state.columns[table_state_columns_index]?.params
-    })
-  }, [
-    composite_column_id,
-    column_id,
-    accessor_path,
-    set_selected_scatter_column,
-    table_state_columns_index,
-    table_state
-  ])
+    set_selected_scatter_column({ axis: 'y', column_id, column_index })
+  }, [column_id, column_index, set_selected_scatter_column])
 
   const handle_select_for_bar_chart = useCallback(() => {
-    set_selected_bar_chart_column({
-      composite_column_id,
-      column_id,
-      accessor_path
-    })
-  }, [
-    composite_column_id,
-    column_id,
-    accessor_path,
-    set_selected_bar_chart_column
-  ])
+    set_selected_bar_chart_column({ column_id, column_index })
+  }, [column_id, column_index, set_selected_bar_chart_column])
 
-  const is_selected_for_bar_chart =
-    selected_bar_chart_column?.composite_column_id === composite_column_id
-
-  const is_selected_for_scatter_x =
-    selected_scatter_columns.x === composite_column_id
-  const is_selected_for_scatter_y =
-    selected_scatter_columns.y === composite_column_id
+  const column_occurrence = { column_id, column_index }
+  const is_selected_for_bar_chart = is_same_chart_column(
+    table_state.bar_chart_column,
+    column_occurrence
+  )
+  const is_selected_for_scatter_x = is_same_chart_column(
+    table_state.scatter_plot_columns?.x,
+    column_occurrence
+  )
+  const is_selected_for_scatter_y = is_same_chart_column(
+    table_state.scatter_plot_columns?.y,
+    column_occurrence
+  )
 
   const is_grouped = Boolean(column.parent?.columns.length)
   const is_group_end =

@@ -44,8 +44,13 @@ describe('share-link round trip', () => {
       q: 'mahomes',
       rank_aggregation: { weights: { a: 1.0 } },
       scatter_plot_options: { x: 'a', y: 'b' },
+      scatter_plot_columns: {
+        x: { column_id: 'a', column_index: 0 },
+        y: { column_id: 'b', column_index: 0 }
+      },
       disable_scatter_plot: true,
       bar_chart_options: { orientation: 'horizontal' },
+      bar_chart_column: { column_id: 'b', column_index: 0 },
       disable_bar_chart: false
     }
     const view_fields = {
@@ -101,8 +106,10 @@ describe('share-link round trip', () => {
         q: '',
         rank_aggregation: {},
         scatter_plot_options: {},
+        scatter_plot_columns: {},
         disable_scatter_plot: false,
         bar_chart_options: {},
+        bar_chart_column: {},
         disable_bar_chart: false
       },
       view_fields: {}
@@ -117,7 +124,9 @@ describe('share-link round trip', () => {
     expect(params.has('rank_aggregation')).to.equal(false)
     expect(params.has('scatter_plot_options')).to.equal(false)
     expect(params.get('disable_scatter_plot')).to.equal('false')
+    expect(params.has('scatter_plot_columns')).to.equal(false)
     expect(params.has('bar_chart_options')).to.equal(false)
+    expect(params.has('bar_chart_column')).to.equal(false)
     expect(params.get('disable_bar_chart')).to.equal('false')
   })
 
@@ -133,8 +142,10 @@ describe('share-link round trip', () => {
       q: '',
       rank_aggregation: {},
       scatter_plot_options: {},
+      scatter_plot_columns: {},
       disable_scatter_plot: false,
       bar_chart_options: {},
+      bar_chart_column: {},
       disable_bar_chart: false
     })
     expect(parsed.view_fields).to.deep.equal({

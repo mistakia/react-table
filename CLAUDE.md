@@ -58,9 +58,13 @@ src/
   row_axes: [string],  // optional; axes the row key extends along (e.g. 'year', 'week')
   prefix_columns: [],
   rank_aggregation: {},
-  row_grain: [string]  // optional; what each row represents (e.g. 'player' vs 'team')
+  row_grain: [string],  // optional; what each row represents (e.g. 'player' vs 'team')
+  scatter_plot_columns: { x: chart_column, y: chart_column },  // optional
+  bar_chart_column: chart_column  // optional; chart_column is { column_id, column_index }
 }
 ```
+
+**Chart columns are table state, and they are references, not copies.** The scatter plot's axes and the bar chart's column persist as `{ column_id, column_index }`, the occurrence identity `sort` uses, so a saved view or share link reopens with its chart one click away instead of with every persisted chart option unreachable. The column definition, accessor path and params are resolved live by `src/utils/resolve-chart-column.js` (`test/resolve-chart-column.spec.mjs`); a copied params object went stale the moment the column was edited. An empty object means no selection, because the share-link parser fills an absent `object` key with `{}`. A reference to a column the view no longer holds resolves to null and is left in state. Unlike `sort`, a reference is not remapped when an EARLIER duplicate of its column is removed, so it can land on the next occurrence.
 
 **Pinned columns are capped by a width budget, so a `prefix_columns` entry is a REQUEST to pin, not a guarantee.** `prefix_columns` render sticky only while the running total stays under `STICKY_WIDTH_BUDGET_RATIO` (half) of the scroll container's measured width; the rest render unpinned and scroll normally, re-resolved on resize. The first one is always pinned. A consumer seeing a column unpin itself on a phone is looking at this and not at a bug — five prefix columns come to roughly 470px, which covers a 390px viewport entirely and leaves no width in which any data column can be scrolled into view. The admission rule is `src/utils/resolve-sticky-column-ids.js`, unit-tested at `test/resolve-sticky-column-ids.spec.mjs`.
 

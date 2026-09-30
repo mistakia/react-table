@@ -34,8 +34,10 @@ export const SHARE_LINK_URL_SCHEMA = {
     q: 'string',
     rank_aggregation: 'object',
     scatter_plot_options: 'object',
+    scatter_plot_columns: 'object',
     disable_scatter_plot: 'boolean',
     bar_chart_options: 'object',
+    bar_chart_column: 'object',
     disable_bar_chart: 'boolean'
   },
   // `query_id` is a VIEW key, not a table_state key, and that placement is the

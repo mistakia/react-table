@@ -30,7 +30,8 @@ const published_schema = read_published('table-state.json')
 const PAIRED_STATE_SCHEMAS = [
   ['table-state', 'table-state.json'],
   ['bar-chart-options', 'bar-chart-options.json'],
-  ['scatter-plot-options', 'scatter-plot-options.json']
+  ['scatter-plot-options', 'scatter-plot-options.json'],
+  ['chart-column-reference', 'chart-column-reference.json']
 ]
 
 describe('state schema parity', () => {
@@ -65,6 +66,25 @@ describe('table-state schema', () => {
 
   it('accepts a row_grain array', () => {
     expect(validate_table_state({ row_grain: ['player'] }).valid).to.equal(true)
+  })
+
+  it('accepts chart column references, including the empty no-selection shape', () => {
+    expect(
+      validate_table_state({
+        scatter_plot_columns: {
+          x: { column_id: 'player_age', column_index: 0 },
+          y: {}
+        },
+        bar_chart_column: {}
+      }).valid
+    ).to.equal(true)
+  })
+
+  it('rejects a chart column reference carrying a copied accessor path', () => {
+    const result = validate_table_state({
+      bar_chart_column: { column_id: 'player_age', accessor_path: 'age_0' }
+    })
+    expect(result.valid).to.equal(false)
   })
 
   it('rejects a row_grain that is a bare string', () => {
