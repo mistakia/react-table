@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import ChartSettingsModal from '../chart-settings-modal'
 import BarChartRowsPanel from './bar-chart-rows-panel.js'
+import { DEFAULT_TIER_COUNT } from './bar-chart-data.js'
 import './bar-chart-settings-panel.styl'
 
 const MAX_TEXT_LENGTH = 200
@@ -189,6 +190,8 @@ BarChartSettingsModal.propTypes = {
   on_close: PropTypes.func.isRequired
 }
 
+const TIER_COUNT_OPTIONS = [2, 3, 4, 5, 6, 7, 8, 9, 10]
+
 // Orientation, the rows panel, the two label toggles, a PNG export and the
 // settings modal. Deliberately smaller than the scatter plot's panel: a ranked
 // bar has one metric and one ordering, so there is no axis to configure.
@@ -207,6 +210,16 @@ const BarChartSettingsPanel = ({
   const show_value_labels = bar_chart_options.show_value_labels !== false
 
   const reverse_category_axis = bar_chart_options.reverse_category_axis === true
+  const show_tiers = bar_chart_options.show_tiers === true
+  const tier_count = bar_chart_options.tier_count || DEFAULT_TIER_COUNT
+
+  // Off by default, so the toggle writes a plain boolean and leaves any chosen
+  // count in place for the next time tiers are switched on.
+  const toggle_tiers = () =>
+    on_change({ ...bar_chart_options, show_tiers: !show_tiers })
+
+  const handle_tier_count = (event) =>
+    on_change({ ...bar_chart_options, tier_count: Number(event.target.value) })
 
   const set_orientation = (next) =>
     on_change({ ...bar_chart_options, orientation: next })
@@ -290,6 +303,27 @@ const BarChartSettingsPanel = ({
         title='Toggle value labels'>
         Values
       </button>
+      <button
+        type='button'
+        className={`toolbar-btn${show_tiers ? ' active' : ''}`}
+        onClick={toggle_tiers}
+        title='Shade natural-breaks tiers of the drawn bars'>
+        Tiers
+      </button>
+      {show_tiers && (
+        <select
+          className='toolbar-select'
+          aria-label='Tier count'
+          title='Number of tiers'
+          value={tier_count}
+          onChange={handle_tier_count}>
+          {TIER_COUNT_OPTIONS.map((count) => (
+            <option key={count} value={count}>
+              {count}
+            </option>
+          ))}
+        </select>
+      )}
       <span className='toolbar-divider' aria-hidden='true' />
       <button
         type='button'

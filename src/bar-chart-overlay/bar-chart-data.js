@@ -7,6 +7,8 @@
 // Nothing in this file may know about any consumer's domain. Subject identity,
 // colour and logo all arrive as caller-supplied resolvers.
 
+import { create_natural_breaks_solver } from '../utils/cluster-points.js'
+
 // Zero is KEPT, unlike the scatter plot, which drops it. There a zero is an
 // unplaced point clustering against an axis edge; here it is a rank -- the
 // subject that did the thing zero times sits in its rightful place at the
@@ -198,6 +200,52 @@ export const compute_axis_extremes = ({
   }
 }
 
+// Tier 1 through N over the DRAWN bars, as runs of consecutive categories.
+//
+// Over the window rather than every matched row because a tier is a claim
+// about the bars the reader is comparing: tiering 500 players and drawing the
+// top 40 would put all 40 in one or two tiers and say nothing about them.
+//
+// Natural breaks is exact 1-D clustering, so every tier is a contiguous run of
+// values and, the rows being sorted by value, a contiguous run of bars. Its
+// cluster indices ascend with value; the ranking's best end is the highest
+// value, so the numbering is flipped to put Tier 1 there. Fewer tiers than
+// asked are drawn when the bars hold fewer distinct values, since a tier of
+// identical bars split in two is a break with no gap behind it.
+export const DEFAULT_TIER_COUNT = 5
+
+export const derive_bar_tiers = ({
+  values,
+  tier_count = DEFAULT_TIER_COUNT
+}) => {
+  const distinct_count = new Set(values).size
+  const effective_count = Math.min(tier_count, distinct_count)
+  if (effective_count < 2) return null
+
+  const solve = create_natural_breaks_solver({
+    values,
+    max_count: effective_count
+  })
+  const result = solve && solve(effective_count)
+  if (!result) return null
+
+  const tiers = []
+  result.assignments.forEach((cluster_index, category_index) => {
+    const tier_number = effective_count - cluster_index
+    const current = tiers[tiers.length - 1]
+    if (current && current.tier_number === tier_number) {
+      current.end_index = category_index
+    } else {
+      tiers.push({
+        tier_number,
+        start_index: category_index,
+        end_index: category_index
+      })
+    }
+  })
+  return tiers
+}
+
 // One call, so a caller cannot assemble half of this correctly. Returns
 // everything the overlay needs to build Highcharts options, including the
 // empty case -- `is_empty` is the component's cue to render its own message
@@ -213,7 +261,8 @@ export const derive_bar_chart_data = ({
   value_decimals_override = null,
   row_limit,
   rank_window = 'top',
-  include_average_in_extremes = true
+  include_average_in_extremes = true,
+  tier_count = null
 }) => {
   const filtered = filter_bar_rows({ data, accessor_path })
   const ranked = sort_bar_rows({ rows: filtered, accessor_path, get_label })
@@ -262,6 +311,8 @@ export const derive_bar_chart_data = ({
       values,
       include_value: include_average_in_extremes ? average : null
     }),
-    has_negative_values: values.some((value) => value < 0)
+    has_negative_values: values.some((value) => value < 0),
+    // null when tiers are off, and when the bars cannot form two of them.
+    tiers: tier_count ? derive_bar_tiers({ values, tier_count }) : null
   }
 }

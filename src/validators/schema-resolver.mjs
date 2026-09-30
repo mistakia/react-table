@@ -92,6 +92,8 @@ const SCHEMAS = {
       average_line_label: { type: 'string', maxLength: 200 },
       row_limit: { type: ['integer', 'null'], minimum: 1, maximum: 1000 },
       rank_window: { type: 'string', enum: ['top', 'bottom'], default: 'top' },
+      show_tiers: { type: 'boolean', default: false },
+      tier_count: { type: 'integer', minimum: 2, maximum: 10, default: 5 },
       reverse_category_axis: { type: 'boolean', default: false },
       value_decimals: { type: 'integer', minimum: 0, maximum: 10 },
       custom_title: { type: ['string', 'null'], maxLength: 200 },

@@ -1,4 +1,8 @@
-import { derive_bar_chart_data, format_bar_value } from './bar-chart-data.js'
+import {
+  DEFAULT_TIER_COUNT,
+  derive_bar_chart_data,
+  format_bar_value
+} from './bar-chart-data.js'
 
 export const BAR_LABEL_FONT_SIZE = 10
 export const BAR_LOGO_SIZE = 26
@@ -9,6 +13,12 @@ export const BAR_LOGO_SIZE = 26
 const VALUE_LABEL_OFFSET = BAR_LOGO_SIZE * 0.85
 
 export const AVERAGE_LINE_COLOR = '#333333'
+
+// Alternate tiers are shaded and the rest left clear, so adjacent tiers read
+// apart without a legend. Neutral, because the bars already carry each
+// subject's own colour and a tinted band would compete with it.
+export const TIER_BAND_COLOR = 'rgba(0, 0, 0, 0.045)'
+export const TIER_LABEL_COLOR = '#555555'
 
 // A Highcharts options object and nothing more -- no Highcharts import, no
 // React. Keeping it pure is what lets the specs assert the chart's actual
@@ -46,7 +56,11 @@ export const build_bar_chart_options = ({
     // uncapped one.
     row_limit: bar_chart_options.row_limit,
     rank_window,
-    include_average_in_extremes: bar_chart_options.show_average_line !== false
+    include_average_in_extremes: bar_chart_options.show_average_line !== false,
+    tier_count:
+      bar_chart_options.show_tiers === true
+        ? bar_chart_options.tier_count || DEFAULT_TIER_COUNT
+        : null
   })
 
   const {
@@ -59,7 +73,8 @@ export const build_bar_chart_options = ({
     is_empty,
     total_row_count,
     is_truncated,
-    scope_text
+    scope_text,
+    tiers
   } = derived
 
   const metric_base =
@@ -160,8 +175,30 @@ export const build_bar_chart_options = ({
     plotLines: [...zero_plot_line, ...average_plot_line]
   }
 
+  // One band per tier across its run of categories, labelled at the plot's
+  // far edge from the category axis -- the value end, where a vertical chart
+  // has headroom above its bars and a horizontal one has room past them.
+  const tier_plot_bands = (tiers || []).map((tier) => ({
+    from: tier.start_index - 0.5,
+    to: tier.end_index + 0.5,
+    color: tier.tier_number % 2 === 1 ? TIER_BAND_COLOR : 'transparent',
+    zIndex: 0,
+    label: {
+      text: `Tier ${tier.tier_number}`,
+      ...(is_horizontal
+        ? { align: 'right', verticalAlign: 'middle', textAlign: 'right', x: -6 }
+        : { align: 'center', verticalAlign: 'top', y: 14 }),
+      style: {
+        color: TIER_LABEL_COLOR,
+        fontSize: `${BAR_LABEL_FONT_SIZE}px`,
+        fontWeight: 'bold'
+      }
+    }
+  }))
+
   const category_axis = {
     categories,
+    plotBands: tier_plot_bands,
     // Which end the ranking starts at. Highcharts already reverses the category
     // axis BY DEFAULT on an inverted chart -- so that categories read downward
     // from the top rather than up from the origin -- which is why the option
@@ -341,7 +378,8 @@ export const build_bar_chart_options = ({
       scope_text,
       rank_window,
       average,
-      value_decimals
+      value_decimals,
+      tiers
     }
   }
 }

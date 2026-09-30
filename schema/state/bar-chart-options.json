@@ -32,6 +32,18 @@
       "maximum": 1000,
       "description": "How many bars to draw from the ranked set; absence means the component default and null means draw every row"
     },
+    "show_tiers": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, shades natural-breaks tiers of the drawn bars, Tier 1 holding the highest values"
+    },
+    "tier_count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 10,
+      "default": 5,
+      "description": "How many tiers to form; fewer are drawn when the drawn bars hold fewer distinct values"
+    },
     "rank_window": {
       "type": "string",
       "enum": ["top", "bottom"],
