@@ -183,3 +183,48 @@ describe('validate_table_state with scatter_plot_options schema', () => {
     expect(result.valid).to.equal(true)
   })
 })
+
+describe('validate_table_state - scatter_plot_options clustering fields', () => {
+  it('accepts a full cluster configuration', () => {
+    const result = validate_table_state({
+      scatter_plot_options: {
+        point_color_mode: 'cluster',
+        cluster_method: 'natural_breaks',
+        cluster_count: 4,
+        natural_breaks_axis: 'combined',
+        show_cluster_regions: false,
+        show_cluster_summary: true,
+        cluster_names: ['Breakouts', null, 'Veterans']
+      }
+    })
+    expect(result.valid).to.equal(true)
+  })
+
+  it('accepts null cluster_method and null cluster_count', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { cluster_method: null, cluster_count: null }
+    })
+    expect(result.valid).to.equal(true)
+  })
+
+  it('rejects a cluster_count above the maximum', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { cluster_method: 'k_means', cluster_count: 9 }
+    })
+    expect(result.valid).to.equal(false)
+  })
+
+  it('rejects an unknown cluster_method', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { cluster_method: 'dbscan' }
+    })
+    expect(result.valid).to.equal(false)
+  })
+
+  it('rejects a non-integer cluster_count', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { cluster_count: 2.5 }
+    })
+    expect(result.valid).to.equal(false)
+  })
+})

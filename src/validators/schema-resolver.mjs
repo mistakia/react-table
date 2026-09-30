@@ -16,7 +16,27 @@ const SCHEMAS = {
       show_tier_grid: { type: 'boolean', default: false },
       show_x_mean_line: { type: 'boolean', default: true },
       show_y_mean_line: { type: 'boolean', default: true },
-      point_color_mode: { type: 'string', enum: ['team', 'position'] },
+      point_color_mode: {
+        type: 'string',
+        enum: ['team', 'position', 'cluster']
+      },
+      cluster_method: {
+        type: ['string', 'null'],
+        enum: ['k_means', 'natural_breaks', null]
+      },
+      cluster_count: { type: ['integer', 'null'], minimum: 2, maximum: 8 },
+      natural_breaks_axis: {
+        type: 'string',
+        enum: ['x', 'y', 'combined'],
+        default: 'combined'
+      },
+      show_cluster_regions: { type: 'boolean', default: true },
+      show_cluster_summary: { type: 'boolean', default: true },
+      cluster_names: {
+        type: ['array', 'null'],
+        items: { type: ['string', 'null'], maxLength: 100 },
+        maxItems: 8
+      },
       reference_lines: {
         type: 'array',
         items: {

@@ -799,3 +799,125 @@ describe('ScatterPlotSettingsModal - font family (S12)', () => {
     expect(saved.font_family).to.be.undefined
   })
 })
+
+describe('ScatterPlotSettingsPanel - cluster controls', () => {
+  const render_panel = async (container, props) =>
+    render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        on_change: () => {},
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {},
+        ...props
+      }),
+      container
+    )
+
+  const change_select = async (select, value) => {
+    await act(async () => {
+      select.value = value
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+  }
+
+  it('choosing Clusters writes the method, regions, summary, and cluster color', async () => {
+    const container = make_container()
+    const on_change = sinon.spy()
+    await render_panel(container, { scatter_plot_options: {}, on_change })
+    expect(container.querySelector('[aria-label="Cluster count"]')).to.equal(
+      null
+    )
+    await change_select(
+      container.querySelector('[aria-label="Cluster method"]'),
+      'k_means'
+    )
+    expect(on_change.lastCall.args[0]).to.deep.equal({
+      cluster_method: 'k_means',
+      show_cluster_regions: true,
+      show_cluster_summary: true,
+      point_color_mode: 'cluster'
+    })
+  })
+
+  it('count select writes an integer and Auto removes it', async () => {
+    const container = make_container()
+    const on_change = sinon.spy()
+    await render_panel(container, {
+      scatter_plot_options: { cluster_method: 'k_means', cluster_count: 3 },
+      on_change
+    })
+    const count_select = container.querySelector('[aria-label="Cluster count"]')
+    await change_select(count_select, '5')
+    expect(on_change.lastCall.args[0].cluster_count).to.equal(5)
+    await change_select(count_select, '')
+    expect(on_change.lastCall.args[0]).to.not.have.property('cluster_count')
+  })
+
+  it('modal saves custom cluster names by position and trims empty tails', async () => {
+    const container = make_container()
+    const on_change = sinon.spy()
+    await render_panel(container, {
+      scatter_plot_options: { cluster_method: 'k_means' },
+      on_change,
+      cluster_automatic_names: ['Alpha', 'Beta', 'Gamma']
+    })
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+    const name_inputs = document.querySelectorAll('.cluster-name-input')
+    expect(name_inputs).to.have.lengthOf(3)
+    expect(name_inputs[0].placeholder).to.equal('Alpha')
+
+    const set_input = async (input, value) => {
+      await act(async () => {
+        const setter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        ).set
+        setter.call(input, value)
+        input.dispatchEvent(new Event('input', { bubbles: true }))
+      })
+    }
+    await set_input(name_inputs[1], ' Breakouts ')
+
+    const save_btn = Array.from(document.getElementsByTagName('button')).find(
+      (b) => b.textContent === 'Save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+    expect(on_change.lastCall.args[0]).to.deep.equal({
+      cluster_method: 'k_means',
+      cluster_names: [null, 'Breakouts']
+    })
+  })
+
+  it('modal Save with untouched cluster settings does not call on_change', async () => {
+    const container = make_container()
+    const on_change = sinon.spy()
+    await render_panel(container, {
+      scatter_plot_options: {
+        cluster_method: 'k_means',
+        show_cluster_regions: true
+      },
+      on_change,
+      cluster_automatic_names: ['Alpha', 'Beta']
+    })
+    const settings_btn = Array.from(
+      container.getElementsByTagName('button')
+    ).find((b) => b.textContent.toLowerCase().includes('settings'))
+    await act(async () => {
+      settings_btn.click()
+    })
+    const save_btn = Array.from(document.getElementsByTagName('button')).find(
+      (b) => b.textContent === 'Save'
+    )
+    await act(async () => {
+      save_btn.click()
+    })
+    expect(on_change.called).to.equal(false)
+  })
+})

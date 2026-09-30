@@ -50,5 +50,5 @@ export default function resolve_table_state_columns({
   return columns
 }
 
-const resolve_field = (field, column_params) =>
+export const resolve_field = (field, column_params) =>
   typeof field === 'function' ? field(column_params) : field

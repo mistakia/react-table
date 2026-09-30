@@ -1,6 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import ChartSettingsModal from '../chart-settings-modal'
+import {
+  apply_cluster_method,
+  MAX_CLUSTER_COUNT,
+  MIN_CLUSTER_COUNT
+} from './scatter-plot-clusters.js'
 import './scatter-plot-settings-panel.styl'
 
 const ScatterPlotToolbar = ({
@@ -23,6 +28,28 @@ const ScatterPlotToolbar = ({
       next.point_color_mode = value
     }
     on_change(next)
+  }
+
+  const handle_cluster_method = (e) => {
+    on_change(
+      apply_cluster_method({
+        scatter_plot_options,
+        cluster_method: e.target.value || null
+      })
+    )
+  }
+
+  const handle_cluster_count = (e) => {
+    const next = { ...scatter_plot_options }
+    if (e.target.value === '') delete next.cluster_count
+    else next.cluster_count = Number(e.target.value)
+    on_change(next)
+  }
+
+  const cluster_method = scatter_plot_options.cluster_method || ''
+  const cluster_count_options = []
+  for (let count = MIN_CLUSTER_COUNT; count <= MAX_CLUSTER_COUNT; count++) {
+    cluster_count_options.push(count)
   }
 
   const show_tier_grid = Boolean(scatter_plot_options.show_tier_grid)
@@ -70,8 +97,36 @@ const ScatterPlotToolbar = ({
           <option value=''>Default</option>
           <option value='team'>Team</option>
           <option value='position'>Position</option>
+          <option value='cluster'>Cluster</option>
         </select>
       </label>
+      <label className='toolbar-select-wrap' title='Cluster the plotted points'>
+        <span className='toolbar-select-label'>Group</span>
+        <select
+          className='toolbar-select'
+          aria-label='Cluster method'
+          value={cluster_method}
+          onChange={handle_cluster_method}>
+          <option value=''>Off</option>
+          <option value='k_means'>Clusters</option>
+          <option value='natural_breaks'>Natural tiers</option>
+        </select>
+      </label>
+      {cluster_method && (
+        <select
+          className='toolbar-select'
+          aria-label='Cluster count'
+          title='Number of groups; Auto picks the best silhouette score'
+          value={scatter_plot_options.cluster_count ?? ''}
+          onChange={handle_cluster_count}>
+          <option value=''>Auto</option>
+          {cluster_count_options.map((count) => (
+            <option key={count} value={count}>
+              {count}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   )
 }
@@ -241,7 +296,8 @@ ReferenceLinesEditor.propTypes = {
 const ScatterPlotSettingsModal = ({
   scatter_plot_options,
   on_change,
-  on_close
+  on_close,
+  cluster_automatic_names = []
 }) => {
   const [ref_lines, set_ref_lines] = React.useState(() =>
     (scatter_plot_options.reference_lines || []).map((l) => ({
@@ -264,6 +320,27 @@ const ScatterPlotSettingsModal = ({
   const [font_family, set_font_family] = React.useState(
     scatter_plot_options.font_family || ''
   )
+  const [natural_breaks_axis, set_natural_breaks_axis] = React.useState(
+    scatter_plot_options.natural_breaks_axis || 'combined'
+  )
+  const [show_cluster_regions, set_show_cluster_regions] = React.useState(
+    scatter_plot_options.show_cluster_regions !== false
+  )
+  const [show_cluster_summary, set_show_cluster_summary] = React.useState(
+    scatter_plot_options.show_cluster_summary !== false
+  )
+  const [cluster_names, set_cluster_names] = React.useState(() =>
+    cluster_automatic_names.map(
+      (_, index) => scatter_plot_options.cluster_names?.[index] || ''
+    )
+  )
+  const cluster_method = scatter_plot_options.cluster_method
+
+  const handle_cluster_name_change = (index, value) => {
+    set_cluster_names((names) =>
+      names.map((name, i) => (i === index ? value.slice(0, 100) : name))
+    )
+  }
 
   const handle_custom_title_change = (e) => {
     set_custom_title(e.target.value.slice(0, 200))
@@ -314,6 +391,38 @@ const ScatterPlotSettingsModal = ({
     set_or_delete('custom_x_axis_title', custom_x_axis_title.trim() || null)
     set_or_delete('custom_y_axis_title', custom_y_axis_title.trim() || null)
     set_or_delete('font_family', font_family || null)
+    if (cluster_method) {
+      set_or_delete(
+        'natural_breaks_axis',
+        natural_breaks_axis === 'combined' ? null : natural_breaks_axis
+      )
+      // Both default on; write only a real change so an untouched Save stays a no-op.
+      if (
+        show_cluster_regions !==
+        (scatter_plot_options.show_cluster_regions !== false)
+      ) {
+        next_draft.show_cluster_regions = show_cluster_regions
+      }
+      if (
+        show_cluster_summary !==
+        (scatter_plot_options.show_cluster_summary !== false)
+      ) {
+        next_draft.show_cluster_summary = show_cluster_summary
+      }
+      // Names are positional; keep the saved names beyond the clusters shown
+      // so a temporarily smaller count does not erase them.
+      const merged_names = [...(scatter_plot_options.cluster_names || [])]
+      cluster_names.forEach((name, index) => {
+        merged_names[index] = name.trim() || null
+      })
+      while (merged_names.length && !merged_names[merged_names.length - 1]) {
+        merged_names.pop()
+      }
+      set_or_delete(
+        'cluster_names',
+        merged_names.length ? merged_names.map((name) => name || null) : null
+      )
+    }
     if (JSON.stringify(next_draft) !== JSON.stringify(scatter_plot_options)) {
       on_change({ ...next_draft })
     }
@@ -402,6 +511,56 @@ const ScatterPlotSettingsModal = ({
         />
       </div>
 
+      {cluster_method && (
+        <div className='modal-section'>
+          <label className='modal-section-label'>Clusters</label>
+          {cluster_method === 'natural_breaks' && (
+            <label className='modal-inline-field'>
+              <span>Tier along</span>
+              <select
+                className='modal-select'
+                aria-label='Natural tiers axis'
+                value={natural_breaks_axis}
+                onChange={(e) => set_natural_breaks_axis(e.target.value)}>
+                <option value='combined'>Combined X and Y</option>
+                <option value='x'>X axis</option>
+                <option value='y'>Y axis</option>
+              </select>
+            </label>
+          )}
+          <label className='modal-inline-field'>
+            <input
+              type='checkbox'
+              checked={show_cluster_regions}
+              onChange={(e) => set_show_cluster_regions(e.target.checked)}
+            />
+            <span>Show regions and centroids</span>
+          </label>
+          <label className='modal-inline-field'>
+            <input
+              type='checkbox'
+              checked={show_cluster_summary}
+              onChange={(e) => set_show_cluster_summary(e.target.checked)}
+            />
+            <span>Show summary</span>
+          </label>
+          {cluster_names.map((name, index) => (
+            <input
+              key={index}
+              className='modal-text-input cluster-name-input'
+              type='text'
+              maxLength={100}
+              aria-label={`Name for group ${index + 1}`}
+              value={name}
+              onChange={(e) =>
+                handle_cluster_name_change(index, e.target.value)
+              }
+              placeholder={cluster_automatic_names[index]}
+            />
+          ))}
+        </div>
+      )}
+
       <div className='modal-section'>
         <label className='modal-section-label' htmlFor='font-family-select'>
           Font family
@@ -427,7 +586,8 @@ const ScatterPlotSettingsModal = ({
 ScatterPlotSettingsModal.propTypes = {
   scatter_plot_options: PropTypes.object.isRequired,
   on_change: PropTypes.func.isRequired,
-  on_close: PropTypes.func.isRequired
+  on_close: PropTypes.func.isRequired,
+  cluster_automatic_names: PropTypes.arrayOf(PropTypes.string)
 }
 
 const ScatterPlotSettingsPanel = ({
@@ -435,7 +595,8 @@ const ScatterPlotSettingsPanel = ({
   on_change,
   show_regression,
   on_toggle_regression,
-  on_download_png
+  on_download_png,
+  cluster_automatic_names
 }) => {
   const [modal_open, set_modal_open] = React.useState(false)
 
@@ -474,6 +635,7 @@ const ScatterPlotSettingsPanel = ({
           scatter_plot_options={scatter_plot_options}
           on_change={on_change}
           on_close={close_modal}
+          cluster_automatic_names={cluster_automatic_names}
         />
       )}
     </div>
@@ -485,7 +647,8 @@ ScatterPlotSettingsPanel.propTypes = {
   on_change: PropTypes.func.isRequired,
   show_regression: PropTypes.bool.isRequired,
   on_toggle_regression: PropTypes.func.isRequired,
-  on_download_png: PropTypes.func.isRequired
+  on_download_png: PropTypes.func.isRequired,
+  cluster_automatic_names: PropTypes.arrayOf(PropTypes.string)
 }
 
 export default ScatterPlotSettingsPanel

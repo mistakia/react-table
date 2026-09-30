@@ -68,3 +68,30 @@ describe('resolve_point_color', () => {
     expect(color).to.be.undefined
   })
 })
+
+describe('resolve_point_color - cluster mode', () => {
+  it('returns the cluster color without calling the consumer resolver', () => {
+    let called = false
+    const color = resolve_point_color({
+      row: {},
+      point_color_mode: 'cluster',
+      get_point_color: () => {
+        called = true
+        return '#000000'
+      },
+      cluster_color: '#4e79a7'
+    })
+    expect(color).to.equal('#4e79a7')
+    expect(called).to.equal(false)
+  })
+
+  it('returns undefined in cluster mode when the row has no cluster', () => {
+    expect(
+      resolve_point_color({
+        row: {},
+        point_color_mode: 'cluster',
+        get_point_color: null
+      })
+    ).to.be.undefined
+  })
+})

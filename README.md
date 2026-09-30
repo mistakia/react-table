@@ -12,7 +12,7 @@ A virtualized React table built on TanStack/react-table and Material-UI. Renders
 - **Row axes & rank aggregation** — expand rows along additional axes (e.g. year, week); build weighted multi-column rankings.
 - **Saved views** — create, edit, delete, favorite, and revert views; views carry their own columns, filters, row axes, prefix columns, rank-aggregation weights, search config, and scatter-plot settings.
 - **Search** — pluggable adapter registry: client (in-memory fuzzy with byte-range highlights), server (`where`-clause injection), or custom backends. Debounced input; cell renderers paint inline match highlights.
-- **Scatter plot overlay** — Highcharts-rendered dual-axis scatter with linear-regression trend, tier-based coloring, T-distribution confidence intervals, and configurable point labels (value, color, image, suffix).
+- **Scatter plot overlay** — Highcharts-rendered dual-axis scatter with linear-regression trend, tier-based coloring, T-distribution confidence intervals, configurable point labels (value, color, image, suffix), and clustering — k-means groups or natural-breaks tiers, shown as cluster colors, halos behind image markers, hull regions with labeled centroids, and a per-group summary.
 - **Export** — CSV (RFC 4180 with quote escaping and CRLF), JSON (filename prefix + ISO timestamp), Markdown table (pipe escaping).
 - **Shareable state** — full table state (columns, sort, where, row axes, prefix columns, rank aggregation, scatter options, search query) is serialisable for URL sharing or persistence.
 

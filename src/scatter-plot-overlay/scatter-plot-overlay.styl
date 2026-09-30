@@ -92,3 +92,50 @@
     color $rt_text
     font-variant-numeric tabular-nums
     overflow-wrap anywhere
+
+.cluster-summary
+  margin-top $rt_space
+  padding $rt_space_lg
+  background-color $rt_bg_subtle
+  border 1px solid $rt_border_subtle
+  border-radius $rt_radius_sm
+
+.cluster-summary-table
+  width 100%
+  border-collapse collapse
+  font-size $rt_font_size
+  color $rt_text
+  font-variant-numeric tabular-nums
+
+  th
+    font-size $rt_font_size_sm
+    font-weight 500
+    color $rt_text_muted
+    text-transform uppercase
+    letter-spacing 0.04em
+    text-align right
+    padding 0 $rt_space_sm $rt_space_xs
+
+    &:first-child
+      text-align left
+
+  td
+    text-align right
+    padding $rt_space_xs $rt_space_sm
+    border-top 1px solid $rt_border_subtle
+
+    &:first-child
+      text-align left
+
+.cluster-summary-swatch
+  display inline-block
+  width 10px
+  height 10px
+  margin-right $rt_space_sm
+  border-radius 2px
+  vertical-align middle
+
+.cluster-summary-footer
+  margin $rt_space 0 0 0
+  font-size $rt_font_size_sm
+  color $rt_text_muted

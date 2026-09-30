@@ -22,8 +22,44 @@
     },
     "point_color_mode": {
       "type": "string",
-      "enum": ["team", "position"],
+      "enum": ["team", "position", "cluster"],
       "description": "Color mode for scatter plot points; absence means default marker color"
+    },
+    "cluster_method": {
+      "type": ["string", "null"],
+      "enum": ["k_means", "natural_breaks", null],
+      "description": "Clustering method; null means clustering is off. k_means groups points over both standardized axes; natural_breaks forms ordered tiers along one axis or the combined score"
+    },
+    "cluster_count": {
+      "type": ["integer", "null"],
+      "minimum": 2,
+      "maximum": 8,
+      "description": "Number of clusters; null means choose automatically by silhouette score"
+    },
+    "natural_breaks_axis": {
+      "type": "string",
+      "enum": ["x", "y", "combined"],
+      "default": "combined",
+      "description": "Value natural_breaks tiers are formed along; combined is the direction-aware sum of standardized X and Y"
+    },
+    "show_cluster_regions": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, renders a convex-hull region and labeled centroid per cluster"
+    },
+    "show_cluster_summary": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, renders the per-cluster summary panel below the chart"
+    },
+    "cluster_names": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"],
+        "maxLength": 100
+      },
+      "maxItems": 8,
+      "description": "Custom cluster names by position in best-first cluster order; null or empty entries use the automatic name"
     },
     "reference_lines": {
       "type": "array",

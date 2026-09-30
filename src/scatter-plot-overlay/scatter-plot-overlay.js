@@ -14,7 +14,15 @@ import {
   build_tier_series,
   clip_tier_segment
 } from './scatter-plot-tier-overlay.js'
+import {
+  build_cluster_series,
+  derive_scatter_clusters
+} from './scatter-plot-clusters.js'
+import ScatterPlotClusterSummary from './scatter-plot-cluster-summary.js'
 import { format_column_params } from '../utils/format-column-params.js'
+import { resolve_field } from '../utils/resolve-table-state-columns.js'
+// highcharts-more supplies the polygon series used for cluster regions.
+import 'highcharts/highcharts-more'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
 import 'highcharts/modules/exporting'
 import 'highcharts/modules/offline-exporting'
@@ -335,6 +343,77 @@ const ScatterPlotOverlay = ({
     [x_values, y_values, show_tier_grid]
   )
 
+  // A column may declare reverse_percentiles as a function of its params.
+  const x_reversed = Boolean(
+    resolve_field(x_column.reverse_percentiles, x_column_params || {})
+  )
+  const y_reversed = Boolean(
+    resolve_field(y_column.reverse_percentiles, y_column_params || {})
+  )
+  const { cluster_method, cluster_count, natural_breaks_axis, cluster_names } =
+    local_scatter_plot_options
+  const cluster_names_serialized = JSON.stringify(cluster_names || null)
+  const cluster_result = React.useMemo(
+    () =>
+      derive_scatter_clusters({
+        x_values,
+        y_values,
+        x_reversed,
+        y_reversed,
+        x_label: x_axis_base,
+        y_label: y_axis_base,
+        scatter_plot_options: {
+          cluster_method,
+          cluster_count,
+          natural_breaks_axis,
+          cluster_names
+        }
+      }),
+    [
+      x_values,
+      y_values,
+      x_reversed,
+      y_reversed,
+      x_axis_base,
+      y_axis_base,
+      cluster_method,
+      cluster_count,
+      natural_breaks_axis,
+      cluster_names_serialized
+    ]
+  )
+  const cluster_color_mode = point_color_mode === 'cluster'
+  // Logo markers ignore point.color, so a halo carries cluster membership.
+  const show_halos = cluster_color_mode && Boolean(get_point_image)
+  const cluster_series = React.useMemo(() => {
+    if (!cluster_result) return []
+    const halo_radii = show_halos
+      ? filtered_data.map((row) => {
+          const image_data = get_point_image({ row, logo_size })
+          if (!image_data) return 5
+          const size = Math.max(image_data.width || 32, image_data.height || 32)
+          return size / 2 + 3
+        })
+      : []
+    return build_cluster_series({
+      clusters: cluster_result.clusters,
+      x_values,
+      y_values,
+      assignments: cluster_result.assignments,
+      show_cluster_regions:
+        local_scatter_plot_options.show_cluster_regions !== false,
+      show_halos,
+      halo_radii
+    })
+  }, [
+    cluster_result,
+    local_scatter_plot_options.show_cluster_regions,
+    show_halos,
+    filtered_data,
+    get_point_image,
+    logo_size
+  ])
+
   React.useEffect(() => {
     if (show_regression) {
       // x_values / y_values are derived from the scatter data series only,
@@ -442,7 +521,9 @@ const ScatterPlotOverlay = ({
     tooltip: {
       formatter: function () {
         const point_label = get_point_label(this.point.options.original_data)
-        return `<b>${point_label}</b><br/>${x_label}: ${this.x}<br/>${y_label}: ${this.y}`
+        const cluster_name = this.point.options.cluster_name
+        const cluster_line = cluster_name ? `<br/>Group: ${cluster_name}` : ''
+        return `<b>${point_label}</b><br/>${x_label}: ${this.x}<br/>${y_label}: ${this.y}${cluster_line}`
       },
       style: {
         zIndex: 1000
@@ -486,7 +567,9 @@ const ScatterPlotOverlay = ({
         id: 'scatter-plot-points',
         type: 'scatter',
         color: 'rgba(37, 99, 235, 0.5)',
-        data: filtered_data.map((row) => {
+        // Above cluster regions and halos, below centroid markers.
+        zIndex: 2,
+        data: filtered_data.map((row, index) => {
           const x = Number(row[x_accessor_path])
           const y = Number(row[y_accessor_path])
           const point = {
@@ -497,10 +580,17 @@ const ScatterPlotOverlay = ({
             is_outlier: is_outlier(x, y)
           }
 
+          // filtered_data and cluster_result.assignments share one index space.
+          const cluster = cluster_result
+            ? cluster_result.clusters[cluster_result.assignments[index]]
+            : null
+          if (cluster) point.cluster_name = cluster.name
+
           const resolved_color = resolve_point_color({
             row,
             point_color_mode,
-            get_point_color
+            get_point_color,
+            cluster_color: cluster?.color
           })
           if (resolved_color) {
             // Set marker fill color only. Data label color is handled via the series-level
@@ -524,7 +614,7 @@ const ScatterPlotOverlay = ({
               point.marker = {
                 symbol: 'circle',
                 radius: 1,
-                fillColor: '#2563eb',
+                fillColor: resolved_color || '#2563eb',
                 lineWidth: 1,
                 lineColor: '#1e40af'
               }
@@ -535,6 +625,7 @@ const ScatterPlotOverlay = ({
         })
       },
       ...tier_series,
+      ...cluster_series,
       show_regression && {
         type: 'line',
         name: 'Trend Line',
@@ -585,8 +676,26 @@ const ScatterPlotOverlay = ({
           show_regression={show_regression}
           on_toggle_regression={() => set_show_regression(!show_regression)}
           on_download_png={handle_download_png}
+          cluster_automatic_names={
+            cluster_result
+              ? cluster_result.clusters.map((cluster) => cluster.automatic_name)
+              : []
+          }
         />
         <HighchartsReact highcharts={Highcharts} options={options} />
+        {cluster_result &&
+          local_scatter_plot_options.show_cluster_summary !== false && (
+            <ScatterPlotClusterSummary
+              cluster_result={cluster_result}
+              x_label={x_label}
+              y_label={y_label}
+            />
+          )}
+        {cluster_method && !cluster_result && (
+          <p className='cluster-summary-footer'>
+            Not enough plotted points to form the requested groups.
+          </p>
+        )}
         {show_regression && regression_stats && (
           <div className='regression-stats'>
             <h4 className='regression-stats-title'>Regression statistics</h4>
