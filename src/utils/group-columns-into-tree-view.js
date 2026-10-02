@@ -68,7 +68,7 @@ export default function group_columns_into_tree_view(
     const grouped_columns = group_columns_into_tree_view(columns, depth + 1)
 
     result.push({
-      header: column_group.column_group_id,
+      header: column_group.label || column_group.column_group_id,
       column_group,
       columns: grouped_columns.length > 0 ? grouped_columns : columns,
       column_count: columns.length

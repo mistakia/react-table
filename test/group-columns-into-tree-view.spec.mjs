@@ -89,4 +89,18 @@ describe('group_columns_into_tree_view', function () {
       ])
     ).to.throw('column_group_id is required')
   })
+
+  it('names a category by its label, falling back to the id', function () {
+    const labelled = {
+      column_group_id: 'BETTING_MARKETS',
+      label: 'Betting Markets',
+      priority: 1
+    }
+    const tree = group_columns_into_tree_view([
+      { column_id: 'line', column_groups: [labelled] },
+      { column_id: 'plain', column_groups: [parent] }
+    ])
+
+    expect(headers(tree)).to.have.members(['Betting Markets', 'PARENT'])
+  })
 })

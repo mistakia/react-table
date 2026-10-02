@@ -92,7 +92,8 @@ export default function group_columns_by_groups(
         identifiers.push({
           type: 'column_group',
           id: column_group.column_group_id,
-          label: column_group.column_group_id,
+          // The id is a key; a reader sees the group's label when it has one.
+          label: column_group.label || column_group.column_group_id,
           value: column_group
         })
       }
