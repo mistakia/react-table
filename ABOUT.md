@@ -83,13 +83,13 @@ observations:
     sets label to column_group_id, so every group header renders its raw SCREAMING_SNAKE id -- which
     is why league picker categories read NFL_TEAM and AFTER_CATCH rather than prose. Honouring label
     with an id fallback is small and is the prerequisite for any group name that must read as prose.
+owner_identity_uri: user:identity/trashman.md
 public_read: false
 relations:
   - follows [[user:guideline/directory-markdown-standards.md]]
 tags:
   - user:tag/base-project.md
 updated_at: '2026-09-25T04:23:07.134Z'
-user_public_key: 10ba842b1307fd60475b887df61ccc7e697970a2d222e7cbf011e51f5de3349b
 ---
 
 ## Purpose
