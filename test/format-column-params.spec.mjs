@@ -45,7 +45,7 @@ describe('format_column_params - short variant', () => {
     expect(result).to.equal('')
   })
 
-  it('renders boolean true as YES', () => {
+  it('renders boolean true as YES beside its key', () => {
     const column_def = {
       column_params: {
         rush_only: { label: 'Rush Only', data_type: TABLE_DATA_TYPES.BOOLEAN }
@@ -55,10 +55,10 @@ describe('format_column_params - short variant', () => {
       column_def,
       column_state_params: { rush_only: true }
     })
-    expect(result).to.equal('YES')
+    expect(result).to.equal('Rush Only: YES')
   })
 
-  it('renders boolean false as NO (bug #1: bare false passes skip gate)', () => {
+  it('renders boolean false as NO beside its key (bare false passes skip gate)', () => {
     const column_def = {
       column_params: {
         rush_only: { label: 'Rush Only', data_type: TABLE_DATA_TYPES.BOOLEAN }
@@ -68,7 +68,7 @@ describe('format_column_params - short variant', () => {
       column_def,
       column_state_params: { rush_only: false }
     })
-    expect(result).to.equal('NO')
+    expect(result).to.equal('Rush Only: NO')
   })
 
   it('renders numeric 0 (bug #1: bare 0 passes skip gate)', () => {
@@ -334,7 +334,7 @@ describe('format_column_params - short variant join separator', () => {
       column_state_params: { position: 'QB', rush_only: true },
       variant: 'short'
     })
-    expect(result).to.equal('Quarterback · YES')
+    expect(result).to.equal('Quarterback · Rush Only: YES')
   })
 })
 
@@ -629,7 +629,7 @@ describe('format_column_params - format_value override', () => {
           output_match_column_params: true
         }
       })
-    ).to.equal('Per Play · YES')
+    ).to.equal('Per Play · Match: YES')
   })
 
   it('engine computes is_default for override values', () => {
@@ -712,7 +712,7 @@ describe('format_column_params - exclude_defaults', () => {
       variant: 'short',
       exclude_defaults: true
     })
-    expect(result).to.equal('YES')
+    expect(result).to.equal('Rush Only: YES')
   })
 
   it('falls back to default_label when all params excluded', () => {

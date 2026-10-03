@@ -23,8 +23,9 @@ import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 //
 // Per-param `param_def.show_key_in_short: true` opts into prefixing the value
 // with `${short_label || label}: ` in the `short` variant. Use for params whose
-// raw value is not self-describing (e.g., year_offset's `0`). The `long`
-// variant always uses the descriptive `label` regardless of this flag.
+// raw value is not self-describing (e.g., year_offset's `0`); a BOOLEAN param
+// always carries its key. The `long` variant always uses the descriptive
+// `label` regardless of this flag.
 //
 // Per-param `param_def.short_label?` provides a concise prefix used only by the
 // `short` variant when `show_key_in_short` is true. Falls back to `label` when
@@ -140,13 +141,16 @@ function build_param_render({
   } else {
     switch (param_def?.data_type) {
       case TABLE_DATA_TYPES.BOOLEAN:
-        render = {
+        // A bare YES or NO names no question, so a boolean always reads beside
+        // its key: "QB Kneel: NO".
+        return {
           param_key,
           key_label,
           value_label: value ? 'YES' : 'NO',
-          is_default: matches_default(value, param_def.default_value)
+          is_default: matches_default(value, param_def.default_value),
+          short_key_label,
+          show_key_in_short: true
         }
-        break
       case TABLE_DATA_TYPES.RANGE:
         render = render_range({ param_key, value, param_def, key_label })
         break

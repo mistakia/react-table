@@ -72,6 +72,7 @@ export default function group_columns_by_groups(
   function get_group_identifiers({
     column,
     column_state,
+    deepest_group,
     parent_groups,
     table_columns,
     current_index
@@ -159,6 +160,10 @@ export default function group_columns_by_groups(
         return other_column.column_groups?.some(
           (cg) => cg.column_group_id === identifier.id
         )
+      } else if (identifier.type === 'column_groups') {
+        return identifier.ids.every((id) =>
+          other_column.column_groups?.some((cg) => cg.column_group_id === id)
+        )
       } else if (identifier.type === 'param') {
         const [key, value] = Object.entries(identifier.value)[0]
         return (
@@ -177,7 +182,29 @@ export default function group_columns_by_groups(
       (a, b) => count_consecutive_neighbors(b) - count_consecutive_neighbors(a)
     )
 
-    return identifiers
+    // A column's groups are facets, not a path: touchdowns from plays is both
+    // RUSHING and RECEIVING. The column bands under one of them, and opens a
+    // band for another only where a neighbor already banded with it shares that
+    // group too, so TEAM STATS over PASSING still nests while a lone RECEIVING
+    // band never stacks over a single RUSHING column.
+    const banded_group_ids = [...parent_groups, deepest_group]
+      .map((group) => group.column_group?.column_group_id)
+      .filter((id) =>
+        column.column_groups?.some((cg) => cg.column_group_id === id)
+      )
+
+    return identifiers.filter((identifier) => {
+      if (identifier.type !== 'column_group') return true
+      if (banded_group_ids.length) {
+        const shared_band = {
+          type: 'column_groups',
+          ids: [...banded_group_ids, identifier.id]
+        }
+        if (!count_consecutive_neighbors(shared_band)) return false
+      }
+      banded_group_ids.push(identifier.id)
+      return true
+    })
   }
 
   for (let i = 0; i < table_columns.length; i++) {
@@ -194,6 +221,7 @@ export default function group_columns_by_groups(
     const identifiers = get_group_identifiers({
       column,
       column_state,
+      deepest_group: current_group,
       parent_groups,
       table_columns,
       current_index: i
