@@ -107,6 +107,7 @@ export default function group_columns_by_groups(
         const label = format_column_params({
           column_def: column,
           column_state_params: { [param_key]: param_value },
+          sibling_params: column_state.params,
           variant: 'short'
         })
         if (!label) continue

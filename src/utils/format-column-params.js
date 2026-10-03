@@ -12,6 +12,8 @@ import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 // different denominators -- every play, or only the plays the column's own
 // filters select -- and those are two different numbers under one name unless
 // the label can see the filters. Overrides that ignore it render identically.
+// A caller rendering one param at a time, as the header bands do, passes the
+// instance's whole params as `sibling_params` so the override still sees them.
 //
 // The active `variant` ('short' | 'long') is
 // forwarded so an override can render a terse chip label and a descriptive long
@@ -36,7 +38,8 @@ export function format_column_params({
   column_state_params,
   variant = 'short',
   exclude_defaults = false,
-  default_label
+  default_label,
+  sibling_params
 } = {}) {
   if (!column_state_params || typeof column_state_params !== 'object') {
     return default_label ?? ''
@@ -54,7 +57,7 @@ export function format_column_params({
       value,
       param_def,
       variant,
-      column_params: column_state_params
+      column_params: sibling_params || column_state_params
     })
     if (render) renders.push(render)
   }

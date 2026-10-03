@@ -84,4 +84,27 @@ describe('group_columns_by_groups', function () {
       ])
     })
   })
+
+  it("hands a param's formatter the column's other params", function () {
+    const seen = []
+    const groups = group_columns_by_groups(
+      [
+        {
+          column_id: 'targets',
+          column_params: {
+            week: {
+              format_value: ({ value, column_params }) => {
+                seen.push(column_params)
+                return `Week ${value}`
+              }
+            }
+          }
+        }
+      ],
+      [{ params: { year: 2026, week: 1 } }]
+    )
+
+    expect(seen[0]).to.eql({ year: 2026, week: 1 })
+    expect(groups.map((group) => group.header)).to.include('2026')
+  })
 })
