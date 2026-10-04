@@ -174,4 +174,36 @@ describe('build_tier_series', () => {
       expect(series.type).to.equal('line')
     })
   })
+
+  // Offense EPA (higher is better) against defense EPA allowed (lower is
+  // better): a good team is high x and low y, so tiers must hold x - y fixed.
+  it('a reversed y axis orients the lines to x - y = k', () => {
+    const x_values = [1, 2, 3, 4, 5]
+    const y_values = [5, 4, 3, 2, 1]
+    const result = build_tier_series({ x_values, y_values, y_reversed: true })
+
+    expect(result).to.have.lengthOf(4)
+    result.forEach((series) => {
+      const [[x0, y0], [x1, y1]] = series.data
+      expect(x0 - y0).to.be.closeTo(series.custom.tier_k, 1e-9)
+      expect(x1 - y1).to.be.closeTo(series.custom.tier_k, 1e-9)
+      expect(x0).to.be.below(x1)
+      expect(series.custom.tier_y_sign).to.equal(-1)
+      expect(series.custom.tier_x_sign).to.equal(1)
+    })
+  })
+
+  it('a reversed y axis keeps segments inside the data bounding box', () => {
+    const x_values = [-0.19, -0.05, 0.02, 0.17, 0.35]
+    const y_values = [0.19, -0.18, 0.05, -0.1, -0.01]
+    const result = build_tier_series({ x_values, y_values, y_reversed: true })
+
+    expect(result.length).to.be.greaterThan(0)
+    result.forEach((series) => {
+      series.data.forEach(([x, y]) => {
+        expect(x).to.be.within(-0.19 - 1e-9, 0.35 + 1e-9)
+        expect(y).to.be.within(-0.18 - 1e-9, 0.19 + 1e-9)
+      })
+    })
+  })
 })

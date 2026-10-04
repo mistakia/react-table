@@ -2,6 +2,10 @@
  * Pure data-transformation helper for the diagonal iso-value tier grid overlay.
  * Computes x + y = k lines at quintile cut points of {x_i + y_i}.
  *
+ * A reversed axis (lower is better, e.g. defensive EPA allowed) enters the sum
+ * negated, so the lines become x - y = k and still separate good from bad. The
+ * math runs in that oriented space and maps the segment back to data values.
+ *
  * No Highcharts import — keeps this unit-testable in isolation.
  */
 
@@ -73,6 +77,40 @@ const clip_tier_segment = ({ k, x_min, x_max, y_min, y_max }) => {
   ]
 }
 
+const to_oriented_range = (min, max, sign) =>
+  sign < 0 ? [-max, -min] : [min, max]
+
+/**
+ * Clip the tier line x_sign * x + y_sign * y = k to a data-space bounding box.
+ * Each sign is -1 for a reversed axis and 1 otherwise. With both signs 1 this
+ * is clip_tier_segment.
+ *
+ * @returns {[[number,number],[number,number]] | null}
+ */
+const clip_oriented_tier_segment = ({
+  k,
+  x_min,
+  x_max,
+  y_min,
+  y_max,
+  x_sign = 1,
+  y_sign = 1
+}) => {
+  const [u_min, u_max] = to_oriented_range(x_min, x_max, x_sign)
+  const [v_min, v_max] = to_oriented_range(y_min, y_max, y_sign)
+  const segment = clip_tier_segment({
+    k,
+    x_min: u_min,
+    x_max: u_max,
+    y_min: v_min,
+    y_max: v_max
+  })
+  if (!segment) return null
+  return segment
+    .map(([u, v]) => [x_sign * u, y_sign * v])
+    .sort((a, b) => a[0] - b[0])
+}
+
 /**
  * Compute the deduplicated quintile k values for {x_i + y_i}, plus the data
  * bounding box. Caller can use the returned k_values to (re)build segments
@@ -83,7 +121,12 @@ const clip_tier_segment = ({ k, x_min, x_max, y_min, y_max }) => {
  * @param {number[]} params.y_values
  * @returns {{ k_values: number[], data_bounds: {x_min,x_max,y_min,y_max} | null }}
  */
-const compute_tier_k_values = ({ x_values, y_values }) => {
+const compute_tier_k_values = ({
+  x_values,
+  y_values,
+  x_sign = 1,
+  y_sign = 1
+}) => {
   const empty = { k_values: [], data_bounds: null }
   if (
     !Array.isArray(x_values) ||
@@ -110,7 +153,7 @@ const compute_tier_k_values = ({ x_values, y_values }) => {
     ) {
       continue
     }
-    sums.push(x + y)
+    sums.push(x_sign * x + y_sign * y)
     valid_x.push(x)
     valid_y.push(y)
   }
@@ -181,25 +224,39 @@ const TIER_SERIES_BASE = {
  * @param {number[]} params.y_values
  * @returns {object[]}
  */
-const build_tier_series = ({ x_values, y_values }) => {
+const build_tier_series = ({
+  x_values,
+  y_values,
+  x_reversed = false,
+  y_reversed = false
+}) => {
+  const x_sign = x_reversed ? -1 : 1
+  const y_sign = y_reversed ? -1 : 1
   const { k_values, data_bounds } = compute_tier_k_values({
     x_values,
-    y_values
+    y_values,
+    x_sign,
+    y_sign
   })
   if (!data_bounds) return []
 
   const series = []
   k_values.forEach((k, i) => {
-    const segment = clip_tier_segment({ k, ...data_bounds })
+    const segment = clip_oriented_tier_segment({
+      k,
+      ...data_bounds,
+      x_sign,
+      y_sign
+    })
     if (!segment) return
     series.push({
       ...TIER_SERIES_BASE,
       name: `Tier ${i + 1}`,
       data: segment,
-      custom: { tier_k: k }
+      custom: { tier_k: k, tier_x_sign: x_sign, tier_y_sign: y_sign }
     })
   })
   return series
 }
 
-export { build_tier_series, clip_tier_segment }
+export { build_tier_series, clip_tier_segment, clip_oriented_tier_segment }

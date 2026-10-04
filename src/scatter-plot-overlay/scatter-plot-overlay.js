@@ -12,7 +12,7 @@ import {
 } from './scatter-plot-data-labels.js'
 import {
   build_tier_series,
-  clip_tier_segment
+  clip_oriented_tier_segment
 } from './scatter-plot-tier-overlay.js'
 import {
   build_cluster_series,
@@ -176,10 +176,19 @@ const refit_tier_segments_to_axes = (chart) => {
   try {
     let any_changed = false
     chart.series.forEach((series) => {
-      const k = series.userOptions?.custom?.tier_k
+      const custom = series.userOptions?.custom
+      const k = custom?.tier_k
       if (typeof k !== 'number') return
 
-      const segment = clip_tier_segment({ k, x_min, x_max, y_min, y_max })
+      const segment = clip_oriented_tier_segment({
+        k,
+        x_min,
+        x_max,
+        y_min,
+        y_max,
+        x_sign: custom.tier_x_sign ?? 1,
+        y_sign: custom.tier_y_sign ?? 1
+      })
       series.setData(segment || [], false)
       any_changed = true
     })
@@ -337,18 +346,23 @@ const ScatterPlotOverlay = ({
     }
   }
 
-  const show_tier_grid = local_scatter_plot_options.show_tier_grid
-  const tier_series = React.useMemo(
-    () => (show_tier_grid ? build_tier_series({ x_values, y_values }) : []),
-    [x_values, y_values, show_tier_grid]
-  )
-
-  // A column may declare reverse_percentiles as a function of its params.
+  // A column may declare reverse_percentiles as a function of its params. A
+  // reversed column (lower is better) renders on a reversed axis, so better is
+  // always up and to the right, and the tier grid orients to match.
   const x_reversed = Boolean(
     resolve_field(x_column.reverse_percentiles, x_column_params || {})
   )
   const y_reversed = Boolean(
     resolve_field(y_column.reverse_percentiles, y_column_params || {})
+  )
+
+  const show_tier_grid = local_scatter_plot_options.show_tier_grid
+  const tier_series = React.useMemo(
+    () =>
+      show_tier_grid
+        ? build_tier_series({ x_values, y_values, x_reversed, y_reversed })
+        : [],
+    [x_values, y_values, x_reversed, y_reversed, show_tier_grid]
   )
   const { cluster_method, cluster_count, natural_breaks_axis, cluster_names } =
     local_scatter_plot_options
@@ -481,6 +495,7 @@ const ScatterPlotOverlay = ({
       title: {
         text: x_label
       },
+      reversed: x_reversed,
       gridLineWidth: 1,
       events: {
         afterSetExtremes: function () {
@@ -502,6 +517,7 @@ const ScatterPlotOverlay = ({
       title: {
         text: y_label
       },
+      reversed: y_reversed,
       events: {
         afterSetExtremes: function () {
           refit_tier_segments_to_axes(this.chart)
