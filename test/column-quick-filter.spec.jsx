@@ -315,4 +315,38 @@ describe('ColumnQuickFilter', () => {
       '1 filter on this column is not shown here.'
     )
   })
+
+  // The header menu opens on hover and closes when the pointer leaves it, which
+  // unmounts the panel. A bound typed and left inside the debounce window was
+  // dropped silently until unmount flushed instead of cancelling.
+  it('commits a pending typed bound when the panel unmounts', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'player_age',
+      data_type: TABLE_DATA_TYPES.NUMBER
+    })
+
+    const input = find_input_by_label(container, 'Min')
+    await act(async () => {
+      const setter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        'value'
+      ).set
+      setter.call(input, '25')
+      input.dispatchEvent(new window.Event('input', { bubbles: true }))
+    })
+    expect(emitted).to.equal(null)
+
+    const { root } = containers.pop()
+    await act(async () => root.unmount())
+    container.remove()
+
+    expect(emitted.where).to.deep.equal([
+      { column_id: 'player_age', operator: '>=', value: 25 }
+    ])
+  })
 })

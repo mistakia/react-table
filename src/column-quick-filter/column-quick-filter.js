@@ -47,17 +47,38 @@ const DATA_TYPES_WITH_A_BODY = [
 // The debounced commit reads table_state off a ref rather than closing over
 // it. A commit scheduled before an unrelated state change would otherwise
 // write the where array it captured and silently revert that change.
+//
+// Unmount FLUSHES a pending commit rather than cancelling it. A hover-opened
+// header menu closes the moment the pointer leaves it, so a bound typed and
+// left inside the debounce window would otherwise be dropped with no trace.
 const use_debounced_commit = ({ table_state, on_table_state_change }) => {
   const table_state_ref = useRef(table_state)
+  const on_change_ref = useRef(on_table_state_change)
   const timer_ref = useRef(null)
+  const pending_ref = useRef(null)
 
   useEffect(() => {
     table_state_ref.current = table_state
   }, [table_state])
 
+  useEffect(() => {
+    on_change_ref.current = on_table_state_change
+  }, [on_table_state_change])
+
+  const commit_now = (build_where) => {
+    clearTimeout(timer_ref.current)
+    timer_ref.current = null
+    pending_ref.current = null
+    const current = table_state_ref.current
+    on_change_ref.current({
+      ...current,
+      where: build_where(current.where || [])
+    })
+  }
+
   useEffect(
     () => () => {
-      if (timer_ref.current) clearTimeout(timer_ref.current)
+      if (pending_ref.current) commit_now(pending_ref.current)
     },
     []
   )
@@ -66,27 +87,18 @@ const use_debounced_commit = ({ table_state, on_table_state_change }) => {
     () => ({
       // Typed input: coalesce keystrokes.
       debounced: (build_where) => {
-        if (timer_ref.current) clearTimeout(timer_ref.current)
-        timer_ref.current = setTimeout(() => {
-          const current = table_state_ref.current
-          on_table_state_change({
-            ...current,
-            where: build_where(current.where || [])
-          })
-        }, QUICK_FILTER_COMMIT_DELAY_MS)
+        clearTimeout(timer_ref.current)
+        pending_ref.current = build_where
+        timer_ref.current = setTimeout(
+          () => commit_now(build_where),
+          QUICK_FILTER_COMMIT_DELAY_MS
+        )
       },
       // A click is already a deliberate commit; waiting half a second after
       // one reads as the control having missed it.
-      immediate: (build_where) => {
-        if (timer_ref.current) clearTimeout(timer_ref.current)
-        const current = table_state_ref.current
-        on_table_state_change({
-          ...current,
-          where: build_where(current.where || [])
-        })
-      }
+      immediate: commit_now
     }),
-    [on_table_state_change]
+    []
   )
 }
 
