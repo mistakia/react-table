@@ -39,8 +39,7 @@ const mount = async ({
             set_table_state(next)
             on_table_state_change(next)
           },
-          all_columns,
-          set_filter_controls_open: () => {}
+          all_columns
         }}>
         <ColumnQuickFilter {...props} />
       </table_context.Provider>
@@ -288,7 +287,7 @@ describe('ColumnQuickFilter', () => {
   // `undefined` is reachable: a consumer can set a data_type constant that does
   // not exist, and that column must still get a menu rather than losing its
   // Filter entry.
-  it('renders only the advanced link for a data type with no body', async () => {
+  it('renders only a note for a data type with no body', async () => {
     const container = await mount({
       table_state: { where: [] },
       column_id: 'player_something',
@@ -296,7 +295,9 @@ describe('ColumnQuickFilter', () => {
     })
 
     expect(container.querySelector('input')).to.equal(null)
-    expect(find_by_text(container, 'Advanced filter')).to.not.equal(undefined)
+    expect(container.textContent).to.equal(
+      'This column type has no quick filter. Use Advanced filter below.'
+    )
   })
 
   it('reports a row it cannot represent rather than repairing it', async () => {

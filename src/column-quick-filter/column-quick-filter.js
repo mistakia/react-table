@@ -457,12 +457,8 @@ export default function ColumnQuickFilter({
   data_type,
   params
 }) {
-  const {
-    table_state,
-    on_table_state_change,
-    all_columns,
-    set_filter_controls_open
-  } = useContext(table_context)
+  const { table_state, on_table_state_change, all_columns } =
+    useContext(table_context)
 
   const commit = use_debounced_commit({ table_state, on_table_state_change })
 
@@ -496,21 +492,14 @@ export default function ColumnQuickFilter({
   const unrepresentable_count =
     filter_state.unrepresentable_where_indexes.length
 
-  const advanced_link = (
-    <div
-      className='column-quick-filter-advanced'
-      onClick={() => set_filter_controls_open(true)}>
-      Advanced filter
-    </div>
-  )
-
+  // The header menu carries its own Advanced filter entry directly below this
+  // panel, so the notes point at it rather than repeating it as a second link.
   if (!has_body) {
     return (
       <div className='column-quick-filter'>
         <div className='column-quick-filter-note'>
-          This column type has no quick filter.
+          This column type has no quick filter. Use Advanced filter below.
         </div>
-        {advanced_link}
       </div>
     )
   }
@@ -534,10 +523,10 @@ export default function ColumnQuickFilter({
         <div className='column-quick-filter-note'>
           {unrepresentable_count === 1
             ? '1 filter on this column is not shown here.'
-            : `${unrepresentable_count} filters on this column are not shown here.`}
+            : `${unrepresentable_count} filters on this column are not shown here.`}{' '}
+          Use Advanced filter below.
         </div>
       )}
-      {advanced_link}
     </div>
   )
 }
