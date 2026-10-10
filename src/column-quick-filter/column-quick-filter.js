@@ -328,7 +328,14 @@ const column_value_label = (column_value) =>
     ? column_value.label
     : column_value
 
+// A checkbox list is scannable at a few dozen values and not at hundreds -- a
+// college column offers about 950 -- so past this many the list gains a search
+// field. Below it the field would be one more control in front of a list the
+// eye already covers.
+export const VALUE_SEARCH_MIN_VALUES = 20
+
 const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
+  const [search, set_search] = useState('')
   const is_excluded =
     filter_state.value_set?.operator === TABLE_OPERATORS.NOT_IN
   const selected = Array.isArray(filter_state.value_set?.value)
@@ -357,6 +364,19 @@ const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
     )
   }
 
+  // A SELECTED value stays listed whatever the search says, so a search never
+  // hides the one thing the user would need to untick.
+  const search_text = search.trim().toLowerCase()
+  const listed_values = search_text
+    ? column_values.filter(
+        (column_value) =>
+          selected.includes(column_value_value(column_value)) ||
+          String(column_value_label(column_value))
+            .toLowerCase()
+            .includes(search_text)
+      )
+    : column_values
+
   return (
     <>
       <div className='column-quick-filter-row'>
@@ -378,12 +398,26 @@ const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
           <div>Exclude the selected values</div>
         </div>
       </div>
+      {column_values.length > VALUE_SEARCH_MIN_VALUES && (
+        <div className='column-quick-filter-row'>
+          <TextField
+            label='Search values'
+            size='small'
+            variant='outlined'
+            value={search}
+            onChange={(event) => set_search(event.target.value)}
+          />
+        </div>
+      )}
       <div className='column-quick-filter-value-list'>
-        {column_values.map((column_value, index) => {
+        {!listed_values.length && (
+          <div className='column-quick-filter-note'>No values match.</div>
+        )}
+        {listed_values.map((column_value) => {
           const value = column_value_value(column_value)
           return (
             <div
-              key={index}
+              key={String(value)}
               className='column-quick-filter-checkbox'
               onClick={() => toggle(value)}>
               <Checkbox checked={selected.includes(value)} size='small' />

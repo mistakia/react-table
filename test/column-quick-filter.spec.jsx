@@ -234,6 +234,72 @@ describe('ColumnQuickFilter', () => {
     ])
   })
 
+  it('searches a long value list and keeps a selected value listed', async () => {
+    const colleges = Array.from(
+      { length: 30 },
+      (_, index) => `College ${index}`
+    )
+    let emitted = null
+    const container = await mount({
+      table_state: {
+        where: [
+          { column_id: 'player_college', operator: 'IN', value: ['College 3'] }
+        ]
+      },
+      all_columns: { player_college: { column_values: colleges } },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'player_college',
+      data_type: TABLE_DATA_TYPES.SELECT
+    })
+
+    const listed = () =>
+      [
+        ...container.querySelectorAll(
+          '.column-quick-filter-value-list .column-quick-filter-checkbox'
+        )
+      ].map((item) => item.textContent)
+
+    expect(listed()).to.have.length(30)
+
+    await type_and_settle(
+      find_input_by_label(container, 'Search values'),
+      'college 2'
+    )
+
+    // College 2 and College 20-29 match; College 3 is selected, so it stays.
+    expect(listed()).to.have.members([
+      'College 2',
+      'College 3',
+      ...Array.from({ length: 10 }, (_, index) => `College 2${index}`)
+    ])
+
+    await act(async () => {
+      find_by_text(container, 'College 21').click()
+    })
+    expect(emitted.where).to.deep.equal([
+      {
+        column_id: 'player_college',
+        operator: 'IN',
+        value: ['College 3', 'College 21']
+      }
+    ])
+  })
+
+  it('offers no search on a short value list', async () => {
+    const container = await mount({
+      table_state: { where: [] },
+      all_columns: {
+        player_position: { column_values: ['QB', 'RB', 'WR'] }
+      },
+      column_id: 'player_position',
+      data_type: TABLE_DATA_TYPES.SELECT
+    })
+
+    expect(find_input_by_label(container, 'Search values')).to.equal(null)
+  })
+
   it('writes a boolean as one = row and clears it on Any', async () => {
     let emitted = null
     const container = await mount({
