@@ -234,6 +234,34 @@ describe('ColumnQuickFilter', () => {
     ])
   })
 
+  it('filters a row axis from supplied values with no null checks', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [], row_axes: ['year'] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'year',
+      data_type: TABLE_DATA_TYPES.SELECT,
+      column_values: [2025, 2024, 2023],
+      disable_null_checks: true
+    })
+
+    expect(find_by_text(container, 'Has value')).to.not.exist
+    await act(async () => {
+      find_by_text(container, '2024').click()
+    })
+    await act(async () => {
+      container
+        .querySelector('.column-quick-filter-row .column-quick-filter-checkbox')
+        .click()
+    })
+
+    expect(emitted.where).to.deep.equal([
+      { column_id: 'year', operator: 'NOT IN', value: [2024] }
+    ])
+  })
+
   it('searches a long value list and keeps a selected value listed', async () => {
     const colleges = Array.from(
       { length: 30 },

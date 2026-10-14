@@ -334,7 +334,12 @@ const column_value_label = (column_value) =>
 // eye already covers.
 export const VALUE_SEARCH_MIN_VALUES = 20
 
-const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
+const ValueSetBody = ({
+  filter_state,
+  commit_slots,
+  column_values,
+  disable_null_checks
+}) => {
   const [search, set_search] = useState('')
   const is_excluded =
     filter_state.value_set?.operator === TABLE_OPERATORS.NOT_IN
@@ -426,10 +431,12 @@ const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
           )
         })}
       </div>
-      <NullCheckControls
-        null_check={filter_state.null_check}
-        commit_slots={commit_slots}
-      />
+      {!disable_null_checks && (
+        <NullCheckControls
+          null_check={filter_state.null_check}
+          commit_slots={commit_slots}
+        />
+      )}
     </>
   )
 }
@@ -437,7 +444,8 @@ const ValueSetBody = ({ filter_state, commit_slots, column_values }) => {
 ValueSetBody.propTypes = {
   filter_state: PropTypes.object.isRequired,
   commit_slots: PropTypes.object.isRequired,
-  column_values: PropTypes.array.isRequired
+  column_values: PropTypes.array.isRequired,
+  disable_null_checks: PropTypes.bool
 }
 
 const BooleanBody = ({ filter_state, commit_slots }) => {
@@ -485,11 +493,16 @@ BooleanBody.propTypes = {
   commit_slots: PropTypes.object.isRequired
 }
 
+// `column_values` overrides the catalog's list for a filter target that is not
+// in `all_columns` -- a row axis -- and `disable_null_checks` drops the null
+// toggles where every row has a value by construction.
 export default function ColumnQuickFilter({
   column_id,
   column_index = 0,
   data_type,
-  params
+  params,
+  column_values: column_values_override,
+  disable_null_checks = false
 }) {
   const { table_state, on_table_state_change, all_columns } =
     useContext(table_context)
@@ -521,7 +534,8 @@ export default function ColumnQuickFilter({
     }
   }, [commit, column_id, column_index, params])
 
-  const column_values = all_columns?.[column_id]?.column_values || []
+  const column_values =
+    column_values_override || all_columns?.[column_id]?.column_values || []
   const has_body = DATA_TYPES_WITH_A_BODY.includes(data_type)
   const unrepresentable_count =
     filter_state.unrepresentable_where_indexes.length
@@ -548,7 +562,14 @@ export default function ColumnQuickFilter({
         <TextBody {...{ filter_state, commit_slots }} />
       ) : null}
       {data_type === TABLE_DATA_TYPES.SELECT ? (
-        <ValueSetBody {...{ filter_state, commit_slots, column_values }} />
+        <ValueSetBody
+          {...{
+            filter_state,
+            commit_slots,
+            column_values,
+            disable_null_checks
+          }}
+        />
       ) : null}
       {data_type === TABLE_DATA_TYPES.BOOLEAN ? (
         <BooleanBody {...{ filter_state, commit_slots }} />
@@ -569,5 +590,7 @@ ColumnQuickFilter.propTypes = {
   column_id: PropTypes.string.isRequired,
   column_index: PropTypes.number,
   data_type: PropTypes.number,
-  params: PropTypes.object
+  params: PropTypes.object,
+  column_values: PropTypes.array,
+  disable_null_checks: PropTypes.bool
 }

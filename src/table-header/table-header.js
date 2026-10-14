@@ -81,7 +81,8 @@ const TableHeader = ({ header, column, table }) => {
     set_selected_bar_chart_column,
     enable_duplicate_column_ids,
     columns_with_no_data,
-    season_unavailable_column_ids
+    season_unavailable_column_ids,
+    row_axis_values
   } = useContext(table_context)
   const anchor_el = useRef()
   const [popper_open, set_popper_open] = useState(false)
@@ -174,6 +175,11 @@ const TableHeader = ({ header, column, table }) => {
   const is_sortable = data_type !== TABLE_DATA_TYPES.JSON
 
   const column_id = column.columnDef.column_id
+  // A split column is a row axis, not a column: it filters through a `where`
+  // row keyed on the axis id, over the values the consumer offers for it.
+  const row_axis_filter_values = column.columnDef.is_split
+    ? row_axis_values?.[column.id]
+    : null
   const accessor_path = enable_duplicate_column_ids
     ? `${column.columnDef.accessorKey}_${column_index}`
     : column.columnDef.id
@@ -484,7 +490,9 @@ const TableHeader = ({ header, column, table }) => {
               'header-popper': true,
               // The quick-filter panel needs room for two side-by-side inputs;
               // the menu's own width is sized for a list of rows.
-              'has-column-quick-filter': Boolean(column.columnDef.column_id)
+              'has-column-quick-filter':
+                Boolean(column.columnDef.column_id) ||
+                Boolean(row_axis_filter_values)
             })}
             anchorEl={anchor_el.current}
             open={popper_open}
@@ -622,7 +630,17 @@ const TableHeader = ({ header, column, table }) => {
                   )}
                 </>
               )}
-              {/* TODO allow filters for split columns */}
+              {row_axis_filter_values && (
+                <>
+                  <div className='header-menu-divider'></div>
+                  <ColumnQuickFilter
+                    column_id={column.id}
+                    data_type={TABLE_DATA_TYPES.SELECT}
+                    column_values={row_axis_filter_values}
+                    disable_null_checks
+                  />
+                </>
+              )}
               {Boolean(column.columnDef.column_id) && (
                 <>
                   <div className='header-menu-divider'></div>

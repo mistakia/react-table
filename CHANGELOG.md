@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Row axis header filter: a split column whose axis the consumer supplies
+  values for through the new `row_axis_values` prop offers an include/exclude
+  value list in its header menu. It writes an ordinary `where` row keyed on the
+  axis id (`{ column_id: 'year', operator: 'IN', value: [2024] }`), and that row
+  is dropped once the axis leaves `row_axes`.
 - Sticky-column width budget: pinned columns past 50% of the scroll container's
   visible width render unpinned, so a wide prefix set no longer covers a narrow
   viewport entirely. The first pinned column is always kept.

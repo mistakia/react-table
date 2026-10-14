@@ -43,6 +43,7 @@ import {
 } from '#src/utils'
 import { remap_sort_for_removed_column_positions } from '#src/utils/remap-sort-for-column-change.js'
 import get_row_axis_label from '#src/utils/get-row-axis-label.js'
+import { drop_inactive_row_axis_where } from '#src/utils/row-axis-where.js'
 import {
   resolve_chart_column,
   toggle_chart_column
@@ -61,6 +62,8 @@ import './table.styl'
 const is_mobile = window.innerWidth < 500
 const column_helper = createColumnHelper()
 const EMPTY_HIGHLIGHTS = Object.freeze({})
+// A stable default, so the state-change callback is not rebuilt every render.
+const NO_ROW_AXIS_VALUES = Object.freeze({})
 // Module-level so the default keeps one identity across renders.
 const default_get_row_id = (row) => row.id
 const defaultColumn = {
@@ -173,6 +176,7 @@ export default function Table({
   percentiles = {},
   enable_duplicate_column_ids = false,
   season_unavailable_column_ids,
+  row_axis_values = NO_ROW_AXIS_VALUES,
   new_view_prefix_columns = [],
   shorten_url,
   share_link_pathname = null,
@@ -318,6 +322,16 @@ export default function Table({
         where && where.forEach(remove_disabled_params)
       }
 
+      // A filter on a row axis means nothing once that axis is gone, and left
+      // in place it would sit in `where` with no header to show or clear it.
+      if (where) {
+        where = drop_inactive_row_axis_where({
+          where,
+          row_axes,
+          row_axis_ids: Object.keys(row_axis_values)
+        })
+      }
+
       // remove any where items where the operator is not IS NULL or IS NOT NULL and has a null, undefined, or empty string value
       if (where) {
         where = where.filter(
@@ -350,7 +364,7 @@ export default function Table({
         }
       )
     },
-    [selected_view, on_view_change]
+    [selected_view, on_view_change, row_axis_values]
   )
 
   const is_table_state_changed = useMemo(
@@ -986,6 +1000,7 @@ export default function Table({
         percentiles,
         columns_with_no_data,
         season_unavailable_column_ids: season_unavailable_keys,
+        row_axis_values,
         table_state,
         on_table_state_change,
         set_column_controls_open,
@@ -1334,6 +1349,9 @@ Table.propTypes = {
     PropTypes.arrayOf(PropTypes.string),
     PropTypes.instanceOf(Set)
   ]),
+  // Row axis id to the values its split column's header filter offers, as
+  // plain values or `{ value, label }`. An axis absent here gets no filter.
+  row_axis_values: PropTypes.objectOf(PropTypes.array),
   new_view_prefix_columns: PropTypes.array,
   shorten_url: PropTypes.func,
   share_link_pathname: PropTypes.string,
