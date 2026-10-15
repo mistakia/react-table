@@ -220,6 +220,27 @@ export const SECURE_WHERE_VALUE_SCHEMA = {
         ]
       }
     },
+    // Tuples, e.g. the [id, season] pairs of a row filter keeping exact
+    // (subject, season) rows.
+    {
+      type: 'array',
+      maxItems: SECURITY_LIMITS.MAX_ARRAY_ITEMS,
+      items: {
+        type: 'array',
+        minItems: 2,
+        maxItems: 2,
+        items: {
+          oneOf: [
+            {
+              type: 'string',
+              secureString: true,
+              maxLength: SECURITY_LIMITS.MAX_STRING_LENGTH
+            },
+            { type: 'number' }
+          ]
+        }
+      }
+    },
     {
       type: 'array',
       maxItems: SECURITY_LIMITS.MAX_ARRAY_ITEMS,

@@ -175,14 +175,46 @@ DraftInput.propTypes = {
   on_draft_change: PropTypes.func.isRequired
 }
 
-const RangeBody = ({ filter_state, commit_slots, data_type }) => {
-  const input_type = data_type === TABLE_DATA_TYPES.DATE ? 'date' : 'number'
-  const parse = (raw) => {
-    if (raw === '') return null
-    return input_type === 'number' ? Number(raw) : raw
-  }
-  const set_slot = (slot, operator) => (raw) => {
-    const value = parse(raw)
+// The Min / Max pair, writing the `>=` / `<=` slots. Shared by the range body
+// and by a value-set filter that also takes bounds -- a year axis is both a
+// list of seasons and a span of them.
+const BoundsRow = ({ filter_state, commit_slots, set_slot, input_type }) => (
+  <div className='column-quick-filter-row'>
+    <DraftInput
+      label='Min'
+      type={input_type}
+      committed_value={filter_state.lower_bound?.value}
+      on_draft_change={set_slot(
+        'lower_bound',
+        filter_state.lower_bound?.operator ||
+          TABLE_OPERATORS.GREATER_THAN_OR_EQUAL
+      )}
+    />
+    <DraftInput
+      label='Max'
+      type={input_type}
+      committed_value={filter_state.upper_bound?.value}
+      on_draft_change={set_slot(
+        'upper_bound',
+        filter_state.upper_bound?.operator || TABLE_OPERATORS.LESS_THAN_OR_EQUAL
+      )}
+    />
+  </div>
+)
+
+BoundsRow.propTypes = {
+  filter_state: PropTypes.object.isRequired,
+  commit_slots: PropTypes.object.isRequired,
+  set_slot: PropTypes.func.isRequired,
+  input_type: PropTypes.string.isRequired
+}
+
+const create_set_slot =
+  ({ commit_slots, input_type }) =>
+  (slot, operator) =>
+  (raw) => {
+    const value =
+      raw === '' ? null : input_type === 'number' ? Number(raw) : raw
     // A number input yields NaN mid-typing (a lone '-', an incomplete
     // exponent). Committing NaN writes a filter the server rejects, so hold.
     if (typeof value === 'number' && Number.isNaN(value)) return
@@ -191,30 +223,13 @@ const RangeBody = ({ filter_state, commit_slots, data_type }) => {
     })
   }
 
+const RangeBody = ({ filter_state, commit_slots, data_type }) => {
+  const input_type = data_type === TABLE_DATA_TYPES.DATE ? 'date' : 'number'
+  const set_slot = create_set_slot({ commit_slots, input_type })
+
   return (
     <>
-      <div className='column-quick-filter-row'>
-        <DraftInput
-          label='Min'
-          type={input_type}
-          committed_value={filter_state.lower_bound?.value}
-          on_draft_change={set_slot(
-            'lower_bound',
-            filter_state.lower_bound?.operator ||
-              TABLE_OPERATORS.GREATER_THAN_OR_EQUAL
-          )}
-        />
-        <DraftInput
-          label='Max'
-          type={input_type}
-          committed_value={filter_state.upper_bound?.value}
-          on_draft_change={set_slot(
-            'upper_bound',
-            filter_state.upper_bound?.operator ||
-              TABLE_OPERATORS.LESS_THAN_OR_EQUAL
-          )}
-        />
-      </div>
+      <BoundsRow {...{ filter_state, commit_slots, set_slot, input_type }} />
       <div className='column-quick-filter-row'>
         <DraftInput
           label='Exactly'
@@ -495,14 +510,16 @@ BooleanBody.propTypes = {
 
 // `column_values` overrides the catalog's list for a filter target that is not
 // in `all_columns` -- a row axis -- and `disable_null_checks` drops the null
-// toggles where every row has a value by construction.
+// toggles where every row has a value by construction. `range_bounds` adds a
+// Min / Max row above a value list, for a target whose values are ordered.
 export default function ColumnQuickFilter({
   column_id,
   column_index = 0,
   data_type,
   params,
   column_values: column_values_override,
-  disable_null_checks = false
+  disable_null_checks = false,
+  range_bounds = false
 }) {
   const { table_state, on_table_state_change, all_columns } =
     useContext(table_context)
@@ -561,6 +578,16 @@ export default function ColumnQuickFilter({
       {data_type === TABLE_DATA_TYPES.TEXT ? (
         <TextBody {...{ filter_state, commit_slots }} />
       ) : null}
+      {data_type === TABLE_DATA_TYPES.SELECT && range_bounds ? (
+        <BoundsRow
+          {...{
+            filter_state,
+            commit_slots,
+            set_slot: create_set_slot({ commit_slots, input_type: 'number' }),
+            input_type: 'number'
+          }}
+        />
+      ) : null}
       {data_type === TABLE_DATA_TYPES.SELECT ? (
         <ValueSetBody
           {...{
@@ -592,5 +619,6 @@ ColumnQuickFilter.propTypes = {
   data_type: PropTypes.number,
   params: PropTypes.object,
   column_values: PropTypes.array,
-  disable_null_checks: PropTypes.bool
+  disable_null_checks: PropTypes.bool,
+  range_bounds: PropTypes.bool
 }

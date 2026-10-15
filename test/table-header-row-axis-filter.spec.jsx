@@ -90,6 +90,26 @@ describe('table-header - row axis filter', function () {
     expect(menu_text()).to.not.include('Advanced filter')
   })
 
+  it('offers Min and Max bounds on a split column whose values are numbers', async function () {
+    await open_header_menu({
+      row_axis: 'year',
+      row_axis_values: { year: [2025, 2024] }
+    })
+
+    expect(menu_text()).to.include('Min')
+    expect(menu_text()).to.include('Max')
+  })
+
+  it('offers no bounds on a split column whose values are codes', async function () {
+    await open_header_menu({
+      row_axis: 'position',
+      row_axis_values: { position: ['RB', 'WR'] }
+    })
+
+    expect(menu_text()).to.include('RB')
+    expect(menu_text()).to.not.include('Min')
+  })
+
   it('offers no filter on a split column with no supplied values', async function () {
     await open_header_menu({
       row_axis: 'week',

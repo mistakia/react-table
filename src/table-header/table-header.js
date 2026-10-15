@@ -638,6 +638,12 @@ const TableHeader = ({ header, column, table }) => {
                     data_type={TABLE_DATA_TYPES.SELECT}
                     column_values={row_axis_filter_values}
                     disable_null_checks
+                    range_bounds={
+                      row_axis_filter_values.length > 0 &&
+                      row_axis_filter_values.every(
+                        (value) => typeof value === 'number'
+                      )
+                    }
                   />
                 </>
               )}

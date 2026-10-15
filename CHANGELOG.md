@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+- Row axis range bounds: a split column whose supplied values are all numbers
+  (a year axis) also offers Min / Max in its header filter, writing `>=` / `<=`
+  rows on the axis id, so a span of seasons is two rows rather than a list.
+- Where value pairs: the secure where-value schema admits a list of two-item
+  tuples, the shape of a row filter keeping exact `[id, season]` rows. Each
+  string in a tuple passes the same string checks as a bare value.
 - Row axis header filter: a split column whose axis the consumer supplies
   values for through the new `row_axis_values` prop offers an include/exclude
   value list in its header menu. It writes an ordinary `where` row keyed on the
