@@ -53,6 +53,9 @@ outright in either order. `yarn test` fails if the `:where()` is removed.
 | `--rt-text`            | `#222222`                     | Primary text                               |
 | `--rt-text-muted`      | `#555555`                     | Secondary text, labels                     |
 | `--rt-text-disabled`   | `#999999`                     | Placeholder, disabled                      |
+| `--rt-ground`          | `var(--rt-bg)`                | What the rows sit on; a host sets its page |
+| `--rt-frame-rule`      | `var(--rt-border-subtle)`     | Edge of the table chrome; a host's rule    |
+| `--rt-frame-shadow`    | `var(--rt-shadow-overlay)`    | Floating surfaces; a host's shadow         |
 | `--rt-radius-sm`       | `4px`                         | Inputs, small buttons                      |
 | `--rt-radius`          | `6px`                         | Larger buttons, panels                     |
 | `--rt-radius-lg`       | `8px`                         | Modals                                     |
@@ -150,14 +153,23 @@ Two caveats, both measured rather than assumed:
 
 ## Stylus access
 
-Components import `src/styles/tokens.styl` and read either the Stylus mirror or
-the CSS variable directly. Prefer Stylus mirrors for build-time defaults so the
-lib remains self-contained when consumed without a `:root` override.
+Components import `src/styles/tokens.styl` and read the Stylus mirror. **A
+colour mirror resolves to its custom property** (`$rt_bg` is `var(--rt-bg)`), so
+a consumer's override reaches every component and a host can theme the table,
+dark mode included. That also means no stylus colour function may run on a
+colour mirror -- `lighten(var(--rt-bg), 5%)` is a build error. Sizes, spacing
+and layers stay build-time values.
 
-**The layer tokens invert that advice: read them as `var(--rt-z-*)`, never via
-the Stylus mirror.** A mirror is substituted at build time, so a consumer's
-`--rt-z-base` override cannot reach it and the relocation silently fails. The
-`$rt_z_*` mirrors exist only for reference.
+**A stylesheet never names a host variable.** League compiles this lib's sources
+with its own injected stylesheets, so a bare `$backgroundColor` silently took
+the host's value there and this lib's value in a standalone build -- two
+renderings from one source. The frame tokens above are the sanctioned version
+of that: the lib names the slot, and the host fills it.
+
+**The layer tokens are read as `var(--rt-z-*)`, never via the Stylus mirror.**
+A layer mirror is substituted at build time, so a consumer's `--rt-z-base`
+override cannot reach it and the relocation silently fails. The `$rt_z_*`
+mirrors exist only for reference.
 
 ```stylus
 @import '../styles/tokens'

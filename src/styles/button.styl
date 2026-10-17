@@ -7,7 +7,7 @@
 //
 // Tokens are imported explicitly rather than relied on from the ambient stylus
 // `import` option, because a consumer compiling these sources injects ITS OWN
-// variables file into every stylesheet. league's $box_shadow, for instance, is
+// variables file into every stylesheet. league's $rt_frame_shadow, for instance, is
 // a hard 4px offset and nothing like $rt_shadow_overlay.
 
 // Toolbar / ghost. The resting state is invisible and hover reveals the border
@@ -52,7 +52,7 @@
   font-size $rt_font_size_md
   line-height 1
 
-// Panel-footer actions (Discard / Apply). Left on the ambient $box_shadow on
+// Panel-footer actions (Discard / Apply). Left on the ambient $rt_frame_shadow on
 // purpose: consumers define that variable themselves and league's is a hard
 // offset that this control has always rendered with.
 .controls-button
@@ -64,4 +64,4 @@
   font-weight 600
   cursor pointer
   &:hover
-    box-shadow $box_shadow
+    box-shadow $rt_frame_shadow

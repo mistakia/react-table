@@ -4,32 +4,33 @@
 // Consumers override by redefining the --rt-* CSS custom properties on :root
 // (or any ancestor scope).
 
-// Stylus mirrors — used at build time so component sources stay self-contained
-// when the lib is consumed without a :root override.
-$rt_border = rgba(15, 23, 42, 0.14)
-$rt_border_subtle = #e6e8eb
-$rt_divider = #eef0f2
-$rt_bg = #ffffff
-$rt_bg_subtle = #f7f8f9
-$rt_bg_hover = rgba(15, 23, 42, 0.04)
-$rt_bg_hover_strong = #eceff2
-$rt_bg_selected = rgba(15, 23, 42, 0.06)
-$rt_bg_overlay = rgba(15, 23, 42, 0.45)
-$rt_text = #1f2328
-$rt_text_muted = #57606a
-$rt_text_subtle = #6e7781
-$rt_text_disabled = #9aa0a6
-$rt_accent = #1f6feb
-$rt_accent_strong = #1158c7
-$rt_accent_subtle = rgba(31, 111, 235, 0.10)
-$rt_accent_text = #0a59c9
-$rt_success = #1f883d
-$rt_success_strong = #186a2e
-$rt_success_bg = #2da44e
-$rt_active_bg = rgba(31, 111, 235, 0.08)
-$rt_active_bar = #1f6feb
-$rt_destructive = #d1242f
-$rt_destructive_subtle = rgba(209, 36, 47, 0.10)
+// Stylus mirrors. A colour mirror resolves to its runtime custom property, so a
+// consumer's :root override reaches every component -- that is what lets a host
+// theme the table. Sizes, spacing and layers stay build-time values.
+$rt_border = var(--rt-border)
+$rt_border_subtle = var(--rt-border-subtle)
+$rt_divider = var(--rt-divider)
+$rt_bg = var(--rt-bg)
+$rt_bg_subtle = var(--rt-bg-subtle)
+$rt_bg_hover = var(--rt-bg-hover)
+$rt_bg_hover_strong = var(--rt-bg-hover-strong)
+$rt_bg_selected = var(--rt-bg-selected)
+$rt_bg_overlay = var(--rt-bg-overlay)
+$rt_text = var(--rt-text)
+$rt_text_muted = var(--rt-text-muted)
+$rt_text_subtle = var(--rt-text-subtle)
+$rt_text_disabled = var(--rt-text-disabled)
+$rt_accent = var(--rt-accent)
+$rt_accent_strong = var(--rt-accent-strong)
+$rt_accent_subtle = var(--rt-accent-subtle)
+$rt_accent_text = var(--rt-accent-text)
+$rt_success = var(--rt-success)
+$rt_success_strong = var(--rt-success-strong)
+$rt_success_bg = var(--rt-success-bg)
+$rt_active_bg = var(--rt-active-bg)
+$rt_active_bar = var(--rt-active-bar)
+$rt_destructive = var(--rt-destructive)
+$rt_destructive_subtle = var(--rt-destructive-subtle)
 $rt_radius_sm = 4px
 $rt_radius = 6px
 $rt_radius_lg = 8px
@@ -45,12 +46,20 @@ $rt_space_lg = 16px
 $rt_space_xl = 20px
 $rt_row_height = 28px
 $rt_row_padding_y = 6px
-$rt_focus_ring = 0 0 0 2px rgba(31, 111, 235, 0.25)
-$rt_shadow_overlay = 0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08)
-$rt_modal_border = rgba(0, 0, 0, 0.23)
-$rt_modal_shadow = #D0D0D0 4px 4px 0px 0px
-$rt_button_hover_bg = #f0f0f0
-$rt_button_hover_bg_strong = #b3b3b3
+$rt_focus_ring = var(--rt-focus-ring)
+$rt_shadow_overlay = var(--rt-shadow-overlay)
+$rt_modal_border = var(--rt-modal-border)
+$rt_modal_shadow = var(--rt-modal-shadow)
+$rt_button_hover_bg = var(--rt-button-hover-bg)
+$rt_button_hover_bg_strong = var(--rt-button-hover-bg-strong)
+
+// THE HOST FRAME. What the table sits on and is edged by. A standalone build
+// takes the lib's own surface, border and overlay shadow; a host sets these
+// three to its own ground, rule and shadow so the table reads as part of the
+// page around it.
+$rt_ground = var(--rt-ground)
+$rt_frame_rule = var(--rt-frame-rule)
+$rt_frame_shadow = var(--rt-frame-shadow)
 $rt_transition = 150ms ease
 
 // Layering. Every floating surface this lib renders draws its z-index from one
@@ -94,6 +103,9 @@ $rt_z_popper = 1006
 //
 // Keep the :where(). Unwrapping it re-arms that coin flip for every token.
 :where(:root)
+  --rt-ground var(--rt-bg)
+  --rt-frame-rule var(--rt-border-subtle)
+  --rt-frame-shadow var(--rt-shadow-overlay)
   --rt-border rgba(15, 23, 42, 0.14)
   --rt-border-subtle #e6e8eb
   --rt-divider #eef0f2

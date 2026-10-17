@@ -1,3 +1,4 @@
+@import '../styles/tokens.styl'
 @import '../styles/misc-menu.styl'
 
 // ── Shared constants ──────────────────────────────────────────────────────────
@@ -43,7 +44,7 @@ $breakpoint_mobile = 768px
     min-width 0
 
 .table-view-controller:not(.-open)
-  border 1px solid $borderColor
+  border 1px solid $rt_frame_rule
 
 // ── Open panel shell ──────────────────────────────────────────────────────────
 // Animate width/height from the collapsed trigger into the expanded panel.
@@ -67,7 +68,7 @@ $breakpoint_mobile = 768px
     height auto
     flex 0 0 auto
     overflow visible
-    border-bottom 1px solid $borderColor
+    border-bottom 1px solid $rt_frame_rule
     background rgba(0, 0, 0, 0.02)
     align-items flex-start
     padding 16px 12px 12px
@@ -117,7 +118,7 @@ $breakpoint_mobile = 768px
   flex-wrap wrap
   align-items center
   gap 4px
-  border-bottom 1px solid $borderColor
+  border-bottom 1px solid $rt_frame_rule
   padding 6px
   overflow-x auto
   overflow-y hidden
@@ -129,7 +130,7 @@ $breakpoint_mobile = 768px
     flex-wrap nowrap
     align-items stretch
     gap 0
-    border-right 1px solid $borderColor
+    border-right 1px solid $rt_frame_rule
     border-bottom none
     padding 8px 0
     overflow-x hidden
@@ -222,7 +223,7 @@ $breakpoint_mobile = 768px
     padding 8px 6px
     gap 4px
     background none
-    border-top 1px solid $borderColor
+    border-top 1px solid $rt_frame_rule
 
     &.-collapsed
       display flex
@@ -331,7 +332,7 @@ $breakpoint_mobile = 768px
   display flex
   flex-direction row
   flex-wrap nowrap
-  border-bottom 1px solid $borderColor
+  border-bottom 1px solid $rt_frame_rule
   background rgba(0, 0, 0, 0.015)
   overflow-x auto
   overflow-y hidden
@@ -340,7 +341,7 @@ $breakpoint_mobile = 768px
   @media (min-width: $breakpoint_mobile + 1px)
     flex-direction column
     flex-wrap nowrap
-    border-right 1px solid $borderColor
+    border-right 1px solid $rt_frame_rule
     border-bottom none
     min-width 140px
     max-width 200px
@@ -355,7 +356,7 @@ $breakpoint_mobile = 768px
   letter-spacing 0.5px
   padding 8px 12px 6px
   color rgba(0, 0, 0, 0.55)
-  border-bottom 1px solid $borderColor
+  border-bottom 1px solid $rt_frame_rule
 
   @media (min-width: $breakpoint_mobile + 1px)
     display block
@@ -429,7 +430,7 @@ $breakpoint_mobile = 768px
   min-width 0
   padding 5px 8px
   font-size 12px
-  border 1px solid $borderColor
+  border 1px solid $rt_frame_rule
   border-radius 4px
   background white
   outline none
@@ -569,7 +570,7 @@ $breakpoint_mobile = 768px
   z-index var(--rt-z-popper)
   min-width 200px
   background white
-  border 1px solid $borderColor
+  border 1px solid $rt_frame_rule
   border-radius 4px
   box-shadow 0 4px 12px rgba(0, 0, 0, 0.15)
   display flex
@@ -577,11 +578,11 @@ $breakpoint_mobile = 768px
 
 .tvc-tag-picker-search
   padding 6px
-  border-bottom 1px solid $borderColor
+  border-bottom 1px solid $rt_frame_rule
 
 .tvc-tag-picker-search-input
   width 100%
-  border 1px solid $borderColor
+  border 1px solid $rt_frame_rule
   border-radius 3px
   padding 4px 8px
   font-size 12px
@@ -643,7 +644,7 @@ $breakpoint_mobile = 768px
   overflow-y auto
 
 .table-view-header
-  border-bottom 1px solid $borderColor
+  border-bottom 1px solid $rt_frame_rule
   display flex
   flex-direction row
   align-items center

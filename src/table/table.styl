@@ -40,7 +40,7 @@
   // free. Recolor a row by overriding this variable or its background-color;
   // either way the value MUST be fully opaque — a translucent one is what
   // left the sticky column see-through on horizontal scroll to begin with.
-  --rt-row-surface $backgroundColor
+  --rt-row-surface $rt_ground
 
   // Height of the footer row. The row-count metadata overlays that row rather
   // than stacking under it, so it has to pull itself back up by exactly this.
@@ -119,7 +119,7 @@
     .cell
       white-space nowrap
       margin 0
-      border-right 1px solid $borderColor
+      border-right 1px solid $rt_frame_rule
       position relative
       cursor pointer
       display flex
@@ -129,7 +129,7 @@
       overflow hidden
 
       &.group_end
-        border-right 1px solid $borderColor
+        border-right 1px solid $rt_frame_rule
 
       &.sorted
         background-color rgba(255, 255, 204, 0.6)
@@ -200,16 +200,16 @@
 
     .cell
       line-height 120%
-      background-color $backgroundColor
+      background-color $rt_ground
 
     .cell:not(.column-index)
-      border-right 1px solid $borderColor
+      border-right 1px solid $rt_frame_rule
 
       &.border_bottom
-        border-bottom 1px solid $borderColor
+        border-bottom 1px solid $rt_frame_rule
 
     .row:nth-child(1) .cell:not(.column-index)
-      border-top 1px solid $borderColor
+      border-top 1px solid $rt_frame_rule
 
   .footer
     height var(--rt-footer-height)
@@ -218,8 +218,8 @@
     bottom 0
     z-index 1
     .cell
-      border-top 1px solid $borderColor
-      background-color $backgroundColor
+      border-top 1px solid $rt_frame_rule
+      background-color $rt_ground
 
   .resizer
     display inline-block
@@ -413,7 +413,7 @@
         box-shadow none
 
   &:hover
-    box-shadow $box_shadow
+    box-shadow $rt_frame_shadow
 
 .column-param-filter-body
   padding 16px
@@ -462,7 +462,7 @@
   text-align right
   border-top 1px solid rgba(0, 0, 0, 0.1)
   font-weight 500
-  background-color $backgroundColor
+  background-color $rt_ground
   // Sticky rather than absolute: absolute pinned it to the footer row's own
   // left edge, which scrolls away horizontally and took the row count with it.
   // The negative margin pulls it back over the row it follows so it still

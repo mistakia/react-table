@@ -55,9 +55,7 @@ const base = (options) => ({
             loader: 'stylus-loader',
             options: {
               stylusOptions: {
-                import: [
-                  path.resolve(__dirname, '../src/styles/variables.styl')
-                ],
+                import: [path.resolve(__dirname, '../src/styles/tokens.styl')],
                 includeCSS: true
               }
             }

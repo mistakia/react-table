@@ -1,3 +1,4 @@
+@import '../styles/tokens.styl'
 .add-column-action .cell-content
   display flex
   justify-content: center
@@ -21,7 +22,7 @@
 .header-popper.base-Popper-root.table-popper
 .header-popper.MuiPopper-root.table-popper
   max-width 160px
-  border 1px solid $borderColor
+  border 1px solid $rt_frame_rule
 
 .header-text
   padding 4px 6px
@@ -30,11 +31,11 @@
   &.small
     font-size 11px
   &.header-description
-    border-bottom 1px solid $borderColor
+    border-bottom 1px solid $rt_frame_rule
 
 .header-menu-divider
   height 1px
-  background-color $borderColor
+  background-color $rt_frame_rule
   margin 8px 0
 
 .header-menu-item
