@@ -21,6 +21,7 @@ import {
 import ScatterPlotClusterSummary from './scatter-plot-cluster-summary.js'
 import { format_column_params } from '../utils/format-column-params.js'
 import { resolve_field } from '../utils/resolve-table-state-columns.js'
+import { export_chart_png } from '../utils/export-chart-png.js'
 // highcharts-more supplies the polygon series used for cluster regions.
 import 'highcharts/highcharts-more'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
@@ -337,13 +338,7 @@ const ScatterPlotOverlay = ({
   }
 
   const handle_download_png = () => {
-    const chart = chart_instance_ref.current
-    if (!chart) return
-    if (typeof chart.exportChartLocal === 'function') {
-      chart.exportChartLocal({ type: 'image/png' })
-    } else if (typeof chart.exportChart === 'function') {
-      chart.exportChart({ type: 'image/png' })
-    }
+    export_chart_png(chart_instance_ref.current)
   }
 
   // A column may declare reverse_percentiles as a function of its params. A

@@ -25,6 +25,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+- The scatter plot and bar chart PNG exports keep the chart's on-screen size
+  instead of collapsing to a square. The export handed Highcharts no size, so it
+  fell back to a 600x600 source and squished the rendered chart into it.
+
 - A copied share link names the route that READS a query string rather than the
   route the user is standing on, via the new `share_link_pathname` prop. On a
   consumer route that hydrates a stored record — a saved view, a shared

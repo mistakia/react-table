@@ -5,6 +5,7 @@ import HighchartsReact from 'highcharts-react-official'
 import './bar-chart-overlay.styl'
 import BarChartSettingsPanel from './bar-chart-settings-panel'
 import { build_bar_chart_options } from './bar-chart-options.js'
+import { export_chart_png } from '../utils/export-chart-png.js'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
 import 'highcharts/modules/exporting'
 import 'highcharts/modules/offline-exporting'
@@ -60,13 +61,7 @@ const BarChartOverlay = ({
   }
 
   const handle_download_png = () => {
-    const chart = chart_instance_ref.current
-    if (!chart) return
-    if (typeof chart.exportChartLocal === 'function') {
-      chart.exportChartLocal({ type: 'image/png' })
-    } else if (typeof chart.exportChart === 'function') {
-      chart.exportChart({ type: 'image/png' })
-    }
+    export_chart_png(chart_instance_ref.current)
   }
 
   const chart_options = React.useMemo(() => {
