@@ -10,6 +10,11 @@
       "default": false,
       "description": "When true, renders iso-value diagonal tier grid lines"
     },
+    "show_all_labels": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, labels every plotted point instead of only outliers; overlapping labels are drawn rather than dropped"
+    },
     "show_x_mean_line": {
       "type": "boolean",
       "default": true,

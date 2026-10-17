@@ -552,6 +552,7 @@ const ScatterPlotOverlay = ({
       scatter: {
         dataLabels: build_scatter_data_labels({
           labels_enabled,
+          show_all_labels: Boolean(local_scatter_plot_options.show_all_labels),
           get_scatter_point_label_suffix,
           font_family
         }),

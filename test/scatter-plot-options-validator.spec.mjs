@@ -182,6 +182,20 @@ describe('validate_table_state with scatter_plot_options schema', () => {
     const result = validate_table_state({ scatter_plot_options: {} })
     expect(result.valid).to.equal(true)
   })
+
+  it('accepts show_all_labels as a boolean', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { show_all_labels: true }
+    })
+    expect(result.valid).to.equal(true)
+  })
+
+  it('rejects a non-boolean show_all_labels', () => {
+    const result = validate_table_state({
+      scatter_plot_options: { show_all_labels: 'yes' }
+    })
+    expect(result.valid).to.equal(false)
+  })
 })
 
 describe('validate_table_state - scatter_plot_options clustering fields', () => {

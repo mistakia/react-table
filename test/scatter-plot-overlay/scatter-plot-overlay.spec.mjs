@@ -28,9 +28,17 @@ const make_outlier_checker = (x_values, y_values) => {
 }
 
 describe('scatter-plot-overlay label collision config', () => {
-  it('dataLabels.allowOverlap is false', () => {
+  it('dataLabels.allowOverlap is false in the default outlier-only mode', () => {
     const opts = build_scatter_data_labels({ labels_enabled: true })
     expect(opts.allowOverlap).to.equal(false)
+  })
+
+  it('dataLabels.allowOverlap is true when show_all_labels is set', () => {
+    const opts = build_scatter_data_labels({
+      labels_enabled: true,
+      show_all_labels: true
+    })
+    expect(opts.allowOverlap).to.equal(true)
   })
 
   it('dataLabels.align is a static string, not a heuristic function', () => {
@@ -51,6 +59,29 @@ describe('scatter-plot-overlay label collision config', () => {
       point: { is_outlier: false, label: 'Player A' }
     })
     expect(result).to.equal(null)
+  })
+
+  it('formatter returns the label for a non-outlier when show_all_labels is set', () => {
+    const opts = build_scatter_data_labels({
+      labels_enabled: true,
+      show_all_labels: true
+    })
+    const result = opts.formatter.call({
+      point: { is_outlier: false, label: 'Player A' }
+    })
+    expect(result).to.equal('Player A')
+  })
+
+  it('formatter appends the suffix for a non-outlier when show_all_labels is set', () => {
+    const opts = build_scatter_data_labels({
+      labels_enabled: true,
+      show_all_labels: true,
+      get_scatter_point_label_suffix: () => ' (2022)'
+    })
+    const result = opts.formatter.call({
+      point: { is_outlier: false, label: 'Player A', options: {} }
+    })
+    expect(result).to.equal('Player A (2022)')
   })
 
   it('formatter returns label for outlier points', () => {

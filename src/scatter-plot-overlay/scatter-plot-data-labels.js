@@ -23,22 +23,28 @@ export const SCATTER_LABEL_FONT_SIZE = 11
  * get_scatter_point_label_suffix (optional): consumer-provided function called with
  * the per-point row (this.point.options.original_data). Returns a string suffix to
  * append to the label (e.g. ' (2022)' or ' (2022 W5)'). Empty string means no suffix.
+ *
+ * show_all_labels: when true, every point is labeled instead of only the standard
+ * deviation outliers, and overlapping labels are drawn rather than dropped. The
+ * default outlier-only mode keeps labels sparse, so hiding overlaps there keeps
+ * them readable; the all-labels mode exists precisely to name every point on a
+ * shared or exported chart, so it must not silently drop any.
  */
 export const build_scatter_data_labels = ({
   labels_enabled,
+  show_all_labels = false,
   get_scatter_point_label_suffix = null,
   font_family = null
 }) => ({
   enabled: labels_enabled,
   formatter: function () {
-    if (!this.point.is_outlier) return null
+    if (!show_all_labels && !this.point.is_outlier) return null
     const suffix = get_scatter_point_label_suffix
       ? get_scatter_point_label_suffix(this.point.options.original_data) || ''
       : ''
     return this.point.label + suffix
   },
-  // Highcharts hides overlapping labels silently; outlier-only filter keeps density low. See task S7.
-  allowOverlap: false,
+  allowOverlap: show_all_labels,
   align: 'right',
   verticalAlign: 'middle',
   // dataLabels.color (top-level, not style.color) accepts a callback function via formatter context.

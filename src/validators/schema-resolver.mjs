@@ -25,6 +25,7 @@ const SCHEMAS = {
     additionalProperties: false,
     properties: {
       show_tier_grid: { type: 'boolean', default: false },
+      show_all_labels: { type: 'boolean', default: false },
       show_x_mean_line: { type: 'boolean', default: true },
       show_y_mean_line: { type: 'boolean', default: true },
       point_color_mode: {

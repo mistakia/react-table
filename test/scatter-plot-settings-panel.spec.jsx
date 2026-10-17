@@ -58,6 +58,7 @@ describe('ScatterPlotSettingsPanel - toolbar controls', () => {
 
     expect(button_texts.some((t) => t.includes('regression'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('tier'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('all labels'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('x mean'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('y mean'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('settings'))).to.equal(true)
@@ -65,6 +66,33 @@ describe('ScatterPlotSettingsPanel - toolbar controls', () => {
 
     const selects = container.getElementsByTagName('select')
     expect(selects.length).to.be.at.least(1)
+  })
+
+  it('All labels toggle calls on_change with show_all_labels true', async () => {
+    const on_change = sinon.spy()
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: default_options,
+        on_change,
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {}
+      }),
+      container
+    )
+
+    const toggle = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase().includes('all labels')
+    )
+    expect(toggle).to.not.be.undefined
+
+    await act(async () => {
+      toggle.click()
+    })
+
+    expect(on_change.calledOnce).to.equal(true)
+    expect(on_change.firstCall.args[0].show_all_labels).to.equal(true)
   })
 
   it('clicking Settings... opens the modal', async () => {

@@ -53,6 +53,7 @@ const ScatterPlotToolbar = ({
   }
 
   const show_tier_grid = Boolean(scatter_plot_options.show_tier_grid)
+  const show_all_labels = Boolean(scatter_plot_options.show_all_labels)
   const show_x_mean_line = scatter_plot_options.show_x_mean_line !== false
   const show_y_mean_line = scatter_plot_options.show_y_mean_line !== false
   const point_color_mode = scatter_plot_options.point_color_mode || ''
@@ -72,6 +73,13 @@ const ScatterPlotToolbar = ({
         type='button'
         title='Toggle tier grid'>
         Tiers
+      </button>
+      <button
+        className={`toolbar-btn${show_all_labels ? ' active' : ''}`}
+        onClick={() => handle_toggle('show_all_labels')}
+        type='button'
+        title='Label every point (off: only outliers)'>
+        All labels
       </button>
       <button
         className={`toolbar-btn${show_x_mean_line ? ' active' : ''}`}
