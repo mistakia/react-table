@@ -120,6 +120,11 @@ function ViewItem({
         <div className='table-view-item-info-container'>
           <div className='table-view-item-name'>
             {view.view_name}
+            {view.status_label && (
+              <span className='table-view-status-label'>
+                {view.status_label}
+              </span>
+            )}
             {Boolean(view.has_unsaved_local_edits) && (
               <span
                 className='table-view-item-unsaved-dot'

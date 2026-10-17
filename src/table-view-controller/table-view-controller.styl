@@ -721,6 +721,23 @@ $breakpoint_mobile = 768px
   text-overflow ellipsis
   white-space nowrap
 
+// A consumer-supplied state word for a view that is not simply there yet or
+// went wrong -- "Building", "Failed". The library renders the word and knows
+// nothing about what produced it.
+.table-view-status-label
+  display inline-block
+  margin-left 6px
+  padding 0 5px
+  border 1px solid currentColor
+  border-radius 3px
+  font-size 10px
+  font-weight normal
+  line-height 15px
+  letter-spacing 0.04em
+  text-transform uppercase
+  opacity 0.7
+  vertical-align middle
+
 .table-view-item-unsaved-dot
   display inline-block
   width 6px

@@ -500,7 +500,14 @@ const TableViewController = ({
             </label>
             <div className='current-view-info'>
               <div className='current-view-title-row'>
-                <div className='current-view-title'>{title}</div>
+                <div className='current-view-title'>
+                  {title}
+                  {current_view?.status_label && (
+                    <span className='table-view-status-label'>
+                      {current_view.status_label}
+                    </span>
+                  )}
+                </div>
                 {(current_view || on_create_new_view) && (
                   <div
                     className='current-view-actions'
