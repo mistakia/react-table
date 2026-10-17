@@ -51,6 +51,10 @@ const DATA_TYPES_WITH_A_BODY = [
 // Unmount FLUSHES a pending commit rather than cancelling it. A hover-opened
 // header menu closes the moment the pointer leaves it, so a bound typed and
 // left inside the debounce window would otherwise be dropped with no trace.
+//
+// A new commit COMPOSES with a pending one rather than replacing it. Each
+// commit writes only its own slot, so typing Min and tabbing to Max, or typing
+// Min and clicking Has value, inside the window would otherwise drop the Min.
 const use_debounced_commit = ({ table_state, on_table_state_change }) => {
   const table_state_ref = useRef(table_state)
   const on_change_ref = useRef(on_table_state_change)
@@ -64,6 +68,11 @@ const use_debounced_commit = ({ table_state, on_table_state_change }) => {
   useEffect(() => {
     on_change_ref.current = on_table_state_change
   }, [on_table_state_change])
+
+  const with_pending = (build_where) => {
+    const pending = pending_ref.current
+    return pending ? (where) => build_where(pending(where)) : build_where
+  }
 
   const commit_now = (build_where) => {
     clearTimeout(timer_ref.current)
@@ -88,15 +97,16 @@ const use_debounced_commit = ({ table_state, on_table_state_change }) => {
       // Typed input: coalesce keystrokes.
       debounced: (build_where) => {
         clearTimeout(timer_ref.current)
-        pending_ref.current = build_where
+        const composed = with_pending(build_where)
+        pending_ref.current = composed
         timer_ref.current = setTimeout(
-          () => commit_now(build_where),
+          () => commit_now(composed),
           QUICK_FILTER_COMMIT_DELAY_MS
         )
       },
       // A click is already a deliberate commit; waiting half a second after
       // one reads as the control having missed it.
-      immediate: commit_now
+      immediate: (build_where) => commit_now(with_pending(build_where))
     }),
     []
   )

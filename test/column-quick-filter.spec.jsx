@@ -76,9 +76,8 @@ const find_input_by_label = (container, label) => {
   return label_node.closest('.MuiFormControl-root')?.querySelector('input')
 }
 
-// A typed commit is debounced, so a spec that asserts immediately after the
-// change event reads nothing. Drive the timer rather than sleeping.
-const type_and_settle = async (input, value) => {
+// Fire one change event and leave the debounce window open.
+const type_into = async (input, value) => {
   await act(async () => {
     const setter = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
@@ -87,6 +86,12 @@ const type_and_settle = async (input, value) => {
     setter.call(input, value)
     input.dispatchEvent(new window.Event('input', { bubbles: true }))
   })
+}
+
+// A typed commit is debounced, so a spec that asserts immediately after the
+// change event reads nothing. Drive the timer rather than sleeping.
+const type_and_settle = async (input, value) => {
+  await type_into(input, value)
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
@@ -425,15 +430,7 @@ describe('ColumnQuickFilter', () => {
       data_type: TABLE_DATA_TYPES.NUMBER
     })
 
-    const input = find_input_by_label(container, 'Min')
-    await act(async () => {
-      const setter = Object.getOwnPropertyDescriptor(
-        window.HTMLInputElement.prototype,
-        'value'
-      ).set
-      setter.call(input, '25')
-      input.dispatchEvent(new window.Event('input', { bubbles: true }))
-    })
+    await type_into(find_input_by_label(container, 'Min'), '25')
     expect(emitted).to.equal(null)
 
     const { root } = containers.pop()
@@ -442,6 +439,49 @@ describe('ColumnQuickFilter', () => {
 
     expect(emitted.where).to.deep.equal([
       { column_id: 'player_age', operator: '>=', value: 25 }
+    ])
+  })
+  // Each commit writes only its own slot, so a second commit inside the
+  // debounce window replaced the first and silently dropped the Min.
+  it('keeps a pending Min when Max is typed inside the debounce window', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'player_age',
+      data_type: TABLE_DATA_TYPES.NUMBER
+    })
+
+    await type_into(find_input_by_label(container, 'Min'), '25')
+    await type_and_settle(find_input_by_label(container, 'Max'), '30')
+
+    expect(emitted.where).to.deep.equal([
+      { column_id: 'player_age', operator: '>=', value: 25 },
+      { column_id: 'player_age', operator: '<=', value: 30 }
+    ])
+  })
+
+  it('keeps a pending Min when a null toggle is clicked inside the window', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'player_age',
+      data_type: TABLE_DATA_TYPES.NUMBER
+    })
+
+    await type_into(find_input_by_label(container, 'Min'), '25')
+    await act(async () => {
+      find_by_text(container, 'Has value').click()
+    })
+
+    expect(emitted.where).to.deep.equal([
+      { column_id: 'player_age', operator: '>=', value: 25 },
+      { column_id: 'player_age', operator: 'IS NOT NULL' }
     ])
   })
 })
