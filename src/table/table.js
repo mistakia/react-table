@@ -18,6 +18,7 @@ import Tooltip from '@mui/material/Tooltip'
 import TableCell from '#src/table-cell'
 import TableHeader from '#src/table-header'
 import TableFooter from '#src/table-footer'
+import TableAverageRow from '#src/table-average-row'
 import TableColumnControls from '#src/table-column-controls'
 import TableRowAxesControls from '#src/table-row-axes-controls/table-row-axes-controls.js'
 import TableSegmentedSelect from '#src/table-segmented-select/table-segmented-select.js'
@@ -174,6 +175,10 @@ export default function Table({
   no_row_axes_available_label = 'No row axes available for selected columns',
   style = {},
   percentiles = {},
+  // Per-column means over the whole matched set, keyed like a cell's value
+  // (`${accessorKey}_${occurrence}`). Present only on a consumer that can
+  // compute them past the loaded page; see TableAverageRow.
+  column_averages = null,
   enable_duplicate_column_ids = false,
   season_unavailable_column_ids,
   row_axis_values = NO_ROW_AXIS_VALUES,
@@ -847,6 +852,17 @@ export default function Table({
     on_table_state_change
   ])
 
+  // The averages describe the server's matched set, so the row stands down
+  // while a client-side filter narrows the loaded rows below that set -- it
+  // would otherwise sit above rows it no longer describes.
+  const show_average_row =
+    !is_view_empty &&
+    !is_loading &&
+    rows.length > 0 &&
+    typeof client_filter !== 'function' &&
+    Boolean(column_averages) &&
+    Object.keys(column_averages).length > 0
+
   const header_items = useMemo(() => {
     return table
       .getHeaderGroups()
@@ -1219,6 +1235,9 @@ export default function Table({
           )}
         <div className='header'>
           {!is_view_empty && header_items}
+          {show_average_row && (
+            <TableAverageRow {...{ table, column_averages }} />
+          )}
           {(effective_is_fetching_more || is_loading) && (
             <div className='table-loading-container'>
               <LinearProgress />
@@ -1339,6 +1358,7 @@ Table.propTypes = {
   rank_aggregation_presets: PropTypes.array,
   style: PropTypes.object,
   percentiles: PropTypes.object,
+  column_averages: PropTypes.object,
   disable_create_view: PropTypes.bool,
   disable_edit_view: PropTypes.bool,
   on_save_view: PropTypes.func,

@@ -1,0 +1,21 @@
+@import '../styles/variables.styl'
+@import '../styles/tokens.styl'
+
+// Sits inside the sticky header, so it inherits the header's uppercase, heavy
+// type. A row of numbers set like column titles reads as more headers, so it
+// is set back to body type and muted to read as reference, not data.
+.table .header .row.average-row
+  height 24px
+  font-size 12px
+  font-weight 400
+  letter-spacing normal
+  text-transform none
+  font-style italic
+  color $rt_text_muted
+
+  .cell:not(.column-index)
+    border-bottom 1px solid $borderColor
+
+  .average-row-label
+    justify-content flex-start
+    font-weight 600

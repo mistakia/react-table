@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { get_string_from_object, copy_to_clipboard } from '#src/utils'
 import { table_context } from '#src/table-context'
 import AddColumnActionSpacer from '#src/add-column-action-spacer'
+import { get_column_occurrence_index } from '#src/utils/get-column-occurrence-index.js'
 
 const TableCell = ({ getValue, column, row, table }) => {
   const { sticky_left, is_sticky_column, table_state } =
@@ -23,18 +24,10 @@ const TableCell = ({ getValue, column, row, table }) => {
 
   const { enable_duplicate_column_ids, percentiles } = useContext(table_context)
 
-  const column_index = useMemo(() => {
-    const columns_with_same_id = table
-      .getAllLeafColumns()
-      .filter((col) => col.columnDef.column_id === column.columnDef.column_id)
-    const sorted_columns_with_same_id = columns_with_same_id.sort(
-      (a, b) => a.columnDef.index - b.columnDef.index
-    )
-
-    return sorted_columns_with_same_id.findIndex(
-      (col) => col.columnDef.index === column.columnDef.index
-    )
-  }, [column, table])
+  const column_index = useMemo(
+    () => get_column_occurrence_index({ table, column }),
+    [column, table]
+  )
 
   // Declared sticky is the intent; the table's width budget decides whether it
   // is honored on this viewport.

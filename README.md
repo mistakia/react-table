@@ -9,6 +9,7 @@ A virtualized React table built on TanStack/react-table and Material-UI. Renders
 - **Parameterized filtering** — server-side `where` clauses with 14 safe operators across 9 data types; type-specific operator whitelisting; nested filtering on column metadata.
 - **Quick filter** — checkbox multi-select via Autocomplete for picking subset values fast.
 - **Multi-column sort** — additive sort with directional indicators.
+- **Average row** — pass `column_averages` (keyed `${accessorKey}_${occurrence}`, like a cell's value) and a row pinned under the headers shows each NUMBER column's mean, at the column's `fixed` precision or one place. The consumer computes the means so they can cover rows not yet loaded; the row hides while a client-side search narrows the loaded rows.
 - **Row axes & rank aggregation** — expand rows along additional axes (e.g. year, week); build weighted multi-column rankings.
 - **Saved views** — create, edit, delete, favorite, and revert views; views carry their own columns, filters, row axes, prefix columns, rank-aggregation weights, search config, and scatter-plot settings.
 - **Search** — pluggable adapter registry: client (in-memory fuzzy with byte-range highlights), server (`where`-clause injection), or custom backends. Debounced input; cell renderers paint inline match highlights.
