@@ -11,7 +11,11 @@ import Tooltip from '@mui/material/Tooltip'
 import CloseIcon from '@mui/icons-material/Close'
 import FilterListIcon from '@mui/icons-material/FilterList'
 
-import { get_string_from_object, resolve_column_params } from '#src/utils'
+import {
+  get_string_from_object,
+  resolve_column_params,
+  resolve_carried_column_params
+} from '#src/utils'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 import DataTypeIcon from '#src/data-type-icon'
 import ColumnPicker from '#src/column-picker'
@@ -62,13 +66,11 @@ const ColumnControlsSelectedColumn = React.memo(
           return {
             ...col,
             column_id: new_column.column_id,
-            params: new_column.column_params
-              ? Object.fromEntries(
-                  Object.entries(col.params || {}).filter(
-                    ([key]) => new_column.column_params[key]
-                  )
-                )
-              : {}
+            params: resolve_carried_column_params({
+              previous_params: col.params,
+              next_column_params: new_column.column_params,
+              data_type_select: TABLE_DATA_TYPES.SELECT
+            })
           }
         })
       }))

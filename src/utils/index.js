@@ -47,6 +47,7 @@ export {
   default as resolve_param_definition_across_records,
   CONFLICT_REASONS
 } from './resolve-param-definition-across-records'
+export { default as resolve_carried_column_params } from './resolve-carried-column-params'
 export { parse_url_params_to_table_state } from './parse-url-params-to-table-state.mjs'
 
 // Validators

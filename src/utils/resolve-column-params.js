@@ -28,6 +28,29 @@ const to_list = (value) => {
   return Array.isArray(value) ? value : [value]
 }
 
+// A definition's own verdict on a held value, for a param the generic test
+// cannot parse. Returns a boolean when the definition judges the value and
+// `undefined` when it declines, in which case the shape-and-membership test
+// below answers.
+//
+// It exists because a param's `values` and its VALUE need not share a shape.
+// The rate-type `output` param stores an object (`{ period, aggregation,
+// threshold }`) while its `values` are `{ value, label }` period options, so the
+// membership test compares a period string to an object and fails for EVERY
+// value -- including the ones the column does serve. A definition that declares
+// this hook is judged by it instead, which is what lets `output` survive an edit
+// to a column that offers its period and be dropped on one that does not.
+const declared_admissibility = ({ param_definition, params, value }) => {
+  if (typeof param_definition.is_value_admissible !== 'function')
+    return undefined
+  const verdict = param_definition.is_value_admissible({
+    value,
+    params,
+    param_definition
+  })
+  return verdict === undefined ? undefined : Boolean(verdict)
+}
+
 // The admissible values for one param given its siblings. `get_values` wins
 // over the static `values` when declared; a param with neither constrains
 // nothing and every value is admissible.
@@ -130,6 +153,12 @@ export const is_param_value_admissible = ({
   // An unset param is not "inadmissible" — it is unset, and the caller decides
   // whether to fill it. Only a value the user can see is judged here.
   if (held.length === 0) return true
+
+  // A definition that judges its own value owns the verdict, ahead of the shape
+  // and membership tests below — both of which read a `values` list and so
+  // cannot judge a value that is not a member-shaped scalar.
+  const declared = declared_admissibility({ param_definition, params, value })
+  if (declared !== undefined) return declared
 
   // Shape before membership: a RANGE param declares no `values` at all, so the
   // membership test below returns true for every one of them and would never
