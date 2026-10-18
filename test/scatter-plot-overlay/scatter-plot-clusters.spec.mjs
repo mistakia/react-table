@@ -4,10 +4,10 @@ import { expect } from 'chai'
 import {
   apply_cluster_method,
   build_cluster_series,
-  CLUSTER_PALETTE,
   compute_convex_hull,
   derive_scatter_clusters
 } from '../../src/scatter-plot-overlay/scatter-plot-clusters.js'
+import { CHART_COLOR_DEFAULTS } from '../../src/utils/chart-colors.js'
 
 // Three cohorts shaped like rest-of-season points against age: young high
 // scorers, veteran high scorers, and a low-scoring middle group.
@@ -81,7 +81,7 @@ describe('derive_scatter_clusters', () => {
     ])
     expect(result.assignments).to.have.lengthOf(x_values.length)
     expect(result.silhouette_score).to.be.greaterThan(0.5)
-    expect(result.clusters[0].color).to.equal(CLUSTER_PALETTE[0])
+    expect(result.clusters[0].color).to.equal(CHART_COLOR_DEFAULTS.clusters[0])
   })
 
   it('automatic count selects three cohorts', () => {

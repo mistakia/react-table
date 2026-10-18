@@ -13,19 +13,8 @@ import {
   select_cluster_count,
   standardize_values
 } from '../utils/cluster-points.js'
-
-// Colorblind-considerate categorical palette (Tableau 10 subset). Data
-// encoding inside chart options, like the regression and tier colors.
-export const CLUSTER_PALETTE = [
-  '#4e79a7',
-  '#f28e2b',
-  '#59a14f',
-  '#e15759',
-  '#76b7b2',
-  '#edc948',
-  '#b07aa1',
-  '#9c755f'
-]
+import { CHART_COLOR_DEFAULTS } from '../utils/chart-colors.js'
+import { with_alpha } from '../utils/resolve-token-color.js'
 
 export const MIN_CLUSTER_COUNT = 2
 export const MAX_CLUSTER_COUNT = 8
@@ -35,11 +24,6 @@ export const MAX_CLUSTER_COUNT = 8
 export const DEFAULT_NATURAL_TIER_COUNT = 5
 
 const K_MEANS_SEED = 1
-
-export const hex_to_rgba = (hex, alpha) => {
-  const value = parseInt(hex.slice(1), 16)
-  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
-}
 
 const cross = (origin, a, b) =>
   (a[0] - origin[0]) * (b[1] - origin[1]) -
@@ -148,6 +132,9 @@ const run_clustering = ({ cluster_count, cluster_fn, points }) => {
  * @param {string} params.x_label
  * @param {string} params.y_label
  * @param {object} params.scatter_plot_options
+ * @param {string[]} [params.palette] - cluster colours by rank, a
+ *   colourblind-considerate categorical set (Tableau 10 subset); the overlay
+ *   passes the host's resolved --rt-chart-cluster-* tokens
  * @returns {object|null} null when clustering is off or there are too few points
  */
 export const derive_scatter_clusters = ({
@@ -157,7 +144,8 @@ export const derive_scatter_clusters = ({
   y_reversed = false,
   x_label,
   y_label,
-  scatter_plot_options = {}
+  scatter_plot_options = {},
+  palette = CHART_COLOR_DEFAULTS.clusters
 }) => {
   const method = scatter_plot_options.cluster_method
   if (method !== 'k_means' && method !== 'natural_breaks') return null
@@ -260,7 +248,7 @@ export const derive_scatter_clusters = ({
     return {
       name: names[rank],
       automatic_name: auto_names[rank],
-      color: CLUSTER_PALETTE[rank % CLUSTER_PALETTE.length],
+      color: palette[rank % palette.length],
       count: indexes.length,
       centroid_x,
       centroid_y,
@@ -334,6 +322,8 @@ export const apply_cluster_method = ({
  * @param {boolean} params.show_halos - ring each point in its cluster color
  * @param {number[]} [params.halo_radii] - per-point halo radius, so a ring
  *   hugs the marker drawn at that point; defaults to 10
+ * @param {string} [params.surface] - the chart's surface, which edges a
+ *   centroid and outlines its label
  * @returns {object[]}
  */
 export const build_cluster_series = ({
@@ -343,7 +333,8 @@ export const build_cluster_series = ({
   assignments,
   show_cluster_regions,
   show_halos,
-  halo_radii = []
+  halo_radii = [],
+  surface = CHART_COLOR_DEFAULTS.halo
 }) => {
   const series = []
 
@@ -355,8 +346,8 @@ export const build_cluster_series = ({
         id: `cluster-region-${cluster_index}`,
         name: cluster.name,
         data: cluster.hull,
-        color: hex_to_rgba(cluster.color, 0.12),
-        lineColor: hex_to_rgba(cluster.color, 0.7),
+        color: with_alpha(cluster.color, 0.12),
+        lineColor: with_alpha(cluster.color, 0.7),
         lineWidth: 1,
         enableMouseTracking: false,
         showInLegend: false,
@@ -384,7 +375,7 @@ export const build_cluster_series = ({
         data,
         marker: {
           symbol: 'circle',
-          fillColor: hex_to_rgba(cluster.color, 0.3),
+          fillColor: with_alpha(cluster.color, 0.3),
           lineColor: cluster.color,
           lineWidth: 1.5
         },
@@ -408,7 +399,7 @@ export const build_cluster_series = ({
           symbol: 'diamond',
           radius: 7,
           fillColor: cluster.color,
-          lineColor: '#ffffff',
+          lineColor: surface,
           lineWidth: 1.5
         },
         dataLabels: {
@@ -421,7 +412,7 @@ export const build_cluster_series = ({
             color: cluster.color,
             fontSize: '11px',
             fontWeight: '700',
-            textOutline: '2px #ffffff'
+            textOutline: `2px ${surface}`
           },
           formatter: function () {
             return this.series.options.custom.cluster_name

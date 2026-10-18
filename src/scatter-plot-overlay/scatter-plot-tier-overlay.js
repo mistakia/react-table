@@ -9,6 +9,9 @@
  * No Highcharts import — keeps this unit-testable in isolation.
  */
 
+import { CHART_COLOR_DEFAULTS } from '../utils/chart-colors.js'
+import { with_alpha } from '../utils/resolve-token-color.js'
+
 /**
  * Compute a quantile value from a sorted numeric array.
  * @param {number[]} sorted - ascending-sorted array
@@ -176,10 +179,10 @@ const compute_tier_k_values = ({
   }
 }
 
-const TIER_SERIES_BASE = {
+const build_tier_series_base = (guide_color) => ({
   type: 'line',
   dashStyle: 'ShortDash',
-  color: 'rgba(60,60,60,0.7)',
+  color: with_alpha(guide_color, 0.7),
   lineWidth: 1.25,
   zIndex: 5,
   enableMouseTracking: false,
@@ -198,7 +201,7 @@ const TIER_SERIES_BASE = {
     y: 0,
     padding: 0,
     style: {
-      color: 'rgba(60,60,60,0.85)',
+      color: with_alpha(guide_color, 0.85),
       fontSize: '10px',
       fontWeight: '600',
       textOutline: 'none'
@@ -210,7 +213,7 @@ const TIER_SERIES_BASE = {
       return name.replace(/^Tier\s*/, 'T')
     }
   }
-}
+})
 
 /**
  * Build Highcharts line-series configs for iso-value tier lines at quintile
@@ -222,16 +225,19 @@ const TIER_SERIES_BASE = {
  * @param {object} params
  * @param {number[]} params.x_values
  * @param {number[]} params.y_values
+ * @param {string} [params.guide_color] - the lines' ink, drawn translucent
  * @returns {object[]}
  */
 const build_tier_series = ({
   x_values,
   y_values,
   x_reversed = false,
-  y_reversed = false
+  y_reversed = false,
+  guide_color = CHART_COLOR_DEFAULTS.tier_guide
 }) => {
   const x_sign = x_reversed ? -1 : 1
   const y_sign = y_reversed ? -1 : 1
+  const tier_series_base = build_tier_series_base(guide_color)
   const { k_values, data_bounds } = compute_tier_k_values({
     x_values,
     y_values,
@@ -250,7 +256,7 @@ const build_tier_series = ({
     })
     if (!segment) return
     series.push({
-      ...TIER_SERIES_BASE,
+      ...tier_series_base,
       name: `Tier ${i + 1}`,
       data: segment,
       custom: { tier_k: k, tier_x_sign: x_sign, tier_y_sign: y_sign }

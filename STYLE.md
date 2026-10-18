@@ -95,6 +95,20 @@ outright in either order. `yarn test` fails if the `:where()` is removed.
 | `--rt-label-text`             | `#4b5563`                                                              | Preset field label                                               |
 | `--rt-heat-low`               | `#fda291`                                                              | Percentile wash, low values                                      |
 | `--rt-heat-high`              | `#2ea3dd`                                                              | Percentile wash, high values                                     |
+| `--rt-chart-ink`              | `rt_soften($rt_contrast_pole, 20)`                                     | Bar chart average line and label                                 |
+| `--rt-chart-baseline`         | `rt_soften($rt_contrast_pole, 40)`                                     | Bar chart zero line                                              |
+| `--rt-chart-grid`             | `rt_soften($rt_contrast_pole, 91)`                                     | Chart gridlines                                                  |
+| `--rt-chart-tier-band`        | `rt_fade($rt_contrast_pole, 4.5)`                                      | Bar chart tier shading                                           |
+| `--rt-chart-tier-label`       | `rt_soften($rt_contrast_pole, 33.3)`                                   | Bar chart tier labels                                            |
+| `--rt-chart-tier-guide`       | `rt_soften($rt_contrast_pole, 23.5)`                                   | Scatter tier guides, at 70% and 85%                              |
+| `--rt-chart-point-hover`      | `rt_soften($rt_contrast_pole, 39.2)`                                   | Hovered scatter point edge                                       |
+| `--rt-chart-halo`             | `var(--rt-bg)`                                                         | Label halo and centroid edge                                     |
+| `--rt-chart-bar`              | `#4a5568`                                                              | A bar with no colour of its own                                  |
+| `--rt-chart-mean`             | `#b43c3c`                                                              | Scatter mean lines, at 80% and 90%                               |
+| `--rt-chart-point`            | `#2563eb`                                                              | Scatter points, at 50%                                           |
+| `--rt-chart-point-edge`       | `#1e40af`                                                              | Edge of a scatter point with no logo                             |
+| `--rt-chart-regression`       | `#ff0000`                                                              | Scatter trend line, at 50%                                       |
+| `--rt-chart-cluster-1..8`     | `#4e79a7 … #9c755f`                                                    | Cluster identities (Tableau 10 subset)                           |
 | `--rt-radius-sm`              | `4px`                                                                  | Inputs, small buttons                                            |
 | `--rt-radius`                 | `6px`                                                                  | Larger buttons, panels                                           |
 | `--rt-radius-lg`              | `8px`                                                                  | Modals                                                           |
@@ -113,6 +127,13 @@ outright in either order. `yarn test` fails if the `:where()` is removed.
 | `--rt-button-hover-bg`        | `#f0f0f0`                                                              | Button hover                                                     |
 | `--rt-button-hover-bg-strong` | `#b3b3b3`                                                              | Button hover, strong                                             |
 | `--rt-transition`             | `150ms ease`                                                           | Color/background/border transitions                              |
+
+The `--rt-chart-*` tokens colour the bar chart and scatter plot overlays.
+Highcharts parses colours itself, so the overlays resolve them from script
+(`src/utils/chart-colors.js`) and rebuild the chart when `data-theme` on
+`<html>` changes. In the default theme the derived greys resolve, in table
+order, to `#333333`, `#666666`, `#e8e8e8`, `rgba(0, 0, 0, 0.045)`, `#555555`,
+`#3c3c3c` and `#646464`.
 
 A colour mirror is a runtime value, so a stylus colour function cannot run on
 it: `lighten($rt_bg, 4%)` is a build error. Derive with the two helpers in

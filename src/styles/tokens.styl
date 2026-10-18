@@ -203,6 +203,33 @@ $rt_z_popper = 1006
   // values warm, high values blue.
   --rt-heat-low #fda291
   --rt-heat-high #2ea3dd
+  // The chart overlays' colours. Highcharts parses a colour itself, so these
+  // are read from script (src/utils/chart-colors.js), never as var(). The
+  // greys are the contrast pole softened at the share that gives the old
+  // literal, so a host that inverts the pole inverts them; the chromatic ones
+  // are a host's to set.
+  --rt-chart-ink rt_soften($rt_contrast_pole, 20)
+  --rt-chart-baseline rt_soften($rt_contrast_pole, 40)
+  --rt-chart-grid rt_soften($rt_contrast_pole, 91)
+  --rt-chart-tier-band rt_fade($rt_contrast_pole, 4.5)
+  --rt-chart-tier-label rt_soften($rt_contrast_pole, 33.3)
+  --rt-chart-tier-guide rt_soften($rt_contrast_pole, 23.5)
+  --rt-chart-point-hover rt_soften($rt_contrast_pole, 39.2)
+  --rt-chart-halo var(--rt-bg)
+  --rt-chart-bar #4a5568
+  --rt-chart-mean #b43c3c
+  --rt-chart-point #2563eb
+  --rt-chart-point-edge #1e40af
+  --rt-chart-regression #ff0000
+  // Cluster identities, the Tableau 10 subset. Data, so a host keeps them.
+  --rt-chart-cluster-1 #4e79a7
+  --rt-chart-cluster-2 #f28e2b
+  --rt-chart-cluster-3 #59a14f
+  --rt-chart-cluster-4 #e15759
+  --rt-chart-cluster-5 #76b7b2
+  --rt-chart-cluster-6 #edc948
+  --rt-chart-cluster-7 #b07aa1
+  --rt-chart-cluster-8 #9c755f
   --rt-radius-sm 4px
   --rt-radius 6px
   --rt-radius-lg 8px

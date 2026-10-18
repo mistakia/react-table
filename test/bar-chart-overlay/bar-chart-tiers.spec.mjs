@@ -2,10 +2,8 @@ import { describe, it } from 'mocha'
 import { expect } from 'chai'
 
 import { derive_bar_tiers } from '../../src/bar-chart-overlay/bar-chart-data.js'
-import {
-  build_bar_chart_options,
-  TIER_BAND_COLOR
-} from '../../src/bar-chart-overlay/bar-chart-options.js'
+import { build_bar_chart_options } from '../../src/bar-chart-overlay/bar-chart-options.js'
+import { CHART_COLOR_DEFAULTS } from '../../src/utils/chart-colors.js'
 
 // Three separated groups, ascending as the chart sorts them.
 const values = [100, 104, 108, 180, 184, 260, 262, 266]
@@ -58,9 +56,9 @@ describe('bar chart tier bands', () => {
       [4.5, 7.5, 'Tier 1']
     ])
     expect(bands.map((band) => band.color)).to.deep.equal([
-      TIER_BAND_COLOR,
+      CHART_COLOR_DEFAULTS.tier_band,
       'transparent',
-      TIER_BAND_COLOR
+      CHART_COLOR_DEFAULTS.tier_band
     ])
   })
 

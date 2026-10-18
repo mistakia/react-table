@@ -3,9 +3,9 @@ import { expect } from 'chai'
 
 import {
   build_bar_chart_options,
-  AVERAGE_LINE_COLOR,
   BAR_LOGO_SIZE
 } from '../../src/bar-chart-overlay/bar-chart-options.js'
+import { CHART_COLOR_DEFAULTS } from '../../src/utils/chart-colors.js'
 
 const epa_rows = [
   { team: 'CLV', epa: -0.21 },
@@ -59,7 +59,7 @@ describe('build_bar_chart_options', () => {
         (line) => line.label?.text === 'Average'
       )
       expect(average_line.dashStyle).to.equal('Dash')
-      expect(average_line.color).to.equal(AVERAGE_LINE_COLOR)
+      expect(average_line.color).to.equal(CHART_COLOR_DEFAULTS.ink)
       expect(average_line.value).to.be.closeTo(-0.0102, 1e-4)
     })
 

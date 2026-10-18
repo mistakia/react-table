@@ -6,6 +6,8 @@ import './bar-chart-overlay.styl'
 import BarChartSettingsPanel from './bar-chart-settings-panel'
 import { build_bar_chart_options } from './bar-chart-options.js'
 import { export_chart_png } from '../utils/export-chart-png.js'
+import { resolve_chart_colors } from '../utils/chart-colors.js'
+import { use_host_theme } from '../utils/use-host-theme.js'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
 import 'highcharts/modules/exporting'
 import 'highcharts/modules/offline-exporting'
@@ -64,6 +66,11 @@ const BarChartOverlay = ({
     export_chart_png(chart_instance_ref.current)
   }
 
+  // Highcharts takes resolved colours, so they are read again when the host's
+  // theme changes, and the chart is keyed to the theme below.
+  const theme = use_host_theme()
+  const colors = React.useMemo(() => resolve_chart_colors(), [theme])
+
   const chart_options = React.useMemo(() => {
     const built = build_bar_chart_options({
       data,
@@ -73,7 +80,8 @@ const BarChartOverlay = ({
       get_color,
       get_image,
       bar_chart_options: local_options,
-      footer_text
+      footer_text,
+      colors
     })
     return {
       ...built,
@@ -106,7 +114,8 @@ const BarChartOverlay = ({
     get_color,
     get_image,
     local_options,
-    footer_text
+    footer_text,
+    colors
   ])
 
   const is_empty = chart_options.custom.is_empty
@@ -119,6 +128,10 @@ const BarChartOverlay = ({
   // replacement runs its own build animation: a column series grows up from the
   // zero baseline, a bar series out from the side. Every other option change
   // keeps the update path, where morphing is the right behaviour.
+  //
+  // A theme change remounts too. chart.update() would take the newly resolved
+  // option colours, but not the global defaults a host re-applies on a theme
+  // change (axis lines, title, tooltip), which a chart reads only when built.
   const orientation =
     local_options.orientation === 'horizontal' ? 'horizontal' : 'vertical'
 
@@ -151,7 +164,7 @@ const BarChartOverlay = ({
           </div>
         ) : (
           <HighchartsReact
-            key={orientation}
+            key={`${orientation}-${theme}`}
             highcharts={Highcharts}
             options={chart_options}
           />

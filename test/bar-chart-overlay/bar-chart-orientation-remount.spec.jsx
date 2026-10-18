@@ -93,6 +93,24 @@ describe('bar chart orientation', () => {
     ).to.have.lengthOf(0)
   })
 
+  it('remounts the chart when the host theme changes', async () => {
+    await render_with('vertical')
+    // The theme hook hears a change through a MutationObserver.
+    const set_theme = (theme) =>
+      act(async () => {
+        if (theme) document.documentElement.dataset.theme = theme
+        else delete document.documentElement.dataset.theme
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+    await set_theme('dark')
+    const mounts = recorder.mounts.filter((m) => m.event === 'mount')
+    const unmounts = recorder.mounts.filter((m) => m.event === 'unmount')
+    await set_theme(null)
+
+    expect(mounts).to.have.lengthOf(2)
+    expect(unmounts).to.have.lengthOf(1)
+  })
+
   it('gives the mounted chart a build animation', async () => {
     await render_with('vertical')
 

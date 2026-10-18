@@ -22,6 +22,9 @@ import ScatterPlotClusterSummary from './scatter-plot-cluster-summary.js'
 import { format_column_params } from '../utils/format-column-params.js'
 import { resolve_field } from '../utils/resolve-table-state-columns.js'
 import { export_chart_png } from '../utils/export-chart-png.js'
+import { resolve_chart_colors } from '../utils/chart-colors.js'
+import { with_alpha } from '../utils/resolve-token-color.js'
+import { use_host_theme } from '../utils/use-host-theme.js'
 // highcharts-more supplies the polygon series used for cluster regions.
 import 'highcharts/highcharts-more'
 // Highcharts 12: exporting modules self-compose at import time; no initializer call.
@@ -98,11 +101,11 @@ const calculate_std_dev = (values, mean) => {
   return Math.sqrt(sum_sq / values.length)
 }
 
-const build_mean_plot_line = ({ enabled, value }) => {
+const build_mean_plot_line = ({ enabled, value, color }) => {
   if (!enabled) return []
   return [
     {
-      color: 'rgba(180, 60, 60, 0.8)',
+      color: with_alpha(color, 0.8),
       dashStyle: 'dash',
       value,
       width: 1,
@@ -110,7 +113,7 @@ const build_mean_plot_line = ({ enabled, value }) => {
         text: `avg ${value.toFixed(2)}`,
         align: 'left',
         style: {
-          color: 'rgba(180, 60, 60, 0.9)',
+          color: with_alpha(color, 0.9),
           fontSize: '11px',
           fontWeight: 'bold'
         }
@@ -351,13 +354,24 @@ const ScatterPlotOverlay = ({
     resolve_field(y_column.reverse_percentiles, y_column_params || {})
   )
 
+  // Highcharts takes resolved colours, so they are read again when the host's
+  // theme changes, and the chart is keyed to the theme below.
+  const theme = use_host_theme()
+  const colors = React.useMemo(() => resolve_chart_colors(), [theme])
+
   const show_tier_grid = local_scatter_plot_options.show_tier_grid
   const tier_series = React.useMemo(
     () =>
       show_tier_grid
-        ? build_tier_series({ x_values, y_values, x_reversed, y_reversed })
+        ? build_tier_series({
+            x_values,
+            y_values,
+            x_reversed,
+            y_reversed,
+            guide_color: colors.tier_guide
+          })
         : [],
-    [x_values, y_values, x_reversed, y_reversed, show_tier_grid]
+    [x_values, y_values, x_reversed, y_reversed, show_tier_grid, colors]
   )
   const { cluster_method, cluster_count, natural_breaks_axis, cluster_names } =
     local_scatter_plot_options
@@ -376,7 +390,8 @@ const ScatterPlotOverlay = ({
           cluster_count,
           natural_breaks_axis,
           cluster_names
-        }
+        },
+        palette: colors.clusters
       }),
     [
       x_values,
@@ -388,7 +403,8 @@ const ScatterPlotOverlay = ({
       cluster_method,
       cluster_count,
       natural_breaks_axis,
-      cluster_names_serialized
+      cluster_names_serialized,
+      colors
     ]
   )
   const cluster_color_mode = point_color_mode === 'cluster'
@@ -412,7 +428,8 @@ const ScatterPlotOverlay = ({
       show_cluster_regions:
         local_scatter_plot_options.show_cluster_regions !== false,
       show_halos,
-      halo_radii
+      halo_radii,
+      surface: colors.halo
     })
   }, [
     cluster_result,
@@ -420,7 +437,8 @@ const ScatterPlotOverlay = ({
     show_halos,
     filtered_data,
     get_point_image,
-    logo_size
+    logo_size,
+    colors
   ])
 
   React.useEffect(() => {
@@ -500,7 +518,8 @@ const ScatterPlotOverlay = ({
       plotLines: [
         ...build_mean_plot_line({
           enabled: local_scatter_plot_options.show_x_mean_line !== false,
-          value: x_average
+          value: x_average,
+          color: colors.mean
         }),
         ...build_reference_plot_lines({
           reference_lines: local_scatter_plot_options.reference_lines,
@@ -521,7 +540,8 @@ const ScatterPlotOverlay = ({
       plotLines: [
         ...build_mean_plot_line({
           enabled: local_scatter_plot_options.show_y_mean_line !== false,
-          value: y_average
+          value: y_average,
+          color: colors.mean
         }),
         ...build_reference_plot_lines({
           reference_lines: local_scatter_plot_options.reference_lines,
@@ -557,7 +577,7 @@ const ScatterPlotOverlay = ({
           states: {
             hover: {
               enabled: true,
-              lineColor: 'rgb(100,100,100)'
+              lineColor: colors.point_hover
             }
           }
         },
@@ -578,7 +598,7 @@ const ScatterPlotOverlay = ({
       {
         id: 'scatter-plot-points',
         type: 'scatter',
-        color: 'rgba(37, 99, 235, 0.5)',
+        color: with_alpha(colors.point, 0.5),
         // Above cluster regions and halos, below centroid markers.
         zIndex: 2,
         data: filtered_data.map((row, index) => {
@@ -626,9 +646,9 @@ const ScatterPlotOverlay = ({
               point.marker = {
                 symbol: 'circle',
                 radius: 1,
-                fillColor: resolved_color || '#2563eb',
+                fillColor: resolved_color || colors.point,
                 lineWidth: 1,
-                lineColor: '#1e40af'
+                lineColor: colors.point_edge
               }
             }
           }
@@ -651,7 +671,7 @@ const ScatterPlotOverlay = ({
           }
         },
         enableMouseTracking: false,
-        color: 'rgba(255, 0, 0, 0.5)',
+        color: with_alpha(colors.regression, 0.5),
         lineWidth: 3
       }
     ].filter(Boolean),
@@ -694,7 +714,14 @@ const ScatterPlotOverlay = ({
               : []
           }
         />
-        <HighchartsReact highcharts={Highcharts} options={options} />
+        {/* Keyed to the theme so a theme change builds a new chart, which
+            reads the global defaults a host re-applies with it (axis lines,
+            title, tooltip); an update would take only the option colours. */}
+        <HighchartsReact
+          key={theme}
+          highcharts={Highcharts}
+          options={options}
+        />
         {cluster_result &&
           local_scatter_plot_options.show_cluster_summary !== false && (
             <ScatterPlotClusterSummary

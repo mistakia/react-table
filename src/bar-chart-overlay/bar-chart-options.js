@@ -3,6 +3,7 @@ import {
   derive_bar_chart_data,
   format_bar_value
 } from './bar-chart-data.js'
+import { CHART_COLOR_DEFAULTS } from '../utils/chart-colors.js'
 
 export const BAR_LABEL_FONT_SIZE = 10
 export const BAR_LOGO_SIZE = 26
@@ -12,18 +13,11 @@ export const BAR_LOGO_SIZE = 26
 // other, which is legible for neither.
 const VALUE_LABEL_OFFSET = BAR_LOGO_SIZE * 0.85
 
-export const AVERAGE_LINE_COLOR = '#333333'
-
-// Alternate tiers are shaded and the rest left clear, so adjacent tiers read
-// apart without a legend. Neutral, because the bars already carry each
-// subject's own colour and a tinted band would compete with it.
-export const TIER_BAND_COLOR = 'rgba(0, 0, 0, 0.045)'
-export const TIER_LABEL_COLOR = '#555555'
-
 // A Highcharts options object and nothing more -- no Highcharts import, no
 // React. Keeping it pure is what lets the specs assert the chart's actual
 // content (series data, plot lines, axis extremes, label formatting) rather
-// than assert that a component mounted.
+// than assert that a component mounted. Colours come in as `colors`, resolved
+// by the overlay from the host's theme (utils/chart-colors.js).
 export const build_bar_chart_options = ({
   data,
   accessor_path,
@@ -33,7 +27,8 @@ export const build_bar_chart_options = ({
   get_image = null,
   bar_chart_options = {},
   footer_text = null,
-  height = 600
+  height = 600,
+  colors = CHART_COLOR_DEFAULTS
 }) => {
   const orientation =
     bar_chart_options.orientation === 'horizontal' ? 'horizontal' : 'vertical'
@@ -115,7 +110,7 @@ export const build_bar_chart_options = ({
     ? [
         {
           value: average,
-          color: AVERAGE_LINE_COLOR,
+          color: colors.ink,
           width: 1,
           dashStyle: 'Dash',
           // Above the bars. At a lower z the line and its label draw behind
@@ -126,7 +121,7 @@ export const build_bar_chart_options = ({
             text: bar_chart_options.average_line_label || 'Average',
             ...average_label_placement,
             style: {
-              color: AVERAGE_LINE_COLOR,
+              color: colors.ink,
               fontSize: `${BAR_LABEL_FONT_SIZE}px`,
               // A halo, because the label sits at the end of the category axis
               // and a ranked chart puts its LONGEST bar exactly there. Dark
@@ -135,7 +130,7 @@ export const build_bar_chart_options = ({
               // re-judging against the reference, whose own average label
               // carries no halo only because its longest bar is nowhere near
               // it -- that is a property of their data, not of the design.
-              textOutline: '2px #ffffff'
+              textOutline: `2px ${colors.halo}`
             }
           }
         }
@@ -150,7 +145,7 @@ export const build_bar_chart_options = ({
     ? [
         {
           value: 0,
-          color: '#666666',
+          color: colors.baseline,
           width: 1,
           zIndex: 3
         }
@@ -168,7 +163,7 @@ export const build_bar_chart_options = ({
     // the bars and competes with the two lines that MEAN something -- the zero
     // baseline and the average. A dotted hairline at a wider interval leaves
     // both of those the only solid horizontals on the chart.
-    gridLineColor: '#e8e8e8',
+    gridLineColor: colors.grid,
     gridLineDashStyle: 'Dot',
     tickPixelInterval: 90,
     labels: { style: { fontSize: `${BAR_LABEL_FONT_SIZE}px` } },
@@ -178,10 +173,13 @@ export const build_bar_chart_options = ({
   // One band per tier across its run of categories, labelled at the plot's
   // far edge from the category axis -- the value end, where a vertical chart
   // has headroom above its bars and a horizontal one has room past them.
+  // Alternate tiers are shaded and the rest left clear, so adjacent tiers read
+  // apart without a legend. Neutral, because the bars already carry each
+  // subject's own colour and a tinted band would compete with it.
   const tier_plot_bands = (tiers || []).map((tier) => ({
     from: tier.start_index - 0.5,
     to: tier.end_index + 0.5,
-    color: tier.tier_number % 2 === 1 ? TIER_BAND_COLOR : 'transparent',
+    color: tier.tier_number % 2 === 1 ? colors.tier_band : 'transparent',
     zIndex: 0,
     label: {
       text: `Tier ${tier.tier_number}`,
@@ -189,7 +187,7 @@ export const build_bar_chart_options = ({
         ? { align: 'right', verticalAlign: 'middle', textAlign: 'right', x: -6 }
         : { align: 'center', verticalAlign: 'top', y: 14 }),
       style: {
-        color: TIER_LABEL_COLOR,
+        color: colors.tier_label,
         fontSize: `${BAR_LABEL_FONT_SIZE}px`,
         fontWeight: 'bold'
       }
@@ -253,7 +251,7 @@ export const build_bar_chart_options = ({
       // Per-subject colour is the point of this chart, so a single series
       // colour would be wrong even as a fallback for rows the resolver
       // declines; those fall through to this neutral ink.
-      color: '#4a5568',
+      color: colors.bar,
       borderWidth: 0,
       // Square ends. Highcharts 12 rounds a column by default, and on this
       // chart the rounding lands exactly where the value is read -- the bar's
