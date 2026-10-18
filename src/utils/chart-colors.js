@@ -19,6 +19,8 @@ export const CHART_COLOR_DEFAULTS = {
   // Ring and outline that lift a label or marker off the bars and points
   // behind it: the chart's surface.
   halo: '#ffffff',
+  // A cluster centroid's name.
+  label: '#000000',
   // A bar whose row has no colour of its own.
   bar: '#4a5568',
   // The scatter plot's mean lines, at an opacity.

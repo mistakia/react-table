@@ -429,7 +429,8 @@ const ScatterPlotOverlay = ({
         local_scatter_plot_options.show_cluster_regions !== false,
       show_halos,
       halo_radii,
-      surface: colors.halo
+      surface: colors.halo,
+      label_ink: colors.label
     })
   }, [
     cluster_result,

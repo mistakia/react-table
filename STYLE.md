@@ -103,6 +103,7 @@ outright in either order. `yarn test` fails if the `:where()` is removed.
 | `--rt-chart-tier-guide`       | `rt_soften($rt_contrast_pole, 23.5)`                                   | Scatter tier guides, at 70% and 85%                              |
 | `--rt-chart-point-hover`      | `rt_soften($rt_contrast_pole, 39.2)`                                   | Hovered scatter point edge                                       |
 | `--rt-chart-halo`             | `var(--rt-bg)`                                                         | Label halo and centroid edge                                     |
+| `--rt-chart-label`            | `var(--rt-contrast-pole)`                                              | Cluster centroid names                                           |
 | `--rt-chart-bar`              | `#4a5568`                                                              | A bar with no colour of its own                                  |
 | `--rt-chart-mean`             | `#b43c3c`                                                              | Scatter mean lines, at 80% and 90%                               |
 | `--rt-chart-point`            | `#2563eb`                                                              | Scatter points, at 50%                                           |

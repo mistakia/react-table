@@ -324,6 +324,7 @@ export const apply_cluster_method = ({
  *   hugs the marker drawn at that point; defaults to 10
  * @param {string} [params.surface] - the chart's surface, which edges a
  *   centroid and outlines its label
+ * @param {string} [params.label_ink] - a centroid label's ink
  * @returns {object[]}
  */
 export const build_cluster_series = ({
@@ -334,7 +335,8 @@ export const build_cluster_series = ({
   show_cluster_regions,
   show_halos,
   halo_radii = [],
-  surface = CHART_COLOR_DEFAULTS.halo
+  surface = CHART_COLOR_DEFAULTS.halo,
+  label_ink = CHART_COLOR_DEFAULTS.label
 }) => {
   const series = []
 
@@ -408,8 +410,10 @@ export const build_cluster_series = ({
           align: 'left',
           verticalAlign: 'middle',
           x: 8,
+          // Top-level, because the scatter dataLabels.color callback the
+          // overlay sets for every scatter series outranks style.color.
+          color: label_ink,
           style: {
-            color: cluster.color,
             fontSize: '11px',
             fontWeight: '700',
             textOutline: `2px ${surface}`
