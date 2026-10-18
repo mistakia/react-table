@@ -54,6 +54,8 @@ $rt_control_border = var(--rt-control-border)
 $rt_chip_border = var(--rt-chip-border)
 $rt_chip_selected = var(--rt-chip-selected)
 $rt_label_text = var(--rt-label-text)
+$rt_heat_low = var(--rt-heat-low)
+$rt_heat_high = var(--rt-heat-high)
 
 // A colour mirror is a runtime value, so stylus's colour functions cannot run
 // on it. Derive with these, which emit color-mix() and so follow a host's
@@ -197,6 +199,10 @@ $rt_z_popper = 1006
   --rt-chip-border #d0d7de
   --rt-chip-selected #2563eb
   --rt-label-text #4b5563
+  // A cell's percentile wash, painted from table-cell.js at a strength: low
+  // values warm, high values blue.
+  --rt-heat-low #fda291
+  --rt-heat-high #2ea3dd
   --rt-radius-sm 4px
   --rt-radius 6px
   --rt-radius-lg 8px

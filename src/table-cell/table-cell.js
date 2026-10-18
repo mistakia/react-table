@@ -6,6 +6,12 @@ import { table_context } from '#src/table-context'
 import AddColumnActionSpacer from '#src/add-column-action-spacer'
 import { get_column_occurrence_index } from '#src/utils/get-column-occurrence-index.js'
 
+// A percentile's heat wash: the token at that strength over the row. A token
+// rather than a literal so a host's theme reaches it (STYLE.md Token Contract);
+// a mix toward transparent is the token at an opacity.
+const heat_wash = (token, strength) =>
+  `color-mix(in srgb, var(${token}) ${Math.min(100, strength * 100)}%, transparent)`
+
 const TableCell = ({ getValue, column, row, table }) => {
   const { sticky_left, is_sticky_column, table_state } =
     useContext(table_context)
@@ -145,7 +151,7 @@ const TableCell = ({ getValue, column, row, table }) => {
                   (percentile.p25 - percentile.min) /
                   1.5
           ) || 0
-        return `rgba(253, 162, 145, ${max_percent}`
+        return heat_wash('--rt-heat-low', max_percent)
       } else {
         const max_percent =
           Math.max(
@@ -158,7 +164,7 @@ const TableCell = ({ getValue, column, row, table }) => {
                   (percentile.max - percentile.p75) /
                   1.5
           ) || 0
-        return `rgba(46, 163, 221, ${max_percent}`
+        return heat_wash('--rt-heat-high', max_percent)
       }
     }
     return undefined

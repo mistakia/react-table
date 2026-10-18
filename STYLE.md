@@ -93,6 +93,8 @@ outright in either order. `yarn test` fails if the `:where()` is removed.
 | `--rt-chip-border`            | `#d0d7de`                                                              | Preset chip border                                               |
 | `--rt-chip-selected`          | `#2563eb`                                                              | Selected preset chip                                             |
 | `--rt-label-text`             | `#4b5563`                                                              | Preset field label                                               |
+| `--rt-heat-low`               | `#fda291`                                                              | Percentile wash, low values                                      |
+| `--rt-heat-high`              | `#2ea3dd`                                                              | Percentile wash, high values                                     |
 | `--rt-radius-sm`              | `4px`                                                                  | Inputs, small buttons                                            |
 | `--rt-radius`                 | `6px`                                                                  | Larger buttons, panels                                           |
 | `--rt-radius-lg`              | `8px`                                                                  | Modals                                                           |
