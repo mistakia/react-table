@@ -171,12 +171,12 @@ $ref_line_control_height = 26px
   transition border-color $rt_transition, box-shadow $rt_transition
 
   &:hover:not(:focus)
-    border-color rgba(0, 0, 0, 0.4)
+    border-color rt_fade($rt_contrast_pole, 40)
 
   &:focus
     outline none
     border-color $rt_text
-    box-shadow 0 0 0 2px rgba(0, 0, 0, 0.06)
+    box-shadow 0 0 0 2px rt_fade($rt_contrast_pole, 6)
 
 .ref-line-select
   cursor pointer

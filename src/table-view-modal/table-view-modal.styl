@@ -90,7 +90,7 @@
     color $rt_text_disabled
 
   &:hover
-    border-color rgba(15, 23, 42, 0.24)
+    border-color rt_fade($rt_shade, 24)
 
   &:focus
     border-color $rt_accent
@@ -163,8 +163,7 @@
   &.-primary
     background $rt_accent
     border-color $rt_accent
-    color #ffffff
-
+    color $rt_on_fill
     &:hover
       background $rt_accent_strong
       border-color $rt_accent_strong

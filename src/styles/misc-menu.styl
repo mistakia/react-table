@@ -48,14 +48,13 @@
   &.-destructive.-confirming,
   &.-destructive.-confirming:hover
     background $rt_destructive
-    color #ffffff
+    color $rt_on_fill
     animation rt-confirm-pulse 1.2s ease-in-out infinite
 
     .MuiSvgIcon-root
-      color #ffffff
-
+      color $rt_on_fill
 @keyframes rt-confirm-pulse
   0%, 100%
-    box-shadow inset 0 0 0 0 rgba(255, 255, 255, 0.0)
+    box-shadow inset 0 0 0 0 rt_fade($rt_on_fill, 0)
   50%
-    box-shadow inset 0 0 0 2px rgba(255, 255, 255, 0.25)
+    box-shadow inset 0 0 0 2px rt_fade($rt_on_fill, 25)

@@ -41,34 +41,84 @@ was injected last, with nothing reporting that the override had been discarded.
 `:where()` drops the block to zero specificity, so a consumer's declaration wins
 outright in either order. `yarn test` fails if the `:where()` is removed.
 
-| Token                  | Default                       | Usage                                      |
-| ---------------------- | ----------------------------- | ------------------------------------------ |
-| `--rt-border`          | `rgba(0, 0, 0, 0.23)`         | Primary border (hover, active, expanded)   |
-| `--rt-border-subtle`   | `#e0e0e0`                     | Hairline dividers                          |
-| `--rt-bg`              | `#ffffff`                     | Component surface                          |
-| `--rt-bg-subtle`       | `#fafafa`                     | Resting subtle surface (filter rows, etc.) |
-| `--rt-bg-hover`        | `rgba(0, 0, 0, 0.05)`         | Neutral hover background                   |
-| `--rt-bg-hover-strong` | `#e5e5e5`                     | Strong hover (add-button, primary actions) |
-| `--rt-bg-overlay`      | `rgba(0, 0, 0, 0.5)`          | Modal / overlay scrim                      |
-| `--rt-text`            | `#222222`                     | Primary text                               |
-| `--rt-text-muted`      | `#555555`                     | Secondary text, labels                     |
-| `--rt-text-disabled`   | `#999999`                     | Placeholder, disabled                      |
-| `--rt-ground`          | `var(--rt-bg)`                | What the rows sit on; a host sets its page |
-| `--rt-frame-rule`      | `var(--rt-border-subtle)`     | Edge of the table chrome; a host's rule    |
-| `--rt-frame-shadow`    | `var(--rt-shadow-overlay)`    | Floating surfaces; a host's shadow         |
-| `--rt-radius-sm`       | `4px`                         | Inputs, small buttons                      |
-| `--rt-radius`          | `6px`                         | Larger buttons, panels                     |
-| `--rt-radius-lg`       | `8px`                         | Modals                                     |
-| `--rt-font-size-sm`    | `12px`                        | Table-header labels                        |
-| `--rt-font-size`       | `13px`                        | Default body                               |
-| `--rt-font-size-md`    | `14px`                        | Modal body, primary action buttons         |
-| `--rt-space-xs`        | `4px`                         | Tight gaps                                 |
-| `--rt-space-sm`        | `8px`                         | Default gap                                |
-| `--rt-space`           | `12px`                        | Section padding                            |
-| `--rt-space-lg`        | `16px`                        | Modal padding                              |
-| `--rt-space-xl`        | `20px`                        | Modal outer padding                        |
-| `--rt-shadow-overlay`  | `0 8px 32px rgba(0,0,0,0.18)` | Modal elevation only                       |
-| `--rt-transition`      | `150ms ease`                  | Color/background/border transitions        |
+| Token                         | Default                                                                | Usage                                                            |
+| ----------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `--rt-ground`                 | `var(--rt-bg)`                                                         | What the rows sit on; a host sets its page                       |
+| `--rt-frame-rule`             | `var(--rt-border-subtle)`                                              | Edge of the table chrome; a host's rule                          |
+| `--rt-frame-shadow`           | `var(--rt-shadow-overlay)`                                             | Floating surfaces; a host's shadow                               |
+| `--rt-border`                 | `rgba(15, 23, 42, 0.14)`                                               | Primary border (hover, active, expanded)                         |
+| `--rt-border-subtle`          | `#e6e8eb`                                                              | Hairline dividers                                                |
+| `--rt-divider`                | `#eef0f2`                                                              | Row and section separators                                       |
+| `--rt-bg`                     | `#ffffff`                                                              | Component surface                                                |
+| `--rt-bg-subtle`              | `#f7f8f9`                                                              | Resting subtle surface (filter rows, etc.)                       |
+| `--rt-bg-hover`               | `rgba(15, 23, 42, 0.04)`                                               | Neutral hover background                                         |
+| `--rt-bg-hover-strong`        | `#eceff2`                                                              | Strong hover (add-button, primary actions)                       |
+| `--rt-bg-selected`            | `rgba(15, 23, 42, 0.06)`                                               | Selected row or item                                             |
+| `--rt-bg-overlay`             | `rgba(15, 23, 42, 0.45)`                                               | Modal / overlay scrim                                            |
+| `--rt-text`                   | `#1f2328`                                                              | Primary text                                                     |
+| `--rt-text-muted`             | `#57606a`                                                              | Secondary text, labels                                           |
+| `--rt-text-subtle`            | `#6e7781`                                                              | Tertiary text, hints                                             |
+| `--rt-text-disabled`          | `#9aa0a6`                                                              | Placeholder, disabled                                            |
+| `--rt-accent`                 | `#1f6feb`                                                              | Primary action fill                                              |
+| `--rt-accent-strong`          | `#1158c7`                                                              | Primary action hover                                             |
+| `--rt-accent-subtle`          | `rgba(31, 111, 235, 0.10)`                                             | Accent wash                                                      |
+| `--rt-accent-text`            | `#0a59c9`                                                              | Accent-coloured text                                             |
+| `--rt-success`                | `#1f883d`                                                              | Save action fill                                                 |
+| `--rt-success-strong`         | `#186a2e`                                                              | Save action hover                                                |
+| `--rt-success-bg`             | `#2da44e`                                                              | Success badge fill                                               |
+| `--rt-active-bg`              | `rgba(31, 111, 235, 0.08)`                                             | Active control wash                                              |
+| `--rt-active-bar`             | `#1f6feb`                                                              | Active control bar                                               |
+| `--rt-destructive`            | `#d1242f`                                                              | Destructive action                                               |
+| `--rt-destructive-subtle`     | `rgba(209, 36, 47, 0.10)`                                              | Destructive wash                                                 |
+| `--rt-destructive-strong`     | `#b51e26`                                                              | Destructive text on its wash                                     |
+| `--rt-contrast-pole`          | `#000000`                                                              | Black-ink washes and shadows (`rt_fade`); a dark host inverts it |
+| `--rt-shade`                  | `#0f172a`                                                              | Slate washes and borders (`rt_fade`)                             |
+| `--rt-on-fill`                | `#ffffff`                                                              | Text and icons on a solid accent, success or destructive fill    |
+| `--rt-selection`              | `#1976d2`                                                              | View controller selection                                        |
+| `--rt-caution`                | `#d99100`                                                              | View controller caution                                          |
+| `--rt-caution-strong`         | `#b87600`                                                              | Caution hover                                                    |
+| `--rt-remove`                 | `#c0392b`                                                              | Remove control hover                                             |
+| `--rt-menu-ink`               | `#37352f`                                                              | Table menu ink and its washes                                    |
+| `--rt-state-chip`             | `#2383e2`                                                              | Table-state chips                                                |
+| `--rt-sorted-bg`              | `rgba(255, 255, 204, 0.6)`                                             | Sorted column wash                                               |
+| `--rt-cell-hover`             | `#b9d4ff`                                                              | Hovered cell                                                     |
+| `--rt-resizer-hover`          | `#8ecae6`                                                              | Hovered column resizer                                           |
+| `--rt-button-bg`              | `#f6f8fa`                                                              | Discard button                                                   |
+| `--rt-button-border`          | `#d0d7e0`                                                              | Discard button border                                            |
+| `--rt-info-bg`                | `#e6f7ff`                                                              | Show-plot button                                                 |
+| `--rt-info-text`              | `#0e67b2`                                                              | Show-plot ink                                                    |
+| `--rt-info-border`            | `#90caf9`                                                              | Show-plot border                                                 |
+| `--rt-control-bg`             | `#f0f0f0`                                                              | Column-param filter control                                      |
+| `--rt-control-border`         | `#e0e0e0`                                                              | Column-param filter rules                                        |
+| `--rt-chip-border`            | `#d0d7de`                                                              | Preset chip border                                               |
+| `--rt-chip-selected`          | `#2563eb`                                                              | Selected preset chip                                             |
+| `--rt-label-text`             | `#4b5563`                                                              | Preset field label                                               |
+| `--rt-radius-sm`              | `4px`                                                                  | Inputs, small buttons                                            |
+| `--rt-radius`                 | `6px`                                                                  | Larger buttons, panels                                           |
+| `--rt-radius-lg`              | `8px`                                                                  | Modals                                                           |
+| `--rt-font-size-sm`           | `12px`                                                                 | Table-header labels                                              |
+| `--rt-font-size`              | `13px`                                                                 | Default body                                                     |
+| `--rt-font-size-md`           | `14px`                                                                 | Modal body, primary action buttons                               |
+| `--rt-space-xs`               | `4px`                                                                  | Tight gaps                                                       |
+| `--rt-space-sm`               | `8px`                                                                  | Default gap                                                      |
+| `--rt-space`                  | `12px`                                                                 | Section padding                                                  |
+| `--rt-space-lg`               | `16px`                                                                 | Modal padding                                                    |
+| `--rt-space-xl`               | `20px`                                                                 | Modal outer padding                                              |
+| `--rt-focus-ring`             | `0 0 0 2px rgba(31, 111, 235, 0.25)`                                   | Focus ring                                                       |
+| `--rt-shadow-overlay`         | `0 12px 32px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(15, 23, 42, 0.08)` | Modal elevation only                                             |
+| `--rt-modal-border`           | `rgba(0, 0, 0, 0.23)`                                                  | Modal border                                                     |
+| `--rt-modal-shadow`           | `#D0D0D0 4px 4px 0px 0px`                                              | Modal offset shadow                                              |
+| `--rt-button-hover-bg`        | `#f0f0f0`                                                              | Button hover                                                     |
+| `--rt-button-hover-bg-strong` | `#b3b3b3`                                                              | Button hover, strong                                             |
+| `--rt-transition`             | `150ms ease`                                                           | Color/background/border transitions                              |
+
+A colour mirror is a runtime value, so a stylus colour function cannot run on
+it: `lighten($rt_bg, 4%)` is a build error. Derive with the two helpers in
+`tokens.styl`, which emit `color-mix()` and so follow a host's override —
+`rt_fade(token, opacity)` for the token at an opacity, `rt_soften(token,
+amount)` toward `--rt-bg`. A black or slate wash is `rt_fade($rt_contrast_pole,
+6)` or `rt_fade($rt_shade, 6)`, never `rgba(0, 0, 0, 0.06)`: the literal stays
+black on a dark host.
 
 ## Layering
 
@@ -235,8 +285,9 @@ new component may add a MUI import.
 
 ## Anti-patterns
 
-1. **No hardcoded hex** in component styl files. Use the `--rt-*` tokens or
-   their Stylus mirrors.
+1. **No colour literal** in component styl files — no hex, `rgb()`/`rgba()` or
+   colour name. Use the `--rt-*` tokens or their Stylus mirrors, derived with
+   `rt_fade()`/`rt_soften()`.
 2. **No chromatic accent** in the lib's defaults. Active / hover states use
    border + background only.
 3. **No `box-shadow` for elevation** outside of modals/overlays.

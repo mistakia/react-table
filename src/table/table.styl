@@ -94,9 +94,9 @@
         height 24px
         line-height 24px
         padding 0px 8px
-        border 1px solid rgba(35, 131, 226, 0.35)
-        color rgb(35, 131, 226)
-        background rgba(35, 131, 226, 0.03)
+        border 1px solid rt_fade($rt_state_chip, 35)
+        color $rt_state_chip
+        background rt_fade($rt_state_chip, 3)
         svg
           position relative
           height 0.8em
@@ -132,7 +132,7 @@
         border-right 1px solid $rt_frame_rule
 
       &.sorted
-        background-color rgba(255, 255, 204, 0.6)
+        background-color $rt_sorted_bg
 
       &.sticky
         position sticky
@@ -155,14 +155,13 @@
   .body
     .cell
       &:hover
-        background-color #b9d4ff
+        background-color $rt_cell_hover
 
     .row
       &:hover
         // Recolor the surface, not the row's background-color, so the sticky
         // column inherits the hovered fill instead of staying on the base one.
-        --rt-row-surface white
-
+        --rt-row-surface $rt_bg
       &.row--clickable
         cursor pointer
 
@@ -235,7 +234,7 @@
     touch-action none
 
     &:hover
-      background-color #8ecae6
+      background-color $rt_resizer_hover
 
   .header-icon
     margin-right 4px
@@ -249,7 +248,7 @@
     align-items center
     // Muted rather than alarming: an empty column is worth noticing, not worth
     // reading as an error.
-    color rgba(0, 0, 0, 0.38)
+    color rt_fade($rt_contrast_pole, 38)
 
   .header-icon
   .header-sort-icon
@@ -293,7 +292,7 @@
 
     &:hover
     &.-open
-      border 1px solid rgba(0, 0, 0, 0.23)
+      border 1px solid rt_fade($rt_contrast_pole, 23)
 
     .quick-filter-items
       display flex
@@ -386,13 +385,13 @@
   transition box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1) 0ms
 
   &.discard
-    background-color rgb(246, 248, 250)
-    border 1px solid rgb(208, 215, 224)
+    background-color $rt_button_bg
+    border 1px solid $rt_button_border
 
   &.show-plot
-    background-color rgb(230, 247, 255)
-    color rgb(14, 103, 178)
-    border 1px solid rgb(144, 202, 249)
+    background-color $rt_info_bg
+    color $rt_info_text
+    border 1px solid $rt_info_border
     // A FLOOR, not a fixed width, and the text may not wrap to reach it. At a
     // hard 100px this box fitted "Show Plot" and nothing longer: "Show Bar
     // Chart" wrapped to two lines inside a 28px-high flex row and spilled out
@@ -402,8 +401,8 @@
     white-space nowrap
 
   &.save
-    color white
-    background-color rgb(31, 136, 61)
+    color $rt_on_fill
+    background-color $rt_success
 
     &.-disabled
       cursor default
@@ -431,11 +430,11 @@
   align-items center
   justify-content space-between
   text-align center
-  border-bottom 1px solid #e0e0e0
+  border-bottom 1px solid $rt_control_border
 
   .controls-button
-    background #f0f0f0
-    border 1px solid #e0e0e0
+    background $rt_control_bg
+    border 1px solid $rt_control_border
 
 .column-param-filter-buttons
   display flex
@@ -457,10 +456,10 @@
 
 .table-footer-metadata
   font-size 12px
-  color rgba(0, 0, 0, 0.7)
+  color rt_fade($rt_contrast_pole, 70)
   padding 8px 16px
   text-align right
-  border-top 1px solid rgba(0, 0, 0, 0.1)
+  border-top 1px solid rt_fade($rt_contrast_pole, 10)
   font-weight 500
   background-color $rt_ground
   // Sticky rather than absolute: absolute pinned it to the footer row's own

@@ -31,6 +31,41 @@ $rt_active_bg = var(--rt-active-bg)
 $rt_active_bar = var(--rt-active-bar)
 $rt_destructive = var(--rt-destructive)
 $rt_destructive_subtle = var(--rt-destructive-subtle)
+$rt_destructive_strong = var(--rt-destructive-strong)
+$rt_contrast_pole = var(--rt-contrast-pole)
+$rt_shade = var(--rt-shade)
+$rt_on_fill = var(--rt-on-fill)
+$rt_selection = var(--rt-selection)
+$rt_caution = var(--rt-caution)
+$rt_caution_strong = var(--rt-caution-strong)
+$rt_remove = var(--rt-remove)
+$rt_menu_ink = var(--rt-menu-ink)
+$rt_state_chip = var(--rt-state-chip)
+$rt_sorted_bg = var(--rt-sorted-bg)
+$rt_cell_hover = var(--rt-cell-hover)
+$rt_resizer_hover = var(--rt-resizer-hover)
+$rt_button_bg = var(--rt-button-bg)
+$rt_button_border = var(--rt-button-border)
+$rt_info_bg = var(--rt-info-bg)
+$rt_info_text = var(--rt-info-text)
+$rt_info_border = var(--rt-info-border)
+$rt_control_bg = var(--rt-control-bg)
+$rt_control_border = var(--rt-control-border)
+$rt_chip_border = var(--rt-chip-border)
+$rt_chip_selected = var(--rt-chip-selected)
+$rt_label_text = var(--rt-label-text)
+
+// A colour mirror is a runtime value, so stylus's colour functions cannot run
+// on it. Derive with these, which emit color-mix() and so follow a host's
+// override: rt_fade() is the colour at an opacity (rgba() on a token), and
+// rt_soften() moves it toward the table surface (lighten() in the default
+// theme). Amounts are percentages.
+rt_fade(color, opacity)
+  unquote('color-mix(in srgb, ' + color + ' ' + opacity + '%, transparent)')
+
+rt_soften(color, amount)
+  unquote('color-mix(in srgb, ' + color + ' ' + (100 - amount) + '%, var(--rt-bg))')
+
 $rt_radius_sm = 4px
 $rt_radius = 6px
 $rt_radius_lg = 8px
@@ -130,6 +165,38 @@ $rt_z_popper = 1006
   --rt-active-bar #1f6feb
   --rt-destructive #d1242f
   --rt-destructive-subtle rgba(209, 36, 47, 0.10)
+  --rt-destructive-strong #b51e26
+  // The pole black-ink washes and shadows are cut from, and the slate the
+  // defaults above use for theirs. A dark host inverts the pole.
+  --rt-contrast-pole #000000
+  --rt-shade #0f172a
+  // Text and icons on a solid accent, success or destructive fill.
+  --rt-on-fill #ffffff
+  // The view controller's selection blue, and its caution amber.
+  --rt-selection #1976d2
+  --rt-caution #d99100
+  --rt-caution-strong #b87600
+  // A remove control's hover.
+  --rt-remove #c0392b
+  // The table menu's ink, and the table-state chips.
+  --rt-menu-ink #37352f
+  --rt-state-chip #2383e2
+  // Cell states: a sorted column's wash, a hovered cell, a hovered resizer.
+  --rt-sorted-bg rgba(255, 255, 204, 0.6)
+  --rt-cell-hover #b9d4ff
+  --rt-resizer-hover #8ecae6
+  // The action buttons under the table: discard, and show-plot's info blue.
+  --rt-button-bg #f6f8fa
+  --rt-button-border #d0d7e0
+  --rt-info-bg #e6f7ff
+  --rt-info-text #0e67b2
+  --rt-info-border #90caf9
+  // Column-param filter controls and preset chips.
+  --rt-control-bg #f0f0f0
+  --rt-control-border #e0e0e0
+  --rt-chip-border #d0d7de
+  --rt-chip-selected #2563eb
+  --rt-label-text #4b5563
   --rt-radius-sm 4px
   --rt-radius 6px
   --rt-radius-lg 8px

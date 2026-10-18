@@ -97,12 +97,12 @@
     color $rt_text_disabled
 
   &:hover:not(:focus)
-    border-color rgba(0, 0, 0, 0.4)
+    border-color rt_fade($rt_contrast_pole, 40)
 
   &:focus
     outline none
     border-color $rt_text
-    box-shadow 0 0 0 3px rgba(0, 0, 0, 0.06)
+    box-shadow 0 0 0 3px rt_fade($rt_contrast_pole, 6)
 
 .modal-textarea
   resize vertical
@@ -134,7 +134,7 @@
 
 .modal-btn-save
   background-color $rt_bg_subtle
-  border-color rgba(0, 0, 0, 0.5)
+  border-color rt_fade($rt_contrast_pole, 50)
   font-weight 600
 
   &:hover

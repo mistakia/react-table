@@ -3,7 +3,6 @@
 
 // ── Shared constants ──────────────────────────────────────────────────────────
 $unopened_height = 80px
-$accent_color = #1976d2
 $rail_width = 160px
 $breakpoint_mobile = 768px
 
@@ -31,7 +30,7 @@ $breakpoint_mobile = 768px
       top 4px
       left 12px
       font-size 8px
-      color rgba(0, 0, 0, 0.6)
+      color rt_fade($rt_contrast_pole, 60)
 
 .table-expanding-control-container.table-view-controller
   height $unopened_height
@@ -69,7 +68,7 @@ $breakpoint_mobile = 768px
     flex 0 0 auto
     overflow visible
     border-bottom 1px solid $rt_frame_rule
-    background rgba(0, 0, 0, 0.02)
+    background rt_fade($rt_contrast_pole, 2)
     align-items flex-start
     padding 16px 12px 12px
 
@@ -122,7 +121,7 @@ $breakpoint_mobile = 768px
   padding 6px
   overflow-x auto
   overflow-y hidden
-  background rgba(0, 0, 0, 0.02)
+  background rt_fade($rt_contrast_pole, 2)
   flex 0 0 auto
 
   @media (min-width: $breakpoint_mobile + 1px)
@@ -166,20 +165,20 @@ $breakpoint_mobile = 768px
   cursor pointer
   font-size 13px
   line-height 1.2
-  color rgba(0, 0, 0, 0.72)
+  color rt_fade($rt_contrast_pole, 72)
   text-align left
   white-space nowrap
   flex 0 0 auto
   transition background 120ms ease, color 120ms ease, border-color 120ms ease
 
   &:hover
-    background rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.9)
+    background rt_fade($rt_contrast_pole, 6)
+    color rt_fade($rt_contrast_pole, 90)
 
   &.-active
-    background rgba($accent_color, 0.12)
-    color $accent_color
-    border-color rgba($accent_color, 0.22)
+    background rt_fade($rt_selection, 12)
+    color $rt_selection
+    border-color rt_fade($rt_selection, 22)
     font-weight 600
 
   @media (min-width: $breakpoint_mobile + 1px)
@@ -191,15 +190,15 @@ $breakpoint_mobile = 768px
   font-size 11px
   font-weight 500
   line-height 1.2
-  background rgba(0, 0, 0, 0.08)
-  color rgba(0, 0, 0, 0.6)
+  background rt_fade($rt_contrast_pole, 8)
+  color rt_fade($rt_contrast_pole, 60)
   border-radius 10px
   padding 1px 7px
   margin-left 0
 
   .tvc-rail-section.-active &
-    background rgba($accent_color, 0.18)
-    color $accent_color
+    background rt_fade($rt_selection, 18)
+    color $rt_selection
 
 // On mobile the tag cloud is collapsed behind a "Tags" toggle button in the
 // rail and rendered as a wrap-row below the section strip when expanded.
@@ -211,8 +210,8 @@ $breakpoint_mobile = 768px
   padding 10px 12px 12px
   flex 1 1 100%
   margin 0 -6px -6px
-  border-top 1px solid rgba(0, 0, 0, 0.08)
-  background rgba(0, 0, 0, 0.03)
+  border-top 1px solid rt_fade($rt_contrast_pole, 8)
+  background rt_fade($rt_contrast_pole, 3)
 
   &.-collapsed
     display none
@@ -240,30 +239,29 @@ $breakpoint_mobile = 768px
   cursor pointer
   font-size 13px
   line-height 1.2
-  color rgba(0, 0, 0, 0.72)
+  color rt_fade($rt_contrast_pole, 72)
   border-radius 6px
   white-space nowrap
   flex 0 0 auto
   transition background 120ms ease, color 120ms ease, border-color 120ms ease
 
   &:hover
-    background rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.9)
+    background rt_fade($rt_contrast_pole, 6)
+    color rt_fade($rt_contrast_pole, 90)
 
   &.-active
-    background rgba($accent_color, 0.12)
-    color $accent_color
-    border-color rgba($accent_color, 0.22)
+    background rt_fade($rt_selection, 12)
+    color $rt_selection
+    border-color rt_fade($rt_selection, 22)
     font-weight 600
 
   &.-has-filters
-    color $accent_color
+    color $rt_selection
     font-weight 600
 
     .tvc-rail-tags-toggle-count
-      background $accent_color
-      color white
-
+      background $rt_selection
+      color $rt_on_fill
   @media (min-width: $breakpoint_mobile + 1px)
     display none
 
@@ -274,14 +272,14 @@ $breakpoint_mobile = 768px
   font-size 11px
   font-weight 500
   line-height 1.2
-  background rgba(0, 0, 0, 0.08)
-  color rgba(0, 0, 0, 0.6)
+  background rt_fade($rt_contrast_pole, 8)
+  color rt_fade($rt_contrast_pole, 60)
   border-radius 10px
   padding 1px 7px
 
   &.-muted
-    background rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.5)
+    background rt_fade($rt_contrast_pole, 6)
+    color rt_fade($rt_contrast_pole, 50)
 
 .tvc-rail-tags-toggle-chevron
   display inline-block
@@ -310,13 +308,13 @@ $breakpoint_mobile = 768px
   transition background 120ms ease
 
   &:hover
-    background rgba(0, 0, 0, 0.05)
+    background rt_fade($rt_contrast_pole, 5)
 
   &.-active
-    background rgba($accent_color, 0.10)
+    background rt_fade($rt_selection, 10)
 
     .tvc-tag-chip
-      outline 2px solid $accent_color
+      outline 2px solid $rt_selection
       outline-offset 1px
 
   @media (min-width: $breakpoint_mobile + 1px)
@@ -333,7 +331,7 @@ $breakpoint_mobile = 768px
   flex-direction row
   flex-wrap nowrap
   border-bottom 1px solid $rt_frame_rule
-  background rgba(0, 0, 0, 0.015)
+  background rt_fade($rt_contrast_pole, 1.5)
   overflow-x auto
   overflow-y hidden
   flex 0 0 auto
@@ -355,7 +353,7 @@ $breakpoint_mobile = 768px
   text-transform uppercase
   letter-spacing 0.5px
   padding 8px 12px 6px
-  color rgba(0, 0, 0, 0.55)
+  color rt_fade($rt_contrast_pole, 55)
   border-bottom 1px solid $rt_frame_rule
 
   @media (min-width: $breakpoint_mobile + 1px)
@@ -382,7 +380,7 @@ $breakpoint_mobile = 768px
   background none
   cursor pointer
   font-size 12px
-  color rgba(0, 0, 0, 0.75)
+  color rt_fade($rt_contrast_pole, 75)
   text-align left
   white-space nowrap
   flex 0 0 auto
@@ -392,11 +390,11 @@ $breakpoint_mobile = 768px
     width 100%
 
   &:hover
-    background rgba(0, 0, 0, 0.06)
+    background rt_fade($rt_contrast_pole, 6)
 
   &.-active
-    background rgba($accent_color, 0.12)
-    color $accent_color
+    background rt_fade($rt_selection, 12)
+    color $rt_selection
     font-weight 600
 
 .tvc-author-column-name
@@ -406,7 +404,7 @@ $breakpoint_mobile = 768px
 
 .tvc-author-column-count
   font-size 10px
-  background rgba(0, 0, 0, 0.1)
+  background rt_fade($rt_contrast_pole, 10)
   border-radius 10px
   padding 1px 6px
 
@@ -432,13 +430,13 @@ $breakpoint_mobile = 768px
   font-size 12px
   border 1px solid $rt_frame_rule
   border-radius 4px
-  background white
+  background $rt_bg
   outline none
   transition border-color 120ms ease, box-shadow 120ms ease
 
   &:focus
-    border-color $accent_color
-    box-shadow 0 0 0 2px rgba($accent_color, 0.15)
+    border-color $rt_selection
+    box-shadow 0 0 0 2px rt_fade($rt_selection, 15)
 
   @media (min-width: $breakpoint_mobile + 1px)
     padding 3px 6px
@@ -452,16 +450,16 @@ $breakpoint_mobile = 768px
   flex 0 0 auto
   padding 5px 10px
   font-size 11px
-  border 1px solid rgba(0, 0, 0, 0.2)
+  border 1px solid rt_fade($rt_contrast_pole, 20)
   border-radius 4px
-  background white
+  background $rt_bg
   cursor pointer
-  color rgba(0, 0, 0, 0.7)
+  color rt_fade($rt_contrast_pole, 70)
   white-space nowrap
 
   &:hover
-    background rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.9)
+    background rt_fade($rt_contrast_pole, 6)
+    color rt_fade($rt_contrast_pole, 90)
 
   @media (min-width: $breakpoint_mobile + 1px)
     width 100%
@@ -473,7 +471,7 @@ $breakpoint_mobile = 768px
 .tvc-rail-tags-empty
   flex 1 1 100%
   font-size 12px
-  color rgba(0, 0, 0, 0.5)
+  color rt_fade($rt_contrast_pole, 50)
   padding 6px 2px
   text-align center
   font-style italic
@@ -503,25 +501,25 @@ $breakpoint_mobile = 768px
 
   // user — filled accent (most prominent, manual tags)
   &.-user
-    background-color $accent_color
-    color white
+    background-color $rt_selection
+    color $rt_on_fill
     font-weight 500
 
   // llm — light tinted accent
   &.-llm
-    background-color rgba($accent_color, 0.10)
-    color $accent_color
+    background-color rt_fade($rt_selection, 10)
+    color $rt_selection
     font-style italic
 
   // auto — very light neutral background
   &.-auto
-    background-color rgba(0, 0, 0, 0.04)
-    color rgba(0, 0, 0, 0.55)
+    background-color rt_fade($rt_contrast_pole, 4)
+    color rt_fade($rt_contrast_pole, 55)
 
   // +N overflow indicator
   &.-overflow
-    background-color rgba(0, 0, 0, 0.06)
-    color rgba(0, 0, 0, 0.6)
+    background-color rt_fade($rt_contrast_pole, 6)
+    color rt_fade($rt_contrast_pole, 60)
     font-weight 500
 
 .tvc-tag-chip-llm-glyph
@@ -558,21 +556,21 @@ $breakpoint_mobile = 768px
   line-height 14px
   cursor pointer
   user-select none
-  background-color rgba(0, 0, 0, 0.04)
-  color rgba(0, 0, 0, 0.55)
+  background-color rt_fade($rt_contrast_pole, 4)
+  color rt_fade($rt_contrast_pole, 55)
 
   &:hover
-    background-color rgba(0, 0, 0, 0.08)
-    color rgba(0, 0, 0, 0.8)
+    background-color rt_fade($rt_contrast_pole, 8)
+    color rt_fade($rt_contrast_pole, 80)
 
 .tvc-tag-picker-dropdown
   position absolute
   z-index var(--rt-z-popper)
   min-width 200px
-  background white
+  background $rt_bg
   border 1px solid $rt_frame_rule
   border-radius 4px
-  box-shadow 0 4px 12px rgba(0, 0, 0, 0.15)
+  box-shadow 0 4px 12px rt_fade($rt_contrast_pole, 15)
   display flex
   flex-direction column
 
@@ -589,7 +587,7 @@ $breakpoint_mobile = 768px
   outline none
 
   &:focus
-    border-color $accent_color
+    border-color $rt_selection
 
 .tvc-tag-picker-list
   max-height 220px
@@ -599,7 +597,7 @@ $breakpoint_mobile = 768px
 .tvc-tag-picker-empty
   padding 8px 12px
   font-size 12px
-  color rgba(0, 0, 0, 0.5)
+  color rt_fade($rt_contrast_pole, 50)
 
 .tvc-tag-picker-option
   display flex
@@ -610,16 +608,16 @@ $breakpoint_mobile = 768px
   cursor pointer
 
   &:hover, &.-focused
-    background rgba(0, 0, 0, 0.06)
+    background rt_fade($rt_contrast_pole, 6)
 
   &.-create
     font-style italic
-    color $accent_color
+    color $rt_selection
 
 .tvc-tag-picker-check
   width 12px
   font-size 12px
-  color $accent_color
+  color $rt_selection
 
 // ── Main view panel ───────────────────────────────────────────────────────────
 .table-view-main
@@ -672,7 +670,7 @@ $breakpoint_mobile = 768px
   font-weight 600
   letter-spacing 0.06em
   text-transform uppercase
-  color rgba(0, 0, 0, 0.54)
+  color rt_fade($rt_contrast_pole, 54)
 
 // ── View list item ────────────────────────────────────────────────────────────
 .table-view-item
@@ -844,16 +842,16 @@ $breakpoint_mobile = 768px
 
   .table-view-item-favorite.MuiIconButton-root
     &:hover
-      color #d99100
-      background rgba(217, 145, 0, 0.10)
+      color $rt_caution
+      background rt_fade($rt_caution, 10)
 
     &.-active
-      color #d99100
+      color $rt_caution
       opacity 1
 
       &:hover
-        color #b87600
-        background rgba(217, 145, 0, 0.16)
+        color $rt_caution_strong
+        background rt_fade($rt_caution, 16)
 
   // Reveal-on-hover behavior: dim non-active buttons until row is hovered or
   // selected. Active favorite always stays visible so users can see what's
@@ -907,7 +905,7 @@ $breakpoint_mobile = 768px
     .current-view-description
       font-size 0.8em
       line-height 1.4em
-      color rgba(0, 0, 0, 0.6)
+      color rt_fade($rt_contrast_pole, 60)
       overflow hidden
       text-overflow ellipsis
       // Clamp to two lines in the collapsed trigger so a long description can't
@@ -926,8 +924,8 @@ $breakpoint_mobile = 768px
   top 4px
   right 6px
   font-size 11px
-  color rgba(0, 0, 0, 0.54)
-  background-color rgba(0, 0, 0, 0.04)
+  color rt_fade($rt_contrast_pole, 54)
+  background-color rt_fade($rt_contrast_pole, 4)
   padding 2px 6px
   border-radius 3px
   max-width 160px
@@ -957,8 +955,8 @@ $breakpoint_mobile = 768px
   gap 1px
   flex 0 0 auto
   padding 2px
-  background rgba(15, 23, 42, 0.03)
-  border 1px solid rgba(15, 23, 42, 0.08)
+  background rt_fade($rt_shade, 3)
+  border 1px solid rt_fade($rt_shade, 8)
   border-radius 6px
 
   @media (max-width: $breakpoint_mobile)
@@ -969,56 +967,56 @@ $breakpoint_mobile = 768px
     width 1px
     align-self stretch
     margin 2px 2px
-    background rgba(15, 23, 42, 0.1)
+    background rt_fade($rt_shade, 10)
 
   .cva-btn.MuiIconButton-root
     width 24px
     height 24px
     padding 0
     border-radius 4px
-    color rgba(15, 23, 42, 0.62)
+    color rt_fade($rt_shade, 62)
     transition background 120ms ease, color 120ms ease
 
     .MuiSvgIcon-root
       font-size 16px
 
     &:hover
-      background rgba(15, 23, 42, 0.07)
-      color rgba(15, 23, 42, 0.92)
+      background rt_fade($rt_shade, 7)
+      color rt_fade($rt_shade, 92)
 
     &.Mui-disabled
-      color rgba(15, 23, 42, 0.22)
+      color rt_fade($rt_shade, 22)
 
     &.-favorite.-active
-      color #d99100
+      color $rt_caution
 
       &:hover
-        background rgba(217, 145, 0, 0.12)
-        color #b87600
+        background rt_fade($rt_caution, 12)
+        color $rt_caution_strong
 
     // Not when disabled: a Save that cannot save must not wear the accent.
     &.-primary:not(.Mui-disabled)
-      color $accent_color
+      color $rt_selection
 
       &:hover:not(.Mui-disabled)
-        background rgba($accent_color, 0.14)
-        color $accent_color
+        background rt_fade($rt_selection, 14)
+        color $rt_selection
 
     &.-destructive:hover
-      background rgba(209, 36, 47, 0.10)
-      color #b51e26
+      background rt_fade($rt_destructive, 10)
+      color $rt_destructive_strong
 
     &.-destructive.-confirming,
     &.-destructive.-confirming:hover
-      background #d1242f
-      color #ffffff
+      background $rt_destructive
+      color $rt_on_fill
       animation tvc-confirm-pulse 1.2s ease-in-out infinite
 
 @keyframes tvc-confirm-pulse
   0%, 100%
-    box-shadow 0 0 0 0 rgba(209, 36, 47, 0.5)
+    box-shadow 0 0 0 0 rt_fade($rt_destructive, 50)
   50%
-    box-shadow 0 0 0 4px rgba(209, 36, 47, 0)
+    box-shadow 0 0 0 4px rt_fade($rt_destructive, 0)
 
 // Collapsed, the card holds just the view's name and every action the open
 // panel offers -- so acting on the view never costs opening the panel. The
