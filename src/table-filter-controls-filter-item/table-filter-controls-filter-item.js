@@ -32,6 +32,7 @@ import {
   OPERATOR_MENU_OPTIONS
 } from '#src/constants.mjs'
 import { get_string_from_object, resolve_column_params } from '#src/utils'
+import { coerce_where_value_for_operator } from '#src/utils/coerce-where-value-for-operator.mjs'
 import Checkbox from '@mui/material/Checkbox'
 
 const FilterItemOperator = ({
@@ -454,11 +455,13 @@ export default function FilterItem({
         })
       }
 
-      if (event.target.value === 'IN' || event.target.value === 'NOT IN') {
-        where_param[where_index].value = []
-          .concat(where_param[where_index].value)
-          .filter(Boolean)
-        set_filter_value(where_param[where_index].value)
+      const value = coerce_where_value_for_operator({
+        operator: event.target.value,
+        value: where_param[where_index].value
+      })
+      if (value !== where_param[where_index].value) {
+        where_param[where_index].value = value
+        set_filter_value(value)
       }
 
       where_param[where_index].operator = event.target.value
