@@ -608,6 +608,37 @@ describe('format_column_params - format_value override', () => {
     ).to.equal('Per Play · MAN')
   })
 
+  // A share column declares no `output` param, so nothing claims the override
+  // key, and a request that states it anyway must not render "[object Object]".
+  it('suppresses an undeclared param carrying an object', () => {
+    const column_def = {
+      column_params: { play_type: { label: 'Play Type' } }
+    }
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: {
+          play_type: ['RUSH'],
+          output_column_params: { play_type: ['RUSH'] }
+        }
+      })
+    ).to.equal('RUSH')
+  })
+
+  // THE CONTROL. A DECLARED param carrying an object still renders, through the
+  // SELECT default's label lookup.
+  it('renders a declared param carrying an object with a label', () => {
+    const column_def = {
+      column_params: { pick: { label: 'Pick' } }
+    }
+    expect(
+      format_column_params({
+        column_def,
+        column_state_params: { pick: { label: 'Chosen' } }
+      })
+    ).to.equal('Chosen')
+  })
+
   // THE CONTROL. Suppression is keyed on a sibling CLAIMING the name, not on
   // the name itself -- with no override config declared the same keys render as
   // the ordinary params they then are.

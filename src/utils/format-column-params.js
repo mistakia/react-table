@@ -51,6 +51,7 @@ export function format_column_params({
 
   for (const [param_key, value] of Object.entries(column_state_params)) {
     if (owned_by_a_sibling.has(param_key)) continue
+    if (is_undeclared_object_param({ param_defs, param_key, value })) continue
     const param_def = param_defs[param_key] || {}
     const render = build_param_render({
       param_key,
@@ -97,6 +98,17 @@ function collect_override_config_keys(param_defs) {
     if (config.override_param) keys.add(config.override_param)
   }
   return keys
+}
+
+// A param the column does not declare, carrying a plain object, has no label to
+// render: the SELECT default stringifies it to "[object Object]". It reaches
+// here when a request states a param the column ignores -- an
+// `output_column_params` on a share column, whose denominator the server sets
+// itself, with no `output` param declaring the override config above. Share
+// links are immutable, so the param cannot be scrubbed from the state.
+function is_undeclared_object_param({ param_defs, param_key, value }) {
+  if (param_key in param_defs) return false
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function build_param_render({
