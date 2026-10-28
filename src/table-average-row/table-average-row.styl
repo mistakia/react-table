@@ -18,3 +18,10 @@
   .average-row-label
     justify-content flex-start
     font-weight 600
+
+  // The header row's fixed 24px height makes .cell-content's height:100% sit
+  // at exactly the full cell, so its text tops-out at the cell's top edge. Put
+  // the content on a centered flex line, like .cell.column-index already does.
+  .cell-content
+    display flex
+    align-items center
