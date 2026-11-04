@@ -20,19 +20,45 @@ import AddColumnActionSpacer from '#src/add-column-action-spacer'
 import './table-average-row.styl'
 
 // A volume average reads as a count -- 33.1 targets -- so one place is enough
-// when the column declares no precision of its own.
+// when the column declares no precision of its own, AND when every value it
+// covers is a whole number whatever precision it declares. A count column can
+// inherit a `fixed` meant for its fractional variants (league's from-plays
+// factory gives carries `fixed: 2` for the per-game rate outputs), which its
+// integer cells never show; its average then read 116.64 carries.
 const DEFAULT_AVERAGE_FIXED_PLACES = 1
 
-export const format_column_average = ({ value, fixed }) =>
-  value.toFixed(fixed === undefined ? DEFAULT_AVERAGE_FIXED_PLACES : fixed)
+export const format_column_average = ({
+  value,
+  fixed,
+  integer_valued = false
+}) =>
+  value.toFixed(
+    integer_valued || fixed === undefined ? DEFAULT_AVERAGE_FIXED_PLACES : fixed
+  )
+
+const average_key = ({ table, column }) =>
+  `${column.columnDef.accessorKey}_${get_column_occurrence_index({ table, column })}`
 
 const read_column_average = ({ table, column, column_averages }) => {
   const { columnDef } = column
   if (columnDef.data_type !== TABLE_DATA_TYPES.NUMBER) return null
   if (columnDef.is_split) return null
-  const occurrence = get_column_occurrence_index({ table, column })
-  const value = column_averages[`${columnDef.accessorKey}_${occurrence}`]
+  const value = column_averages[average_key({ table, column })]
   return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
+// Whether the column's values are whole numbers, read from the rows loaded --
+// the only ones the table holds. The average covers every matched row, so this
+// is evidence rather than proof, and it is strong evidence in the direction
+// that matters: a count is whole on every row by construction, and a
+// fractional column shows fractions on its first page.
+export const is_integer_valued_column = ({ table, column }) => {
+  const key = average_key({ table, column })
+  const values = table
+    .getCoreRowModel()
+    .rows.map((row) => row.original?.[key])
+    .filter((value) => typeof value === 'number' && Number.isFinite(value))
+  return values.length > 0 && values.every(Number.isInteger)
 }
 
 const TableAverageRow = ({ table, column_averages }) => {
@@ -58,7 +84,11 @@ const TableAverageRow = ({ table, column_averages }) => {
         const value = read_column_average({ table, column, column_averages })
         const content =
           value !== null
-            ? format_column_average({ value, fixed: column.columnDef.fixed })
+            ? format_column_average({
+                value,
+                fixed: column.columnDef.fixed,
+                integer_valued: is_integer_valued_column({ table, column })
+              })
             : column.id === label_column_id
               ? 'Average'
               : null

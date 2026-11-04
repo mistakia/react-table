@@ -164,5 +164,46 @@ describe('table average row', () => {
       '0.667'
     )
     expect(format_column_average({ value: 12, fixed: 0 })).to.equal('12')
+    expect(
+      format_column_average({ value: 116.6437, fixed: 2, integer_valued: true })
+    ).to.equal('116.6')
+  })
+
+  // A count column that inherits a `fixed: 2` meant for its fractional
+  // variants: its cells are whole numbers, so its average reads as a count.
+  const carries_columns = {
+    ...all_columns,
+    player_carries: {
+      column_id: 'player_carries',
+      column_name: 'player_carries',
+      header_label: 'ATT',
+      accessorKey: 'player_carries',
+      data_type: 1,
+      fixed: 2
+    }
+  }
+  const render_carries = (carries) =>
+    render_table({
+      all_columns: carries_columns,
+      data: carries.map((value, index) => ({
+        player_name: `P${index}`,
+        player_carries_0: value
+      })),
+      table_state: {
+        columns: ['player_carries'],
+        prefix_columns: ['player_name']
+      },
+      column_averages: { player_carries_0: 116.6437 }
+    })
+
+  it('averages a whole-number column to one place whatever fixed it declares', async () => {
+    const cells = average_cells(await render_carries([87, 112, 163]))
+    expect(cells).to.include('116.6')
+    expect(cells).to.not.include('116.64')
+  })
+
+  it('keeps the declared fixed when a loaded value is fractional', async () => {
+    const cells = average_cells(await render_carries([87, 112.5, 163]))
+    expect(cells).to.include('116.64')
   })
 })
