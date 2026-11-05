@@ -669,6 +669,7 @@ export default function FilterItem({
           <ParametersEditor
             records={editor_records}
             row_axes={local_table_state.row_axes}
+            row_grain={(local_table_state.row_grain || [])[0] || null}
             inline
           />
         </div>

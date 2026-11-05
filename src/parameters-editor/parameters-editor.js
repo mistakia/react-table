@@ -37,6 +37,7 @@ const attach_column_titles = ({ conflict, all_columns }) => ({
 export default function ParametersEditor({
   records,
   row_axes = [],
+  row_grain = null,
   show_sections = false,
   inline = false
 }) {
@@ -164,6 +165,7 @@ export default function ParametersEditor({
                         param_definition={def}
                         conflict={resolved_params.get(name)?.conflict || null}
                         row_axes={row_axes}
+                        row_grain={row_grain}
                       />
                     ))}
                   </div>
@@ -180,6 +182,7 @@ export default function ParametersEditor({
 ParametersEditor.propTypes = {
   records: PropTypes.array.isRequired,
   row_axes: PropTypes.array,
+  row_grain: PropTypes.string,
   show_sections: PropTypes.bool,
   inline: PropTypes.bool
 }

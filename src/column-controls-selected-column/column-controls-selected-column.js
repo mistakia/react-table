@@ -31,6 +31,7 @@ const ColumnControlsSelectedColumn = React.memo(
     selected_column_indexes,
     set_selected_column_indexes,
     row_axes,
+    row_grain = null,
     bulk_edit_mode = false,
     has_active_where = false
   }) => {
@@ -238,6 +239,7 @@ const ColumnControlsSelectedColumn = React.memo(
               <ParametersEditor
                 records={editor_records}
                 row_axes={row_axes}
+                row_grain={row_grain}
                 inline
               />
             </div>
@@ -257,6 +259,7 @@ ColumnControlsSelectedColumn.propTypes = {
   selected_column_indexes: PropTypes.array.isRequired,
   set_selected_column_indexes: PropTypes.func.isRequired,
   row_axes: PropTypes.array,
+  row_grain: PropTypes.string,
   all_columns: PropTypes.array,
   bulk_edit_mode: PropTypes.bool,
   has_active_where: PropTypes.bool

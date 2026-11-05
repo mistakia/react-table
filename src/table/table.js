@@ -854,11 +854,14 @@ export default function Table({
 
   // The averages describe the server's matched set, so the row stands down
   // while a client-side filter narrows the loaded rows below that set -- it
-  // would otherwise sit above rows it no longer describes.
+  // would otherwise sit above rows it no longer describes. An average of a
+  // single matched row is that row again, so it needs at least two; the count
+  // is the matched set's, not the loaded page's.
   const show_average_row =
     !is_view_empty &&
     !is_loading &&
     rows.length > 0 &&
+    (total_row_count ?? rows.length) > 1 &&
     typeof client_filter !== 'function' &&
     Boolean(column_averages) &&
     Object.keys(column_averages).length > 0

@@ -363,6 +363,38 @@ describe('resolve_param_definition_across_records', function () {
       expect(param_definition.enable_on_row_axes).to.eql(['year', 'week'])
     })
 
+    it('unions enable_on_row_grains', function () {
+      const { param_definition } = resolve_param_definition_across_records({
+        entries: [
+          make_entry({
+            column_id: 'a',
+            data_type: TABLE_DATA_TYPES.SELECT,
+            enable_on_row_grains: ['player']
+          }),
+          make_entry({
+            column_id: 'b',
+            data_type: TABLE_DATA_TYPES.SELECT,
+            enable_on_row_grains: ['team']
+          })
+        ]
+      })
+      expect(param_definition.enable_on_row_grains).to.eql(['player', 'team'])
+    })
+
+    it('offers the parameter at every grain when any record declares no grains', function () {
+      const { param_definition } = resolve_param_definition_across_records({
+        entries: [
+          make_entry({
+            column_id: 'a',
+            data_type: TABLE_DATA_TYPES.SELECT,
+            enable_on_row_grains: ['player', 'team']
+          }),
+          make_entry({ column_id: 'b', data_type: TABLE_DATA_TYPES.SELECT })
+        ]
+      })
+      expect(param_definition).to.not.have.property('enable_on_row_grains')
+    })
+
     it('hides the parameter when any record hides it', function () {
       const { param_definition } = resolve_param_definition_across_records({
         entries: [

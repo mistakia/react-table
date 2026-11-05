@@ -7,6 +7,7 @@ import ColumnParamRangeFilter from '#src/column-param-range-filter'
 import ColumnParamBooleanFilter from '#src/column-param-boolean-filter'
 import ColumnParamDateFilter from '#src/column-param-date-filter'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
+import { is_param_definition_enabled } from '#src/utils/is-param-definition-enabled.js'
 
 const ColumnControlsColumnParamItem = ({
   column_param_name,
@@ -14,18 +15,16 @@ const ColumnControlsColumnParamItem = ({
   set_local_table_state,
   column_index,
   column,
-  row_axes = []
+  row_axes = [],
+  row_grain = null
 }) => {
-  if (column_param_definition?.enable_on_row_axes) {
-    const is_enabled = row_axes.some((row_axis) =>
-      column_param_definition.enable_on_row_axes.includes(row_axis)
-    )
-    if (!is_enabled) {
-      return null
-    }
-  }
-
-  if (column_param_definition?.disable_on_row_axes && row_axes.length) {
+  if (
+    !is_param_definition_enabled({
+      param_definition: column_param_definition,
+      row_axes,
+      row_grain
+    })
+  ) {
     return null
   }
 
@@ -56,7 +55,8 @@ const ColumnControlsColumnParamItem = ({
     column_param_definition,
     selected_param_values,
     handle_change,
-    row_axes
+    row_axes,
+    row_grain
   }
 
   if (typeof column_param_definition.component === 'function') {
@@ -96,7 +96,8 @@ ColumnControlsColumnParamItem.propTypes = {
   set_local_table_state: PropTypes.func.isRequired,
   column_index: PropTypes.number.isRequired,
   column: PropTypes.object.isRequired,
-  row_axes: PropTypes.array
+  row_axes: PropTypes.array,
+  row_grain: PropTypes.string
 }
 
 // The renderer the override panel uses for each overridable sibling param. It

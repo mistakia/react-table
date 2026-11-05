@@ -117,6 +117,7 @@ export default function FilterControlsSelectedColumnsParameters({
             <ParametersEditor
               records={records}
               row_axes={local_table_state.row_axes}
+              row_grain={(local_table_state.row_grain || [])[0] || null}
               show_sections
             />
           </div>

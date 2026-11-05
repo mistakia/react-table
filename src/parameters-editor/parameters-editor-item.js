@@ -9,6 +9,7 @@ import ColumnParamDateFilter from '#src/column-param-date-filter'
 import ColumnParamObjectPresetFilter from '#src/column-param-object-preset-filter'
 import { render_column_param_item } from '#src/column-controls-column-param-item'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
+import { is_param_definition_enabled } from '#src/utils/is-param-definition-enabled.js'
 
 import ParametersEditorConflict from './parameters-editor-conflict'
 
@@ -29,16 +30,12 @@ const ParametersEditorItem = ({
   param_name,
   param_definition,
   conflict = null,
-  row_axes = []
+  row_axes = [],
+  row_grain = null
 }) => {
-  if (param_definition?.enable_on_row_axes) {
-    const is_enabled = row_axes.some((row_axis) =>
-      param_definition.enable_on_row_axes.includes(row_axis)
-    )
-    if (!is_enabled) return null
+  if (!is_param_definition_enabled({ param_definition, row_axes, row_grain })) {
+    return null
   }
-
-  if (param_definition?.disable_on_row_axes && row_axes.length) return null
 
   if (!records.length) return null
 
@@ -84,7 +81,8 @@ const ParametersEditorItem = ({
     selected_param_values,
     handle_change,
     mixed_state: !is_equal,
-    row_axes
+    row_axes,
+    row_grain
   }
 
   const render_content = () => {
@@ -154,7 +152,8 @@ ParametersEditorItem.propTypes = {
       })
     ).isRequired
   }),
-  row_axes: PropTypes.array
+  row_axes: PropTypes.array,
+  row_grain: PropTypes.string
 }
 
 export default React.memo(ParametersEditorItem)

@@ -22,6 +22,7 @@ export default function ColumnParamOverrideSection({
   column_index,
   set_local_table_state,
   row_axes = [],
+  row_grain = null,
   render_param_item
 }) {
   const {
@@ -207,7 +208,8 @@ export default function ColumnParamOverrideSection({
                       column_index,
                       column_param_name,
                       column_param_definition,
-                      row_axes
+                      row_axes,
+                      row_grain
                     })
                   )}
                 </div>
@@ -228,5 +230,6 @@ ColumnParamOverrideSection.propTypes = {
   column_index: PropTypes.number.isRequired,
   set_local_table_state: PropTypes.func.isRequired,
   row_axes: PropTypes.array,
+  row_grain: PropTypes.string,
   render_param_item: PropTypes.func.isRequired
 }

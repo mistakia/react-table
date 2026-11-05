@@ -888,7 +888,10 @@ const TableColumnControls = ({
                                   has_active_where: Boolean(
                                     active_where_index[column.column_id]
                                   ),
-                                  row_axes: local_table_state.row_axes || []
+                                  row_axes: local_table_state.row_axes || [],
+                                  row_grain:
+                                    (local_table_state.row_grain || [])[0] ||
+                                    null
                                 }}
                               />
                             ))}

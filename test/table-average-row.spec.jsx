@@ -68,6 +68,9 @@ const render_table = async (props) => {
         all_columns={all_columns}
         enable_duplicate_column_ids
         data={data}
+        // The averages describe a matched set of more than one row; the one
+        // loaded row stands in for a page of it.
+        total_row_count={2}
         table_state={{
           columns: [
             'player_targets',
@@ -148,6 +151,29 @@ describe('table average row', () => {
 
     const empty = await render_table({ column_averages: {} })
     expect(empty.querySelectorAll('.average-row')).to.have.length(0)
+  })
+
+  it('renders no average row over a single matched row', async () => {
+    const container = await render_table({
+      total_row_count: 1,
+      column_averages: { player_targets_0: 10 }
+    })
+    expect(container.querySelectorAll('.average-row')).to.have.length(0)
+  })
+
+  it('counts the loaded rows when the matched count is unknown', async () => {
+    const one_row = await render_table({
+      total_row_count: undefined,
+      column_averages: { player_targets_0: 10 }
+    })
+    expect(one_row.querySelectorAll('.average-row')).to.have.length(0)
+
+    const two_rows = await render_table({
+      total_row_count: undefined,
+      data: [data[0], { ...data[0], player_name: 'B' }],
+      column_averages: { player_targets_0: 10 }
+    })
+    expect(two_rows.querySelectorAll('.average-row')).to.have.length(1)
   })
 
   it('renders no average row over an empty result', async () => {

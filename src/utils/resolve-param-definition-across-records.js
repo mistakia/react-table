@@ -189,6 +189,20 @@ const merge_enable_on_row_axes = (entries) => {
   return merged.length ? merged : undefined
 }
 
+// `enable_on_row_grains` UNIONS too, for the same reason, but a record that
+// declares no grain list is offered at every grain, so it lifts the
+// restriction rather than contributing nothing to it.
+const merge_enable_on_row_grains = (entries) => {
+  const merged = []
+  for (const { param_definition } of entries) {
+    if (!param_definition.enable_on_row_grains) return undefined
+    for (const row_grain of param_definition.enable_on_row_grains) {
+      if (!merged.includes(row_grain)) merged.push(row_grain)
+    }
+  }
+  return merged.length ? merged : undefined
+}
+
 /**
  * Resolve one parameter's definition across every record that declares it.
  *
@@ -271,6 +285,7 @@ export const resolve_param_definition_across_records = ({
   const { min, max, step } = merge_bounds(entries)
   const enable_multi_on_split = merge_enable_multi_on_split(entries)
   const enable_on_row_axes = merge_enable_on_row_axes(entries)
+  const enable_on_row_grains = merge_enable_on_row_grains(entries)
 
   // A default outside the merged set would be written to a column that cannot
   // hold it. Dropping it is not cosmetic — the select filter flips
@@ -305,6 +320,11 @@ export const resolve_param_definition_across_records = ({
     param_definition.enable_on_row_axes = enable_on_row_axes
   } else {
     delete param_definition.enable_on_row_axes
+  }
+  if (enable_on_row_grains !== undefined) {
+    param_definition.enable_on_row_grains = enable_on_row_grains
+  } else {
+    delete param_definition.enable_on_row_grains
   }
   if (min !== undefined) param_definition.min = min
   if (max !== undefined) param_definition.max = max
