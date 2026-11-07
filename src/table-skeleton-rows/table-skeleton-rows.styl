@@ -1,0 +1,35 @@
+@import '../styles/tokens.styl'
+
+// A loaded body row is 32px; the placeholder row holds the same height so the
+// rows that replace it land without moving the page.
+.table-skeleton-row
+  height 32px
+
+  .cell
+    cursor default
+
+// Flat neutral fill with a slow, low-amplitude opacity pulse rather than a
+// sweeping shimmer, staggered down the rows so it reads as a calm wave.
+.table-skeleton-bar
+  display block
+  height 10px
+  border-radius 2px
+  background $rt_border_subtle
+  animation table-skeleton-pulse 1.4s ease-in-out infinite
+
+.table-skeleton-row:nth-child(2n) .table-skeleton-bar
+  animation-delay 0.18s
+
+.table-skeleton-row:nth-child(3n) .table-skeleton-bar
+  animation-delay 0.36s
+
+@keyframes table-skeleton-pulse
+  0%, 100%
+    opacity 0.35
+  50%
+    opacity 0.7
+
+@media (prefers-reduced-motion: reduce)
+  .table-skeleton-bar
+    animation none
+    opacity 0.5

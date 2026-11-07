@@ -21,6 +21,7 @@ import TableFooter from '#src/table-footer'
 import TableAverageRow from '#src/table-average-row'
 import TableColumnControls from '#src/table-column-controls'
 import TableRowAxesControls from '#src/table-row-axes-controls/table-row-axes-controls.js'
+import TableSkeletonRows from '#src/table-skeleton-rows'
 import TableSegmentedSelect from '#src/table-segmented-select/table-segmented-select.js'
 import TableViewController from '#src/table-view-controller'
 import TableFilterControls from '#src/table-filter-controls'
@@ -1255,6 +1256,10 @@ export default function Table({
         {!is_loading && rows.length === 0 && empty_state && (
           <div className='table-empty-state'>{empty_state}</div>
         )}
+        {/* While a read is in flight the body holds placeholder rows at the
+            visible columns' widths, so the rows that land replace them in
+            place instead of pushing the page down. */}
+        {is_loading && !is_view_empty && <TableSkeletonRows table={table} />}
         {!is_loading && rows.length > 0 && (
           <div className='body'>{row_items}</div>
         )}
