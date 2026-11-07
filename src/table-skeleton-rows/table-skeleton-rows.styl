@@ -1,8 +1,9 @@
 @import '../styles/tokens.styl'
 
 // A loaded body row is 32px; the placeholder row holds the same height so the
-// rows that replace it land without moving the page.
-.table-skeleton-row
+// rows that replace it land without moving the page. Scoped under .table to
+// outrank the table's own `.table .row { height 100% }`.
+.table .row.table-skeleton-row
   height 32px
 
   .cell
