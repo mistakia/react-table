@@ -23,6 +23,7 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 import { Popper } from '@mui/base/Popper'
 
 import SelectPickerPanel, { render_icon } from '#src/select-picker-panel'
+import DurationInput from '#src/duration-input'
 
 import {
   TABLE_DATA_TYPES,
@@ -121,6 +122,24 @@ const FilterItemValue = ({
             column_value_groups,
             is_multi
           }}
+        />
+      </div>
+    )
+  }
+
+  // The value is minutes; the box takes and shows a duration string.
+  if (data_type === TABLE_DATA_TYPES.DURATION) {
+    return (
+      <div className='filter-item-left-value'>
+        <DurationInput
+          placeholder='Value'
+          className='filter-item-value-control'
+          committed_value={where_item.value}
+          on_commit={(minutes) =>
+            handle_value_change({
+              target: { value: minutes === null ? '' : minutes }
+            })
+          }
         />
       </div>
     )

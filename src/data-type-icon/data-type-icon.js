@@ -7,6 +7,7 @@ import DataObjectIcon from '@mui/icons-material/DataObject'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import FingerprintIcon from '@mui/icons-material/Fingerprint'
 import ArrowDropDownCircleIcon from '@mui/icons-material/ArrowDropDownCircle'
+import TimerOutlinedIcon from '@mui/icons-material/TimerOutlined'
 
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 
@@ -26,6 +27,8 @@ export default function DataTypeIcon({ data_type }) {
       return <FingerprintIcon />
     case TABLE_DATA_TYPES.SELECT:
       return <ArrowDropDownCircleIcon />
+    case TABLE_DATA_TYPES.DURATION:
+      return <TimerOutlinedIcon />
     default:
       return null
   }

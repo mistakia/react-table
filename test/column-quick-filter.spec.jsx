@@ -484,4 +484,64 @@ describe('ColumnQuickFilter', () => {
       { column_id: 'player_age', operator: 'IS NOT NULL' }
     ])
   })
+
+  it('writes a DURATION bound typed as a duration string in minutes', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'estimated_total_duration',
+      data_type: TABLE_DATA_TYPES.DURATION
+    })
+
+    await type_and_settle(find_input_by_label(container, 'Min'), '4h')
+    await type_and_settle(find_input_by_label(container, 'Max'), '2d')
+
+    expect(emitted.where).to.deep.equal([
+      { column_id: 'estimated_total_duration', operator: '>=', value: 240 },
+      { column_id: 'estimated_total_duration', operator: '<=', value: 2880 }
+    ])
+    // The typed text stays as written rather than being reformatted.
+    expect(find_input_by_label(container, 'Min').value).to.equal('4h')
+  })
+
+  it('does not commit a DURATION entry outside the grammar and marks it invalid', async () => {
+    let emitted = null
+    const container = await mount({
+      table_state: { where: [] },
+      on_table_state_change: (next) => {
+        emitted = next
+      },
+      column_id: 'estimated_total_duration',
+      data_type: TABLE_DATA_TYPES.DURATION
+    })
+
+    const input = find_input_by_label(container, 'Min')
+    await type_and_settle(input, '90')
+
+    expect(emitted).to.equal(null)
+    expect(input.getAttribute('aria-invalid')).to.equal('true')
+  })
+
+  it('shows a committed DURATION bound in its largest whole unit', async () => {
+    const container = await mount({
+      table_state: {
+        where: [
+          { column_id: 'estimated_total_duration', operator: '>=', value: 90 },
+          {
+            column_id: 'estimated_total_duration',
+            operator: '<=',
+            value: 1440
+          }
+        ]
+      },
+      column_id: 'estimated_total_duration',
+      data_type: TABLE_DATA_TYPES.DURATION
+    })
+
+    expect(find_input_by_label(container, 'Min').value).to.equal('90m')
+    expect(find_input_by_label(container, 'Max').value).to.equal('1d')
+  })
 })

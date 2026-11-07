@@ -22,6 +22,7 @@ import Checkbox from '@mui/material/Checkbox'
 import TextField from '@mui/material/TextField'
 
 import { table_context } from '#src/table-context'
+import DurationInput from '#src/duration-input'
 import { TABLE_DATA_TYPES, TABLE_OPERATORS } from '#src/constants.mjs'
 import {
   resolve_column_filter_state,
@@ -38,6 +39,7 @@ export const QUICK_FILTER_COMMIT_DELAY_MS = 500
 
 const DATA_TYPES_WITH_A_BODY = [
   TABLE_DATA_TYPES.NUMBER,
+  TABLE_DATA_TYPES.DURATION,
   TABLE_DATA_TYPES.DATE,
   TABLE_DATA_TYPES.TEXT,
   TABLE_DATA_TYPES.SELECT,
@@ -148,7 +150,27 @@ NullCheckControls.propTypes = {
 // A draft input holds what the user is typing and re-seeds itself whenever the
 // committed value changes underneath it. Without the re-seed, clearing a
 // filter elsewhere leaves a stale number sitting in the box.
-const DraftInput = ({ label, type, committed_value, on_draft_change }) => {
+const DraftInput = (props) =>
+  props.type === 'duration' ? (
+    <DurationInput
+      label={props.label}
+      committed_value={props.committed_value}
+      on_commit={(minutes) =>
+        props.on_draft_change(minutes === null ? '' : minutes)
+      }
+    />
+  ) : (
+    <TextDraftInput {...props} />
+  )
+
+DraftInput.propTypes = {
+  label: PropTypes.string.isRequired,
+  type: PropTypes.string,
+  committed_value: PropTypes.any,
+  on_draft_change: PropTypes.func.isRequired
+}
+
+const TextDraftInput = ({ label, type, committed_value, on_draft_change }) => {
   const [draft, set_draft] = useState(
     committed_value === undefined || committed_value === null
       ? ''
@@ -178,7 +200,7 @@ const DraftInput = ({ label, type, committed_value, on_draft_change }) => {
   )
 }
 
-DraftInput.propTypes = {
+TextDraftInput.propTypes = {
   label: PropTypes.string.isRequired,
   type: PropTypes.string,
   committed_value: PropTypes.any,
@@ -223,6 +245,8 @@ const create_set_slot =
   ({ commit_slots, input_type }) =>
   (slot, operator) =>
   (raw) => {
+    // A duration draft arrives already parsed to minutes; an unparseable one
+    // never reaches here.
     const value =
       raw === '' ? null : input_type === 'number' ? Number(raw) : raw
     // A number input yields NaN mid-typing (a lone '-', an incomplete
@@ -234,7 +258,12 @@ const create_set_slot =
   }
 
 const RangeBody = ({ filter_state, commit_slots, data_type }) => {
-  const input_type = data_type === TABLE_DATA_TYPES.DATE ? 'date' : 'number'
+  const input_type =
+    data_type === TABLE_DATA_TYPES.DATE
+      ? 'date'
+      : data_type === TABLE_DATA_TYPES.DURATION
+        ? 'duration'
+        : 'number'
   const set_slot = create_set_slot({ commit_slots, input_type })
 
   return (
@@ -582,6 +611,7 @@ export default function ColumnQuickFilter({
   return (
     <div className='column-quick-filter'>
       {data_type === TABLE_DATA_TYPES.NUMBER ||
+      data_type === TABLE_DATA_TYPES.DURATION ||
       data_type === TABLE_DATA_TYPES.DATE ? (
         <RangeBody {...{ filter_state, commit_slots, data_type }} />
       ) : null}
