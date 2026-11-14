@@ -13,7 +13,8 @@ const ScatterPlotToolbar = ({
   on_change,
   show_regression,
   on_toggle_regression,
-  on_download_png
+  on_download_png,
+  on_flip_scatter_axes
 }) => {
   const handle_toggle = (key) => {
     on_change({ ...scatter_plot_options, [key]: !scatter_plot_options[key] })
@@ -95,6 +96,13 @@ const ScatterPlotToolbar = ({
         title='Toggle Y mean line'>
         Y mean
       </button>
+      <button
+        className='toolbar-btn'
+        onClick={on_flip_scatter_axes}
+        type='button'
+        title='Exchange the X and Y axes'>
+        Flip axes
+      </button>
       <span className='toolbar-divider' aria-hidden='true' />
       <label className='toolbar-select-wrap' title='Point color mode'>
         <span className='toolbar-select-label'>Color</span>
@@ -144,7 +152,8 @@ ScatterPlotToolbar.propTypes = {
   on_change: PropTypes.func.isRequired,
   show_regression: PropTypes.bool.isRequired,
   on_toggle_regression: PropTypes.func.isRequired,
-  on_download_png: PropTypes.func.isRequired
+  on_download_png: PropTypes.func.isRequired,
+  on_flip_scatter_axes: PropTypes.func
 }
 
 const DEFAULT_REFERENCE_LINE = {
@@ -604,7 +613,8 @@ const ScatterPlotSettingsPanel = ({
   show_regression,
   on_toggle_regression,
   on_download_png,
-  cluster_automatic_names
+  cluster_automatic_names,
+  on_flip_scatter_axes
 }) => {
   const [modal_open, set_modal_open] = React.useState(false)
 
@@ -620,6 +630,7 @@ const ScatterPlotSettingsPanel = ({
           show_regression={show_regression}
           on_toggle_regression={on_toggle_regression}
           on_download_png={on_download_png}
+          on_flip_scatter_axes={on_flip_scatter_axes}
         />
         <div className='toolbar-actions'>
           <button
@@ -656,7 +667,8 @@ ScatterPlotSettingsPanel.propTypes = {
   show_regression: PropTypes.bool.isRequired,
   on_toggle_regression: PropTypes.func.isRequired,
   on_download_png: PropTypes.func.isRequired,
-  cluster_automatic_names: PropTypes.arrayOf(PropTypes.string)
+  cluster_automatic_names: PropTypes.arrayOf(PropTypes.string),
+  on_flip_scatter_axes: PropTypes.func
 }
 
 export default ScatterPlotSettingsPanel

@@ -220,6 +220,7 @@ const ScatterPlotOverlay = ({
   is_scatter_plot_point_label_enabled = () => true,
   scatter_plot_options = {},
   on_scatter_plot_options_change = null,
+  on_flip_scatter_axes = null,
   logo_size_ratio = 3
 }) => {
   const logo_size = SCATTER_LABEL_FONT_SIZE * logo_size_ratio
@@ -709,6 +710,7 @@ const ScatterPlotOverlay = ({
           show_regression={show_regression}
           on_toggle_regression={() => set_show_regression(!show_regression)}
           on_download_png={handle_download_png}
+          on_flip_scatter_axes={on_flip_scatter_axes}
           cluster_automatic_names={
             cluster_result
               ? cluster_result.clusters.map((cluster) => cluster.automatic_name)
@@ -786,6 +788,7 @@ ScatterPlotOverlay.propTypes = {
   is_scatter_plot_point_label_enabled: PropTypes.func,
   scatter_plot_options: PropTypes.object,
   on_scatter_plot_options_change: PropTypes.func,
+  on_flip_scatter_axes: PropTypes.func,
   logo_size_ratio: PropTypes.number
 }
 

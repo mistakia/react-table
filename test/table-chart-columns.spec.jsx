@@ -153,6 +153,78 @@ describe('table chart columns', () => {
     })
   })
 
+  it('flip axes exchanges the two scatter columns as a display-only change', async () => {
+    const changes = []
+    const container = await render_table({
+      table_state: {
+        columns,
+        scatter_plot_columns: {
+          x: { column_id: 'player_age', column_index: 0 },
+          y: { column_id: 'player_points', column_index: 0 }
+        }
+      },
+      on_view_change: ({ table_state }, change_params) =>
+        changes.push({ table_state, change_params })
+    })
+
+    await act(async () => {
+      find_by_text(document.body, 'Show Plot').click()
+    })
+
+    const flip = [...container.getElementsByTagName('button')].find((b) =>
+      b.textContent.toLowerCase().includes('flip axes')
+    )
+    expect(flip).to.not.be.undefined
+
+    await act(async () => {
+      flip.click()
+    })
+
+    const change = changes.at(-1)
+    expect(change.change_params).to.deep.equal({
+      view_state_changed: true,
+      is_display_only_change: true
+    })
+    expect(change.table_state.scatter_plot_columns).to.deep.equal({
+      x: { column_id: 'player_points', column_index: 0 },
+      y: { column_id: 'player_age', column_index: 0 }
+    })
+  })
+
+  it('flip axes keeps a column shared by both axes instead of clearing it', async () => {
+    const changes = []
+    const container = await render_table({
+      table_state: {
+        columns,
+        scatter_plot_columns: {
+          x: { column_id: 'player_age', column_index: 0 },
+          y: { column_id: 'player_age', column_index: 0 }
+        }
+      },
+      on_view_change: ({ table_state }, change_params) =>
+        changes.push({ table_state, change_params })
+    })
+
+    await act(async () => {
+      find_by_text(document.body, 'Show Plot').click()
+    })
+
+    const flip = [...container.getElementsByTagName('button')].find((b) =>
+      b.textContent.toLowerCase().includes('flip axes')
+    )
+    expect(flip).to.not.be.undefined
+
+    await act(async () => {
+      flip.click()
+    })
+
+    const change = changes.at(-1)
+    expect(change.table_state.scatter_plot_columns).to.deep.equal({
+      x: { column_id: 'player_age', column_index: 0 },
+      y: { column_id: 'player_age', column_index: 0 }
+    })
+  })
+
   it('clears the bar chart column when its selected column is clicked again', async () => {
     const changes = []
     const container = await render_table({

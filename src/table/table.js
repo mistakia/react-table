@@ -978,6 +978,23 @@ export default function Table({
     [table_state, on_table_state_change]
   )
 
+  // Exchange the columns on the two axes in one action. A direct assignment
+  // rather than set_selected_scatter_column, whose toggle clears an axis when
+  // the incoming reference equals the current one (the same-column-both-axes
+  // case). Missing axes write the empty-reference shape the chart uses.
+  const flip_scatter_axes = useCallback(() => {
+    on_table_state_change(
+      {
+        ...table_state,
+        scatter_plot_columns: {
+          x: table_state.scatter_plot_columns?.y || {},
+          y: table_state.scatter_plot_columns?.x || {}
+        }
+      },
+      { is_display_only_change: true }
+    )
+  }, [table_state, on_table_state_change])
+
   const open_scatter_plot = useCallback(() => {
     if (scatter_x && scatter_y) {
       set_show_scatter_plot(true)
@@ -1318,6 +1335,7 @@ export default function Table({
           is_scatter_plot_point_label_enabled={
             is_scatter_plot_point_label_enabled
           }
+          on_flip_scatter_axes={flip_scatter_axes}
           on_close={close_scatter_plot}
         />
       )}

@@ -61,6 +61,7 @@ describe('ScatterPlotSettingsPanel - toolbar controls', () => {
     expect(button_texts.some((t) => t.includes('all labels'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('x mean'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('y mean'))).to.equal(true)
+    expect(button_texts.some((t) => t.includes('flip axes'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('settings'))).to.equal(true)
     expect(button_texts.some((t) => t.includes('download'))).to.equal(true)
 
@@ -93,6 +94,33 @@ describe('ScatterPlotSettingsPanel - toolbar controls', () => {
 
     expect(on_change.calledOnce).to.equal(true)
     expect(on_change.firstCall.args[0].show_all_labels).to.equal(true)
+  })
+
+  it('Flip axes button invokes on_flip_scatter_axes', async () => {
+    const on_flip_scatter_axes = sinon.spy()
+    const container = make_container()
+    await render(
+      React.createElement(ScatterPlotSettingsPanel, {
+        scatter_plot_options: default_options,
+        on_change: () => {},
+        show_regression: false,
+        on_toggle_regression: () => {},
+        on_download_png: () => {},
+        on_flip_scatter_axes
+      }),
+      container
+    )
+
+    const button = Array.from(container.getElementsByTagName('button')).find(
+      (b) => b.textContent.toLowerCase().includes('flip axes')
+    )
+    expect(button).to.not.be.undefined
+
+    await act(async () => {
+      button.click()
+    })
+
+    expect(on_flip_scatter_axes.calledOnce).to.equal(true)
   })
 
   it('clicking Settings... opens the modal', async () => {
