@@ -4,9 +4,11 @@
 //
 // The averages are the consumer's, keyed like a cell reads its value --
 // `${accessorKey}_${occurrence}` -- because they have to cover rows not yet
-// loaded, which only the server can see. Only NUMBER columns show one; the
-// server averages type-agnostically and a year or an id is numeric without
-// being meaningful as an average.
+// loaded, which only the server can see. Only NUMBER and BOOLEAN columns show
+// one; the server averages type-agnostically and a year or an id is numeric
+// without being meaningful as an average. A BOOLEAN column's average is the
+// share of its non-null rows that are true -- a cover rate, a win rate -- so it
+// reads as a percent.
 
 import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
@@ -16,32 +18,21 @@ import { table_context } from '#src/table-context'
 import { TABLE_DATA_TYPES } from '#src/constants.mjs'
 import { get_column_occurrence_index } from '#src/utils/get-column-occurrence-index.js'
 import AddColumnActionSpacer from '#src/add-column-action-spacer'
+import { format_column_average } from './format-column-average.mjs'
 
 import './table-average-row.styl'
 
-// A volume average reads as a count -- 33.1 targets -- so one place is enough
-// when the column declares no precision of its own, AND when every value it
-// covers is a whole number whatever precision it declares. A count column can
-// inherit a `fixed` meant for its fractional variants (league's from-plays
-// factory gives carries `fixed: 2` for the per-game rate outputs), which its
-// integer cells never show; its average then read 116.64 carries.
-const DEFAULT_AVERAGE_FIXED_PLACES = 1
-
-export const format_column_average = ({
-  value,
-  fixed,
-  integer_valued = false
-}) =>
-  value.toFixed(
-    integer_valued || fixed === undefined ? DEFAULT_AVERAGE_FIXED_PLACES : fixed
-  )
+const AVERAGED_DATA_TYPES = new Set([
+  TABLE_DATA_TYPES.NUMBER,
+  TABLE_DATA_TYPES.BOOLEAN
+])
 
 const average_key = ({ table, column }) =>
   `${column.columnDef.accessorKey}_${get_column_occurrence_index({ table, column })}`
 
 const read_column_average = ({ table, column, column_averages }) => {
   const { columnDef } = column
-  if (columnDef.data_type !== TABLE_DATA_TYPES.NUMBER) return null
+  if (!AVERAGED_DATA_TYPES.has(columnDef.data_type)) return null
   if (columnDef.is_split) return null
   const value = column_averages[average_key({ table, column })]
   return typeof value === 'number' && Number.isFinite(value) ? value : null
@@ -87,7 +78,8 @@ const TableAverageRow = ({ table, column_averages }) => {
             ? format_column_average({
                 value,
                 fixed: column.columnDef.fixed,
-                integer_valued: is_integer_valued_column({ table, column })
+                integer_valued: is_integer_valued_column({ table, column }),
+                is_rate: column.columnDef.data_type === TABLE_DATA_TYPES.BOOLEAN
               })
             : column.id === label_column_id
               ? 'Average'

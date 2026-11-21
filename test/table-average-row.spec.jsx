@@ -6,7 +6,7 @@ import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
 
 import Table from '../src/table/table.js'
-import { format_column_average } from '../src/table-average-row/table-average-row.js'
+import { format_column_average } from '../src/table-average-row/format-column-average.mjs'
 
 // These specs read the average row the way a reader does: which cells carry a
 // number, and what number. The keying is the contract with the consumer -- a
@@ -41,6 +41,14 @@ const all_columns = {
     header_label: 'Team',
     accessorKey: 'player_team',
     data_type: 2
+  },
+  game_team_is_spread_cover: {
+    column_id: 'game_team_is_spread_cover',
+    column_name: 'game_team_is_spread_cover',
+    header_label: 'Covered',
+    accessorKey: 'game_team_is_spread_cover',
+    data_type: 4,
+    fixed: 2
   }
 }
 
@@ -50,7 +58,8 @@ const data = [
     player_targets_0: 40,
     player_targets_1: 4,
     player_catch_rate_0: 0.7,
-    player_team_0: 'BUF'
+    player_team_0: 'BUF',
+    game_team_is_spread_cover_0: true
   }
 ]
 
@@ -135,6 +144,23 @@ describe('table average row', () => {
     expect(cells).to.not.include('12.0')
   })
 
+  it('reads a BOOLEAN column average as the percent of its rows that are true', async () => {
+    const container = await render_table({
+      table_state: {
+        columns: ['player_targets', 'game_team_is_spread_cover'],
+        prefix_columns: ['player_name']
+      },
+      column_averages: {
+        player_targets_0: 10,
+        game_team_is_spread_cover_0: 0.4324
+      }
+    })
+
+    const cells = average_cells(container)
+    expect(cells).to.include('43.2%')
+    expect(cells).to.not.include('0.43')
+  })
+
   it('leaves a NUMBER column blank when no average is keyed for it', async () => {
     const container = await render_table({
       column_averages: { player_targets_0: 10 }
@@ -190,6 +216,9 @@ describe('table average row', () => {
       '0.667'
     )
     expect(format_column_average({ value: 12, fixed: 0 })).to.equal('12')
+    expect(
+      format_column_average({ value: 0.5, fixed: 3, is_rate: true })
+    ).to.equal('50.0%')
     expect(
       format_column_average({ value: 116.6437, fixed: 2, integer_valued: true })
     ).to.equal('116.6')
