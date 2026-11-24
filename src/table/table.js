@@ -210,6 +210,7 @@ export default function Table({
   controls_extension = null,
   empty_state = null,
   clear_local_cache = null,
+  menu_items = null,
   row_grain_options = null,
   on_row_grain_change = null,
   row_grain_label = null,
@@ -1105,7 +1106,8 @@ export default function Table({
                 selected_view,
                 table_username,
                 reset_cache,
-                clear_local_cache
+                clear_local_cache,
+                menu_items
               }}
             />
             {selected_view.search && (
@@ -1432,6 +1434,15 @@ Table.propTypes = {
   controls_extension: PropTypes.node,
   empty_state: PropTypes.node,
   clear_local_cache: PropTypes.func,
+  menu_items: PropTypes.arrayOf(
+    PropTypes.shape({
+      item_key: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      title: PropTypes.string,
+      is_checked: PropTypes.bool.isRequired,
+      on_change: PropTypes.func.isRequired
+    })
+  ),
   row_grain_options: PropTypes.arrayOf(
     PropTypes.shape({
       value: PropTypes.string.isRequired,

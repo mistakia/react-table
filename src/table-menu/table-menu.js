@@ -97,7 +97,8 @@ const TableMenu = ({
   all_columns,
   selected_view,
   reset_cache,
-  clear_local_cache
+  clear_local_cache,
+  menu_items
 }) => {
   const { shorten_url, share_link_pathname, get_export_api_url } =
     useContext(table_context)
@@ -452,6 +453,36 @@ const TableMenu = ({
               <div className='table-menu-item-text'>Clear Local Cache</div>
             </div>
           )}
+          {Array.isArray(menu_items) &&
+            menu_items.map(
+              ({ item_key, label, title, is_checked, on_change }) => {
+                const label_node = <span>{label}</span>
+                return (
+                  <div className='table-menu-item' key={item_key}>
+                    <div
+                      className='table-menu-item-text'
+                      onClick={() => on_change(!is_checked)}>
+                      {title ? (
+                        <Tooltip
+                          title={title}
+                          placement='top'
+                          enterDelay={700}
+                          enterNextDelay={300}>
+                          {label_node}
+                        </Tooltip>
+                      ) : (
+                        label_node
+                      )}
+                    </div>
+                    <Switch
+                      checked={is_checked}
+                      onChange={(event) => on_change(event.target.checked)}
+                      color='primary'
+                    />
+                  </div>
+                )
+              }
+            )}
           <div className='table-menu-divider' />
           <div
             className='table-menu-item'
@@ -564,7 +595,16 @@ TableMenu.propTypes = {
   all_columns: PropTypes.object.isRequired,
   selected_view: PropTypes.object.isRequired,
   reset_cache: PropTypes.func,
-  clear_local_cache: PropTypes.func
+  clear_local_cache: PropTypes.func,
+  menu_items: PropTypes.arrayOf(
+    PropTypes.shape({
+      item_key: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+      title: PropTypes.string,
+      is_checked: PropTypes.bool.isRequired,
+      on_change: PropTypes.func.isRequired
+    })
+  )
 }
 
 export default React.memo(TableMenu)
