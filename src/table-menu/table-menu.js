@@ -459,6 +459,9 @@ const TableMenu = ({
                 const label_node = <span>{label}</span>
                 return (
                   <div className='table-menu-item' key={item_key}>
+                    {/* An empty icon column, so the label lines up with
+                        every other item's text. */}
+                    <div className='table-menu-item-icon' />
                     <div
                       className='table-menu-item-text'
                       onClick={() => on_change(!is_checked)}>
@@ -478,6 +481,7 @@ const TableMenu = ({
                       checked={is_checked}
                       onChange={(event) => on_change(event.target.checked)}
                       color='primary'
+                      size='small'
                     />
                   </div>
                 )
