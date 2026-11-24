@@ -187,6 +187,7 @@ export default function Table({
   shorten_url,
   share_link_pathname = null,
   is_selected_view_editable = false,
+  is_view_building = false,
   table_username = 'system',
   reset_cache = null,
   get_export_api_url = () => {},
@@ -1069,7 +1070,11 @@ export default function Table({
           table: true,
           noselect: is_table_resizing()
         })}>
-        <div className='table-top-container'>
+        <div
+          className={get_string_from_object({
+            'table-top-container': true,
+            '-view-building': is_view_building
+          })}>
           {Boolean(views.length) && (
             <TableViewController
               {...{
@@ -1097,139 +1102,146 @@ export default function Table({
               }}
             />
           )}
-          <div className='table-search-and-controls-container'>
-            <TableMenu
-              {...{
-                data,
-                table_state,
-                all_columns,
-                selected_view,
-                table_username,
-                reset_cache,
-                clear_local_cache,
-                menu_items
-              }}
-            />
-            {selected_view.search && (
-              <TableSearchInput
-                view_search_config={selected_view.search}
-                table_state={table_state}
-                current_rows={data}
-                on_table_state_change={on_table_state_change}
-                on_client_filter_change={set_client_filter}
-                on_highlights_change={set_local_highlights}
-              />
-            )}
-            {row_grain_options &&
-              row_grain_options.length > 0 &&
-              on_row_grain_change && (
-                <TableSegmentedSelect
-                  value={(table_state.row_grain || ['player'])[0]}
-                  options={row_grain_options}
-                  on_change={on_row_grain_change}
-                  label={row_grain_label}
-                  tooltip={row_grain_tooltip}
-                  aria_label={row_grain_label || 'Row grain'}
-                />
-              )}
-            <div
-              className={get_string_from_object({
-                'table-controls-container': true,
-                'rank-aggregation-controls-visible': !disable_rank_aggregation
-              })}>
-              {!disable_rank_aggregation && (
-                <TableRankAggregationControls
-                  {...{
-                    table_state,
-                    on_table_state_change,
-                    all_columns: memoized_visible_columns, // TODO
-                    rank_aggregation_presets
-                  }}
-                />
-              )}
-              {!table_state?.disable_column_controls && (
-                <TableColumnControls
-                  {...{
-                    table_state,
-                    all_columns: memoized_visible_columns, // TODO
-                    on_table_state_change,
-                    prefix_columns,
-                    column_controls_open
-                  }}
-                />
-              )}
-              <TableFilterControls
+          {/* A VIEW BEING BUILT ELSEWHERE HAS NOTHING TO EDIT YET. The agent's
+              answer replaces whatever is on screen when it lands, so the
+              strip that edits the view -- grain, columns, filters, save --
+              is withheld until then rather than offered to be thrown away.
+              The view card above and the consumer's extension below stay. */}
+          {!is_view_building && (
+            <div className='table-search-and-controls-container'>
+              <TableMenu
                 {...{
-                  filter_controls_open,
-                  set_filter_controls_open,
+                  data,
                   table_state,
-                  on_table_state_change,
-                  all_columns: memoized_visible_columns // TODO
+                  all_columns,
+                  selected_view,
+                  table_username,
+                  reset_cache,
+                  clear_local_cache,
+                  menu_items
                 }}
               />
-              {!disable_row_axes &&
-                table_state_columns.some(
-                  (col) => col.row_axes && col.row_axes.length > 0
-                ) && (
-                  <TableRowAxesControls
+              {selected_view.search && (
+                <TableSearchInput
+                  view_search_config={selected_view.search}
+                  table_state={table_state}
+                  current_rows={data}
+                  on_table_state_change={on_table_state_change}
+                  on_client_filter_change={set_client_filter}
+                  on_highlights_change={set_local_highlights}
+                />
+              )}
+              {row_grain_options &&
+                row_grain_options.length > 0 &&
+                on_row_grain_change && (
+                  <TableSegmentedSelect
+                    value={(table_state.row_grain || ['player'])[0]}
+                    options={row_grain_options}
+                    on_change={on_row_grain_change}
+                    label={row_grain_label}
+                    tooltip={row_grain_tooltip}
+                    aria_label={row_grain_label || 'Row grain'}
+                  />
+                )}
+              <div
+                className={get_string_from_object({
+                  'table-controls-container': true,
+                  'rank-aggregation-controls-visible': !disable_rank_aggregation
+                })}>
+                {!disable_rank_aggregation && (
+                  <TableRankAggregationControls
                     {...{
                       table_state,
                       on_table_state_change,
-                      table_state_columns,
-                      all_columns,
-                      row_axes_label,
-                      no_row_axes_available_label
+                      all_columns: memoized_visible_columns, // TODO
+                      rank_aggregation_presets
                     }}
                   />
                 )}
-              <div className='table-top-lead-buttons-container'>
-                {is_view_state_saveable && (
-                  <>
-                    {Boolean(saved_table_state) && (
-                      <div
-                        className='table-top-lead-button discard'
-                        onClick={discard_table_state_changes}>
-                        Reset
-                      </div>
-                    )}
-                    {is_selected_view_editable ? (
-                      <div
-                        className='table-top-lead-button save'
-                        onClick={save_table_state_change}>
-                        Save
-                      </div>
-                    ) : (
-                      <Tooltip
-                        title='Duplicate this view to save your changes'
-                        placement='top'
-                        enterDelay={700}
-                        enterNextDelay={300}>
-                        <span>
-                          <div className='table-top-lead-button save -disabled'>
-                            Save
-                          </div>
-                        </span>
-                      </Tooltip>
-                    )}
-                  </>
+                {!table_state?.disable_column_controls && (
+                  <TableColumnControls
+                    {...{
+                      table_state,
+                      all_columns: memoized_visible_columns, // TODO
+                      on_table_state_change,
+                      prefix_columns,
+                      column_controls_open
+                    }}
+                  />
                 )}
-                {scatter_x && scatter_y && (
-                  <div
-                    className='table-top-lead-button show-plot'
-                    onClick={open_scatter_plot}>
-                    Show Plot
-                  </div>
-                )}
-                {bar_chart && (
-                  <div
-                    className='table-top-lead-button show-plot'
-                    onClick={open_bar_chart}>
-                    Show Bar Chart
-                  </div>
-                )}
+                <TableFilterControls
+                  {...{
+                    filter_controls_open,
+                    set_filter_controls_open,
+                    table_state,
+                    on_table_state_change,
+                    all_columns: memoized_visible_columns // TODO
+                  }}
+                />
+                {!disable_row_axes &&
+                  table_state_columns.some(
+                    (col) => col.row_axes && col.row_axes.length > 0
+                  ) && (
+                    <TableRowAxesControls
+                      {...{
+                        table_state,
+                        on_table_state_change,
+                        table_state_columns,
+                        all_columns,
+                        row_axes_label,
+                        no_row_axes_available_label
+                      }}
+                    />
+                  )}
+                <div className='table-top-lead-buttons-container'>
+                  {is_view_state_saveable && (
+                    <>
+                      {Boolean(saved_table_state) && (
+                        <div
+                          className='table-top-lead-button discard'
+                          onClick={discard_table_state_changes}>
+                          Reset
+                        </div>
+                      )}
+                      {is_selected_view_editable ? (
+                        <div
+                          className='table-top-lead-button save'
+                          onClick={save_table_state_change}>
+                          Save
+                        </div>
+                      ) : (
+                        <Tooltip
+                          title='Duplicate this view to save your changes'
+                          placement='top'
+                          enterDelay={700}
+                          enterNextDelay={300}>
+                          <span>
+                            <div className='table-top-lead-button save -disabled'>
+                              Save
+                            </div>
+                          </span>
+                        </Tooltip>
+                      )}
+                    </>
+                  )}
+                  {scatter_x && scatter_y && (
+                    <div
+                      className='table-top-lead-button show-plot'
+                      onClick={open_scatter_plot}>
+                      Show Plot
+                    </div>
+                  )}
+                  {bar_chart && (
+                    <div
+                      className='table-top-lead-button show-plot'
+                      onClick={open_bar_chart}>
+                      Show Bar Chart
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
           {/* <div className='table-state-container'>{state_items}</div> */}
           <TableMetadata created_at={metadata?.created_at} />
         </div>
@@ -1404,6 +1416,7 @@ Table.propTypes = {
   shorten_url: PropTypes.func,
   share_link_pathname: PropTypes.string,
   is_selected_view_editable: PropTypes.bool,
+  is_view_building: PropTypes.bool,
   table_username: PropTypes.string,
   reset_cache: PropTypes.func,
   get_export_api_url: PropTypes.func,

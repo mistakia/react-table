@@ -10,7 +10,7 @@
   left 0
   width fit-content
   max-width 100%
-  padding $rt_space_xl $rt_space_lg
+  padding $rt_space_xl $rt_space_lg $rt_space_xl var(--rt-controls-inset)
   color $rt_text_muted
   font-size $rt_font_size_md
 
@@ -33,6 +33,12 @@
   // here so the controls bar / quick-filters / table padding offsets stay in
   // sync if the gutter ever needs to change.
   --rt-column-index-width 30px
+  // THE ONE LEFT EDGE everything above the table starts on: the view card,
+  // the toolbar, the consumer's extension, the quick filters and the empty
+  // state. On a desktop it is the first data column's edge. On a phone the
+  // card spans the screen instead, so the whole stack moves out to the 8px
+  // margin together rather than splitting between the two edges.
+  --rt-controls-inset var(--rt-column-index-width)
 
   // Opaque paint behind every row. Sticky cells inherit it, so columns
   // scrolling underneath the pinned column can't bleed through, and any row
@@ -63,7 +69,7 @@
     flex-direction column
     justify-content space-between
     position sticky
-    left var(--rt-column-index-width)
+    left var(--rt-controls-inset)
     width fit-content
     max-width 100%
     margin-top 12px
@@ -73,6 +79,11 @@
 
     .table-view-menu
       min-width fit-content
+
+    // The toolbar row is withheld, and with it the 16px gap that set the card
+    // off from what follows; this keeps that spacing for the extension.
+    &.-view-building
+      padding-bottom 16px
 
   .table-state-container
     display flex
@@ -270,17 +281,17 @@
       align-items center
 
   .table-controls-extension
-    margin 0 var(--rt-column-index-width) 6px
+    margin 0 var(--rt-controls-inset) 6px
     display flex
     flex-direction column
     gap 6px
     position sticky
-    left var(--rt-column-index-width)
+    left var(--rt-controls-inset)
     width fit-content
     max-width calc(100vw - 60px)
 
   .table-quick-filters
-    margin 0 var(--rt-column-index-width) 6px
+    margin 0 var(--rt-controls-inset) 6px
     display flex
     padding 0 8px
     flex-direction column
@@ -288,7 +299,7 @@
     border 1px solid transparent
     width fit-content
     position sticky
-    left var(--rt-column-index-width)
+    left var(--rt-controls-inset)
 
     &:hover
     &.-open
@@ -445,8 +456,9 @@
 
 @media (max-width: 600px)
   .table
+    --rt-controls-inset 8px
+
     .table-top-container
-      left 8px
       width calc(100vw - 16px)
 
     .table-view-menu
